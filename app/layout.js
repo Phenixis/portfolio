@@ -1,4 +1,4 @@
-import { inter, lusitana } from '@/app/ui/fonts';
+// import { inter, lusitana } from '@/app/ui/fonts';
 import { Metadata } from 'next';
  
 export const metadata = {
@@ -12,7 +12,7 @@ export const metadata = {
 export default function RootLayout({children}) {
   return (
     <html lang="en">
-      <body className={`${lusitana.className} antialiased`}>{children}</body>
+      <body className={`antialiased`}>{children}</body>
     </html>
   );
 }
