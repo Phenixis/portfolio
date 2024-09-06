@@ -7,7 +7,7 @@ export const metadata = {
 export default function Page() {
     return (
         <main>
-            <p>Maxime Duhamel</p>
+            <p className='text-7xl'>Maxime Duhamel</p>
         </main>
     )
 }
