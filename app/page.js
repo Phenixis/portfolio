@@ -1,7 +1,13 @@
+import { Metadata } from 'next';
+
+export const metadata = {
+    title: "Portfolio",
+}
+
 export default function Page() {
     return (
         <main>
-            <p>Welcome on my page</p>
+            <p>This site is in construction.</p>
         </main>
     )
 }

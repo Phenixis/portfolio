@@ -4,7 +4,7 @@ import { Metadata } from 'next';
 export const metadata = {
   title: {
     template: '%s | Maxime Duhamel',
-    default: 'Portfolio',
+    default: 'Maxime Duhamel',
   },
   description: 'Portfolio by Maxime Duhamel.',
 };
