@@ -7,7 +7,7 @@ export const metadata = {
 export default function Page() {
     return (
         <main>
-            <p>This site is in construction.</p>
+            <p>Maxime Duhamel</p>
         </main>
     )
 }
