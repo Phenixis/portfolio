@@ -8,7 +8,7 @@ export default function MastodonLogo() {
     const [isHovered, setIsHovered] = useState(false);
 
     return (
-        <div class="h-full content-center">
+        <div className="h-full content-center">
             <a
                 target="_blank"
                 rel="me"
