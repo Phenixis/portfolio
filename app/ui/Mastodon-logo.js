@@ -1,9 +1,9 @@
 'use client'
 
-import { VscGithub, VscGithubInverted } from "react-icons/vsc";
+import { PiMastodonLogoFill, PiMastodonLogo } from "react-icons/pi";
 import { useState } from "react";
 
-export default function GithubLogo() {
+export default function MastodonLogo() {
     {/* Icon that changes on hover */}
     const [isHovered, setIsHovered] = useState(false);
 
@@ -12,14 +12,14 @@ export default function GithubLogo() {
             <a
                 target="_blank"
                 rel="me"
-                href="https://github.com/Phenixis"
+                href="https://bzh.social/@mduhamel"
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >
                 {isHovered ? (
-                    <VscGithubInverted className="size-7" />
+                    <PiMastodonLogoFill className="size-7" />
                 ) : (
-                    <VscGithub className="size-7" />
+                    <PiMastodonLogo className="size-7" />
                 )}
             </a>
         </div>

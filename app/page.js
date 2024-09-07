@@ -2,7 +2,8 @@
 import { Metadata } from 'next';
 import { DiGithubBadge } from "react-icons/di";
 import LinkedInLogo from '/app/ui/LinkedIn-logo';
-import GithubLogo from './ui/Github-logo';
+import GithubLogo from '/app/ui/Github-logo';
+import MastodonLogo from '/app/ui/Mastodon-logo';
 
 export const metadata = {
     title: "Portfolio",
@@ -14,8 +15,8 @@ export default function Page() {
             <div class="flex justify-around">
                 <div class="flex justify-around">
                     <GithubLogo />
-                    {/* LinkedIn Icon that changes on hover */}
                     <LinkedInLogo />
+                    <MastodonLogo />
                 </div>
                 <p className='text-5xl block p-3 rounded-xl shadow-md shadow-black-700 font-bold'>Maxime Duhamel</p>
             </div>

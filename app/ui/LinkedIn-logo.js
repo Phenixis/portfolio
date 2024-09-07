@@ -9,7 +9,10 @@ export default function LinkedInLogo() {
 
     return (
         <div class="h-full content-center">
-            <div
+            <a
+                target="_blank"
+                rel="me"
+                href="https://www.linkedin.com/in/maxime-duhamel-b07a71251/"
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >
@@ -18,7 +21,7 @@ export default function LinkedInLogo() {
                 ) : (
                     <AiOutlineLinkedin className="size-8" />
                 )}
-            </div>
+            </a>
         </div>
     );
 }
