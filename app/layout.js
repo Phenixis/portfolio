@@ -1,5 +1,5 @@
-// import { inter, lusitana } from '@/app/ui/fonts';
-import '@/app/ui/global.css';
+// import { inter, lusitana } from '/app/ui/fonts';
+import '/app/ui/global.css';
 import { Metadata } from 'next';
  
 export const metadata = {
@@ -13,7 +13,7 @@ export const metadata = {
 export default function RootLayout({children}) {
   return (
     <html lang="en">
-      <body className={`antialiased`}>{children}</body>
+      <body className="antialiased bg-gradient-to-b from-emerald-500 to-blue-500 ">{children}</body>
     </html>
   );
 }
