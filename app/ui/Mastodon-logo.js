@@ -9,7 +9,6 @@ export default function MastodonLogo() {
 
     return (
         <div className="h-full content-center">
-            <div className="flex flex-row-reverse">
                 <a
                     target="_blank"
                     rel="me"
@@ -18,14 +17,11 @@ export default function MastodonLogo() {
                     onMouseLeave={() => setIsHovered(false)}
                     >
                     {isHovered ? (
-                        <PiMastodonLogoFill className="size-8" />
+                        <PiMastodonLogoFill className="size-8 fill-[#6364FF]" />
                     ) : (
                         <PiMastodonLogo className="size-8" />
                     )}
                 </a>
-                <span class="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-sky-400 opacity-75"></span>
-                <span class="absolute inline-flex rounded-full h-3 w-3 bg-sky-500"></span>
-            </div>
         </div>
     );
 }

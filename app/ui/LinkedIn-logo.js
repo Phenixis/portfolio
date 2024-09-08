@@ -17,7 +17,7 @@ export default function LinkedInLogo() {
                 onMouseLeave={() => setIsHovered(false)}
             >
                 {isHovered ? (
-                    <AiFillLinkedin className="size-8" />
+                    <AiFillLinkedin className="size-8 fill-[#0077B5] rounded-lg" />
                 ) : (
                     <AiOutlineLinkedin className="size-8" />
                 )}
