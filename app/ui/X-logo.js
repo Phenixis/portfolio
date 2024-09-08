@@ -13,7 +13,7 @@ export default function XLogo() {
                 <a
                     target="_blank"
                     rel="me"
-                    href="https://github.com/Phenixis"
+                    href="https://x.com/maxime_duhamel_"
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
                 >
