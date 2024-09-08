@@ -1,4 +1,5 @@
 import { DiGithubBadge } from "react-icons/di";
+import { LuConstruction } from "react-icons/lu";
 import LinkedInLogo from '/app/ui/LinkedIn-logo';
 import GithubLogo from '/app/ui/Github-logo';
 import MastodonLogo from '/app/ui/Mastodon-logo';
@@ -22,6 +23,10 @@ export default function Page() {
                 <p className='text-5xl block p-3 rounded-xl shadow-lg shadow-black-700 font-bold'>Maxime Duhamel</p>
                 <ContactMe />
             </header>
+            <main className="m-8 flex flex-col items-center">
+             <LuConstruction className="size-10"/>
+             <p className="text-5xl">Under Construction</p>
+            </main>
         </main>
     )
 }
