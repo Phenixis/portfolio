@@ -12,7 +12,7 @@ export default function Page() {
             <Header />
             <main className="m-8 flex flex-col items-center">
                 <Quote quote="Be impatient with actions and patient with results." author="Naval Ravikant" />
-                <p className="text-md text-center">
+                <p className="text-md text-center font-semibold">
                     This is why my GitHub activity is so important to me. I try to make a commit every day, even if it's just a small one.
                 </p>
                 <GithubCalendar />
