@@ -13,7 +13,7 @@ export const metadata = {
 export default function RootLayout({children}) {
   return (
     <html lang="en">
-      <body className="antialiased bg-gradient-to-b from-emerald-500 to-blue-600 ">{children}</body>
+      <body className="antialiased bg-amber-50">{children}</body>
     </html>
   );
 }
