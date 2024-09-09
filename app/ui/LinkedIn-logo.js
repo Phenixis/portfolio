@@ -1,26 +1,15 @@
-'use client'
-
-import { AiFillLinkedin, AiOutlineLinkedin } from "react-icons/ai";
-import { useState } from "react";
+import { AiFillLinkedin } from "react-icons/ai";
 
 export default function LinkedInLogo() {
-    {/* LinkedIn Icon that changes on hover */}
-    const [isHovered, setIsHovered] = useState(false);
 
     return (
-        <div className="h-full content-center">
+        <div className="h-full w-9 content-center flex items-center justify-center">
             <a
                 target="_blank"
                 rel="me"
                 href="https://www.linkedin.com/in/maxime-duhamel-b07a71251/"
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
             >
-                {isHovered ? (
-                    <AiFillLinkedin className="size-8 fill-[#0077B5] rounded-lg" />
-                ) : (
-                    <AiOutlineLinkedin className="size-8" />
-                )}
+                <AiFillLinkedin className="size-8 duration-200 hover:size-9 hover:fill-[#0077B5] hover:rounded-lg"/>
             </a>
         </div>
     );
