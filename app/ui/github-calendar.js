@@ -1,12 +1,15 @@
 'use client'
 
 import GitHubCalendar from 'react-github-calendar';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useRouter } from "next/navigation";
 
 export default function GithubCalendar() {
     const theme = {
         light: ['#ece0d1', '#dbc1ac', '#967259', '#634832', '#38220f']
     };
+
+    const router = useRouter();
 
     const selectMonths = (contributions, numMonths) => {
         const currentYear = new Date().getFullYear();
@@ -16,10 +19,10 @@ export default function GithubCalendar() {
             const date = new Date(activity.date);
             const year = date.getFullYear();
             const monthOfDay = date.getMonth();
-    
+
             return (
-                (year < currentYear && monthOfDay > currentMonth - numMonths && monthOfDay <= currentMonth) ||
-                (year === currentYear && monthOfDay > currentMonth - numMonths && monthOfDay <= currentMonth)
+                (numMonths > currentMonth && year < currentYear && monthOfDay >= (11 - Math.abs(currentMonth - numMonths))) ||
+                (year == currentYear && monthOfDay >= (currentMonth - numMonths) && monthOfDay <= currentMonth)
             );
         });
     };
@@ -33,20 +36,27 @@ export default function GithubCalendar() {
     if (isMobile) {
         numMonths = 5;
     } else if (isTablet) {
-        numMonths = 7;
+        numMonths = 5;
     } else if (isDesktop) {
-        numMonths = 9;
+        numMonths = 8;
     } else if (isLargeDesktop) {
         numMonths = 12;
     }
+    
+    useEffect(() => {
+        const handleResize = () => {
+            router.refresh();
+        };
 
-    console.log(numMonths);
-    if (typeof window !== 'undefined') {
-        console.log(window.innerWidth);
-    }
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
 
     return (
-        <div className="bg-amber-50 p-2 sm:p-4 rounded-lg w-full">
+        <div className="bg-amber-50 p-2 sm:p-4 rounded-lg w-full flex justify-center">
             <GitHubCalendar
                 username="Phenixis"
                 transformData={contributions => { return selectMonths(contributions, numMonths); }}
