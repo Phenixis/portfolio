@@ -9,15 +9,15 @@ export const metadata = {
 
 export default function Page() {
     return (
-        <main className="m-4 h-screen sm:m-12">
+        <main className="m-4 h-screen md:m-12">
             <Header />
-            <main className="mt-6 sm:m-8 flex flex-col items-center w-full">
-                <div className='flex flex-col justify-around w-full h-max sm:space-x-4 sm:flex-row'>
-                    <div className='flex flex-col items-start space-y-1 sm:items-end sm:justify-between'>
+            <main className="mt-6 md:m-8 flex flex-col items-center w-full">
+                <div className='flex flex-col justify-around w-full h-max md:space-x-4 md:flex-row'>
+                    <div className='flex flex-col items-start space-y-1 md:items-end md:justify-between'>
                         <Quote quote="Be impatient with your inputs and patient with your outputs." author="Alex Hormozi" />
                         <Image src="/the_principle.png" alt="Le Principe" width={200} height={90} />
                     </div>
-                    <div className='flex flex-col items-end space-y-1 sm:items-start sm:justify-between'>
+                    <div className='flex flex-col items-end space-y-1 md:items-start md:justify-between'>
                         <GithubCalendar />
                         <Image src="/the_actions.png" alt="Le Principe" width={200} height={92}/>
                     </div>

@@ -28,13 +28,14 @@ export default function GithubCalendar() {
     };
 
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
-    const isTablet = typeof window !== 'undefined' && window.innerWidth >= 640 && window.innerWidth < 768;
-    const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768 && window.innerWidth < 1024;
-    const isLargeDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
+    const isLargeMobile = typeof window !== 'undefined' && window.innerWidth >= 640 && window.innerWidth < 768;
+    const isTablet = typeof window !== 'undefined' && window.innerWidth >= 768 && window.innerWidth < 1024;
+    const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024 && window.innerWidth < 1280;
+    const isLargeDesktop = typeof window !== 'undefined' && window.innerWidth >= 1280;
 
-    let numMonths;
-    if (isMobile) {
-        numMonths = 5;
+    let numMonths = 5;
+    if (isLargeMobile) {
+        numMonths = 8;
     } else if (isTablet) {
         numMonths = 5;
     } else if (isDesktop) {
@@ -42,6 +43,12 @@ export default function GithubCalendar() {
     } else if (isLargeDesktop) {
         numMonths = 12;
     }
+    
+    console.log(numMonths);
+    if (typeof window !== 'undefined') {
+        console.log(window.innerWidth);
+    }
+    
     
     useEffect(() => {
         const handleResize = () => {
@@ -56,7 +63,7 @@ export default function GithubCalendar() {
     }, []);
 
     return (
-        <div className="bg-amber-50 p-2 sm:p-4 rounded-lg w-full flex justify-center">
+        <div className="bg-amber-50 p-2 md:p-4 rounded-lg w-full flex justify-center">
             <GitHubCalendar
                 username="Phenixis"
                 transformData={contributions => { return selectMonths(contributions, numMonths); }}
