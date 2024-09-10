@@ -17,7 +17,6 @@ export default function GithubCalendar() {
             const monthOfDay = date.getMonth();
         
             return (
-                date.getFullYear() === currentYear &&
                 monthOfDay > currentMonth - numMonths &&
                 monthOfDay <= currentMonth
             );
