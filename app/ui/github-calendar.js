@@ -11,14 +11,15 @@ export default function GithubCalendar() {
     const selectMonths = (contributions, numMonths) => {
         const currentYear = new Date().getFullYear();
         const currentMonth = new Date().getMonth();
-      
+    
         return contributions.filter(activity => {
             const date = new Date(activity.date);
+            const year = date.getFullYear();
             const monthOfDay = date.getMonth();
-        
+    
             return (
-                monthOfDay > currentMonth - numMonths &&
-                monthOfDay <= currentMonth
+                (year < currentYear && monthOfDay > currentMonth - numMonths && monthOfDay <= currentMonth) ||
+                (year === currentYear && monthOfDay > currentMonth - numMonths && monthOfDay <= currentMonth)
             );
         });
     };
