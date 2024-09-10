@@ -27,8 +27,8 @@ export default function Header() {
 
     return (
         <header
-            className={`flex justify-between p-2 sticky top-5 w-full bg-amber-50 rounded-lg shadow-lg shadow-black-700 ${
-                isScrolled ? 'scale-75' : ''
+            className={`flex justify-between p-2 sticky top-0 w-full bg-amber-50 rounded-lg shadow-lg shadow-black-700 duration-300 ${
+                isScrolled ? 'h-16' : ''
             }`}
         >
             <p className="text-2xl block p-3 rounded-xl font-bold">Maxime Duhamel</p>
