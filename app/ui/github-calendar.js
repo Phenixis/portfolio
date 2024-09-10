@@ -67,8 +67,39 @@ export default function GithubCalendar() {
             <GitHubCalendar
                 username="Phenixis"
                 transformData={contributions => { return selectMonths(contributions, numMonths); }}
-                hideTotalCount={true}
+                hideTotalCount={false}
+                labels={{
+                    months: [
+                        'Jan',
+                        'Feb',
+                        'Mar',
+                        'Apr',
+                        'May',
+                        'Jun',
+                        'Jul',
+                        'Aug',
+                        'Sep',
+                        'Oct',
+                        'Nov',
+                        'Dec',
+                    ],
+                    weekdays: [
+                        'Mon',
+                        'Tue',
+                        'Wed',
+                        'Thu',
+                        'Fri',
+                        'Sat',
+                        'Sun',
+                    ],
+                    totalCount: "{{count}} activities in the last " + numMonths + " months",
+                    legend: {
+                      less: 'Less',
+                      more: 'More',
+                    },
+                  }}
                 hideColorLegend={true}
+                hideMonthLabels={true}
                 theme={theme}
             />
         </div>
