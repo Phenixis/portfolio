@@ -25,7 +25,7 @@ export default function GithubCalendar() {
         });
     };
 
-    const isMobile = window.innerWidth < 640;
+    const isMobile = false;
 
     return (
         <div className="bg-amber-50 p-2 sm:p-4 rounded-lg w-full">
