@@ -3,7 +3,7 @@ import { PiMastodonLogoFill } from "react-icons/pi";
 export default function MastodonLogo() {
 
     return (
-        <div className="h-full w-9 content-center flex items-center justify-center">
+        <div className="h-9 w-9 content-center flex items-center justify-center">
                 <a
                     target="_blank"
                     rel="me"
