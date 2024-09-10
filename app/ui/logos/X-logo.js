@@ -12,8 +12,8 @@ export default function XLogo() {
                 >
                     <FaXTwitter className="size-7 outline-2 outline-black rounded-lg duration-200 hover:size-8" />
                 </a>
-                <span class="animate-ping absolute inline-flex size-2.5 rounded-full bg-red-500 opacity-75"></span>
-                <span class="absolute inline-flex rounded-full size-2.5 bg-red-400"></span>
+                <span className="animate-ping absolute inline-flex size-2.5 rounded-full bg-red-500 opacity-75"></span>
+                <span className="absolute inline-flex rounded-full size-2.5 bg-red-400"></span>
             </div>
         </div>
     );
