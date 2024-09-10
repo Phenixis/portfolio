@@ -40,6 +40,9 @@ export default function GithubCalendar() {
         numMonths = 12;
     }
 
+    console.log(numMonths);
+    console.log(window.innerWidth);
+
     return (
         <div className="bg-amber-50 p-2 sm:p-4 rounded-lg w-full">
             <GitHubCalendar
