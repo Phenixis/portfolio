@@ -41,7 +41,9 @@ export default function GithubCalendar() {
     }
 
     console.log(numMonths);
-    console.log(window.innerWidth);
+    if (typeof window !== 'undefined') {
+        console.log(window.innerWidth);
+    }
 
     return (
         <div className="bg-amber-50 p-2 sm:p-4 rounded-lg w-full">
