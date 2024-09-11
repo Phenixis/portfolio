@@ -64,6 +64,7 @@ export default function GithubCalendar() {
 
     return (
         <div className="bg-amber-50 p-2 md:p-4 rounded-lg w-full flex justify-center">
+            <a href="https://github.com/Phenixis" target="_blank" rel="noopener noreferrer" title='Github Activity Calendar'>
             <GitHubCalendar
                 username="Phenixis"
                 transformData={contributions => { return selectMonths(contributions, numMonths); }}
@@ -94,14 +95,15 @@ export default function GithubCalendar() {
                     ],
                     totalCount: "{{count}} activities in the last " + numMonths + " months",
                     legend: {
-                      less: 'Less',
-                      more: 'More',
+                        less: 'Less',
+                        more: 'More',
                     },
-                  }}
+                }}
                 hideColorLegend={true}
                 hideMonthLabels={true}
                 theme={theme}
-            />
+                />
+            </a>
         </div>
     );
 }
