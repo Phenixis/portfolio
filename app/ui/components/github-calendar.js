@@ -63,7 +63,7 @@ export default function GithubCalendar() {
     }, []);
 
     return (
-        <div className="bg-amber-50 p-2 md:p-4 rounded-lg w-full flex justify-center">
+        <div className="bg-amber-50 p-2 md:p-4 rounded-lg w-full flex justify-center w-full h-full">
             <a href="https://github.com/Phenixis" target="_blank" rel="noopener noreferrer" title='Github Activity Calendar'>
             <GitHubCalendar
                 username="Phenixis"
