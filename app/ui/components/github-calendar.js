@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 export default function GithubCalendar() {
     const theme = {
-        light: ['#ece0d1', '#dbc1ac', '#967259', '#634832', '#38220f']
+        light: ["#ffffff", "#ffda00", "#ffa500", "#5d3f18", "#060023"]
     };
 
     const router = useRouter();
@@ -63,12 +63,15 @@ export default function GithubCalendar() {
     }, []);
 
     return (
-        <div className="bg-amber-50 p-2 md:p-4 rounded-lg w-full flex justify-center w-full h-full">
+        <div className="bg-base-100 p-2 md:p-4 rounded-lg w-full flex justify-center w-full h-full">
             <a href="https://github.com/Phenixis" target="_blank" rel="noopener noreferrer" title='Github Activity Calendar'>
             <GitHubCalendar
                 username="Phenixis"
                 transformData={contributions => { return selectMonths(contributions, numMonths); }}
                 hideTotalCount={false}
+                // hideColorLegend={true}
+                hideMonthLabels={true}
+                theme={theme}
                 labels={{
                     months: [
                         'Jan',
@@ -99,9 +102,6 @@ export default function GithubCalendar() {
                         more: 'More',
                     },
                 }}
-                hideColorLegend={true}
-                hideMonthLabels={true}
-                theme={theme}
                 />
             </a>
         </div>

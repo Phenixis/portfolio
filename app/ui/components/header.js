@@ -5,7 +5,7 @@ import XLogo from '/app/ui/logos/X-logo';
 
 export default function Header() {
     return (
-        <header class="navbar bg-secondary shadow-lg sticky top-2 rounded-full">
+        <header class="navbar bg-base-100 shadow-lg sticky top-2 rounded-full">
             <div class="navbar-start">
                 <div class="dropdown">
                 <div tabindex="0" role="button" class="btn btn-ghost rounded-full lg:hidden">
