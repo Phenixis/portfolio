@@ -10,5 +10,12 @@ module.exports = {
   theme: {
     extend: {},
   },
-  plugins: [],
+  plugins: [require("daisyui")],
+  daisyui: {
+    themes: [
+      "bumblebee",
+      "coffee",
+    ],
+    darkMode: ["class", '[data-theme="coffee"]'],
+  }
 }
