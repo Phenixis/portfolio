@@ -34,9 +34,6 @@ export default function Header() {
                         </ul>
                         </li>
                         <li><a>Item 3</a></li>
-                        <li>
-                            <ToggleColorMode />
-                        </li>
                     </ul>
                 </div>
                 <a class="btn btn-ghost text-xl rounded-full">Maxime Duhamel</a>
