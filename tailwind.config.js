@@ -8,7 +8,23 @@ module.exports = {
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      keyframes: {
+        bouceHorizontal: {
+          '0%, 100%': { transform: 'translateX(-25%)' },
+          '50%': { transform: 'translateX(0%)' },
+        }
+      },
+      animation: {
+        "bounceH": 'bouceHorizontal 1s infinite',
+      }
+    },
   },
-  plugins: [],
+  plugins: [require("daisyui")],
+  daisyui: {
+    themes: [
+      "bumblebee",
+      "dark",
+    ],
+  }
 }

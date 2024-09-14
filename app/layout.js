@@ -1,6 +1,5 @@
 // import { inter, lusitana } from '/app/ui/fonts';
 import '/app/ui/global.css';
-import { Metadata } from 'next';
  
 export const metadata = {
   title: {
@@ -13,7 +12,7 @@ export const metadata = {
 export default function RootLayout({children}) {
   return (
     <html lang="en">
-      <body className="antialiased bg-amber-50">{children}</body>
+      <body className="antialiased bg-base-100 w-min-[2000px]">{children}</body>
     </html>
   );
 }
