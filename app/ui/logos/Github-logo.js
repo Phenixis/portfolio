@@ -9,7 +9,7 @@ export default function GithubLogo() {
                 rel="me"
                 href="https://github.com/Phenixis"
             >
-                <VscGithubInverted className="size-7" />
+                <VscGithubInverted className="size-7 hover:fill-[#773fc6]" />
             </a>
     );
 }

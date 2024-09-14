@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 
 export default function GithubCalendar() {
     const theme = {
-        light: ["#ffffff", "#ffda00", "#ffa500", "#5d3f18", "#060023"]
+        light: ["#ffffff", "#ffda00", "#ffa500", "#5d3f18", "#060023"],
+        dark: ["#120C12", "#263E3F", "#10576D", "#c59f60", "#DB924B"],
     };
 
     const router = useRouter();
