@@ -2,7 +2,6 @@ import LinkedInLogo from '/app/ui/logos/LinkedIn-logo';
 import GithubLogo from '/app/ui/logos/Github-logo';
 import MastodonLogo from '/app/ui/logos/Mastodon-logo';
 import XLogo from '/app/ui/logos/X-logo';
-import ToggleColorMode from '/app/ui/components/toggleColorMode';
 
 export default function Header() {
     return (
@@ -55,9 +54,6 @@ export default function Header() {
                         </details>
                     </li>
                     <li><a>Item 3</a></li>
-                    <li>
-                        <ToggleColorMode />
-                    </li>
                 </ul>
             </div>
             <div className="navbar-end">

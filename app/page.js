@@ -11,7 +11,7 @@ export default function Page() {
     return (
         <main className="m-4 h-screen md:m-12">
             <Header />
-            <main className="mt-6 md:mt-8 flex flex-col items-center w-full space-y-6">
+            <main className="mt-6 md:mt-8 flex flex-col items-center w-[95%] space-y-6">
                 <div className='flex flex-col justify-around w-full h-max md:space-y-2 md:space-x-4'>
                     <div className='flex flex-col md:flex-row'>
                         <Quote quote="Be impatient with your inputs and patient with your outputs." author="Alex Hormozi" />
