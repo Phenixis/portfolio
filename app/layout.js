@@ -12,7 +12,7 @@ export const metadata = {
 export default function RootLayout({children}) {
   return (
     <html lang="en">
-      <body className="antialiased bg-base-100">{children}</body>
+      <body className="antialiased bg-base-100 w-min-[2000px]">{children}</body>
     </html>
   );
 }

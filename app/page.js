@@ -2,6 +2,7 @@ import GithubCalendar from '/app/ui/components/github-calendar';
 import Quote from '/app/ui/components/quote';
 import Header from '/app/ui/components/header';
 import Image from 'next/image';
+import { SlArrowRight } from "react-icons/sl";
 
 export const metadata = {
     title: "Portfolio",
@@ -9,9 +10,9 @@ export const metadata = {
 
 export default function Page() {
     return (
-        <main className="m-4 h-screen md:m-12">
+        <main className="m-2 h-screen md:m-6">
             <Header />
-            <main className="mt-6 md:mt-8 flex flex-col items-center w-[95%] space-y-6">
+            <main className="pt-6 md:p-8 flex flex-col items-center w-[95%] space-y-6">
                 <div className='flex flex-col justify-around w-full h-max md:space-y-2 md:space-x-4'>
                     <div className='flex flex-col md:flex-row'>
                         <Quote quote="Be impatient with your inputs and patient with your outputs." author="Alex Hormozi" />
@@ -30,11 +31,11 @@ export default function Page() {
                 </div>
                 <div className='min-w-7/12 max-w-full bg-secondary p-4 rounded-xl'>
                     <div className='flex flex-col items-center w-full'>
-                    <div className="avatar">
-                        <div className="w-48 rounded-full">
-                            <img src="pdp.jpg" />
+                        <div className="avatar">
+                            <div className="w-48 rounded-full">
+                                <img src="pdp.jpg" />
+                            </div>
                         </div>
-                    </div>
                         <div className='w-full'>
                             <p className="text-lg font-bold lg:text-2xl text-neutral">Hello! I'm Maxime Duhamel</p>
                             <p className='lg:text-lg'>
@@ -42,13 +43,13 @@ export default function Page() {
                             </p>
                             <div className='flex justify-end lg:text-lg'>
                                 <a href="https://www.canva.com/design/DAFuEEd36CM/BbgwPzNszoiUH_AkGxfYPQ/view?utm_content=DAFuEEd36CM&utm_campaign=designshare&utm_medium=link&utm_source=editor" target='_blank'>
-                                    <button className="btn btn-neutral font-bold text-base-100">Get a copy of my resumee &gt;</button>
+                                    <button className="btn btn-neutral font-bold text-base-100">
+                                        Get a copy of my resumee
+                                        <SlArrowRight className='animate-bounceH'/>
+                                    </button>
                                 </a>
                             </div>
                         </div>
-                    </div>
-                    <div>
-
                     </div>
                 </div>
             </main>
