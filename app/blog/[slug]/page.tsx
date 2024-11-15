@@ -95,7 +95,7 @@ export default async function Blog(props: { params: any }) {
           {post.metadata.summary}
         </p>
       </div>
-      <article className="prose">
+      <article className="prose font-serif text-lg max-w-full">
         <CustomMDX source={post.content} />
       </article>
       <footer>

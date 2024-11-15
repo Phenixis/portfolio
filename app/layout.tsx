@@ -1,12 +1,19 @@
 import './global.css'
 import type { Metadata } from 'next'
-import { GeistSans } from 'geist/font/sans'
-import { GeistMono } from 'geist/font/mono'
 import { Navbar } from './components/nav'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import Footer from './components/footer'
 import { baseUrl } from './sitemap'
+import { Domine, Geist_Mono } from 'next/font/google';
+
+const domine = Domine({
+    subsets: ['latin'],
+})
+
+const geistMono = Geist_Mono({
+    subsets: ['latin'],
+})
 
 export const metadata: Metadata = {
     metadataBase: new URL(baseUrl),
@@ -48,11 +55,11 @@ export default function RootLayout({
             lang="en"
         >
             <body className={cx(
-                'antialiased max-w-xl text-black bg-white dark:text-white dark:bg-black lg:mx-auto',
-                GeistSans.variable,
-                GeistMono.variable
+                'antialiased max-w-3xl text-black bg-white dark:text-white dark:bg-black lg:mx-auto',
+                domine.className,
+                geistMono.className,
             )}>
-                <main className="flex flex-col justify-between min-w-0 min-h-screen pt-6 px-2 md:px-0">
+                <main className="flex flex-col justify-between min-w-0 min-h-screen pt-6 px-2 font-mono md:px-0">
                     <div className="flex flex-col">
                         <Navbar />
                         {children}
