@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation'
+  import { notFound } from 'next/navigation'
 import { CustomMDX } from 'app/components/mdx'
 import { formatDate, getBlogPosts } from 'app/blog/utils'
 import { baseUrl } from 'app/sitemap'
@@ -11,7 +11,7 @@ export async function generateStaticParams() {
   }))
 }
 
-export async function generateMetadata(props) {
+export async function generateMetadata(props: { params: any }) {
   const params = await props.params;
   let post = getBlogPosts().find((post) => post.slug === params.slug)
   if (!post) {
@@ -52,7 +52,7 @@ export async function generateMetadata(props) {
   }
 }
 
-export default async function Blog(props) {
+export default async function Blog(props: { params: any }) {
   const params = await props.params;
   let post = getBlogPosts().find((post) => post.slug === params.slug)
 
@@ -91,10 +91,19 @@ export default async function Blog(props) {
         <p className="text-sm text-neutral-600 dark:text-neutral-400">
           {formatDate(post.metadata.publishedAt)}
         </p>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          {post.metadata.summary}
+        </p>
       </div>
       <article className="prose">
         <CustomMDX source={post.content} />
       </article>
+      <footer>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          Best Regards,<br/>
+          Maxime Duhamel
+        </p>
+      </footer>
     </section>
   )
 }
