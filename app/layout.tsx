@@ -5,13 +5,17 @@ import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import Footer from './components/footer'
 import { baseUrl } from './sitemap'
-import { Domine, Geist_Mono } from 'next/font/google';
+import { Domine, Geist_Mono, Ubuntu_Sans_Mono } from 'next/font/google';
 
 const domine = Domine({
     subsets: ['latin'],
 })
 
 const geistMono = Geist_Mono({
+    subsets: ['latin'],
+})
+
+const ubuntuSansMono = Ubuntu_Sans_Mono({
     subsets: ['latin'],
 })
 
@@ -58,13 +62,14 @@ export default function RootLayout({
                 'antialiased max-w-3xl text-black bg-white dark:text-white dark:bg-black lg:mx-auto',
                 domine.className,
                 geistMono.className,
+                ubuntuSansMono.className,
             )}>
                 <main className="flex flex-col justify-between min-w-0 min-h-screen pt-6 px-2 font-mono md:px-0">
                     <div className="flex flex-col">
                         <Navbar />
                         {children}
                     </div>
-                    <Footer />
+                    <Footer  />
                     <Analytics />
                     <SpeedInsights />
                 </main>
