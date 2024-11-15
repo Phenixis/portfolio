@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import DarkModeToggle from './darkModeToggle'
 
 const navItems = {
   '/': {
@@ -12,7 +13,7 @@ const navItems = {
 export function Navbar() {
   return (
     <aside className="-ml-[8px] mb-16 tracking-tight">
-      <div className="lg:sticky lg:top-20">
+      <div className="lg:sticky lg:top-20 flex justify-between">
         <nav
           className="flex flex-row items-start relative px-0 pb-0 fade md:overflow-auto scroll-pr-6 md:relative"
           id="nav"
@@ -31,6 +32,7 @@ export function Navbar() {
             })}
           </div>
         </nav>
+        <DarkModeToggle />
       </div>
     </aside>
   )
