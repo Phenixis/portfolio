@@ -6,12 +6,8 @@ export default function Page() {
       <h1 className="mb-8 text-2xl font-semibold tracking-tighter">
         My Portfolio
       </h1>
-      <p className="mb-4">
-        {`I'm a Vim enthusiast and tab advocate, finding unmatched efficiency in
-        Vim's keystroke commands and tabs' flexibility for personal viewing
-        preferences. This extends to my support for static typing, where its
-        early error detection ensures cleaner code, and my preference for dark
-        mode, which eases long coding sessions by reducing eye strain.`}
+      <p className="mb-4 text-justify text-neutral-600 dark:text-neutral-300 leading-[1.8]">
+        I'm Maxime, a 19 years old french student in computer science. I love building useful applications and websites. I'm currently learning React, Next.js and Tailwindcss by building <a href="https://www.wisecart.app" target='_blank' className="underline decoration-dashed hover:text-black dark:hover:text-white" >WiseCart</a>, a shopping list builder using a meal-oriented approach.
       </p>
       <div className="my-8">
         <BlogPosts />
