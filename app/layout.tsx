@@ -48,7 +48,7 @@ export default function RootLayout({
             lang="en"
         >
             <body className={cx(
-                'antialiased max-w-xl px-4 text-black bg-white dark:text-white dark:bg-black lg:mx-auto',
+                'antialiased max-w-xl text-black bg-white dark:text-white dark:bg-black lg:mx-auto',
                 GeistSans.variable,
                 GeistMono.variable
             )}>
