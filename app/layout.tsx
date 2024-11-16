@@ -63,7 +63,7 @@ export default function RootLayout({
                 geistMono.className,
                 ubuntuSansMono.className,
             )}>
-                <main className="min-w-0 pt-6 px-2 font-mono md:px-0">
+                <main className="min-w-0 px-2 font-mono md:px-0">
                     <Main>
                         {children}
                     </Main>
