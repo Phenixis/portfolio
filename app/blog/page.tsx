@@ -1,7 +1,5 @@
 import BlogPosts from 'app/components/posts'
-import Image from 'next/image'
-import * as ListIconLight from 'public/listIconLight.png';
-import * as ListIconDark from 'public/listIconDark.png';
+import Logo from 'app/components/logo'
 
 export const metadata = {
 	title: 'Blog',
@@ -19,30 +17,21 @@ export default function Page() {
 					This blog is a curated list of thoughts, ideas, and projects from my Second Brain. This blog has multiple purposes:
 				</p>
 				<ul className="list-decorated">
-					<li>
-						<div>
-							<Image src={ListIconLight} width={16} height={16} alt="list-style" className="dark:hidden" />
-							<Image src={ListIconDark} width={16} height={16} alt="list-style" className="hidden dark:block" />
-						</div>
+					<li className="group">
+						<Logo />
 						<p>
 							to make me write regularly
 
 						</p>
 					</li>
-					<li>
-						<div>
-							<Image src={ListIconLight} width={16} height={16} alt="list-style" className="dark:hidden" />
-							<Image src={ListIconDark} width={16} height={16} alt="list-style" className="hidden dark:block" />
-						</div>
+					<li className="group">
+						<Logo />
 						<p>
 							to start conversations about topics I'm interested in
 						</p>
 					</li>
-					<li>
-						<div>
-							<Image src={ListIconLight} width={16} height={16} alt="list-style" className="dark:hidden" />
-							<Image src={ListIconDark} width={16} height={16} alt="list-style" className="hidden dark:block" />
-						</div>
+					<li className="group">
+						<Logo />
 						<p>
 							and to build a public archive of my thoughts
 						</p>
