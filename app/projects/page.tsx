@@ -6,6 +6,9 @@ export default function Page() {
             <h1 className="page-title">
                 My Projects
             </h1>
+            <p className="page-description">
+                This page is in progress.
+            </p>
         </section>
     )
 }
