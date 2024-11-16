@@ -1,6 +1,7 @@
 import BlogPosts from 'app/components/posts'
 import Image from 'next/image'
-import * as listStyle from 'public/list-style_x64.svg'
+import * as ListIconLight from 'public/listIconLight.png';
+import * as ListIconDark from 'public/listIconDark.png';
 
 export const metadata = {
 	title: 'Blog',
@@ -19,20 +20,29 @@ export default function Page() {
 				</p>
 				<ul className="list-decorated">
 					<li>
-						<Image src={listStyle} width={16} height={16} alt="list-style" />
+						<div>
+							<Image src={ListIconLight} width={16} height={16} alt="list-style" className="dark:hidden" />
+							<Image src={ListIconDark} width={16} height={16} alt="list-style" className="hidden dark:block" />
+						</div>
 						<p>
 							to make me write regularly
 
 						</p>
 					</li>
 					<li>
-						<Image src={listStyle} width={16} height={16} alt="list-style" />
+						<div>
+							<Image src={ListIconLight} width={16} height={16} alt="list-style" className="dark:hidden" />
+							<Image src={ListIconDark} width={16} height={16} alt="list-style" className="hidden dark:block" />
+						</div>
 						<p>
 							to start conversations about topics I'm interested in
 						</p>
 					</li>
 					<li>
-						<Image src={listStyle} width={16} height={16} alt="list-style" />
+						<div>
+							<Image src={ListIconLight} width={16} height={16} alt="list-style" className="dark:hidden" />
+							<Image src={ListIconDark} width={16} height={16} alt="list-style" className="hidden dark:block" />
+						</div>
 						<p>
 							and to build a public archive of my thoughts
 						</p>
