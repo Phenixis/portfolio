@@ -16,18 +16,20 @@ function ArrowIcon() {
 }
 
 const links = [
-    { name: "Rss", ref: "/rss" },
-    { name: "Github", ref: "https://github.com/Phenixis" },
-    { name: "X(twitter)", ref: "https://twitter.com/maxime_duhamel_" },
-    { name: "Linkedin", ref: "https://www.linkedin.com/in/maxime-duhamel/" },
+    { name: "X ", ref: "https://twitter.com/maxime_duhamel_", visibleOn: "/"},
+    { name: "Github", ref: "https://github.com/Phenixis", visibleOn: "/" },
+    { name: "Linkedin", ref: "https://www.linkedin.com/in/maxime-duhamel/", visibleOn: "/" },
+    { name: "Rss feed", ref: "/rss", visibleOn: "/blog" },
 ];
 
-export default function Footer() {
+export default function Footer({ actualPath } :  { actualPath: string }) {
     return (
         <footer className="pb-16">
             <ul className="font-sm mt-8 flex flex-col space-x-0 space-y-2 text-neutral-600 md:flex-row md:space-x-4 md:space-y-0 dark:text-neutral-300">
                 {
-                    links.map((link) => {
+                    links
+                    .filter((link) => actualPath.includes(link.visibleOn))
+                    .map((link) => {
                         return (
                             <li key={link.name}>
                                 <a
