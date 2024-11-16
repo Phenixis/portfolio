@@ -61,12 +61,12 @@ export default function RootLayout({
                 <link rel="icon" href="/favicon.png" sizes='any' />
             </head>
             <body className={cx(
-                'antialiased max-w-3xl text-black bg-white dark:text-white dark:bg-black lg:mx-auto',
+                'antialiased max-w-3xl text-black bg-white dark:text-white dark:bg-black md:mx-auto',
                 domine.className,
                 geistMono.className,
                 ubuntuSansMono.className,
             )}>
-                <main className="min-w-0 px-2 font-mono md:px-0">
+                <main>
                     <Main>
                         {children}
                     </Main>

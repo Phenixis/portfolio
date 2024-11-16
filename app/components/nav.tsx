@@ -14,16 +14,19 @@ const navItems = {
 	},
 }
 
-export default function Navbar({ actualPath } :  { actualPath: string }) {
+export default function Navbar({ actualPath }: { actualPath: string }) {
 
 	return (
 		<aside className="-ml-[8px] mb-16 tracking-tight">
 			<div className="lg:sticky lg:top-20 flex justify-between">
 				<nav
-					className="flex flex-row items-start relative px-0 pb-0 fade md:overflow-auto scroll-pr-6 md:relative"
+					className="w-full flex flex-row items-center justify-between relative px-0 pb-0 fade scroll-pr-6 md:relative"
 					id="nav"
 				>
-					<div className="flex flex-row space-x-0 pr-10">
+					<div className="group">
+						<Logo className="mr-2 py-1 px-2 m-1 align-middle" size={32} />
+					</div>
+					<div className="flex flex-row space-x-0 w-full justify-center md:justify-start">
 						{Object.entries(navItems).map(([path, { name }]) => {
 							return (
 								<Link
@@ -31,16 +34,13 @@ export default function Navbar({ actualPath } :  { actualPath: string }) {
 									href={path}
 									className={`group duration-1000 flex items-center transition-all hover:text-neutral-800 dark:hover:text-neutral-200 flex align-middle relative py-1 px-2 m-1 ${actualPath === path ? 'underline decoration-dashed' : 'text-neutral-500 dark:text-neutral-400'}`}
 								>
-									{name === 'Home' ? (
-										<Logo className="mr-2" size={32} />
-									) : null}
 									{name}
 								</Link>
 							)
 						})}
 					</div>
+					<DarkModeToggle />
 				</nav>
-				<DarkModeToggle />
 			</div>
 		</aside>
 	)
