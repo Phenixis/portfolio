@@ -1,8 +1,8 @@
-'use client';
-
-import { usePathname } from 'next/navigation';
 import Link from 'next/link'
 import DarkModeToggle from './darkModeToggle'
+import Image from 'next/image'
+import * as ListIconLight from 'public/listIconLight.png';
+import * as ListIconDark from 'public/listIconDark.png';
 
 const navItems = {
 	'/': {
@@ -31,8 +31,14 @@ export default function Navbar({ actualPath } :  { actualPath: string }) {
 								<Link
 									key={path}
 									href={path}
-									className={`transition-all hover:text-neutral-800 dark:hover:text-neutral-200 flex align-middle relative py-1 px-2 m-1 ${actualPath === path ? 'underline decoration-dashed' : 'text-neutral-500 dark:text-neutral-400'}`}
+									className={`flex items-center transition-all hover:text-neutral-800 dark:hover:text-neutral-200 flex align-middle relative py-1 px-2 m-1 ${actualPath === path ? 'underline decoration-dashed' : 'text-neutral-500 dark:text-neutral-400'}`}
 								>
+									{name === 'Home' ? (
+										<div className="mr-2">
+											<Image src={ListIconLight} width={32} height={32} alt="list-style" className="dark:hidden" />
+											<Image src={ListIconDark} width={32} height={32} alt="list-style" className="hidden dark:block" />
+										</div>
+									) : null}
 									{name}
 								</Link>
 							)
