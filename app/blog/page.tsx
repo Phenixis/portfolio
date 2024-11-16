@@ -1,6 +1,6 @@
 import BlogPosts from 'app/components/posts'
 import Image from 'next/image'
-import * as listStyle from 'app/public/list-style_x64.svg'
+import * as listStyle from 'public/list-style_x64.svg'
 
 export const metadata = {
 	title: 'Blog',

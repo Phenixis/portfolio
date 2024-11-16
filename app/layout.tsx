@@ -57,6 +57,9 @@ export default function RootLayout({
         <html
             lang="en"
         >
+            <head>
+                <link rel="icon" href="/favicon.png" sizes='any' />
+            </head>
             <body className={cx(
                 'antialiased max-w-3xl text-black bg-white dark:text-white dark:bg-black lg:mx-auto',
                 domine.className,
