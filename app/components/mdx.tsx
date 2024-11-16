@@ -111,6 +111,8 @@ let components = {
 }
 
 export function CustomMDX(props: React.JSX.IntrinsicAttributes & MDXRemoteProps) {
+	ids = [];
+
 	return (
 		<MDXRemote
 			{...props}
