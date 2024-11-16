@@ -1,11 +1,10 @@
 import './global.css'
 import type { Metadata } from 'next'
-import { Navbar } from './components/nav'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
-import Footer from './components/footer'
 import { baseUrl } from './sitemap'
 import { Domine, Geist_Mono, Ubuntu_Sans_Mono } from 'next/font/google';
+import Main from './components/main'
 
 const domine = Domine({
     subsets: ['latin'],
@@ -64,12 +63,10 @@ export default function RootLayout({
                 geistMono.className,
                 ubuntuSansMono.className,
             )}>
-                <main className="flex flex-col justify-between min-w-0 min-h-screen pt-6 px-2 font-mono md:px-0">
-                    <div className="flex flex-col">
-                        <Navbar />
+                <main className="min-w-0 px-2 font-mono md:px-0">
+                    <Main>
                         {children}
-                    </div>
-                    <Footer  />
+                    </Main>
                     <Analytics />
                     <SpeedInsights />
                 </main>
