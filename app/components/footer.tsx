@@ -19,7 +19,7 @@ const links = [
     { name: "X ", ref: "https://twitter.com/maxime_duhamel_", visibleOn: "/"},
     { name: "Github", ref: "https://github.com/Phenixis", visibleOn: "/" },
     { name: "Linkedin", ref: "https://www.linkedin.com/in/maxime-duhamel/", visibleOn: "/" },
-    { name: "Rss feed", ref: "/rss", visibleOn: "/blog" },
+    { name: "RSS feed", ref: "/rss", visibleOn: "/blog" },
 ];
 
 export default function Footer({ actualPath } :  { actualPath: string }) {
