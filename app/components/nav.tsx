@@ -11,6 +11,9 @@ const navItems = {
 	'/blog': {
 		name: 'Blog',
 	},
+	'/projects': {
+		name: 'Projects',
+	},
 }
 
 export default function Navbar({ actualPath } :  { actualPath: string }) {
