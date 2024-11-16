@@ -151,3 +151,19 @@ table {
 .title {
   text-wrap: balance;
 }
+
+/* Component Page */
+
+section.page > h1.page-title {
+  @apply mb-2 text-2xl font-semibold tracking-tighter
+}
+
+section.page > p.page-description, section.page > div.page-description {
+  @apply mb-4 text-justify text-neutral-600 dark:text-neutral-300 leading-[1.8]
+}
+
+/* ul */
+
+ul.list-decorated > li {
+  @apply flex space-x-2 items-center
+}

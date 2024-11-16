@@ -25,7 +25,7 @@ const links = [
 export default function Footer({ actualPath } :  { actualPath: string }) {
     return (
         <footer className="pb-16">
-            <ul className="font-sm mt-8 flex flex-col space-x-0 space-y-2 text-neutral-600 md:flex-row md:space-x-4 md:space-y-0 dark:text-neutral-300">
+            <ul className="font-sm mt-8 flex flex-col space-x-0 space-y-2 text-neutral-600 md:flex-row md:space-x-4 md:space-y-0 dark:text-neutral-300 list-image-none">
                 {
                     links
                     .filter((link) => actualPath.includes(link.visibleOn))
