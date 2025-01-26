@@ -40,6 +40,7 @@ html {
   @apply absolute invisible no-underline;
 
   margin-left: -1em;
+  /* margin-top: -0.1em; */
   padding-right: 0.5em;
   width: 80%;
   max-width: 700px;
@@ -86,8 +87,12 @@ html {
   @apply m-0;
 }
 
-.prose p {
+.prose p, .prose a:not(.anchor) {
   @apply my-4 text-neutral-800 dark:text-neutral-200;
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+  @apply text-black dark:text-white
 }
 
 .prose h1 {
@@ -95,15 +100,15 @@ html {
 }
 
 .prose h2 {
-  @apply text-xl font-medium tracking-tight mt-6 mb-2;
+  @apply text-3xl font-medium tracking-tight mt-6 mb-2;
 }
 
 .prose h3 {
-  @apply text-xl font-medium tracking-tight mt-6 mb-2;
+  @apply text-2xl font-medium tracking-tight mt-6 mb-2;
 }
 
-.prose h4 {
-  @apply text-lg font-medium tracking-tight mt-6 mb-2;
+.prose h4, .prose h5, .prose h6 {
+  @apply text-xl font-medium tracking-tight mt-6 mb-2;
 }
 
 .prose strong {
