@@ -80,7 +80,7 @@ function createHeading(level: number) {
 
 		return React.createElement(
 			`h${level}`,
-			{ id: id, className: 'target:border-l-2 target:pl-2' },
+			{ id: id, className:`target:border-l-2 target:pl-2` },
 			[
 				React.createElement('a', {
 					href: `#${id}`,
