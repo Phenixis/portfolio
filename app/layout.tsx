@@ -1,10 +1,8 @@
 import './global.css'
 import type { Metadata } from 'next'
-import { Analytics } from '@vercel/analytics/react'
-import { SpeedInsights } from '@vercel/speed-insights/next'
 import { baseUrl } from './sitemap'
 import { Domine, Geist_Mono, Ubuntu_Sans_Mono } from 'next/font/google';
-import Main from './components/main'
+import Main from '../components/big/main'
 
 const domine = Domine({
     subsets: ['latin'],
@@ -66,13 +64,9 @@ export default function RootLayout({
                 geistMono.className,
                 ubuntuSansMono.className,
             )}>
-                <main>
-                    <Main>
-                        {children}
-                    </Main>
-                    <Analytics />
-                    <SpeedInsights />
-                </main>
+                <Main>
+                    {children}
+                </Main>
             </body>
         </html>
     )

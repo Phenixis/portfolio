@@ -1,5 +1,5 @@
-import BlogPosts from 'app/components/posts'
-import Logo from 'app/components/logo'
+import BlogPosts from '@/components/big/posts'
+import Logo from '@/components/big/logo'
 
 export const metadata = {
 	title: 'Blog',
