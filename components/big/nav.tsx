@@ -26,13 +26,13 @@ export default function Navbar({ actualPath }: { actualPath: string }) {
 					<div className="group/Logo">
 						<Logo className="mr-2 py-1 px-2 m-1 align-middle" size={32} />
 					</div>
-					<div className="flex flex-row	 w-full justify-center md:justify-start">
+					<div className="flex flex-row w-full justify-center md:justify-start">
 						{Object.entries(navItems).map(([path, { name }]) => {
 							return (
 								<Link
 									key={path}
 									href={path}
-									className={`group duration-1000 flex items-center transition-all hover:text-neutral-800 dark:hover:text-neutral-200 align-middle relative py-1 px-2 m-1 ${actualPath === path ? 'underline decoration-dashed' : 'text-neutral-500 dark:text-neutral-400'}`}
+									className={`group duration-1000 flex items-center transition-all hover:text-neutral-800 dark:hover:text-neutral-200 align-middle relative py-1 px-2 m-1 ${actualPath === path ? 'underline underline-offset-8 decoration-dashed' : 'text-neutral-500 dark:text-neutral-400'}`}
 								>
 									{name}
 								</Link>
