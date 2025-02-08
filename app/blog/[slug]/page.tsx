@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { CustomMDX } from 'app/components/mdx'
+import { CustomMDX } from '@/components/big/mdx'
 import { formatDate, getBlogPosts } from 'app/blog/utils'
 import { baseUrl } from 'app/sitemap'
 
@@ -79,7 +79,7 @@ export default async function Blog(props: { params: any }) {
 						url: `${baseUrl}/blog/${post.slug}`,
 						author: {
 							'@type': 'Person',
-							name: 'My Portfolio',
+							name: 'Maxime Duhamel',
 						},
 					}),
 				}}
@@ -87,7 +87,7 @@ export default async function Blog(props: { params: any }) {
 			<h1 className="page-title">
 				{post.metadata.title}
 			</h1>
-			<div className="flex justify-between items-center mt-2 mb-8 text-sm">
+			<div className="flex flex-col md:flex-row justify-between md:items-center mt-2 mb-8 text-sm">
 				<p className="text-sm text-neutral-600 dark:text-neutral-400">
 					{formatDate(post.metadata.publishedAt)}
 				</p>

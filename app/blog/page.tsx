@@ -1,6 +1,5 @@
-import BlogPosts from 'app/components/posts'
-import Image from 'next/image'
-import * as listStyle from 'app/public/list-style_x64.svg'
+import BlogPosts from '@/components/big/posts'
+import Logo from '@/components/big/logo'
 
 export const metadata = {
 	title: 'Blog',
@@ -18,20 +17,20 @@ export default function Page() {
 					This blog is a curated list of thoughts, ideas, and projects from my Second Brain. This blog has multiple purposes:
 				</p>
 				<ul className="list-decorated">
-					<li>
-						<Image src={listStyle} width={16} height={16} alt="list-style" />
+					<li className="group">
+						<Logo />
 						<p>
 							to make me write regularly
 						</p>
 					</li>
-					<li>
-						<Image src={listStyle} width={16} height={16} alt="list-style" />
+					<li className="group">
+						<Logo />
 						<p>
 							to start conversations about topics I'm interested in
 						</p>
 					</li>
-					<li>
-						<Image src={listStyle} width={16} height={16} alt="list-style" />
+					<li className="group">
+						<Logo />
 						<p>
 							and to build a public archive of my thoughts
 						</p>
