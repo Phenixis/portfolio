@@ -17,19 +17,19 @@ export default function Page() {
 					This blog is a curated list of thoughts, ideas, and projects from my Second Brain. This blog has multiple purposes:
 				</p>
 				<ul className="list-decorated">
-					<li className="group">
+					<li className="group/Logo">
 						<Logo />
 						<p>
 							to make me write regularly
 						</p>
 					</li>
-					<li className="group">
+					<li className="group/Logo">
 						<Logo />
 						<p>
 							to start conversations about topics I'm interested in
 						</p>
 					</li>
-					<li className="group">
+					<li className="group/Logo">
 						<Logo />
 						<p>
 							and to build a public archive of my thoughts
