@@ -22,7 +22,6 @@ export default function Page() {
 						<Image src={listStyle} width={16} height={16} alt="list-style" />
 						<p>
 							to make me write regularly
-
 						</p>
 					</li>
 					<li>
