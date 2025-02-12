@@ -1,18 +1,18 @@
-"use client"
+import { AspectRatio } from "@/components/ui/aspect-ratio"
 
 export default function Project({
     name,
     description,
     color,
     link,
-    images,
+    image,
     state
 }: {
     name: string,
     description: string,
     color: "green" | "red" | "blue",
     link: string,
-    images?: string[]
+    image?: string
     state: "Sold" | "Running" | "Discontinued" | "Building"
 }) {
     const colorVariants = {
@@ -35,8 +35,10 @@ export default function Project({
 
     return (
         <div className={`size-full p-4 rounded-md duration-100 selection:${colorVariants[color].image} ${colorVariants[color].background}`}>
-            <a href={link} className="group/link">
-                <div className={`${colorVariants[color].image} h-24 w-full mb-2 rounded-md duration-100 group-hover/link:border-2 ${colorVariants[color].border}`} />
+            <a href={link} className="block group/link mb-2">
+                <AspectRatio ratio={3/1}>
+                    <img className={`${colorVariants[color].image} h-full w-full rounded-md duration-100 border-2 ${colorVariants[color].border}`} src={image ? image : link + "/og"} alt={name} />
+                </AspectRatio>
             </a>
             <div className="flex justify-between items-center">
                 <h3>
