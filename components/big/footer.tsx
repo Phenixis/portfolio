@@ -20,7 +20,7 @@ function ArrowIcon() {
 const links = [
     { name: "X ", ref: "https://twitter.com/maxime_duhamel_", visibleOn: "/projects" },
     { name: "Github", ref: "https://github.com/Phenixis", visibleOn: "/" },
-    { name: "Youtube", ref: "https://www.youtube.com/@maximeduhamel", visibleOn: "/projects" },
+    { name: "Youtube", ref: "https://www.youtube.com/@maximeduh", visibleOn: "/projects" },
     { name: "Linkedin", ref: "https://www.linkedin.com/in/maxime-duhamel/", visibleOn: "/projects" },
     { name: "RSS feed", ref: "/rss", visibleOn: "/blog" },
 ];
