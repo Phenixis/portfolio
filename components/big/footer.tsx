@@ -1,3 +1,5 @@
+import LifeElapsed from '@/components/big/lifeElapsed'
+
 function ArrowIcon() {
     return (
         <svg
@@ -16,36 +18,39 @@ function ArrowIcon() {
 }
 
 const links = [
-    { name: "X ", ref: "https://twitter.com/maxime_duhamel_", visibleOn: "/"},
+    { name: "X ", ref: "https://twitter.com/maxime_duhamel_", visibleOn: "/projects" },
     { name: "Github", ref: "https://github.com/Phenixis", visibleOn: "/" },
-    { name: "Linkedin", ref: "https://www.linkedin.com/in/maxime-duhamel/", visibleOn: "/" },
+    { name: "Youtube", ref: "https://www.youtube.com/@maximeduhamel", visibleOn: "/projects" },
+    { name: "Linkedin", ref: "https://www.linkedin.com/in/maxime-duhamel/", visibleOn: "/projects" },
     { name: "RSS feed", ref: "/rss", visibleOn: "/blog" },
 ];
 
-export default function Footer({ actualPath } :  { actualPath: string }) {
+export default function Footer({ actualPath }: { actualPath: string }) {
     return (
-        <footer>
-            <ul className="font-sm mt-8 flex flex-col space-x-0 space-y-2 text-neutral-500 md:flex-row md:space-x-4 md:space-y-0 list-image-none">
+        <footer className="flex justify-between items-center">
+            <ul className="font-sm flex flex-col space-x-0 space-y-2 text-neutral-500 md:flex-row md:space-x-4 md:space-y-0 list-image-none">
                 {
                     links
-                    .filter((link) => actualPath.includes(link.visibleOn))
-                    .map((link) => {
-                        return (
-                            <li key={link.name}>
-                                <a
-                                    className="flex duration-1000 items-center transition-all hover:text-neutral-900 dark:hover:text-neutral-100"
-                                    rel="noopener noreferrer"
-                                    target="_blank"
-                                    href={link.ref}
-                                >
-                                    <ArrowIcon />
-                                    <p className="ml-2 h-7">{link.name}</p>
-                                </a>
-                            </li>
-                        );
-                    })
+                        .filter((link) => actualPath.includes(link.visibleOn))
+                        .map((link) => {
+                            return (
+                                <li key={link.name}>
+                                    <a
+                                        className="flex duration-1000 items-center transition-all hover:text-neutral-900 dark:hover:text-neutral-100"
+                                        rel="noopener noreferrer"
+                                        target="_blank"
+                                        href={link.ref}
+                                    >
+                                        <ArrowIcon />
+                                        <p className="ml-2 h-7">{link.name}</p>
+                                    </a>
+                                </li>
+                            );
+                        })
                 }
             </ul>
+
+            <LifeElapsed />
         </footer>
     )
 }

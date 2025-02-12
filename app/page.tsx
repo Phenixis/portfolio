@@ -1,4 +1,3 @@
-import LifeElapsed from '@/components/big/lifeElapsed'
 import BlogPosts from '@/components/big/posts'
 
 export default function Page() {
@@ -13,7 +12,6 @@ export default function Page() {
       <div className="my-8">
         <BlogPosts />
       </div>
-      <LifeElapsed />
     </section>
   )
 }
