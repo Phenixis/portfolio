@@ -22,7 +22,7 @@ export default function BlogPosts() {
                         href={`/blog/${post.slug}`}
                     >
                         <div className="w-full flex flex-col md:items-center md:flex-row space-x-0 md:space-x-2">
-                            <p className="text-neutral-600 dark:text-neutral-400 w-full md:w-[100px] tabular-nums">
+                            <p className="text-neutral-600 dark:text-neutral-400 w-full md:w-[100px] tabular-nums shrink-0">
                                 {formatDate(post.metadata.publishedAt, false)}
                             </p>
                             <div>
