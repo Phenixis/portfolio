@@ -88,10 +88,10 @@ export default async function Blog(props: { params: any }) {
 				{post.metadata.title}
 			</h1>
 			<div className="flex flex-col md:flex-row justify-between md:items-center mt-2 mb-8 text-sm">
-				<p className="text-sm text-neutral-600 dark:text-neutral-400">
+				<p className="text-sm text-neutral-600 dark:text-neutral-400 basis-1/6">
 					{formatDate(post.metadata.publishedAt)}
 				</p>
-				<p className="text-sm text-neutral-500 dark:text-neutral-400">
+				<p className="text-sm text-neutral-500 dark:text-neutral-400 basis-5/6">
 					{post.metadata.summary}
 				</p>
 			</div>
