@@ -1,6 +1,6 @@
 import { desc, and, eq, isNull, or, isNotNull, count, sql } from 'drizzle-orm';
 import { db } from './drizzle';
-import { todo } from './schema';
+import { todo, session } from './schema';
 
 // # TODO
 
@@ -73,4 +73,30 @@ export async function markTodoAsUndone(id: number) {
 
 export async function deleteTodoById(id: number) {
     return await db.delete(todo).where(eq(todo.id, id));
+}
+
+// # SESSION
+
+// ## Create
+
+export async function createSession(token: string, validate_until?: Date) {
+    return await db.insert(session).values({ token, validate_until: validate_until ? validate_until : sql`CURRENT_TIMESTAMP + INTERVAL '24 HOURS'` });
+}
+
+// ## Read
+
+export async function getSessionByToken(token: string) {
+    return await db.select().from(session).where(eq(session.token, token));
+}
+
+// ## Update
+
+export async function revalidateSession(token: string) {
+    return await db.update(session).set({ validate_until: sql`CURRENT_TIMESTAMP + INTERVAL '24 HOURS'` }).where(eq(session.token, token));
+}
+
+// ## Delete
+
+export async function deleteSession(token: string) {
+    return await db.delete(session).where(eq(session.token, token));
 }

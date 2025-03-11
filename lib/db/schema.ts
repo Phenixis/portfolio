@@ -18,3 +18,8 @@ export const todo = pgTable('todo', {
     updated_at: timestamp('updated_at').notNull().defaultNow(),
     deleted_at: timestamp('deleted_at')
 });
+
+export const session = pgTable('session', {
+    token : varchar('token', {length: 255}).primaryKey(),
+    validate_until : timestamp('validate_until').notNull()
+});

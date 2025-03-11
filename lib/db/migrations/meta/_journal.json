@@ -8,6 +8,13 @@
       "when": 1741668283017,
       "tag": "0000_conscious_smasher",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1741669516696,
+      "tag": "0001_chilly_killmonger",
+      "breakpoints": true
     }
   ]
 }
