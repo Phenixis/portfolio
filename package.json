@@ -29,6 +29,7 @@
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.40.0",
     "geist": "^1.2.2",
+    "input-otp": "^1.4.2",
     "jose": "^6.0.8",
     "lucide-react": "^0.459.0",
     "next": "^15.1.6",
