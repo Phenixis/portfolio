@@ -1,7 +1,8 @@
 import './global.css'
 import type { Metadata } from 'next'
-import { baseUrl } from './sitemap'
+import { baseUrl } from '../sitemap'
 import { Domine, Geist_Mono, Ubuntu_Sans_Mono } from 'next/font/google';
+import Main from '../../components/big/main'
 
 const domine = Domine({
     subsets: ['latin'],
@@ -63,7 +64,9 @@ export default function RootLayout({
                 geistMono.className,
                 ubuntuSansMono.className,
             )}>
-                {children}
+                <Main>
+                    {children}
+                </Main>
             </body>
         </html>
     )

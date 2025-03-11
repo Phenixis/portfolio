@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { CustomMDX } from '@/components/big/mdx'
-import { formatDate, getBlogPosts } from 'app/blog/utils'
+import { formatDate, getBlogPosts } from '@/app/(front-office)/blog/utils'
 import { baseUrl } from 'app/sitemap'
 
 export async function generateStaticParams() {
