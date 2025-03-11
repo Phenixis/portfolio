@@ -4,8 +4,8 @@ export default function BackOfficeLayout({
     children: React.ReactNode
 }) {
     return (
-        <div>
+        <main className="w-full min-h-screen">
             {children}
-        </div>
+        </main>
     )
 }

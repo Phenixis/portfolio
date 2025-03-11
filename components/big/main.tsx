@@ -12,7 +12,7 @@ export default function Main({
 	const actualPath = usePathname().split('/').slice(0, 2).join('/');
 
     return (
-        <div className="min-h-screen flex flex-col justify-between min-w-0 p-2 font-mono">
+        <div className="min-h-screen flex flex-col justify-between min-w-0 p-2 font-mono max-w-3xl md:mx-auto">
             <div>
                 <Navbar actualPath={actualPath} />
                 {children}
