@@ -1,6 +1,6 @@
 "use server"
 
-import { desc, eq, isNull, isNotNull, sql } from "drizzle-orm"
+import { desc, eq, isNull, isNotNull, sql, and } from "drizzle-orm"
 import { db } from "./drizzle"
 import { todo, type Todo } from "./schema"
 import { revalidatePath } from "next/cache"
@@ -27,27 +27,27 @@ export async function createTodo(title: string, importance: number, urgency: num
 // ## Read
 export async function getTodos(orderBy: keyof Todo = "score", limit = 50) {
   if (limit === -1) {
-    return await db.select().from(todo).orderBy(desc(todo[orderBy]))
+    return await db.select().from(todo).where(isNull(todo.deleted_at)).orderBy(desc(todo[orderBy]))
   }
-  return await db.select().from(todo).orderBy(desc(todo[orderBy])).limit(limit)
+  return await db.select().from(todo).where(isNull(todo.deleted_at)).orderBy(desc(todo[orderBy])).limit(limit)
 }
 
 export async function getTodoById(id: number) {
-  return await db.select().from(todo).where(eq(todo.id, id))
+  return await db.select().from(todo).where(and(eq(todo.id, id), isNull(todo.deleted_at)))
 }
 
 export async function getCompletedTodos(orderBy: keyof Todo = "completed_at", limit = 50) {
   if (limit === -1) {
-    return await db.select().from(todo).where(isNotNull(todo.completed_at)).orderBy(desc(todo[orderBy]))
+    return await db.select().from(todo).where(and(isNotNull(todo.completed_at), isNull(todo.deleted_at))).orderBy(desc(todo[orderBy]))
   }
-  return await db.select().from(todo).where(isNotNull(todo.completed_at)).orderBy(desc(todo[orderBy])).limit(limit)
+  return await db.select().from(todo).where(and(isNotNull(todo.completed_at), isNull(todo.deleted_at))).orderBy(desc(todo[orderBy])).limit(limit)
 }
 
 export async function getUncompletedTodos(orderBy: keyof Todo = "score", limit = 50) {
   if (limit === -1) {
-    return await db.select().from(todo).where(isNull(todo.completed_at)).orderBy(desc(todo[orderBy]))
+    return await db.select().from(todo).where(and(isNull(todo.completed_at), isNull(todo.deleted_at))).orderBy(desc(todo[orderBy]))
   }
-  return await db.select().from(todo).where(isNull(todo.completed_at)).orderBy(desc(todo[orderBy])).limit(limit)
+  return await db.select().from(todo).where(and(isNull(todo.completed_at), isNull(todo.deleted_at))).orderBy(desc(todo[orderBy])).limit(limit)
 }
 
 export async function searchTodosByTitle(title: string, limit = 50) {
@@ -55,12 +55,18 @@ export async function searchTodosByTitle(title: string, limit = 50) {
     return await db
       .select()
       .from(todo)
-      .where(sql`${todo.title} LIKE ${`%${title}%`}`)
+      .where(and(
+        sql`${todo.title} LIKE ${`%${title}%`}`,
+        isNull(todo.deleted_at)
+      ))
   }
   return await db
     .select()
     .from(todo)
-    .where(sql`${todo.title} LIKE ${`%${title}%`}`)
+    .where(and(
+      sql`${todo.title} LIKE ${`%${title}%`}`,
+      isNull(todo.deleted_at)
+    ))
     .limit(limit)
 }
 
@@ -127,7 +133,7 @@ export async function toggleTodo(id: number, currentState: boolean) {
 
 // ## Delete
 export async function deleteTodoById(id: number) {
-  const result = await db.delete(todo).where(eq(todo.id, id)).returning({ id: todo.id })
+  const result = await db.update(todo).set({ deleted_at: sql`CURRENT_TIMESTAMP`, updated_at: sql`CURRENT_TIMESTAMP` }).where(eq(todo.id, id)).returning({ id: todo.id })
 
   // Revalidate all pages that might show todos
   revalidatePath("/")
