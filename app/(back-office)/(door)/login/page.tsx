@@ -7,15 +7,12 @@ import type { ActionState } from "@/middleware"
 import { Loader } from "lucide-react"
 
 export default function Login() {
-    // Initialize with default value
     const [redirectTo, setRedirectTo] = useState("/my")
     const [trial, setTrial] = useState("")
     const formRef = useRef<HTMLFormElement>(null)
     const [state, formAction, pending] = useActionState<ActionState, FormData>(login, { error: "" })
 
-    // Safely access location after component mounts on client
     useEffect(() => {
-        // This code only runs in the browser
         const params = new URLSearchParams(window.location.search)
         const redirectParam = params.get("redirectTo")
         if (redirectParam) {
