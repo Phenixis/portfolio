@@ -23,3 +23,6 @@ export const session = pgTable('session', {
     token : varchar('token', {length: 255}).primaryKey(),
     validate_until : timestamp('validate_until').notNull()
 });
+
+export type Todo = typeof todo.$inferSelect;
+export type NewTodo = typeof todo.$inferInsert;

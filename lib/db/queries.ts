@@ -10,7 +10,10 @@ export async function createTodo(title: string) {
 }
 
 // ## Read
-export async function getTodos() {
+export async function getTodos(limit?: number) {
+    if (limit) {
+        return await db.select().from(todo).orderBy(desc(todo.created_at)).limit(limit);
+    }
     return await db.select().from(todo).orderBy(desc(todo.created_at));
 }
 
