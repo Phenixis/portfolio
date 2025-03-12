@@ -1,3 +1,5 @@
+"use server";
+
 import { desc, and, eq, isNull, or, isNotNull, count, sql } from 'drizzle-orm';
 import { db } from './drizzle';
 import { todo, session } from './schema';
@@ -6,7 +8,9 @@ import { todo, session } from './schema';
 
 // ## Create
 export async function createTodo(title: string) {
-    return await db.insert(todo).values({ title });
+    const result = await db.insert(todo).values({ title }).returning({ id: todo.id });
+
+    return result[0].id;
 }
 
 // ## Read
@@ -34,48 +38,43 @@ export async function searchTodosByTitle(title: string) {
 }
 
 // ## Update
-
-export async function updateTodo(id: number, title: string, done: boolean) {
-    const already_done = await db.select({
-        done: count().as('done')
-    }).from(todo).where(and(eq(todo.id, id), isNotNull(todo.completed_at)));
-
-    return await db.update(todo).set({
-        title: title,
-        completed_at: done ? (already_done[0].done > 0 ? todo.completed_at : sql`CURRENT_TIMESTAMP`) : null,
-        updated_at: sql`CURRENT_TIMESTAMP`
-    }).where(eq(todo.id, id));
-}
-
 export async function updateTodoTitle(id: number, title: string) {
-    return await db.update(todo).set({
+    const result = await db.update(todo).set({
         title: title,
         updated_at: sql`CURRENT_TIMESTAMP`
-    }).where(eq(todo.id, id));
+    }).where(eq(todo.id, id)).returning({ title: todo.title });
+
+    return result[0].title;
 }
 
 export async function markTodoAsDone(id: number) {
-    const already_done = await db.select({
-        done: count().as('done')
-    }).from(todo).where(and(eq(todo.id, id), isNotNull(todo.completed_at)));
-
-    return await db.update(todo).set({
-        completed_at: already_done[0].done > 0 ? todo.completed_at : sql`CURRENT_TIMESTAMP`,
+    const result = await db.update(todo).set({
+        completed_at: sql`CURRENT_TIMESTAMP`,
         updated_at: sql`CURRENT_TIMESTAMP`
-    }).where(eq(todo.id, id));
+    }).where(eq(todo.id, id)).returning({ completed_at: todo.completed_at });
+
+    return result[0].completed_at;
 }
 
 export async function markTodoAsUndone(id: number) {
-    return await db.update(todo).set({
+    const result = await db.update(todo).set({
         completed_at: null,
         updated_at: sql`CURRENT_TIMESTAMP`
-    }).where(eq(todo.id, id));
+    }).where(eq(todo.id, id)).returning({ completed_at: todo.completed_at });
+
+    return result[0].completed_at;
+}
+
+export async function toggleTodo(id: number, currentState: boolean) {
+    return currentState ? await markTodoAsUndone(id) : await markTodoAsDone(id);
 }
 
 // ## Delete
 
 export async function deleteTodoById(id: number) {
-    return await db.delete(todo).where(eq(todo.id, id));
+    const result = await db.delete(todo).where(eq(todo.id, id)).returning({ id: todo.id });
+
+    return result[0].id;
 }
 
 // # SESSION
