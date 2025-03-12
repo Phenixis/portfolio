@@ -50,6 +50,9 @@ export default function TodoDisplay({ todo }: { todo?: Todo }) {
                                 </div>
                                 <p className={`${optimisticState ? 'line-through' : ''}`}>
                                     {todo.title}
+                                    <span className="ml-2 text-xs text-neutral">
+                                        {todo.score}
+                                    </span>
                                 </p>
                             </div>
                             <TodoModal className="duration-300 opacity-0 group-hover/todo:opacity-100" todo={todo} />
