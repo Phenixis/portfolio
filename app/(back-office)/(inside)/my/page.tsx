@@ -1,10 +1,11 @@
-
+import { TodosCard } from "@/components/big/todos/todosCard"
 
 export default function DashboardPage() {
     return (
         <div>
-            <h1>Dashboard</h1>
-            <p>Welcome to the back office</p>
+            <div className="flex">
+                <TodosCard className="w-1/2" />
+            </div>
         </div>
     )
 }
