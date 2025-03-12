@@ -5,7 +5,6 @@ import { redirect } from 'next/navigation'
 import { removeSession, setSession } from '@/lib/auth/session';
 
 export async function login(prevState: ActionState, formData: FormData) {
-    // dotenv.config();
     const trial = formData.get("password");
     const password = process.env.PIN;
 

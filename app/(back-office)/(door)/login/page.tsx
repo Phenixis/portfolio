@@ -4,13 +4,14 @@ import { Input } from "@/components/ui/input"
 import { login } from "@/lib/auth/actions"
 import { useActionState, useEffect, useState, useRef, startTransition } from "react"
 import type { ActionState } from "@/middleware"
+import { Loader } from "lucide-react"
 
 export default function Login() {
     // Initialize with default value
     const [redirectTo, setRedirectTo] = useState("/my")
     const [trial, setTrial] = useState("")
     const formRef = useRef<HTMLFormElement>(null)
-    const [state, formAction] = useActionState<ActionState, FormData>(login, { error: "" })
+    const [state, formAction, pending] = useActionState<ActionState, FormData>(login, { error: "" })
 
     // Safely access location after component mounts on client
     useEffect(() => {
@@ -55,6 +56,9 @@ export default function Login() {
                 value={trial}
                 onChange={(e) => setTrial(e.target.value)}
             />
+            {pending && (
+                <Loader className="animate-spin size-4" />
+            )}
             {state?.error && <p className="text-red-500">{state.error}</p>}
             {state?.success && <p className="text-green-500">{state.success}</p>}
         </form>
