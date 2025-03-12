@@ -3,7 +3,7 @@ import TodoDisplay from './todoDisplay'
 import { Suspense } from "react"
 
 export default async function Todos({ limit }: { limit?: number }) {
-    const todos = await getTodos(limit);
+    const todos = await getTodos(undefined, limit);
 
     return (
         <Suspense fallback={
