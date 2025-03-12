@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton"
+import { type Todo } from "@/lib/db/schema"
 
-export default function TaskDisplay({ title }: { title?: string }) {
+export default function TodoDisplay({ todo }: { todo?: Todo }) {
     const [isToggled, setIsToggled] = useState(false);
 
     return (
@@ -13,8 +14,7 @@ export default function TaskDisplay({ title }: { title?: string }) {
             } />
             <label htmlFor="taskButton" className="flex space-x-1 items-center group">
                 {
-                    title ? (
-
+                    todo ? (
                         <div className={`relative p-2 size-1 border border-neutral rounded-300 ${isToggled ? 'bg-primary' : ''}`}>
                             <div className={`absolute inset-0 w-1/2 h-1/2 z-20 m-auto duration-300 ${isToggled ? 'lg:group-hover:bg-background' : 'lg:group-hover:bg-primary'}`} />
                         </div>
@@ -23,9 +23,9 @@ export default function TaskDisplay({ title }: { title?: string }) {
                     )
                 }
                 {
-                    title ? (
+                    todo ? (
                         <p className={`${isToggled ? 'line-through' : ''}`}>
-                            {title}
+                            {todo.title}
                         </p>
                     ) : (
                         <Skeleton className="w-full h-4" />
