@@ -2,67 +2,86 @@
 
 import { desc, and, eq, isNull, or, isNotNull, count, sql } from 'drizzle-orm';
 import { db } from './drizzle';
-import { todo, session } from './schema';
+import { todo, session, type Todo } from './schema';
 
 // # TODO
 
 // ## Create
-export async function createTodo(title: string) {
-    const result = await db.insert(todo).values({ title }).returning({ id: todo.id });
+export async function createTodo(title: string, importance: number, urgency: number, duration: number) {
+    const result = await db.insert(todo).values({ 
+        title: title,
+        importance: importance,
+        urgency: urgency,
+        duration: duration,
+        score: (importance*urgency)-duration,
+    }).returning({ id: todo.id });
 
     return result[0].id;
 }
 
 // ## Read
-export async function getTodos(limit?: number) {
-    if (limit) {
-        return await db.select().from(todo).orderBy(desc(todo.created_at)).limit(limit);
+export async function getTodos(orderBy: keyof Todo = "score", limit: number = 50) {
+    if (limit === -1) {
+        return await db.select().from(todo).orderBy(desc(todo[orderBy]));
     }
-    return await db.select().from(todo).orderBy(desc(todo.created_at));
+    return await db.select().from(todo).orderBy(desc(todo[orderBy])).limit(limit);
 }
 
 export async function getTodoById(id: number) {
     return await db.select().from(todo).where(eq(todo.id, id));
 }
 
-export async function getCompletedTodos() {
-    return await db.select().from(todo).where(isNotNull(todo.completed_at)).orderBy(desc(todo.completed_at));
+export async function getCompletedTodos(orderBy: keyof Todo = "completed_at", limit: number = 50) {
+    if (limit === -1) {
+        return await db.select().from(todo).where(isNotNull(todo.completed_at)).orderBy(desc(todo[orderBy]));
+    }
+    return await db.select().from(todo).where(isNotNull(todo.completed_at)).orderBy(desc(todo[orderBy])).limit(limit);
 }
 
-export async function getUncompletedTodos() {
-    return await db.select().from(todo).where(isNull(todo.completed_at)).orderBy(desc(todo.created_at));
+export async function getUncompletedTodos(orderBy: keyof Todo = "score", limit: number = 50) {
+    if (limit === -1) {
+        return await db.select().from(todo).where(isNull(todo.completed_at)).orderBy(desc(todo[orderBy]));
+    }
+    return await db.select().from(todo).where(isNull(todo.completed_at)).orderBy(desc(todo[orderBy])).limit(limit);
 }
 
-export async function searchTodosByTitle(title: string) {
-    return await db.select().from(todo).where(sql`${todo.title} LIKE ${`%${title}%`}`);
+export async function searchTodosByTitle(title: string, limit: number = 50) {
+    if (limit === -1) {
+        return await db.select().from(todo).where(sql`${todo.title} LIKE ${`%${title}%`}`);
+    }
+    return await db.select().from(todo).where(sql`${todo.title} LIKE ${`%${title}%`}`).limit(limit);
 }
 
 // ## Update
-export async function updateTodoTitle(id: number, title: string) {
+export async function updateTodo(id: number, title: string, importance: number, urgency: number, duration: number) {
     const result = await db.update(todo).set({
         title: title,
+        importance: importance,
+        urgency: urgency,
+        duration: duration,
+        score: (importance*urgency)-duration,
         updated_at: sql`CURRENT_TIMESTAMP`
-    }).where(eq(todo.id, id)).returning({ title: todo.title });
+    }).where(eq(todo.id, id)).returning({ id: todo.id });
 
-    return result[0].title;
+    return result[0].id;
 }
 
 export async function markTodoAsDone(id: number) {
     const result = await db.update(todo).set({
         completed_at: sql`CURRENT_TIMESTAMP`,
         updated_at: sql`CURRENT_TIMESTAMP`
-    }).where(eq(todo.id, id)).returning({ completed_at: todo.completed_at });
+    }).where(eq(todo.id, id)).returning({ id: todo.id });
 
-    return result[0].completed_at;
+    return result[0].id;
 }
 
 export async function markTodoAsUndone(id: number) {
     const result = await db.update(todo).set({
         completed_at: null,
         updated_at: sql`CURRENT_TIMESTAMP`
-    }).where(eq(todo.id, id)).returning({ completed_at: todo.completed_at });
+    }).where(eq(todo.id, id)).returning({ id: todo.id });
 
-    return result[0].completed_at;
+    return result[0].id;
 }
 
 export async function toggleTodo(id: number, currentState: boolean) {
