@@ -15,12 +15,14 @@ import { type Todo } from "@/lib/db/schema";
 import { createTodo, updateTodo } from "@/lib/db/queries";
 import { PlusIcon, PenIcon, Loader } from "lucide-react";
 import { startTransition, useActionState, useRef, useEffect, useState } from "react";
+import { useSWRConfig } from "swr"
 import { ActionState } from "@/middleware";
 
 export function TodoModal({ className, todo }: { className?: string, todo?: Todo }) {
     const mode = todo ? 'edit' : 'create';
     const formRef = useRef<HTMLFormElement>(null)
     const [open, setOpen] = useState(false);
+    const { mutate } = useSWRConfig()
 
     async function formFunction(state: ActionState, form: FormData) {
         try {
@@ -31,9 +33,11 @@ export function TodoModal({ className, todo }: { className?: string, todo?: Todo
             } else {
                 result = await createTodo(form.get('title') as string, parseInt(form.get('importance') as string), parseInt(form.get('urgency') as string), parseInt(form.get('duration') as string));
             }
-
+            
             if (result) {
                 setOpen(false);
+                // Revalidate all todos endpoints
+                mutate((key) => typeof key === "string" && key.startsWith("/api/todos"))
                 return { success: "Mis à jour" }
             }
             return { error: "Erreur lors de la mise à jour" }

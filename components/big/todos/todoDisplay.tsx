@@ -44,7 +44,7 @@ export default function TodoDisplay({ todo }: { todo?: Todo }) {
                 {
                     todo ? (
                         <>
-                            <div className="flex space-x-1 items-center">
+                            <div className="flex space-x-2 items-center">
                                 <div className={`relative p-2 size-1 border border-neutral rounded-300 ${optimisticState ? 'bg-primary' : ''}`}>
                                     <div className={`absolute inset-0 w-1/2 h-1/2 z-20 m-auto duration-300 ${optimisticState ? 'lg:group-hover/todo:bg-background' : 'lg:group-hover/todo:bg-primary'}`} />
                                 </div>
@@ -58,10 +58,10 @@ export default function TodoDisplay({ todo }: { todo?: Todo }) {
                             <TodoModal className="duration-300 opacity-0 group-hover/todo:opacity-100" todo={todo} />
                         </>
                     ) : (
-                        <>
+                        <div className="flex space-x-2 items-center w-full">
                             <Skeleton className="w-5 h-5" />
                             <Skeleton className="w-full h-4" />
-                        </>
+                        </div>
                     )
                 }
             </label>
