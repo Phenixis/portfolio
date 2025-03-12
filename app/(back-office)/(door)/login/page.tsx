@@ -16,7 +16,7 @@ export default function Login() {
 
     useEffect(() => {
         const handleKeyPress = (event: KeyboardEvent) => {
-            if (event.ctrlKey && event.key === 'Enter') {
+            if (event.key === 'Enter') {
                 startTransition(() => {
                     if (formRef.current) {
                         formAction(new FormData(formRef.current));
