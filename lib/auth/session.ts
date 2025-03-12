@@ -62,3 +62,7 @@ export async function setSession() {
     sameSite: 'lax',
   });
 }
+
+export async function removeSession() {
+  (await cookies()).delete('session');
+}

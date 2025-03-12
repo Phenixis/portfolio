@@ -2,7 +2,7 @@
 
 import { ActionState } from '@/middleware';
 import { redirect } from 'next/navigation'
-import { setSession } from '@/lib/auth/session';
+import { removeSession, setSession } from '@/lib/auth/session';
 
 export async function login(prevState: ActionState, formData: FormData) {
     // dotenv.config();
@@ -20,4 +20,10 @@ export async function login(prevState: ActionState, formData: FormData) {
     setSession();
 
     redirect("/my");
+}
+
+export async function logout() {
+    removeSession();
+
+    redirect('/login');
 }
