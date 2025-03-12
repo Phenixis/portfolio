@@ -132,5 +132,9 @@ export async function deleteTodoById(id: number) {
   // Revalidate all pages that might show todos
   revalidatePath("/")
 
-  return result[0].id
+  if (result) { 
+    return result[0].id
+  }
+
+  return null
 }
