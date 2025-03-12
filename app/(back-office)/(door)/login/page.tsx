@@ -56,11 +56,13 @@ export default function Login() {
                 value={trial}
                 onChange={(e) => setTrial(e.target.value)}
             />
-            {pending && (
-                <Loader className="animate-spin size-4" />
-            )}
-            {state?.error && <p className="text-red-500">{state.error}</p>}
-            {state?.success && <p className="text-green-500">{state.success}</p>}
+            {
+                pending ? (
+                    <Loader className="animate-spin size-4" />
+                ) : (
+                    state?.error && <p className="text-red-500">{state.error}</p>
+                )
+            }
         </form>
     )
 }
