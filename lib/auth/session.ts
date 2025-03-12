@@ -54,7 +54,7 @@ export async function setSession() {
     expires: expiresInOneDay.toISOString(),
   };
   const encryptedSession = await signToken(session);
-  console.log(encryptedSession);
+  
   (await cookies()).set('session', encryptedSession, {
     expires: expiresInOneDay,
     httpOnly: true,
