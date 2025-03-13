@@ -151,6 +151,7 @@ export default function TodoDisplay({ todo }: { todo?: Todo }) {
         className={`flex justify-between group/todo p-1 duration-300 hover:bg-primary/5 ${isDeleting ? "opacity-50" : ""}`}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
+        title={todo ? `I: ${todo.importance}, U: ${todo.urgency}, D: ${todo.duration}` : "Loading..."}
       >
         {todo ? (
           <>
