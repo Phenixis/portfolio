@@ -38,6 +38,16 @@ export default function Login() {
         }
     }, [formAction])
 
+    useEffect(() => {
+        if (trial.length === 4) {
+            startTransition(() => {
+                if (formRef.current) {
+                    formAction(new FormData(formRef.current))
+                }
+            })
+        }
+    }, [trial])
+
     return (
         <form
             action={formAction}
@@ -52,6 +62,7 @@ export default function Login() {
                 className="max-w-16 text-center"
                 value={trial}
                 onChange={(e) => setTrial(e.target.value)}
+                maxLength={4}
             />
             {
                 pending ? (
