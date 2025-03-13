@@ -5,7 +5,7 @@ export default function TodosPage() {
     return (
         <div className="h-full flex flex-col space-y-4">
             <div className="w-full h-1/2 flex flex-col lg:flex-row space-x-4">
-                <TodosCard className="max-w-full lg:max-w-xl" orderBy="score" limit={5} />
+                <TodosCard className="max-w-full lg:max-w-xl" orderBy="score" />
                 <AverageCompletionTime />
             </div>
             <div className="w-full h-1/2 flex space-x-4">
