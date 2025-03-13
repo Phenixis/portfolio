@@ -20,7 +20,7 @@ export function TodosCard({
     orderBy,
     orderingDirection,
 }: {
-    className: string,
+    className?: string,
     completed?: boolean,
     limit?: number,
     orderBy?: keyof Todo,
@@ -31,6 +31,8 @@ export function TodosCard({
 
         if (limit) {
             title += `The top ${limit} `;
+        } else {
+            title += "All ";
         }
 
         if (orderBy) {
