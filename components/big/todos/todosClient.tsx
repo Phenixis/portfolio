@@ -9,11 +9,13 @@ export default function TodosClient({
   limit,
   completed,
   orderBy,
+  orderingDirection,
 }: {
   swrKey: string
   limit?: number
   completed?: boolean
   orderBy?: keyof Todo
+  orderingDirection?: "asc" | "desc"
 }) {
   // Use SWR to fetch data with the same key as provided by the server
   const { data: todos } = useSWR(swrKey, async () => {
@@ -21,6 +23,8 @@ export default function TodosClient({
     if (completed !== undefined) params.append("completed", completed.toString())
     if (orderBy) params.append("orderBy", orderBy.toString())
     if (limit) params.append("limit", limit.toString())
+    if (orderingDirection) params.append("orderingDirection", orderingDirection)
+    
 
     const res = await fetch(`/api/todos?${params.toString()}`)
     if (!res.ok) throw new Error("Failed to fetch todos")
