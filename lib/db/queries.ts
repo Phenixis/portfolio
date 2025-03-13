@@ -1,6 +1,6 @@
 "use server"
 
-import { desc, eq, isNull, isNotNull, sql, and } from "drizzle-orm"
+import { desc, asc, eq, isNull, isNotNull, sql, and } from "drizzle-orm"
 import { db } from "./drizzle"
 import { todo, type Todo } from "./schema"
 import { revalidatePath } from "next/cache"
@@ -25,29 +25,26 @@ export async function createTodo(title: string, importance: number, urgency: num
 }
 
 // ## Read
-export async function getTodos(orderBy: keyof Todo = "score", limit = 50) {
-  if (limit === -1) {
-    return await db.select().from(todo).where(isNull(todo.deleted_at)).orderBy(desc(todo[orderBy]))
-  }
-  return await db.select().from(todo).where(isNull(todo.deleted_at)).orderBy(desc(todo[orderBy])).limit(limit)
-}
-
 export async function getTodoById(id: number) {
   return await db.select().from(todo).where(and(eq(todo.id, id), isNull(todo.deleted_at)))
 }
 
-export async function getCompletedTodos(orderBy: keyof Todo = "completed_at", limit = 50) {
-  if (limit === -1) {
-    return await db.select().from(todo).where(and(isNotNull(todo.completed_at), isNull(todo.deleted_at))).orderBy(desc(todo[orderBy]))
-  }
-  return await db.select().from(todo).where(and(isNotNull(todo.completed_at), isNull(todo.deleted_at))).orderBy(desc(todo[orderBy])).limit(limit)
+export async function getTodos(orderBy: keyof Todo = "score", orderingDirection?: "asc" | "desc", limit = 50) {
+  return db.select().from(todo).where(isNull(todo.deleted_at)).orderBy(
+    orderingDirection === "asc" ? asc(todo[orderBy]) : desc(todo[orderBy])
+  ).limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit)
 }
 
-export async function getUncompletedTodos(orderBy: keyof Todo = "score", limit = 50) {
-  if (limit === -1) {
-    return await db.select().from(todo).where(and(isNull(todo.completed_at), isNull(todo.deleted_at))).orderBy(desc(todo[orderBy]))
-  }
-  return await db.select().from(todo).where(and(isNull(todo.completed_at), isNull(todo.deleted_at))).orderBy(desc(todo[orderBy])).limit(limit)
+export async function getCompletedTodos(orderBy: keyof Todo = "completed_at", orderingDirection?: "asc" | "desc", limit = 50) {
+  return db.select().from(todo).where(and(isNotNull(todo.completed_at), isNull(todo.deleted_at))).orderBy(
+    orderingDirection === "asc" ? asc(todo[orderBy]) : desc(todo[orderBy])
+  ).limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit)
+}
+
+export async function getUncompletedTodos(orderBy: keyof Todo = "score", orderingDirection?: "asc" | "desc", limit = 50) {
+  return db.select().from(todo).where(and(isNull(todo.completed_at), isNull(todo.deleted_at))).orderBy(
+    orderingDirection === "asc" ? asc(todo[orderBy]) : desc(todo[orderBy])
+  ).limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit)
 }
 
 export async function searchTodosByTitle(title: string, limit = 50) {
