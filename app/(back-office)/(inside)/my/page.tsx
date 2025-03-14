@@ -5,14 +5,12 @@ import { TodosCard } from "@/components/big/todos/todosCard"
 
 export default function DashboardPage() {
     return (
-        <div>
-            <div className="flex w-full gap-4">
-                <TodosCard className="w-1/3" limit={5} />
-                <div className="w-1/3">
-                    <Time className="text-7xl" />
-                    <DateDisplay className="text-2xl" />
-                    <Meteo className="text-2xl" />
-                </div>
+        <div className="flex w-full gap-4">
+            <TodosCard className="w-1/3" limit={5} />
+            <div className="w-1/3">
+                <Time className="text-7xl" />
+                <DateDisplay className="text-2xl" />
+                <Meteo className="" />
             </div>
         </div>
     )
