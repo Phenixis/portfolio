@@ -9,7 +9,7 @@ export default function BackOfficeLayout({
 }) {
     return (
         <main className="w-full h-full flex flex-col p-4">
-            <header className="w-full h-16 bg-background flex items-center justify-between">
+            <header className="w-full min-h-16 bg-background flex items-center justify-between">
                 <Link href="/my">
                     <h1 className="text-2xl">Dashboard</h1>
                 </Link>
