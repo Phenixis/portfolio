@@ -7,10 +7,23 @@ import Link from "next/link"
 import type { Todo } from "@/lib/db/schema"
 import { useState, useCallback, useTransition } from "react"
 import { Button } from "@/components/ui/button"
-import { CheckCircle, XCircle, Filter, Scroll } from "lucide-react"
+import { CheckCircle, XCircle, Filter, Scroll, SquareCheck, Square, SquareMinus, ArrowDown01, ArrowDown10, Infinity } from "lucide-react"
 import TodoDisplay from "./todoDisplay"
 import { useTodos } from "@/hooks/useTodos"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select"
+
 
 function generateTitle(completed?: boolean, orderBy?: keyof Todo, orderingDirection?: "asc" | "desc", limit?: number) {
 	let title = limit ? `The top ${limit} ` : "All "
@@ -96,40 +109,118 @@ export function TodosCard({
 
 	return (
 		<Card className={cn(`w-full max-w-xl group/TodoCard overflow-y-auto`, className)}>
-			<CardHeader className="flex flex-row items-center justify-between sticky top-0 bg-background z-10">
-				<div className="flex flex-col gap-2">
+			<CardHeader className="flex flex-col sticky top-0 bg-background z-10">
+				<div className="flex flex-row items-center justify-between w-full gap-2">
 					<Link href={`/my/todos`}>
 						<CardTitle>{generateTitle(completed, orderBy, orderingDirection, limit)}</CardTitle>
 					</Link>
-					<div className="flex gap-2">
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={cycleCompletedFilter}
-							disabled={isPending || isLoading}
-							className={cn(
-								"flex items-center gap-1",
-								completed === true && "bg-green-100 hover:bg-green-200 border-green-300",
-								completed === false && "bg-red-100 hover:bg-red-200 border-red-300",
-							)}
-						>
-							{completed === true ? (
-								<>
-									<CheckCircle className="h-4 w-4" />
-								</>
-							) : completed === false ? (
-								<>
-									<XCircle className="h-4 w-4" />
-								</>
-							) : (
-								<>
-									<Filter className="h-4 w-4" />
-								</>
-							)}
-						</Button>
-					</div>
+					<TodoModal className="opacity-0 duration-300 group-hover/TodoCard:opacity-100" />
 				</div>
-				<TodoModal className="opacity-0 duration-300 group-hover/TodoCard:opacity-100" />
+				<Collapsible>
+					<CollapsibleTrigger>
+						<Filter className="h-4 w-4" />
+					</CollapsibleTrigger>
+					<CollapsibleContent>
+						<div className="flex flex-row gap-6">
+							<div className="flex flex-row items-center gap-2">
+								<Select onValueChange={(newValue) => {
+									setOrderBy(newValue != "none" ? newValue as keyof Todo : undefined)
+								}} defaultValue={orderBy || "none"} disabled={isPending || isLoading}>
+									<SelectTrigger>
+										<SelectValue placeholder="Order by" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="importance">Importance</SelectItem>
+										<SelectItem value="duration">Duration</SelectItem>
+										<SelectItem value="urgency">Urgency</SelectItem>
+										<SelectItem value="score">Score</SelectItem>
+										<SelectItem value="none">None</SelectItem>
+									</SelectContent>
+								</Select>
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => {
+										setOrderingDirection(orderingDirection === "asc" ? "desc" : "asc")
+									}}
+									disabled={isPending || isLoading}
+									className={cn(
+										"flex items-center gap-1"
+									)}
+								>
+									{orderingDirection === "asc" ? (
+										<ArrowDown01 className="h-4 w-4" />
+									) : (
+										<ArrowDown10 className="h-4 w-4" />
+									)}
+								</Button>
+							</div>
+							<div className="flex flex-row items-center gap-2">
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={cycleCompletedFilter}
+									disabled={isPending || isLoading}
+									className={cn(
+										"flex items-center gap-1"
+									)}
+								>
+									{completed === true ? (
+										<SquareCheck className="h-4 w-4" />
+									) : completed === false ? (
+										<Square className="h-4 w-4" />
+									) : (
+										<SquareMinus className="h-4 w-4" />
+									)}
+								</Button>
+							</div>
+							<div className="flex flex-row items-center gap-2">
+								<Button
+									variant={limit === undefined ? "default" : "outline"}
+									size="sm"
+									onClick={() => setLimit(undefined)}
+									disabled={isPending || isLoading}
+								>
+									<Infinity className="h-4 w-4" />
+								</Button>
+								<Button
+									variant={limit === 5 ? "default" : "outline"}
+									size="sm"
+									onClick={() => setLimit(5)}
+									disabled={isPending || isLoading}
+								>
+									5
+								</Button>
+								<Button
+									variant={limit === 10 ? "default" : "outline"}
+									size="sm"
+									onClick={() => setLimit(10)}
+									disabled={isPending || isLoading}
+								>
+									10
+								</Button>
+								<Button
+									variant={limit === 25 ? "default" : "outline"}
+									size="sm"
+									onClick={() => setLimit(25)}
+									disabled={isPending || isLoading}
+								>
+									25
+								</Button>
+								<Button
+									variant={limit === 50 ? "default" : "outline"}
+									size="sm"
+									onClick={() => setLimit(50)}
+									disabled={isPending || isLoading}
+								>
+									50
+								</Button>
+							</div>
+						</div>
+					</CollapsibleContent>
+				</Collapsible>
+				<div className="flex gap-2">
+				</div>
 			</CardHeader>
 			<CardContent>
 				<ScrollArea className="h-full">
