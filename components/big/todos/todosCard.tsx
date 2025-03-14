@@ -68,8 +68,8 @@ export function TodosCard({
 	className,
 	initialCompleted = false,
 	limit: initialLimit,
-	orderBy: initialOrderBy,
-	orderingDirection: initialOrderingDirection,
+	orderBy: initialOrderBy = "score",
+	orderingDirection: initialOrderingDirection = "desc",
 }: {
 	className?: string
 	initialCompleted?: boolean
@@ -116,16 +116,18 @@ export function TodosCard({
 					</Link>
 					<TodoModal className="opacity-0 duration-300 group-hover/TodoCard:opacity-100" />
 				</div>
-				<Collapsible>
+				<Collapsible className="flex space-x-4">
 					<CollapsibleTrigger>
-						<Filter className="h-4 w-4" />
+						<div className="h-10 py-2 flex items-center ">
+							<Filter className="h-4 w-4" />
+						</div>
 					</CollapsibleTrigger>
 					<CollapsibleContent>
 						<div className="flex flex-row gap-6">
 							<div className="flex flex-row items-center gap-2">
 								<Select onValueChange={(newValue) => {
-									setOrderBy(newValue != "none" ? newValue as keyof Todo : undefined)
-								}} defaultValue={orderBy || "none"} disabled={isPending || isLoading}>
+									setOrderBy(newValue != "none" ? newValue as keyof Todo : initialOrderBy)
+								}} defaultValue={orderBy} disabled={isPending || isLoading}>
 									<SelectTrigger>
 										<SelectValue placeholder="Order by" />
 									</SelectTrigger>
@@ -134,7 +136,6 @@ export function TodosCard({
 										<SelectItem value="duration">Duration</SelectItem>
 										<SelectItem value="urgency">Urgency</SelectItem>
 										<SelectItem value="score">Score</SelectItem>
-										<SelectItem value="none">None</SelectItem>
 									</SelectContent>
 								</Select>
 								<Button
