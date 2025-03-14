@@ -183,21 +183,29 @@ export async function deleteTodoById(id: number) {
 
 // ## Create
 
-export async function createMeteo(day: string, temperature: number, summary: string, icon: string) {
+export async function createMeteo(dayOrMeteo: string | NewMeteo, temperature?: number, summary?: string, icon?: string) {
+  let newMeteo: NewMeteo;
+
+  if (typeof dayOrMeteo === "string") {
+    newMeteo = {
+      day: dayOrMeteo,
+      temperature: temperature!,
+      summary: summary!,
+      icon: icon!,
+    };
+  } else {
+    newMeteo = dayOrMeteo;
+  }
+
   const result = await db
     .insert(meteo)
-    .values({
-      day: day,
-      temperature: temperature,
-      summary: summary,
-      icon: icon,
-    } as NewMeteo)
-    .returning({ day: meteo.day })
+    .values(newMeteo)
+    .returning({ day: meteo.day });
 
   // Revalidate all pages that might show meteo
-  revalidatePath("/")
+  revalidatePath("/");
 
-  return result[0].day
+  return result[0].day;
 }
 
 // ## Read
@@ -217,26 +225,38 @@ export async function getMeteo() {
 
 // ## Update
 
-export async function updateMeteo(day: string, temperature: number, summary: string, icon: string) {
-  const result = await db
-    .update(meteo)
-    .set({
-      temperature: temperature,
-      summary: summary,
-      icon: icon,
-      updated_at: sql`CURRENT_TIMESTAMP`,
-    })
-    .where(eq(meteo.day, day))
-    .returning({ day: meteo.day })
+export async function updateMeteo(dayOrMeteo: string | NewMeteo, temperature?: number, summary?: string, icon?: string) {
+  let updatedMeteo: Partial<NewMeteo>;
 
-  // Revalidate all pages that might show meteo
-  revalidatePath("/")
-
-  if (!result) {
-    return null
+  if (typeof dayOrMeteo === "string") {
+    updatedMeteo = {
+      day: dayOrMeteo,
+      temperature: temperature!,
+      summary: summary!,
+      icon: icon!,
+      updated_at: new Date(),
+    };
+  } else {
+    updatedMeteo = {
+      ...dayOrMeteo,
+      updated_at: new Date(),
+    };
   }
 
-  return result[0].day
+  const result = await db
+    .update(meteo)
+    .set(updatedMeteo)
+    .where(eq(meteo.day, typeof dayOrMeteo === "string" ? dayOrMeteo : dayOrMeteo.day))
+    .returning({ day: meteo.day });
+
+  // Revalidate all pages that might show meteo
+  revalidatePath("/");
+
+  if (!result) {
+    return null;
+  }
+
+  return result[0].day;
 }
 
 // ## Delete

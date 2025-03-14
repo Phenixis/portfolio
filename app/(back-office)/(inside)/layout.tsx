@@ -1,3 +1,4 @@
+import DarkModeToggle from "@/components/big/darkModeToggle"
 import { Button } from "@/components/ui/button"
 import { logout } from "@/lib/auth/actions"
 import Link from "next/link"
@@ -13,9 +14,12 @@ export default function BackOfficeLayout({
                 <Link href="/my">
                     <h1 className="text-2xl">Dashboard</h1>
                 </Link>
-                <form action={logout}>
-                    <Button type="submit">Logout</Button>
-                </form>
+                <div className="flex items-center space-x-4">
+                    <DarkModeToggle />
+                    <form action={logout}>
+                        <Button type="submit">Logout</Button>
+                    </form>
+                </div>
             </header>
             {children}
         </main>
