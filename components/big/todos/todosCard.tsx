@@ -72,7 +72,7 @@ export function TodosCard({
 	orderingDirection: initialOrderingDirection,
 }: {
 	className?: string
-	initialCompleted: boolean
+	initialCompleted?: boolean
 	limit?: number
 	orderBy?: keyof Todo
 	orderingDirection?: "asc" | "desc"
@@ -108,7 +108,7 @@ export function TodosCard({
 	}, [completed])
 
 	return (
-		<Card className={cn(`w-full max-w-xl group/TodoCard overflow-y-auto`, className)}>
+		<Card className={cn(`w-full max-w-2xl group/TodoCard overflow-y-auto`, className)}>
 			<CardHeader className="flex flex-col sticky top-0 bg-background z-10">
 				<div className="flex flex-row items-center justify-between w-full gap-2">
 					<Link href={`/my/todos`}>
