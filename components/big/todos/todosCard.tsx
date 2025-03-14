@@ -97,18 +97,18 @@ export function TodosCard({
 	// Memoize the cycleCompletedFilter function to prevent unnecessary re-renders
 	const cycleCompletedFilter = useCallback(() => {
 		startTransition(() => {
-			if (completed === undefined) {
-				setCompleted(true) // First click: show completed
-			} else if (completed === true) {
-				setCompleted(false) // Second click: show uncompleted
+			if (completed === true) {
+				setCompleted(undefined) // First click: show completed
+			} else if (completed === false) {
+				setCompleted(true) // Second click: show uncompleted
 			} else {
-				setCompleted(undefined) // Third click: show all
+				setCompleted(false) // Third click: show all
 			}
 		})
 	}, [completed])
 
 	return (
-		<Card className={cn(`w-full max-w-2xl group/TodoCard overflow-y-auto`, className)}>
+		<Card className={cn(`w-full md:max-w-2xl group/TodoCard overflow-y-auto`, className)}>
 			<CardHeader className="flex flex-col sticky top-0 bg-background z-10">
 				<div className="flex flex-row items-center justify-between w-full gap-2">
 					<Link href={`/my/todos`}>
@@ -123,7 +123,7 @@ export function TodosCard({
 						</div>
 					</CollapsibleTrigger>
 					<CollapsibleContent>
-						<div className="flex flex-row gap-6">
+						<div className="flex flex-row gap-6 flex-wrap">
 							<div className="flex flex-row items-center gap-2">
 								<Select onValueChange={(newValue) => {
 									setOrderBy(newValue != "none" ? newValue as keyof Todo : initialOrderBy)
