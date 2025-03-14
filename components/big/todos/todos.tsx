@@ -15,7 +15,7 @@ async function fetchTodosData({
   completed?: boolean
   orderBy?: keyof Todo
   limit?: number
-  orderingDirection?: "asc" | "desc",
+  orderingDirection?: "asc" | "desc"
 }) {
   return completed === true
     ? await getCompletedTodos(orderBy, orderingDirection, limit)
@@ -34,7 +34,7 @@ export default async function Todos({
   limit?: number
   completed?: boolean
   orderBy?: keyof Todo
-  orderingDirection?: "asc" | "desc",
+  orderingDirection?: "asc" | "desc"
 }) {
   // Fetch the initial data on the server
   const initialData = await fetchTodosData({ completed, orderBy, limit, orderingDirection })
@@ -60,7 +60,13 @@ export default async function Todos({
           .fill(null)
           .map((_, i) => <TodoDisplay key={i} />)}
       >
-        <TodosClient swrKey={swrKey} limit={limit} completed={completed} orderBy={orderBy} orderingDirection={orderingDirection} />
+        <TodosClient
+          swrKey={swrKey}
+          limit={limit}
+          completed={completed}
+          orderBy={orderBy}
+          orderingDirection={orderingDirection}
+        />
       </Suspense>
     </SWRConfig>
   )

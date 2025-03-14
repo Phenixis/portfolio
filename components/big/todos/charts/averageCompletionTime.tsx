@@ -26,7 +26,7 @@ import {
     ChartTooltipContent,
 } from "@/components/ui/chart"
 
-const chartData = [
+const data = [
     {
         "id": 0,
         "importance": 0,
@@ -8037,15 +8037,38 @@ const chartConfig = {
 } satisfies ChartConfig
 
 export default function Component() {
+    // Aggregate data by score and calculate average completion duration
+    const aggregatedData = data.reduce((acc: { score: number; totalCompletionDuration: number; count: number; averageCompletionDuration: number; }[], item: { score: number; completionDuration: number; }) => {
+        const existing = acc.find((entry) => entry.score === item.score);
+        if (existing) {
+            existing.totalCompletionDuration += item.completionDuration;
+            existing.count += 1;
+            existing.averageCompletionDuration = existing.totalCompletionDuration / existing.count;
+        } else {
+            acc.push({
+                score: item.score,
+                totalCompletionDuration: item.completionDuration,
+                count: 1,
+                averageCompletionDuration: item.completionDuration,
+            });
+        }
+        return acc;
+    }, []);
+
+    const chartData = aggregatedData.map(({ score, averageCompletionDuration }) => ({
+        score,
+        completionDuration: averageCompletionDuration,
+    }));
+
     return (
         <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-            <ScatterChart data={chartData} >
-                <CartesianGrid strokeDasharray="3 3" />
+            <ScatterChart data={chartData}>
+                <CartesianGrid strokeDasharray="6 6" />
                 <YAxis type="number" dataKey="score" name="Score" />
                 <XAxis type="number" dataKey="completionDuration" name="Completion Time (h)" />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Scatter dataKey="score" fill="var(--color-completionDuration)" />
             </ScatterChart>
         </ChartContainer>
-    )
+    );
 }
