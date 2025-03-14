@@ -23,10 +23,17 @@ export const todo = pgTable('todo', {
     deleted_at: timestamp('deleted_at')
 });
 
-export const session = pgTable('session', {
-    token : varchar('token', {length: 255}).primaryKey(),
-    validate_until : timestamp('validate_until').notNull()
+export const meteo = pgTable('meteo', {
+    day: varchar('day', {length: 10}).primaryKey(),
+    temperature: integer('temperature').notNull(),
+    summary: varchar('summary', {length: 255}).notNull(),
+    icon: varchar('icon', {length: 255}).notNull(),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow(),
+    deleted_at: timestamp('deleted_at')
 });
 
 export type Todo = typeof todo.$inferSelect;
 export type NewTodo = typeof todo.$inferInsert;
+export type Meteo = typeof meteo.$inferSelect;
+export type NewMeteo = typeof meteo.$inferInsert;

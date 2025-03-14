@@ -20,7 +20,7 @@ export default function DateDisplay({
 
     return (
         <div className={cn("text-center text-lg", className)}>
-            {currentDate.toLocaleDateString()}
+            {currentDate.toLocaleDateString('fr-FR', {year: 'numeric', month: '2-digit', day: '2-digit'})}
         </div>
     );
 }
