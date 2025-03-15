@@ -57,6 +57,8 @@ export default function Meteo({
         return <div className={cn("text-center text-lg", className)}>Loading...</div>;
     }
 
+    console.log(meteo)
+
     return (
         <div className={cn("text-center text-lg", className)}>
             <div className="flex flex-col lg:flex-row items-center lg:items-start justify-between">

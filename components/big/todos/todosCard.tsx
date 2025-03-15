@@ -232,7 +232,7 @@ export function TodosCard({
 							.map((_, i) => <TodoDisplay key={i} />)
 					) : todos?.length > 0 ? (
 						// Show todos
-						todos.map((todo: Todo) => <TodoDisplay key={todo.id} todo={todo} />)
+						todos.map((todo: Todo) => <TodoDisplay key={todo.id} todo={todo} orderedBy={orderBy} />)
 					) : (
 						// Show empty state
 						<div className="text-center py-4">No todos found</div>

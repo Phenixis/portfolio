@@ -9,13 +9,14 @@ import { TodoModal } from "./todoModal"
 import { TrashIcon, Loader } from "lucide-react"
 import { useSWRConfig } from "swr"
 
-export default function TodoDisplay({ todo }: { todo?: Todo }) {
+export default function TodoDisplay({ todo, orderedBy }: { todo?: Todo, orderedBy?: keyof Todo }) {
   const [isToggled, setIsToggled] = useState(todo ? todo.completed_at !== null : false)
   const [isHovering, setIsHovering] = useState(false)
   const [isShifting, setIsShifting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const labelRef = useRef<HTMLLabelElement>(null)
   const { mutate } = useSWRConfig()
+  const skeleton = todo !== undefined && orderedBy !== undefined
 
   // Fonction améliorée pour supprimer une todo avec SWR
   async function deleteTodo(e: React.MouseEvent) {
@@ -151,9 +152,9 @@ export default function TodoDisplay({ todo }: { todo?: Todo }) {
         className={`flex justify-between group/todo p-1 duration-300 hover:bg-primary/5 ${isDeleting ? "opacity-50" : ""}`}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
-        title={todo ? `I: ${todo.importance}, U: ${todo.urgency}, D: ${todo.duration}` : "Loading..."}
+        title={skeleton ? `I: ${todo.importance}, U: ${todo.urgency}, D: ${todo.duration}` : "Loading..."}
       >
-        {todo ? (
+        {skeleton ? (
           <>
             <div className="flex space-x-2 items-center">
               <div
@@ -165,7 +166,7 @@ export default function TodoDisplay({ todo }: { todo?: Todo }) {
               </div>
               <p className={`${optimisticState ? "line-through text-muted-foreground" : ""}`}>
                 {todo.title}
-                <span className="ml-2 text-xs text-neutral">{todo.score}</span>
+                <span className="ml-2 text-xs text-neutral">{todo[orderedBy] as string}</span>
               </p>
             </div>
             <div className="flex items-center space-x-2">

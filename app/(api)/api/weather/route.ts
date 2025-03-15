@@ -48,6 +48,7 @@ export async function GET(request: NextRequest) {
             temperature: data.daily[0].feels_like.day,
             summary: data.daily[0].summary,
             icon: data.daily[0].weather[0].icon,
+            updated_at: new Date(),
         } as Meteo);
     } else {
         return NextResponse.json(savedMeteo[0]);
