@@ -12,16 +12,16 @@ import { useRef, useState, useEffect } from "react"
 import { useSWRConfig } from "swr"
 import { Calendar } from "@/components/ui/calendar"
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover"
-
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 
 export function TodoModal({ className, todo }: { className?: string; todo?: Todo }) {
     const mode = todo ? "edit" : "create"
     const [open, setOpen] = useState(false)
-    const [dueDate, setDueDate] = useState<Date>(new Date())
+    const [dueDate, setDueDate] = useState<Date>(todo ? new Date(todo.due) : new Date())
+    const [calendarOpen, setCalendarOpen] = useState(false)
     const { mutate } = useSWRConfig()
 
     // Utiliser des refs pour accéder aux valeurs des champs
@@ -58,16 +58,18 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
             // Créer l'objet todo pour la mise à jour optimiste
             const score = importance * urgency - duration
             const todoData = {
-                id: mode === "edit" ? id : Date.now(), // ID temporaire pour création
+                id: mode === "edit" ? id : -1, // ID temporaire pour création
                 title,
                 importance,
                 urgency,
                 duration,
                 score,
-                created_at: mode === "create" ? new Date().toISOString() : todo?.created_at,
-                updated_at: new Date().toISOString(),
+                due: dueDate,
+                created_at: mode === "create" ? new Date() : todo?.created_at,
+                updated_at: new Date(),
+                deleted_at: todo?.deleted_at || null,
                 completed_at: todo?.completed_at || null,
-            }
+            } as Todo
 
             // Fermer immédiatement le modal pour une expérience instantanée
             setOpen(false)
@@ -178,23 +180,17 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
                         </div>
                         <div>
                             <Label htmlFor="dueDate">Due date</Label>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        className="w-full"
-                                    >
-                                        {
-                                            dueDate.toLocaleDateString("fr-FR", {
-                                                year: "numeric",
-                                                month: "long",
-                                                day: "numeric",
-                                            })
-                                        }
+                            <Collapsible open={calendarOpen} onOpenChange={setCalendarOpen}>
+                                <CollapsibleTrigger asChild>
+                                    <Button variant="outline">
+                                        {dueDate.toLocaleDateString("fr-FR", {
+                                            year: "numeric",
+                                            month: "2-digit",
+                                            day: "2-digit",
+                                        })}
                                     </Button>
-                                </PopoverTrigger>
-                                <PopoverContent>
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
                                     <Calendar
                                         mode="single"
                                         selected={dueDate}
@@ -202,14 +198,17 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
                                             if (date) {
                                                 setDueDate(date)
                                             }
+                                            setCalendarOpen(false)
                                         }}
-                                        disabled={(date) =>
-                                          date < new Date()
-                                        }
+                                        disabled={(date) => {
+                                            const today = new Date()
+                                            today.setHours(0, 0, 0, 0)
+                                            return date < today
+                                        }}
                                         initialFocus
                                     />
-                                </PopoverContent>
-                            </Popover>
+                                </CollapsibleContent>
+                            </Collapsible>
                         </div>
                         <div>
                             <Label htmlFor="duration">Durée</Label>

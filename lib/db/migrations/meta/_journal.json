@@ -29,6 +29,13 @@
       "when": 1741950678463,
       "tag": "0003_windy_skreet",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1742125609878,
+      "tag": "0004_yellow_gladiator",
+      "breakpoints": true
     }
   ]
 }
