@@ -17,6 +17,7 @@ export const todo = pgTable('todo', {
     urgency: integer('urgency').notNull().default(0),
     duration: integer('duration').notNull().default(0),
     score: integer('score').notNull().default(0),
+    due: timestamp('due').notNull(),
     completed_at: timestamp('completed_at'),
     created_at: timestamp('created_at').notNull().defaultNow(),
     updated_at: timestamp('updated_at').notNull().defaultNow(),
