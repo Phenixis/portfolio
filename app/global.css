@@ -237,3 +237,11 @@ section.page > p.page-description, section.page > div.page-description {
 ul.list-decorated > li {
   @apply flex space-x-2 items-center
 }
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  scrollbar-width: none;
+}

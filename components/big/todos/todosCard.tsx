@@ -108,7 +108,7 @@ export function TodosCard({
 	}, [completed])
 
 	return (
-		<Card className={cn(`w-full md:max-w-2xl group/TodoCard overflow-y-auto`, className)}>
+		<Card className={cn(`w-full md:max-w-2xl group/TodoCard overflow-y-auto scrollbar-hide`, className)}>
 			<CardHeader className="flex flex-col sticky top-0 bg-background z-10">
 				<div className="flex flex-row items-center justify-between w-full gap-2">
 					<Link href={`/my/todos`}>
