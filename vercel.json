@@ -1,0 +1,6 @@
+{
+    "crons": [{
+      "path": "/api/todos/updateUrgency",
+      "schedule": "30 0 * * *"
+    }]
+  }

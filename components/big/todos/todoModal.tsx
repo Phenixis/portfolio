@@ -16,18 +16,22 @@ import {
     CollapsibleContent,
     CollapsibleTrigger,
 } from "@/components/ui/collapsible"
+import {
+    calculateUrgency,
+} from "@/lib/utils"
+import { fr } from "date-fns/locale"
 
 export function TodoModal({ className, todo }: { className?: string; todo?: Todo }) {
     const mode = todo ? "edit" : "create"
     const [open, setOpen] = useState(false)
     const [dueDate, setDueDate] = useState<Date>(todo ? new Date(todo.due) : new Date())
+    console.log(todo, dueDate)
     const [calendarOpen, setCalendarOpen] = useState(false)
     const { mutate } = useSWRConfig()
 
     // Utiliser des refs pour accéder aux valeurs des champs
     const titleRef = useRef<HTMLInputElement>(null)
     const importanceRef = useRef<HTMLInputElement>(null)
-    const urgencyRef = useRef<HTMLInputElement>(null)
     const durationRef = useRef<HTMLInputElement>(null)
 
     // État pour suivre si une soumission est en cours (pour éviter les doubles soumissions)
@@ -45,7 +49,6 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
             // Extraire les valeurs directement des refs
             const title = titleRef.current?.value || ""
             const importance = Number.parseInt(importanceRef.current?.value || "0")
-            const urgency = Number.parseInt(urgencyRef.current?.value || "0")
             const duration = Number.parseInt(durationRef.current?.value || "0")
             const id = todo?.id
 
@@ -56,6 +59,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
             }
 
             // Créer l'objet todo pour la mise à jour optimiste
+            const urgency = calculateUrgency(dueDate)
             const score = importance * urgency - duration
             const todoData = {
                 id: mode === "edit" ? id : -1, // ID temporaire pour création
@@ -103,7 +107,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
                     id: mode === "edit" ? id : undefined,
                     title,
                     importance,
-                    urgency,
+                    dueDate: dueDate.toISOString(),
                     duration,
                 }),
             })
@@ -205,7 +209,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
                                             today.setHours(0, 0, 0, 0)
                                             return date < today
                                         }}
-                                        initialFocus
+                                        locale={fr}
                                     />
                                 </CollapsibleContent>
                             </Collapsible>

@@ -45,14 +45,14 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { title, importance, urgency, duration } = body
+    const { title, importance, dueDate, duration } = body
 
     // Validation
-    if (!title || importance === undefined || urgency === undefined || duration === undefined) {
+    if (!title || importance === undefined || dueDate === undefined || duration === undefined) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    const todoId = await createTodo(title, Number(importance), Number(urgency), Number(duration))
+    const todoId = await createTodo(title, Number(importance), new Date(dueDate), Number(duration))
 
     return NextResponse.json({ id: todoId }, { status: 201 })
   } catch (error) {
@@ -65,14 +65,14 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
-    const { id, title, importance, urgency, duration } = body
+    const { id, title, importance, dueDate, duration } = body
 
     // Validation
-    if (!id || !title || importance === undefined || urgency === undefined || duration === undefined) {
+    if (!id || !title || importance === undefined || dueDate === undefined || duration === undefined) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    const todoId = await updateTodo(Number(id), title, Number(importance), Number(urgency), Number(duration))
+    const todoId = await updateTodo(Number(id), title, Number(importance), new Date(dueDate), Number(duration))
 
     return NextResponse.json({ id: todoId })
   } catch (error) {

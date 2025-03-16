@@ -19,9 +19,12 @@ import {
   type NewMeteo
 } from "./schema"
 import { revalidatePath } from "next/cache"
+import { calculateUrgency } from "@/lib/utils"
 
 // ## Create
-export async function createTodo(title: string, importance: number, urgency: number, duration: number) {
+export async function createTodo(title: string, importance: number, dueDate: Date, duration: number) {
+  const urgency = calculateUrgency(dueDate)
+
   const result = await db
     .insert(todo)
     .values({
@@ -98,7 +101,9 @@ export async function searchTodosByTitle(title: string, limit = 50) {
 }
 
 // ## Update
-export async function updateTodo(id: number, title: string, importance: number, urgency: number, duration: number) {
+export async function updateTodo(id: number, title: string, importance: number, dueDate: Date, duration: number) {
+  const urgency = calculateUrgency(dueDate)
+
   const result = await db
     .update(todo)
     .set({
@@ -106,7 +111,36 @@ export async function updateTodo(id: number, title: string, importance: number, 
       importance: importance,
       urgency: urgency,
       duration: duration,
+      due: dueDate,
       score: importance * urgency - duration,
+      updated_at: sql`CURRENT_TIMESTAMP`,
+    })
+    .where(eq(todo.id, id))
+    .returning({ id: todo.id })
+
+  // Revalidate all pages that might show todos
+  revalidatePath("/")
+
+  if (!result) {
+    return null
+  }
+
+  return result[0].id
+}
+
+export async function updateTodoUrgency(id: number) {
+  const todoData = await getTodoById(id)
+  if (!todoData) {
+    return null
+  }
+
+  const urgency = calculateUrgency(todoData[0].due)
+
+  const result = await db
+    .update(todo)
+    .set({
+      urgency: urgency,
+      score: todoData[0].importance * urgency - todoData[0].duration,
       updated_at: sql`CURRENT_TIMESTAMP`,
     })
     .where(eq(todo.id, id))
