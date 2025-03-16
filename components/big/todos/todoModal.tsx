@@ -10,10 +10,18 @@ import type { Todo } from "@/lib/db/schema"
 import { PlusIcon, PenIcon } from "lucide-react"
 import { useRef, useState, useEffect } from "react"
 import { useSWRConfig } from "swr"
+import { Calendar } from "@/components/ui/calendar"
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
+
 
 export function TodoModal({ className, todo }: { className?: string; todo?: Todo }) {
     const mode = todo ? "edit" : "create"
     const [open, setOpen] = useState(false)
+    const [dueDate, setDueDate] = useState<Date>(new Date())
     const { mutate } = useSWRConfig()
 
     // Utiliser des refs pour accéder aux valeurs des champs
@@ -169,16 +177,39 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
                             />
                         </div>
                         <div>
-                            <Label htmlFor="urgency">Urgence</Label>
-                            <Input
-                                ref={urgencyRef}
-                                type="number"
-                                id="urgency"
-                                name="urgency"
-                                defaultValue={todo?.urgency || 0}
-                                min={0}
-                                max={5}
-                            />
+                            <Label htmlFor="dueDate">Due date</Label>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="w-full"
+                                    >
+                                        {
+                                            dueDate.toLocaleDateString("fr-FR", {
+                                                year: "numeric",
+                                                month: "long",
+                                                day: "numeric",
+                                            })
+                                        }
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent>
+                                    <Calendar
+                                        mode="single"
+                                        selected={dueDate}
+                                        onSelect={(date) => {
+                                            if (date) {
+                                                setDueDate(date)
+                                            }
+                                        }}
+                                        disabled={(date) =>
+                                          date < new Date()
+                                        }
+                                        initialFocus
+                                    />
+                                </PopoverContent>
+                            </Popover>
                         </div>
                         <div>
                             <Label htmlFor="duration">Durée</Label>
