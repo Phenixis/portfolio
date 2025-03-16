@@ -16,10 +16,10 @@ export async function login(prevState: ActionState, formData: FormData) {
         return { error: "Invalid PIN." };
     }
     
-    setSession();
+    await setSession();
     
     const redirectTo = formData.get("redirectTo");
-    redirect(redirectTo ? redirectTo.toString() : '/my');
+    return { success: true, redirectTo: redirectTo ? redirectTo.toString() : '/my' };
 }
 
 export async function logout() {

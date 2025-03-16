@@ -48,6 +48,12 @@ export default function Login() {
         }
     }, [trial])
 
+    useEffect(() => {
+        if (state?.success) {
+            window.location.href = state.redirectTo;
+        }
+    }, [state]);
+
     return (
         <form
             action={formAction}
