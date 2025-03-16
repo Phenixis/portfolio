@@ -25,7 +25,6 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
     const mode = todo ? "edit" : "create"
     const [open, setOpen] = useState(false)
     const [dueDate, setDueDate] = useState<Date>(todo ? new Date(todo.due) : new Date())
-    console.log(todo, dueDate)
     const [calendarOpen, setCalendarOpen] = useState(false)
     const { mutate } = useSWRConfig()
 
