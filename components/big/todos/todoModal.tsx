@@ -126,6 +126,8 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
                     // Revalider pour restaurer l'état correct
                     mutate((key) => typeof key === "string" && key.startsWith("/api/todos"))
                 })
+
+            setDueDate(new Date());
         } catch (error) {
             console.error("Erreur lors de la soumission:", error)
             isSubmittingRef.current = false
