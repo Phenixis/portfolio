@@ -63,11 +63,6 @@ export default function Meteo({
                 <div className="flex flex-col justify-center items-center">
                     <img src={`http://openweathermap.org/img/wn/${meteo.icon}@2x.png`} alt="Weather icon" />
                     <p>{meteo.temperature.toFixed(0)}°C</p>
-                    <p className="text-sm">{
-                        formatDistanceToNow(new Date(meteo.updated_at), {
-                            addSuffix: true,
-                        })
-                    }</p>
                 </div>
                 <p className="">
                     {meteo.day != new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: '2-digit', day: '2-digit' }) ? "Tomorrow, " : "Today, "}
