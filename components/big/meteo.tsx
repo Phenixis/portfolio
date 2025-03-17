@@ -58,9 +58,9 @@ export default function Meteo({
     }
 
     return (
-        <div className={cn("text-center text-lg", className)}>
-            <div className="flex flex-col lg:flex-row items-center lg:items-start justify-between">
-                <div className="flex flex-col justify-center items-center order-2 lg:order-none">
+        <div className={cn("text-center md:text-lg", className)}>
+            <div className="flex flex-row items-start justify-between">
+                <div className="flex flex-col justify-center items-center">
                     <img src={`http://openweathermap.org/img/wn/${meteo.icon}@2x.png`} alt="Weather icon" />
                     <p>{meteo.temperature.toFixed(0)}°C</p>
                     <p className="text-sm">{
@@ -69,7 +69,7 @@ export default function Meteo({
                         })
                     }</p>
                 </div>
-                <p className="order-1 lg:order-none">
+                <p className="">
                     {meteo.day != new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: '2-digit', day: '2-digit' }) ? "Tomorrow, " : "Today, "}
                     {meteo.summary}
                 </p>

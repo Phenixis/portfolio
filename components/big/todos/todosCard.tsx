@@ -114,7 +114,7 @@ export function TodosCard({
 					<Link href={`/my/todos`}>
 						<CardTitle>{generateTitle(completed, orderBy, orderingDirection, limit)}</CardTitle>
 					</Link>
-					<TodoModal className="opacity-0 duration-300 group-hover/TodoCard:opacity-100" />
+					<TodoModal className="xl:opacity-0 duration-300 xl:group-hover/TodoCard:opacity-100" />
 				</div>
 				<Collapsible className="flex space-x-4">
 					<CollapsibleTrigger>
