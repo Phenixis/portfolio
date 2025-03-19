@@ -4,12 +4,15 @@ import type React from "react"
 
 import { useState, useEffect, useOptimistic, startTransition, useRef } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import type { Todo } from "@/lib/db/schema"
+import type { Todo, Project
+  
+ } from "@/lib/db/schema"
 import { TodoModal } from "./todoModal"
 import { TrashIcon, Loader } from "lucide-react"
 import { useSWRConfig } from "swr"
+import { Badge } from "@/components/ui/badge"
 
-export default function TodoDisplay({ todo, orderedBy }: { todo?: Todo, orderedBy?: keyof Todo }) {
+export default function TodoDisplay({ todo, orderedBy }: { todo?: (Todo | Todo & { project: Project }), orderedBy?: keyof Todo }) {
   const [isToggled, setIsToggled] = useState(todo ? todo.completed_at !== null : false)
   const [isHovering, setIsHovering] = useState(false)
   const [isShifting, setIsShifting] = useState(false)
@@ -29,7 +32,7 @@ export default function TodoDisplay({ todo, orderedBy }: { todo?: Todo, orderedB
 
       // Optimistic UI update - remove the todo from all lists
       mutate(
-        (key) => typeof key === "string" && key.startsWith("/api/todos"),
+        (key) => typeof key === "string" && key.startsWith("/api/todo"),
         async (currentData) => {
           // Filter out the todo being deleted from all cached lists
           if (Array.isArray(currentData)) {
@@ -41,18 +44,18 @@ export default function TodoDisplay({ todo, orderedBy }: { todo?: Todo, orderedB
       )
 
       // Actual deletion
-      await fetch(`/api/todos?id=${todo.id}`, {
+      await fetch(`/api/todo?id=${todo.id}`, {
         method: "DELETE",
       })
 
       // Revalidate after successful deletion
-      mutate((key) => typeof key === "string" && key.startsWith("/api/todos"))
-      
+      mutate((key) => typeof key === "string" && key.startsWith("/api/todo"))
+
     } catch (error) {
       console.error("Error deleting todo:", error)
 
       // Revalidate to restore the correct state
-      mutate((key) => typeof key === "string" && key.startsWith("/api/todos"))
+      mutate((key) => typeof key === "string" && key.startsWith("/api/todo"))
     } finally {
       setIsDeleting(false)
     }
@@ -67,7 +70,7 @@ export default function TodoDisplay({ todo, orderedBy }: { todo?: Todo, orderedB
     try {
       // Optimistic UI update for toggling
       mutate(
-        (key) => typeof key === "string" && key.startsWith("/api/todos"),
+        (key) => typeof key === "string" && key.startsWith("/api/todo"),
         async (currentData) => {
           if (!Array.isArray(currentData)) return currentData
 
@@ -85,7 +88,7 @@ export default function TodoDisplay({ todo, orderedBy }: { todo?: Todo, orderedB
       )
 
       // Actual API call
-      await fetch("/api/todos", {
+      await fetch("/api/todo", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: todo.id, completed: !isToggled }),
@@ -94,7 +97,7 @@ export default function TodoDisplay({ todo, orderedBy }: { todo?: Todo, orderedB
       setIsToggled(!isToggled)
 
       // Revalidate after successful toggle
-      mutate((key) => typeof key === "string" && key.startsWith("/api/todos"))
+      mutate((key) => typeof key === "string" && key.startsWith("/api/todo"))
     } catch (error) {
       console.error("Error toggling todo:", error)
 
@@ -104,7 +107,7 @@ export default function TodoDisplay({ todo, orderedBy }: { todo?: Todo, orderedB
       })
 
       // Revalidate to restore the correct state
-      mutate((key) => typeof key === "string" && key.startsWith("/api/todos"))
+      mutate((key) => typeof key === "string" && key.startsWith("/api/todo"))
     }
   }
 
@@ -149,7 +152,7 @@ export default function TodoDisplay({ todo, orderedBy }: { todo?: Todo, orderedB
       <label
         ref={labelRef}
         htmlFor={`taskButton-${todo?.id || "skeleton"}`}
-        className={`flex justify-between group/todo p-1 duration-300 hover:bg-primary/5 ${isDeleting ? "opacity-50" : ""}`}
+        className={`flex justify-between items-center group/todo p-1 duration-300 hover:bg-primary/5 ${isDeleting ? "opacity-50" : ""}`}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
         title={skeleton ? `I: ${todo.importance}, U: ${todo.urgency}, D: ${todo.duration}` : "Loading..."}
@@ -170,6 +173,11 @@ export default function TodoDisplay({ todo, orderedBy }: { todo?: Todo, orderedB
               </p>
             </div>
             <div className="flex items-center space-x-2">
+              {"project" in todo && todo.project && (
+                <Badge className="mr-2">
+                  {todo.project.title}
+                </Badge>
+              )}
               <TodoModal className="duration-300 opacity-0 group-hover/todo:opacity-100" todo={todo} />
               {isDeleting ? (
                 <Loader className="size-4 animate-spin text-muted-foreground" />

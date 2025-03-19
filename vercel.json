@@ -1,6 +1,6 @@
 {
     "crons": [{
-      "path": "/api/todos/updateUrgency",
+      "path": "/api/todo/updateUrgency",
       "schedule": "30 0 * * *"
     }]
   }

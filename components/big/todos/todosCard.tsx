@@ -1,13 +1,13 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { TodoModal } from "@/components/big/todos/todoModal"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import type { Todo } from "@/lib/db/schema"
 import { useState, useCallback, useTransition } from "react"
 import { Button } from "@/components/ui/button"
-import { CheckCircle, XCircle, Filter, Scroll, SquareCheck, Square, SquareMinus, ArrowDown01, ArrowDown10, Infinity } from "lucide-react"
+import { Filter, SquareCheck, Square, SquareMinus, ArrowDown01, ArrowDown10, Infinity } from "lucide-react"
 import TodoDisplay from "./todoDisplay"
 import { useTodos } from "@/hooks/useTodos"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -70,12 +70,14 @@ export function TodosCard({
 	limit: initialLimit,
 	orderBy: initialOrderBy = "score",
 	orderingDirection: initialOrderingDirection = "desc",
+	withProject = true,
 }: {
 	className?: string
 	initialCompleted?: boolean
 	limit?: number
 	orderBy?: keyof Todo
 	orderingDirection?: "asc" | "desc"
+	withProject?: boolean
 }) {
 	// Use isPending to prevent multiple clicks during transitions
 	const [isPending, startTransition] = useTransition()
@@ -92,15 +94,16 @@ export function TodosCard({
 		orderBy,
 		limit,
 		orderingDirection,
+		withProject
 	})
 
 	// Memoize the cycleCompletedFilter function to prevent unnecessary re-renders
 	const cycleCompletedFilter = useCallback(() => {
 		startTransition(() => {
 			if (completed === true) {
-				setCompleted(undefined) // First click: show completed
+				setCompleted(undefined) // First click: show uncompleted
 			} else if (completed === false) {
-				setCompleted(true) // Second click: show uncompleted
+				setCompleted(true) // Second click: show completed
 			} else {
 				setCompleted(false) // Third click: show all
 			}

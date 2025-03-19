@@ -90,7 +90,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 
             // Mise à jour optimiste du cache SWR
             mutate(
-                (key) => typeof key === "string" && key.startsWith("/api/todos"),
+                (key) => typeof key === "string" && key.startsWith("/api/todo"),
                 async (currentData) => {
                     if (!Array.isArray(currentData)) return currentData
 
@@ -108,7 +108,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
             )
 
             // Effectuer l'appel API en arrière-plan
-            fetch("/api/todos", {
+            fetch("/api/todo", {
                 method: mode === "edit" ? "PUT" : "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -129,13 +129,13 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
                 })
                 .then(() => {
                     // Revalider silencieusement après la réponse API
-                    mutate((key) => typeof key === "string" && key.startsWith("/api/todos"))
+                    mutate((key) => typeof key === "string" && key.startsWith("/api/todo"))
                 })
                 .catch((error) => {
                     console.error("Erreur lors de l'opération:", error)
 
                     // Revalider pour restaurer l'état correct
-                    mutate((key) => typeof key === "string" && key.startsWith("/api/todos"))
+                    mutate((key) => typeof key === "string" && key.startsWith("/api/todo"))
                 })
 
             setDueDate(new Date())

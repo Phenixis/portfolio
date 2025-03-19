@@ -12,7 +12,7 @@ export default function BackOfficeLayout({
         <main className="w-full h-full flex flex-col p-4">
             <header className="w-full min-h-16 bg-background dark:bg-black flex items-center justify-between">
                 <Link href="/my">
-                    <h1 className="text-2xl">Dashboard</h1>
+                    <h1 className="text-2xl">Jarvis</h1>
                 </Link>
                 <div className="flex items-center space-x-4">
                     <DarkModeToggle />

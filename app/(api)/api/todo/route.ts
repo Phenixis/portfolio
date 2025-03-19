@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
   const orderBy = searchParams.get("orderBy") as keyof Todo | null
   const limitParam = searchParams.get("limit")
   const orderingDirection = searchParams.get("orderingDirection") as "asc" | "desc" | undefined
+  const withProject = searchParams.get("withProject") === "true"
 
   const limit = limitParam ? Number.parseInt(limitParam) : undefined
   let completed: boolean | undefined = undefined
@@ -29,10 +30,10 @@ export async function GET(request: NextRequest) {
   try {
     const todos =
       completed === true
-        ? await getCompletedTodos(orderBy || undefined, orderingDirection, limit)
+        ? await getCompletedTodos(withProject, orderBy || undefined, orderingDirection, limit)
         : completed === false
-          ? await getUncompletedTodos(orderBy || undefined, orderingDirection, limit)
-          : await getTodos(orderBy || undefined, orderingDirection, limit)
+          ? await getUncompletedTodos(withProject, orderBy || undefined, orderingDirection, limit)
+          : await getTodos(withProject, orderBy || undefined, orderingDirection, limit)
 
     return NextResponse.json(todos)
   } catch (error) {
