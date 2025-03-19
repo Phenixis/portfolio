@@ -7,25 +7,20 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import type { Todo } from "@/lib/db/schema"
-import { PlusIcon, PenIcon } from "lucide-react"
+import { PlusIcon, PenIcon, Minus, Plus } from "lucide-react"
 import { useRef, useState, useEffect } from "react"
 import { useSWRConfig } from "swr"
 import { Calendar } from "@/components/ui/calendar"
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from "@/components/ui/collapsible"
-import {
-    calculateUrgency,
-} from "@/lib/utils"
+import { calculateUrgency } from "@/lib/utils"
 import { fr } from "date-fns/locale"
+import { format } from "date-fns"
 
 export function TodoModal({ className, todo }: { className?: string; todo?: Todo }) {
     const mode = todo ? "edit" : "create"
     const [open, setOpen] = useState(false)
     const [dueDate, setDueDate] = useState<Date>(todo ? new Date(todo.due) : new Date())
-    const [calendarOpen, setCalendarOpen] = useState(false)
+    const [showCalendar, setShowCalendar] = useState(false)
+    const calendarRef = useRef<HTMLDivElement>(null)
     const { mutate } = useSWRConfig()
 
     // Utiliser des refs pour accéder aux valeurs des champs
@@ -35,6 +30,22 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 
     // État pour suivre si une soumission est en cours (pour éviter les doubles soumissions)
     const isSubmittingRef = useRef(false)
+
+    // Close calendar when clicking outside
+    useEffect(() => {
+        if (!showCalendar) return
+
+        const handleClickOutside = (event: MouseEvent) => {
+            if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
+                setShowCalendar(false)
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside)
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside)
+        }
+    }, [showCalendar])
 
     // Fonction optimisée pour gérer la soumission
     const handleSubmit = async (e: React.FormEvent) => {
@@ -127,7 +138,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
                     mutate((key) => typeof key === "string" && key.startsWith("/api/todos"))
                 })
 
-            setDueDate(new Date());
+            setDueDate(new Date())
         } catch (error) {
             console.error("Erreur lors de la soumission:", error)
             isSubmittingRef.current = false
@@ -156,6 +167,13 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
         isSubmittingRef.current = false
     }, [open])
 
+    const handleDateChange = (date: Date | undefined) => {
+        if (date) {
+            setDueDate(date)
+            setShowCalendar(false)
+        }
+    }
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger className={className}>
@@ -183,28 +201,46 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
                                 max={5}
                             />
                         </div>
-                        <div>
+                        <div className="relative">
                             <Label htmlFor="dueDate">Due date</Label>
-                            <Collapsible open={calendarOpen} onOpenChange={setCalendarOpen}>
-                                <CollapsibleTrigger asChild>
-                                    <Button variant="outline">
-                                        {dueDate.toLocaleDateString("fr-FR", {
-                                            year: "numeric",
-                                            month: "2-digit",
-                                            day: "2-digit",
-                                        })}
-                                    </Button>
-                                </CollapsibleTrigger>
-                                <CollapsibleContent>
+                            <div className="flex gap-1">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => {
+                                        const newDate = new Date(dueDate.getTime() - 24 * 60 * 60 * 1000)
+                                        const today = new Date()
+                                        today.setHours(0, 0, 0, 0)
+                                        if (newDate >= today) {
+                                            setDueDate(newDate)
+                                        }
+                                    }}
+                                >
+                                    <Minus />
+                                </Button>
+                                <Button type="button" variant="outline" onClick={() => setShowCalendar(!showCalendar)}>
+                                    {format(dueDate, "dd/MM/yyyy")}
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => {
+                                        setDueDate(new Date(dueDate.getTime() + 24 * 60 * 60 * 1000))
+                                    }}
+                                >
+                                    <Plus />
+                                </Button>
+                            </div>
+
+                            {showCalendar && (
+                                <div
+                                    ref={calendarRef}
+                                    className="absolute z-50 mt-1 bg-popover p-3 rounded-md shadow-md border border-border"
+                                >
                                     <Calendar
                                         mode="single"
                                         selected={dueDate}
-                                        onSelect={(date) => {
-                                            if (date) {
-                                                setDueDate(date)
-                                            }
-                                            setCalendarOpen(false)
-                                        }}
+                                        onSelect={handleDateChange}
                                         disabled={(date) => {
                                             const today = new Date()
                                             today.setHours(0, 0, 0, 0)
@@ -212,8 +248,8 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
                                         }}
                                         locale={fr}
                                     />
-                                </CollapsibleContent>
-                            </Collapsible>
+                                </div>
+                            )}
                         </div>
                         <div>
                             <Label htmlFor="duration">Durée</Label>
@@ -236,3 +272,4 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
         </Dialog>
     )
 }
+
