@@ -11,8 +11,7 @@ import {
 import { relations } from 'drizzle-orm';
 
 export const project = pgTable('project', {
-    id: serial('id').primaryKey(),
-    title: varchar('title', {length: 255}).notNull(),
+    title: varchar('title', {length: 255}).primaryKey(),
     description: text('description'),
     completed: boolean('completed').notNull().default(false),
     created_at: timestamp('created_at').notNull().defaultNow(),
@@ -28,8 +27,8 @@ export const todo = pgTable('todo', {
     duration: integer('duration').notNull().default(0),
     score: integer('score').notNull().default(0),
     due: timestamp('due').notNull().defaultNow(),
-    project_id: integer('project_id')
-        .references(() => project.id),
+    project_title: varchar('project_title', {length: 255})
+        .references(() => project.title),
     completed_at: timestamp('completed_at'),
     created_at: timestamp('created_at').notNull().defaultNow(),
     updated_at: timestamp('updated_at').notNull().defaultNow(),
