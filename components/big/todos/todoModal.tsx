@@ -14,6 +14,8 @@ import { Calendar } from "@/components/ui/calendar"
 import { calculateUrgency } from "@/lib/utils"
 import { fr } from "date-fns/locale"
 import { format } from "date-fns"
+import { useDebouncedCallback } from 'use-debounce';
+import { useSearchProject } from "@/hooks/useSearchProject"
 
 export function TodoModal({ className, todo }: { className?: string; todo?: Todo }) {
     const mode = todo ? "edit" : "create"
@@ -21,6 +23,8 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
     const [dueDate, setDueDate] = useState<Date>(todo ? new Date(todo.due) : new Date())
     const [showCalendar, setShowCalendar] = useState(false)
     const calendarRef = useRef<HTMLDivElement>(null)
+    const [project, setProject] = useState<string>("")
+    const { projects, isLoading, isError } = useSearchProject({ query: project, limit: 5 })
     const { mutate } = useSWRConfig()
 
     // Utiliser des refs pour accéder aux valeurs des champs
@@ -68,7 +72,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
                 return
             }
 
-            // Créer l'objet todo pour la mise à jour optimiste
+            // Créer l'objet todo pour la mise à jour optimiste 
             const urgency = calculateUrgency(dueDate)
             const score = importance * urgency - duration
             const todoData = {
@@ -79,6 +83,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
                 duration,
                 score,
                 due: dueDate,
+                project_title: project,
                 created_at: mode === "create" ? new Date() : todo?.created_at,
                 updated_at: new Date(),
                 deleted_at: todo?.deleted_at || null,
@@ -119,6 +124,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
                     importance,
                     dueDate: dueDate.toISOString(),
                     duration,
+                    projectTitle: project,
                 }),
             })
                 .then((response) => {
@@ -173,6 +179,10 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
             setShowCalendar(false)
         }
     }
+
+    const handleProjectChange = useDebouncedCallback((value: string) => {
+        setProject(value)
+    }, 300);
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -261,6 +271,17 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
                                 defaultValue={todo?.duration || 0}
                                 min={0}
                                 max={3}
+                            />
+                        </div>
+                    </div>
+                    <div className="flex space-x-4">
+                        <div className="w-full">
+                            <Label htmlFor="project">Project</Label>
+                            <Input
+                                type="text"
+                                id="project"
+                                name="project"
+                                onChange={(e) => handleProjectChange(e.target.value)}
                             />
                         </div>
                     </div>
