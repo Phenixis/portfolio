@@ -152,7 +152,7 @@ export default function TodoDisplay({ todo, orderedBy }: { todo?: (Todo | Todo &
       <label
         ref={labelRef}
         htmlFor={`taskButton-${todo?.id || "skeleton"}`}
-        className={`flex justify-between items-center group/todo p-1 duration-300 hover:bg-primary/5 ${isDeleting ? "opacity-50" : ""}`}
+        className={`flex justify-between items-center group/todo p-1 duration-300 hover:bg-primary/5 space-x-4 ${isDeleting ? "opacity-50" : ""}`}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
         title={skeleton ? `I: ${todo.importance}, U: ${todo.urgency}, D: ${todo.duration}` : "Loading..."}
