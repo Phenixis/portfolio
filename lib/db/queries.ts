@@ -34,7 +34,7 @@ export async function createTodo(title: string, importance: number, dueDate: Dat
 		.returning({ id: Schema.todo.id })
 
 	// Revalidate all pages that might show todos
-	revalidatePath("/")
+	revalidatePath("/", 'layout')
 
 	return result[0].id
 }
@@ -212,7 +212,7 @@ export async function updateTodo(id: number, title: string, importance: number, 
 		.returning({ id: Schema.todo.id })
 
 	// Revalidate all pages that might show todos
-	revalidatePath("/")
+	revalidatePath("/", 'layout')
 
 	if (!result) {
 		return null
@@ -240,7 +240,7 @@ export async function updateTodoUrgency(id: number) {
 		.returning({ id: Schema.todo.id })
 
 	// Revalidate all pages that might show todos
-	revalidatePath("/")
+	revalidatePath("/", 'layout')
 
 	if (!result) {
 		return null
@@ -260,7 +260,7 @@ export async function markTodoAsDone(id: number) {
 		.returning({ id: Schema.todo.id })
 
 	// Revalidate all pages that might show todos
-	revalidatePath("/")
+	revalidatePath("/", 'layout')
 
 	if (!result) {
 		return null
@@ -280,7 +280,7 @@ export async function markTodoAsUndone(id: number) {
 		.returning({ id: Schema.todo.id })
 
 	// Revalidate all pages that might show todos
-	revalidatePath("/")
+	revalidatePath("/", 'layout')
 
 	return result[0].id
 }
@@ -297,7 +297,7 @@ export async function deleteTodoById(id: number) {
 		.returning({ id: Schema.todo.id })
 
 	// Revalidate all pages that might show todos
-	revalidatePath("/")
+	revalidatePath("/", 'layout')
 
 	if (result) {
 		return result[0].id
@@ -330,7 +330,7 @@ export async function createMeteo(dayOrMeteo: string | Schema.NewMeteo, temperat
 		.returning({ day: Schema.meteo.day });
 
 	// Revalidate all pages that might show meteo
-	revalidatePath("/");
+	revalidatePath("/", 'layout');
 
 	return result[0].day;
 }
@@ -377,7 +377,7 @@ export async function updateMeteo(dayOrMeteo: string | Schema.NewMeteo, temperat
 		.returning({ day: Schema.meteo.day });
 
 	// Revalidate all pages that might show meteo
-	revalidatePath("/");
+	revalidatePath("/", 'layout');
 
 	if (!result) {
 		return null;
@@ -395,7 +395,7 @@ export async function deleteMeteoByDay(day: string) {
 		.returning({ day: Schema.meteo.day })
 
 	// Revalidate all pages that might show meteo
-	revalidatePath("/")
+	revalidatePath("/", 'layout')
 
 	if (result) {
 		return result[0].day
@@ -418,7 +418,7 @@ export async function createProject(title: string, description?: string) {
 		.returning({ id: Schema.project.title })
 
 	// Revalidate all pages that might show projects
-	revalidatePath("/")
+	revalidatePath("/", 'layout')
 
 	return result[0].id
 }
@@ -487,7 +487,7 @@ export async function updateProject(title: string, new_title?: string, descripti
 		.returning({ title: Schema.project.title })
 
 	// Revalidate all pages that might show projects
-	revalidatePath("/")
+	revalidatePath("/", 'layout')
 
 	if (!result) {
 		return null
@@ -507,7 +507,7 @@ export async function completeProject(title: string) {
 		.returning({ title: Schema.project.title })
 
 	// Revalidate all pages that might show projects
-	revalidatePath("/")
+	revalidatePath("/", 'layout')
 
 	if (!result) {
 		return null
@@ -527,7 +527,7 @@ export async function uncompleteProject(title: string) {
 		.returning({ title: Schema.project.title })
 
 	// Revalidate all pages that might show projects
-	revalidatePath("/")
+	revalidatePath("/", 'layout')
 
 	if (!result) {
 		return null
@@ -548,7 +548,7 @@ export async function deleteProject(title: string) {
 		.returning({ title: Schema.project.title })
 
 	// Revalidate all pages that might show projects
-	revalidatePath("/")
+	revalidatePath("/", 'layout')
 
 	if (result) {
 		return result[0].title
