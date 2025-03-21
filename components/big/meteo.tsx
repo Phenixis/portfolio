@@ -61,7 +61,7 @@ export default function Meteo({
         <div className={cn("text-center md:text-lg", className)}>
             <div className="flex flex-row items-start justify-between">
                 <div className="flex flex-col justify-center items-center">
-                    <img src={`http://openweathermap.org/img/wn/${meteo.icon}@2x.png`} alt="Weather icon" />
+                    <img src={`http://openweathermap.org/img/wn/${meteo.icon}@2x.png`} className="size-12" alt="Weather icon" />
                     <p>{meteo.temperature.toFixed(0)}°C</p>
                 </div>
                 <p className="">

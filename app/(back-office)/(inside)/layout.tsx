@@ -14,7 +14,7 @@ export default function BackOfficeLayout({
                 <Link href="/my">
                     <h1 className="text-2xl">Jarvis</h1>
                 </Link>
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 xl:space-x-4">
                     <DarkModeToggle />
                     <form action={logout}>
                         <Button type="submit">Logout</Button>
