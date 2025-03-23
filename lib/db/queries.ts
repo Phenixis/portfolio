@@ -53,7 +53,7 @@ export async function getTodoById(id: number) {
 	return dbresult[0];
 }
 
-export async function getTodos(withProject: boolean, orderBy: keyof Schema.Todo = "score", orderingDirection?: "asc" | "desc", limit = 50) {
+export async function getTodos(withProject: boolean = false, orderBy: keyof Schema.Todo = "score", orderingDirection?: "asc" | "desc", limit = 50) {
 	if (withProject) {
 		return await db.select({
 			id: Schema.todo.id,
@@ -95,7 +95,7 @@ export async function getTodos(withProject: boolean, orderBy: keyof Schema.Todo 
 	}
 }
 
-export async function getCompletedTodos(withProject: boolean, orderBy: keyof Schema.Todo = "completed_at", orderingDirection?: "asc" | "desc", limit = 50) {
+export async function getCompletedTodos(withProject: boolean = false, orderBy: keyof Schema.Todo = "completed_at", orderingDirection?: "asc" | "desc", limit = 50) {
 	if (withProject) {
 		return await db.select({
 			id: Schema.todo.id,
@@ -138,7 +138,7 @@ export async function getCompletedTodos(withProject: boolean, orderBy: keyof Sch
 	}
 }
 
-export async function getUncompletedTodos(withProject: boolean, orderBy: keyof Schema.Todo = "score", orderingDirection?: "asc" | "desc", limit = 50) {
+export async function getUncompletedTodos(withProject: boolean = false, orderBy: keyof Schema.Todo = "score", orderingDirection?: "asc" | "desc", limit = 50) {
 	if (withProject) {
 		return await db.select({
 			id: Schema.todo.id,
@@ -433,6 +433,7 @@ export async function searchProjects(title?: string, limit = 50) {
 			sql`${Schema.project.title} LIKE ${`%${title ? title : ""}%`}`,
 			isNull(Schema.project.deleted_at)
 		))
+		.orderBy(asc(Schema.project.title))
 		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.Project[]
 }
 
