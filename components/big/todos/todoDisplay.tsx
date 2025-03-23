@@ -149,7 +149,7 @@ export default function TodoDisplay({ todo, orderedBy }: { todo?: (Todo | Todo &
 						</div>
 						<div className="flex items-center space-x-2">
 							{"project" in todo && todo.project && (
-								<Badge className="mr-2" variant="outline">
+								<Badge className="mr-2 text-center" variant="outline">
 									{todo.project.title}
 								</Badge>
 							)}
