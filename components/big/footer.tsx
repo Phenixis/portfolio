@@ -36,7 +36,7 @@ export default function Footer({ actualPath }: { actualPath: string }) {
                             return (
                                 <li key={link.name}>
                                     <a
-                                        className="flex duration-1000 items-center transition-all hover:text-neutral-900 dark:hover:text-neutral-100"
+                                        className="flex duration-1000 items-center transition-all lg:hover:text-neutral-900 dark:hover:text-neutral-100"
                                         rel="noopener noreferrer"
                                         target="_blank"
                                         href={link.ref}

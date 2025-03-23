@@ -19,7 +19,7 @@ export default function Time({
     }, []);
 
     return (
-        <div className={cn("text-center text-lg", className)}>
+        <div className={cn("text-center text-lg", className)} suppressHydrationWarning>
             {currentTime.toLocaleTimeString()}
         </div>
     );

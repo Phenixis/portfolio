@@ -18,7 +18,7 @@ export default function BlogPosts() {
                 .map((post) => (
                     <Link
                         key={post.slug}
-                        className="duration-1000 flex flex-col space-y-1 mb-4 p-1 rounded border border-neutral-200 md:border-transparent hover:border-neutral-200 dark:hover:border-neutral-500"
+                        className="duration-1000 flex flex-col space-y-1 mb-4 p-1 rounded border border-neutral-200 md:border-transparent lg:hover:border-neutral-200 dark:hover:border-neutral-500"
                         href={`/blog/${post.slug}`}
                     >
                         <div className="w-full flex flex-col md:items-center md:flex-row space-x-0 md:space-x-2">

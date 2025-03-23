@@ -303,7 +303,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 											{projects.map((proj, index) => (
 												<li
 													key={index}
-													className="cursor-pointer px-3 py-2 text-sm hover:bg-accent"
+													className="cursor-pointer px-3 py-2 text-sm lg:hover:bg-accent"
 													onClick={() => {
 														const selectedProject = proj.title
 														setInputValue(selectedProject)

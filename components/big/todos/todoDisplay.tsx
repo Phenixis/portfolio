@@ -9,16 +9,18 @@ import type {
 
 } from "@/lib/db/schema"
 import { TodoModal } from "./todoModal"
-import { TrashIcon, Loader } from "lucide-react"
+import { TrashIcon } from "lucide-react"
 import { useSWRConfig } from "swr"
 import { Badge } from "@/components/ui/badge"
+import { cn } from "@/lib/utils"
 
-export default function TodoDisplay({ todo, orderedBy }: { todo?: (Todo | Todo & { project: Project }), orderedBy?: keyof Todo }) {
+export default function TodoDisplay({ todo, orderedBy, className }: { todo?: (Todo | Todo & { project: Project }), orderedBy?: keyof Todo, className?: string }) {
 	const [isToggled, setIsToggled] = useState(todo ? todo.completed_at !== null : false)
 	const [isDeleting, setIsDeleting] = useState(false)
 	const labelRef = useRef<HTMLLabelElement>(null)
 	const { mutate } = useSWRConfig()
 	const skeleton = todo !== undefined && orderedBy !== undefined
+	const daysBeforeDue = todo ? Math.ceil((new Date(todo.due).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 4
 
 	// Fonction améliorée pour supprimer une todo avec SWR
 	async function deleteTodo(e: React.MouseEvent) {
@@ -129,12 +131,12 @@ export default function TodoDisplay({ todo, orderedBy }: { todo?: (Todo | Todo &
 			<label
 				ref={labelRef}
 				htmlFor={`taskButton-${todo?.id || "skeleton"}`}
-				className={`flex flex-col xl:flex-row justify-between items-end xl:items-center group/todo p-1 duration-300 hover:bg-primary/5 space-y-2 xl:space-x-4 ${isDeleting ? "opacity-50" : ""}`}
+				className={cn(`flex flex-col xl:flex-row justify-between items-end xl:items-center group/todo p-1 duration-300 ${daysBeforeDue <= 0 ? "bg-red-500/5 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/5 lg:hover:bg-orange-500/25" : "hover:bg-primary/5"} space-y-2 xl:space-x-4 ${isDeleting ? "opacity-50" : ""}`, className)}
 				title={skeleton ? `I: ${todo.importance}, U: ${todo.urgency}, D: ${todo.duration}` : "Loading..."}
 			>
 				{skeleton ? (
 					<>
-						<div className="flex space-x-2 items-center">
+						<div className="flex space-x-2 items-center w-full">
 							<div
 								className={`relative p-2 size-1 border border-neutral rounded-300 ${optimisticState ? "bg-primary" : ""}`}
 							>
@@ -155,7 +157,7 @@ export default function TodoDisplay({ todo, orderedBy }: { todo?: (Todo | Todo &
 							)}
 							<TodoModal className="duration-300 xl:opacity-0 xl:group-hover/todo:opacity-100" todo={todo} />
 							<TrashIcon
-								className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-destructive cursor-pointer hover:text-destructive/80 duration-300 xl:opacity-0 xl:group-hover/todo:opacity-100"
+								className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-destructive cursor-pointer lg:hover:text-destructive/80 duration-300 xl:opacity-0 xl:group-hover/todo:opacity-100"
 								onClick={deleteTodo}
 							/>
 						</div>

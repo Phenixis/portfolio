@@ -18,7 +18,7 @@ export default function Page() {
             <h1 className="page-title">
                 My Projects
             </h1>
-            <Collapsible className="group/collapsible data-[state=open]:bg-gray-100 dark:data-[state=open]:bg-gray-900 border-transparent dark:hover:bg-gray-900 hover:bg-gray-100 rounded-md p-2">
+            <Collapsible className="group/collapsible data-[state=open]:bg-gray-100 dark:data-[state=open]:bg-gray-900 border-transparent dark:hover:bg-gray-900 lg:hover:bg-gray-100 rounded-md p-2">
                 <CollapsibleTrigger className="flex justify-between gap-4">
                     <p className="text-left">
                         I build web applications since Septembre 2024, but my journey started a long time ago...
