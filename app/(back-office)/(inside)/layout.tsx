@@ -6,7 +6,7 @@ export default function BackOfficeLayout({
     children: React.ReactNode
 }) {
     return (
-        <main className="relative w-full h-full p-4">
+        <main className="relative w-full h-full xl:p-4">
             <Header />
             {children}
         </main>
