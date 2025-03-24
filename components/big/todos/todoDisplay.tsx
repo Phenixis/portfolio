@@ -131,7 +131,7 @@ export default function TodoDisplay({ todo, orderedBy, className }: { todo?: (To
 			<label
 				ref={labelRef}
 				htmlFor={`taskButton-${todo?.id || "skeleton"}`}
-				className={cn(`flex flex-col xl:flex-row justify-between items-end xl:items-center group/todo p-1 duration-300 ${daysBeforeDue <= 0 ? "bg-red-500/5 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/5 lg:hover:bg-orange-500/25" : "hover:bg-primary/5"} space-y-2 xl:space-x-4 ${isDeleting ? "opacity-50" : ""}`, className)}
+				className={cn(`flex flex-col xl:flex-row justify-between items-end xl:items-center group/todo p-1 duration-300 ${daysBeforeDue <= 0 ? "bg-red-500/5  dark:bg-red-500/15 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/5 dark:bg-orange-500/15 lg:hover:bg-orange-500/25" : "hover:bg-primary/5"} space-y-2 xl:space-x-4 ${isDeleting ? "opacity-50" : ""}`, className)}
 				title={skeleton ? `I: ${todo.importance}, U: ${todo.urgency}, D: ${todo.duration}` : "Loading..."}
 			>
 				{skeleton ? (
