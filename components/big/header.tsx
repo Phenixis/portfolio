@@ -7,7 +7,7 @@ import Time from "@/components/big/time"
 
 export default function Header({ }: {}) {
 	return (
-		<header className="-ml-4 fixed z-50 bottom-4 flex items-center justify-center w-full group/Header">
+		<header className="fixed z-50 bottom-4 flex items-center justify-center w-full group/Header">
 			<div className="w-fit max-w-[90%] p-2 px-4 gap-2 xl:gap-4 bg-gray-50 dark:bg-gray-900 rounded-full flex items-center justify-between border border-gray-200 dark:border-gray-800">
 				<DarkModeToggle />
 				<div className="flex items-center justify-center gap-1 xl:gap-2 group/Time">
