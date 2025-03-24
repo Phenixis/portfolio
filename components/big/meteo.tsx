@@ -58,16 +58,12 @@ export default function Meteo({
     }
 
     return (
-        <div className={cn("text-center md:text-lg", className)}>
+        <div className={cn("text-center text-xs xl:text-sm", className)}>
             <div className="flex flex-row items-start justify-between">
                 <div className="flex flex-col justify-center items-center">
-                    <img src={`http://openweathermap.org/img/wn/${meteo.icon}@2x.png`} className="size-12" alt="Weather icon" />
-                    <p>{meteo.temperature.toFixed(0)}°C</p>
+                    <img src={`http://openweathermap.org/img/wn/${meteo.icon}@2x.png`} className="size-12 xl:transform duration-300 xl:translate-y-3 xl:group-hover/Time:-translate-y-0" alt="Weather icon" />
+                    <p className="duration-300 -translate-y-2 xl:transform xl:-translate-y-4 xl:opacity-0 xl:group-hover/Time:opacity-100 xl:group-hover/Time:-translate-y-2">{meteo.temperature.toFixed(0)}°C</p>
                 </div>
-                <p className="">
-                    {meteo.day != new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: '2-digit', day: '2-digit' }) ? "Tomorrow, " : "Today, "}
-                    {meteo.summary}
-                </p>
             </div>
         </div >
     );
