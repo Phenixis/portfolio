@@ -56,7 +56,7 @@ export default function Header({ }: {}) {
 				</div>
 
 				{/* Center content */}
-				<div className="flex items-center justify-center gap-1 xl:gap-2 group/Time">
+				<div className="flex items-center justify-center gap-1 xl:gap-2 group/Time h-12">
 					<Meteo />
 					<div>
 						<Time

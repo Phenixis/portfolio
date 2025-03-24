@@ -131,14 +131,14 @@ export default function TodoDisplay({ todo, orderedBy, className }: { todo?: (To
 			<label
 				ref={labelRef}
 				htmlFor={`taskButton-${todo?.id || "skeleton"}`}
-				className={cn(`flex flex-col xl:flex-row justify-between items-end xl:items-center group/todo p-1 duration-300 text-xs xl:text-base ${daysBeforeDue <= 0 ? "bg-red-500/5  dark:bg-red-500/15 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/5 dark:bg-orange-500/15 lg:hover:bg-orange-500/25" : "hover:bg-primary/5"} space-y-2 xl:space-x-4 ${isDeleting ? "opacity-50" : ""}`, className)}
+				className={cn(`flex flex-col xl:flex-row justify-between items-end xl:items-center group/todo p-1 duration-300 text-xs xl:text-base ${daysBeforeDue <= 0 ? "bg-red-500/10  dark:bg-red-500/15 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/10 dark:bg-orange-500/15 lg:hover:bg-orange-500/25" : "hover:bg-primary/10"} space-y-2 xl:space-x-4 ${isDeleting ? "opacity-50" : ""}`, className)}
 				title={skeleton ? `I: ${todo.importance}, U: ${todo.urgency}, D: ${todo.duration}` : "Loading..."}
 			>
 				{skeleton ? (
 					<>
 						<div className="flex space-x-2 items-center w-full">
 							<div
-								className={`relative p-2 size-1 border border-neutral rounded-300 ${optimisticState ? "bg-primary" : ""}`}
+								className={`relative p-2 size-1 border border-neutral-300 dark:border-neutral-700 rounded-300 ${optimisticState ? "bg-primary" : ""}`}
 							>
 								<div
 									className={`absolute inset-0 w-1/2 h-1/2 z-20 m-auto duration-300 ${optimisticState ? "xl:group-hover/todo:bg-background" : "xl:group-hover/todo:bg-primary"}`}
