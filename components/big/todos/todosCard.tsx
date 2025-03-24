@@ -227,20 +227,18 @@ export function TodosCard({
 				</div>
 			</CardHeader>
 			<CardContent>
-				<ScrollArea className="h-full">
-					{isLoading ? (
-						// Show loading state
-						Array(5)
-							.fill(null)
-							.map((_, i) => <TodoDisplay key={i} />)
-					) : todos?.length > 0 ? (
-						// Show todos
-						todos.map((todo: Todo) => <TodoDisplay key={todo.id} todo={todo} orderedBy={orderBy} className="mt-1" />)
-					) : (
-						// Show empty state
-						<div className="text-center py-4">No todos found</div>
-					)}
-				</ScrollArea>
+				{isLoading ? (
+					// Show loading state
+					Array(5)
+						.fill(null)
+						.map((_, i) => <TodoDisplay key={i} />)
+				) : todos?.length > 0 ? (
+					// Show todos
+					todos.map((todo: Todo) => <TodoDisplay key={todo.id} todo={todo} orderedBy={orderBy} className="mt-1" />)
+				) : (
+					// Show empty state
+					<div className="text-center py-4">No todos found</div>
+				)}
 			</CardContent>
 		</Card>
 	)
