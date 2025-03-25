@@ -43,7 +43,7 @@ export default function Header({ }: {}) {
 				isVisible ? "translate-y-0 opacity-100" : "translate-y-24 opacity-0",
 			)}
 		>
-			<div className="relative w-fit max-w-[90%] p-1 xl:p-2 px-2 xl:px-4 gap-2 xl:gap-4 bg-gray-50 dark:bg-gray-900 rounded-full flex items-center justify-between border border-gray-200 dark:border-gray-800 transition-all duration-300 group/Header"
+			<div className="relative w-fit max-w-[90%] p-1 xl:p-2 px-2 xl:px-4 bg-gray-50 dark:bg-gray-900 rounded-full flex items-center justify-between border border-gray-200 dark:border-gray-800 transition-all duration-300 group/Header"
 				onMouseEnter={() => setIsHovering(true)}
 				onMouseLeave={() => setIsHovering(false)}
 			>
@@ -51,7 +51,7 @@ export default function Header({ }: {}) {
 				<div
 					className={cn(
 						"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center",
-						isHovering ? "w-fit max-w-full opacity-100" : "w-0 max-w-0 opacity-0",
+						isHovering ? "w-fit max-w-[24px] opacity-100 mr-2 xl:mr-4" : "w-0 max-w-0 opacity-0",
 					)}
 				>
 					<DarkModeToggle className="transition-transform duration-300" />
@@ -74,7 +74,7 @@ export default function Header({ }: {}) {
 				<div
 					className={cn(
 						"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center",
-						showLogout ? "w-fit max-w-full opacity-100" : "w-0 max-w-0 opacity-0",
+						showLogout ? "w-fit max-w-[40px] opacity-100 ml-2 xl:ml-4" : "w-0 max-w-0 opacity-0",
 					)}
 				>
 					<form action={logout}>

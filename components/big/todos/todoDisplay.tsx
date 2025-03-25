@@ -2,25 +2,48 @@
 
 import type React from "react"
 
-import { useState, useEffect, useOptimistic, startTransition, useRef } from "react"
+import { useState, useOptimistic, startTransition, useRef, useEffect } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import type {
-	Todo, Project
-
-} from "@/lib/db/schema"
+import type { Todo, Project } from "@/lib/db/schema"
 import { TodoModal } from "./todoModal"
 import { TrashIcon } from "lucide-react"
 import { useSWRConfig } from "swr"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
-export default function TodoDisplay({ todo, orderedBy, className }: { todo?: (Todo | Todo & { project: Project }), orderedBy?: keyof Todo, className?: string }) {
+export default function TodoDisplay({
+	todo,
+	orderedBy,
+	className,
+}: { todo?: Todo | (Todo & { project: Project }); orderedBy?: keyof Todo; className?: string }) {
 	const [isToggled, setIsToggled] = useState(todo ? todo.completed_at !== null : false)
 	const [isDeleting, setIsDeleting] = useState(false)
+	const [isHovering, setIsHovering] = useState(false)
+	const [showTrash, setShowTrash] = useState(false)
 	const labelRef = useRef<HTMLLabelElement>(null)
 	const { mutate } = useSWRConfig()
 	const skeleton = todo !== undefined && orderedBy !== undefined
 	const daysBeforeDue = todo ? Math.ceil((new Date(todo.due).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 4
+
+	// Handle delayed appearance of trash icon
+	useEffect(() => {
+		let timeoutId: NodeJS.Timeout
+
+		if (isHovering) {
+			// Set timeout to show trash icon after 800ms
+			timeoutId = setTimeout(() => {
+				setShowTrash(true)
+			}, 1200)
+		} else {
+			// Hide trash icon immediately
+			setShowTrash(false)
+		}
+
+		// Cleanup timeout on component unmount or when isHovering changes
+		return () => {
+			clearTimeout(timeoutId)
+		}
+	}, [isHovering])
 
 	// Fonction améliorée pour supprimer une todo avec SWR
 	async function deleteTodo(e: React.MouseEvent) {
@@ -51,7 +74,6 @@ export default function TodoDisplay({ todo, orderedBy, className }: { todo?: (To
 
 			// Revalidate after successful deletion
 			mutate((key) => typeof key === "string" && key.startsWith("/api/todo"))
-
 		} catch (error) {
 			console.error("Error deleting todo:", error)
 
@@ -131,8 +153,13 @@ export default function TodoDisplay({ todo, orderedBy, className }: { todo?: (To
 			<label
 				ref={labelRef}
 				htmlFor={`taskButton-${todo?.id || "skeleton"}`}
-				className={cn(`flex flex-col xl:flex-row justify-between items-end xl:items-center group/todo p-1 duration-300 text-xs xl:text-base ${daysBeforeDue <= 0 ? "bg-red-500/10  dark:bg-red-500/15 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/10 dark:bg-orange-500/15 lg:hover:bg-orange-500/25" : "hover:bg-primary/10"} space-y-2 xl:space-x-4 ${isDeleting ? "opacity-50" : ""}`, className)}
+				className={cn(
+					`flex flex-col xl:flex-row justify-between items-end xl:items-center group/todo p-1 duration-300 text-xs xl:text-base ${daysBeforeDue <= 0 ? "bg-red-500/10  dark:bg-red-500/15 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/10 dark:bg-orange-500/15 lg:hover:bg-orange-500/25" : "hover:bg-primary/10"} space-y-2 xl:space-x-4 ${isDeleting ? "opacity-50" : ""}`,
+					className,
+				)}
 				title={skeleton ? `I: ${todo.importance}, U: ${todo.urgency}, D: ${todo.duration}` : "Loading..."}
+				onMouseEnter={() => setIsHovering(true)}
+				onMouseLeave={() => setIsHovering(false)}
 			>
 				{skeleton ? (
 					<>
@@ -149,17 +176,39 @@ export default function TodoDisplay({ todo, orderedBy, className }: { todo?: (To
 								<span className="ml-2 text-xs text-neutral">{todo[orderedBy] as string}</span>
 							</p>
 						</div>
-						<div className="flex items-center space-x-2">
+						<div className="flex items-center">
 							{"project" in todo && todo.project && (
 								<Badge className="mr-2 text-center" variant="outline">
 									{todo.project.title}
 								</Badge>
 							)}
-							<TodoModal className="duration-300 xl:opacity-0 xl:group-hover/todo:opacity-100" todo={todo} />
-							<TrashIcon
-								className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-destructive cursor-pointer lg:hover:text-destructive/80 duration-300 xl:opacity-0 xl:group-hover/todo:opacity-100"
-								onClick={deleteTodo}
-							/>
+
+							{/* TrashIcon with delayed appearance */}
+							<div
+								className={cn(
+									"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center",
+									showTrash
+										? "w-full xl:w-fit xl:max-w-[24px] xl:opacity-100 ml-2"
+										: "w-full xl:w-0 xl:max-w-0 xl:opacity-0",
+								)}
+							>
+								<TrashIcon
+									className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-destructive cursor-pointer lg:hover:text-destructive/80 duration-300"
+									onClick={deleteTodo}
+								/>
+							</div>
+
+							{/* TodoModal with immediate appearance on hover */}
+							<div
+								className={cn(
+									"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center",
+									isHovering
+										? "w-full xl:w-fit xl:max-w-[32px] xl:opacity-100 ml-2"
+										: "w-full xl:w-0 xl:max-w-0 xl:opacity-0",
+								)}
+							>
+								<TodoModal className="duration-300" todo={todo} />
+							</div>
 						</div>
 					</>
 				) : (
