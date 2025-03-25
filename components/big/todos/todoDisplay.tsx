@@ -20,7 +20,7 @@ export default function TodoDisplay({
 	const [isDeleting, setIsDeleting] = useState(false)
 	const [isHovering, setIsHovering] = useState(false)
 	const [showTrash, setShowTrash] = useState(false)
-	const labelRef = useRef<HTMLLabelElement>(null)
+	const containerRef = useRef<HTMLDivElement>(null)
 	const { mutate } = useSWRConfig()
 	const skeleton = todo !== undefined && orderedBy !== undefined
 	const daysBeforeDue = todo ? Math.ceil((new Date(todo.due).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 4
@@ -30,7 +30,7 @@ export default function TodoDisplay({
 		let timeoutId: NodeJS.Timeout
 
 		if (isHovering) {
-			// Set timeout to show trash icon after 800ms
+			// Set timeout to show trash icon after 1200ms
 			timeoutId = setTimeout(() => {
 				setShowTrash(true)
 			}, 1200)
@@ -47,7 +47,7 @@ export default function TodoDisplay({
 
 	// Fonction améliorée pour supprimer une todo avec SWR
 	async function deleteTodo(e: React.MouseEvent) {
-		e.stopPropagation() // Empêche le clic de se propager au label
+		e.stopPropagation() // Empêche le clic de se propager
 
 		if (!todo) return
 
@@ -85,7 +85,9 @@ export default function TodoDisplay({
 	}
 
 	// Fonction améliorée pour basculer l'état d'une todo avec SWR
-	async function toggle(todo: Todo) {
+	async function toggle() {
+		if (!todo) return
+
 		startTransition(() => {
 			toggleOptimistic(isToggled)
 		})
@@ -137,87 +139,86 @@ export default function TodoDisplay({
 	const [optimisticState, toggleOptimistic] = useOptimistic(isToggled, (prev) => !prev)
 
 	return (
-		<>
-			<input
-				type="checkbox"
-				className="hidden"
-				name={`taskButton-${todo?.id || "skeleton"}`}
-				id={`taskButton-${todo?.id || "skeleton"}`}
-				checked={optimisticState}
-				onChange={() => {
-					if (todo) {
-						toggle(todo)
-					}
-				}}
-			/>
-			<label
-				ref={labelRef}
-				htmlFor={`taskButton-${todo?.id || "skeleton"}`}
-				className={cn(
-					`flex flex-col xl:flex-row justify-between items-end xl:items-center group/todo p-1 duration-300 text-xs xl:text-base ${daysBeforeDue <= 0 ? "bg-red-500/10  dark:bg-red-500/15 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/10 dark:bg-orange-500/15 lg:hover:bg-orange-500/25" : "hover:bg-primary/10"} space-y-2 xl:space-x-4 ${isDeleting ? "opacity-50" : ""}`,
-					className,
-				)}
-				title={skeleton ? `I: ${todo.importance}, U: ${todo.urgency}, D: ${todo.duration}` : "Loading..."}
-				onMouseEnter={() => setIsHovering(true)}
-				onMouseLeave={() => setIsHovering(false)}
-			>
-				{skeleton ? (
-					<>
-						<div className="flex space-x-2 items-center w-full">
+		<div
+			ref={containerRef}
+			className={cn(
+				`flex flex-col xl:flex-row justify-between items-end xl:items-center group/todo p-1 duration-300 text-xs xl:text-base ${daysBeforeDue <= 0 ? "bg-red-500/10 dark:bg-red-500/15 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/10 dark:bg-orange-500/15 lg:hover:bg-orange-500/25" : "hover:bg-primary/10"} space-y-2 xl:space-x-4 ${isDeleting ? "opacity-50" : ""}`,
+				className,
+			)}
+			onMouseEnter={() => setIsHovering(true)}
+			onMouseLeave={() => setIsHovering(false)}
+		>
+			{skeleton ? (
+				<>
+					<div className="flex space-x-2 items-center w-full">
+						<div
+							className={cn(
+								"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center",
+								isHovering
+									? "w-full xl:w-full xl:max-w-[18px] xl:opacity-100 ml-2"
+									: "w-full xl:w-0 xl:max-w-0 xl:opacity-0",
+							)}
+						>
+							{/* Only this div is clickable for toggling */}
 							<div
-								className={`relative p-2 size-1 border border-neutral-300 dark:border-neutral-700 rounded-300 ${optimisticState ? "bg-primary" : ""}`}
+								className={`relative p-2 size-1 border border-neutral-300 dark:border-neutral-700 rounded-300 cursor-pointer ${optimisticState ? "bg-primary" : ""}`}
+								onClick={() => toggle()}
+								role="checkbox"
+								aria-checked={optimisticState}
+								tabIndex={0}
 							>
 								<div
 									className={`absolute inset-0 w-1/2 h-1/2 z-20 m-auto duration-300 ${optimisticState ? "xl:group-hover/todo:bg-background" : "xl:group-hover/todo:bg-primary"}`}
 								/>
 							</div>
-							<p className={`${optimisticState ? "line-through text-muted-foreground" : ""}`}>
-								{todo.title}
-								<span className="ml-2 text-xs text-neutral">{todo[orderedBy] as string}</span>
-							</p>
 						</div>
-						<div className="flex items-center">
-							{"project" in todo && todo.project && (
-								<Badge className="mr-2 text-center" variant="outline">
-									{todo.project.title}
-								</Badge>
-							)}
-
-							{/* TrashIcon with delayed appearance */}
-							<div
-								className={cn(
-									"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center",
-									showTrash
-										? "w-full xl:w-fit xl:max-w-[24px] xl:opacity-100 ml-2"
-										: "w-full xl:w-0 xl:max-w-0 xl:opacity-0",
-								)}
-							>
-								<TrashIcon
-									className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-destructive cursor-pointer lg:hover:text-destructive/80 duration-300"
-									onClick={deleteTodo}
-								/>
-							</div>
-
-							{/* TodoModal with immediate appearance on hover */}
-							<div
-								className={cn(
-									"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center",
-									isHovering
-										? "w-full xl:w-fit xl:max-w-[32px] xl:opacity-100 ml-2"
-										: "w-full xl:w-0 xl:max-w-0 xl:opacity-0",
-								)}
-							>
-								<TodoModal className="duration-300" todo={todo} />
-							</div>
-						</div>
-					</>
-				) : (
-					<div className="flex space-x-2 items-center w-full">
-						<Skeleton className="w-5 h-5" />
-						<Skeleton className="w-full h-4" />
+						<p className={`${optimisticState ? "line-through text-muted-foreground" : ""}`}>
+							{todo.title}
+							<span className="ml-2 text-xs text-neutral">{todo[orderedBy] as string}</span>
+						</p>
 					</div>
-				)}
-			</label>
-		</>
+					<div className="flex items-center">
+						{"project" in todo && todo.project && (
+							<Badge className="mr-2 text-center" variant="outline">
+								{todo.project.title}
+							</Badge>
+						)}
+
+						{/* TrashIcon with delayed appearance */}
+						<div
+							className={cn(
+								"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center",
+								showTrash
+									? "w-full xl:w-fit xl:max-w-[24px] xl:opacity-100 ml-2"
+									: "w-full xl:w-0 xl:max-w-0 xl:opacity-0",
+							)}
+						>
+							<TrashIcon
+								className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-destructive cursor-pointer lg:hover:text-destructive/80 duration-300"
+								onClick={deleteTodo}
+							/>
+						</div>
+
+						{/* TodoModal with immediate appearance on hover */}
+						<div
+							className={cn(
+								"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center",
+								isHovering
+									? "w-full xl:w-fit xl:max-w-[32px] xl:opacity-100 ml-2"
+									: "w-full xl:w-0 xl:max-w-0 xl:opacity-0",
+							)}
+						>
+							<TodoModal className="duration-300" todo={todo} />
+						</div>
+					</div>
+				</>
+			) : (
+				<div className="flex space-x-2 items-center w-full">
+					<Skeleton className="w-5 h-5" />
+					<Skeleton className="w-full h-4" />
+				</div>
+			)}
+		</div>
 	)
 }
+
