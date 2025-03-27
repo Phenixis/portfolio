@@ -179,7 +179,7 @@ export default function TodoDisplay({
 					</div>
 					<div className="flex items-center">
 						{"project" in todo && todo.project && (
-							<Badge className="mr-2 text-center" variant="outline">
+							<Badge className="text-center" variant="outline">
 								{todo.project.title}
 							</Badge>
 						)}
@@ -189,7 +189,7 @@ export default function TodoDisplay({
 							className={cn(
 								"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center",
 								showTrash
-									? "w-full xl:w-fit xl:max-w-[24px] xl:opacity-100 ml-2"
+									? "w-full xl:max-w-[24px] xl:opacity-100 ml-2"
 									: "w-full xl:w-0 xl:max-w-0 xl:opacity-0",
 							)}
 						>
@@ -204,7 +204,7 @@ export default function TodoDisplay({
 							className={cn(
 								"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center",
 								isHovering
-									? "w-full xl:w-fit xl:max-w-[32px] xl:opacity-100 ml-2"
+									? "w-full xl:max-w-[32px] xl:opacity-100 ml-2"
 									: "w-full xl:w-0 xl:max-w-0 xl:opacity-0",
 							)}
 						>
