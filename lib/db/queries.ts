@@ -557,3 +557,93 @@ export async function deleteProject(title: string) {
 
 	return null
 }
+
+// # Exercice
+
+// ## Create
+
+export async function createExercice(name: string) {
+	const result = await db
+		.insert(Schema.exercice)
+		.values({
+			name: name,
+		} as Schema.NewExercice)
+		.returning({ id: Schema.exercice.id })
+
+	// Revalidate all pages that might show exercices
+	revalidatePath("/", 'layout')
+
+	return result[0].id
+}
+
+// ## Read
+
+export async function getExercice(id: number) {
+	const dbresult = await db
+		.select()
+		.from(Schema.exercice)
+		.where(and(eq(Schema.exercice.id, id), isNull(Schema.exercice.deleted_at))) as Schema.Exercice[]
+
+	if (!dbresult) {
+		throw new Error("Exercice not found")
+	}
+
+	return dbresult[0];
+}
+
+export async function getAllExercices() {
+	return await db
+		.select()
+		.from(Schema.exercice)
+		.where(isNull(Schema.exercice.deleted_at)) as Schema.Exercice[]
+}
+
+export async function searchExercice(name: string, limit = 50) {
+	return await db
+		.select()
+		.from(Schema.exercice)
+		.where(and(
+			sql`${Schema.exercice.name} LIKE ${`%${name}%`}`,
+			isNull(Schema.exercice.deleted_at)
+		))
+		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.Exercice[]
+}
+
+// ## Update
+export async function updateExercice(id: number, name: string) {
+	const result = await db
+		.update(Schema.exercice)
+		.set({
+			name: name,
+			updated_at: sql`CURRENT_TIMESTAMP`,
+		})
+		.where(eq(Schema.exercice.id, id))
+		.returning({ id: Schema.exercice.id })
+
+	// Revalidate all pages that might show exercices
+	revalidatePath("/", 'layout')
+
+	if (!result) {
+		return null
+	}
+
+	return result[0].id
+}
+
+// ## Delete
+
+export async function deleteExercice(id: number) {
+	const result = await db.update(Schema.exercice)
+		.set({ deleted_at: sql`CURRENT_TIMESTAMP`, updated_at: sql`CURRENT_TIMESTAMP` })
+		.where(eq(Schema.exercice.id, id))
+		.returning({ id: Schema.exercice.id })
+
+	// Revalidate all pages that might show exercices
+	revalidatePath("/", 'layout')
+
+	if (result) {
+		return result[0].id
+	}
+
+	return null
+}
