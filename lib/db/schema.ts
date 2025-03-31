@@ -50,13 +50,19 @@ export const meteo = pgTable('meteo', {
 // Table Exercice
 export const exercice = pgTable('exercice', {
     id: serial('id').primaryKey(),
-    name: varchar('name', { length: 255 }).notNull()
+    name: varchar('name', { length: 255 }).notNull(),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow(),
+    deleted_at: timestamp('deleted_at'),
 });
 
 // Table Séance (Modèle de Workout)
 export const seance = pgTable('seance', {
     id: serial('id').primaryKey(),
-    name: varchar('name', { length: 255 }).notNull()
+    name: varchar('name', { length: 255 }).notNull(),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow(),
+    deleted_at: timestamp('deleted_at'),
 });
 
 // Table Séance_Exercice (Exercices d'un modèle de séance)
@@ -64,7 +70,10 @@ export const seanceExercice = pgTable('seance_exercice', {
     id: serial('id').primaryKey(),
     seance_id: integer('seance_id').references(() => seance.id).notNull(),
     exercice_id: integer('exercice_id').references(() => exercice.id).notNull(),
-    position: integer('position').notNull()
+    position: integer('position').notNull(),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow(),
+    deleted_at: timestamp('deleted_at'),
 });
 
 // Table Workout (Séance Réelle)
@@ -72,7 +81,10 @@ export const workout = pgTable('workout', {
     id: serial('id').primaryKey(),
     date: timestamp('date').notNull().defaultNow(),
     note: text('note'),
-    seance_id: integer('seance_id').references(() => seance.id) // Optionnel
+    seance_id: integer('seance_id').references(() => seance.id),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow(),
+    deleted_at: timestamp('deleted_at'),
 });
 
 // Table Workout_Exercice (Exercices réellement faits dans un workout)
@@ -80,7 +92,10 @@ export const workoutExercice = pgTable('workout_exercice', {
     id: serial('id').primaryKey(),
     workout_id: integer('workout_id').references(() => workout.id).notNull(),
     exercice_id: integer('exercice_id').references(() => exercice.id).notNull(),
-    position: integer('position').notNull()
+    position: integer('position').notNull(),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow(),
+    deleted_at: timestamp('deleted_at'),
 });
 
 // Table Série (Séries des exercices du workout)
@@ -90,7 +105,10 @@ export const serie = pgTable('serie', {
     exercice_id: integer('exercice_id').references(() => exercice.id).notNull(),
     poids: integer('poids'),
     reps: integer('reps'),
-    exercice_position: integer('exercice_position').notNull()
+    exercice_position: integer('exercice_position').notNull(),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow(),
+    deleted_at: timestamp('deleted_at'),
 });
 
 // Relations

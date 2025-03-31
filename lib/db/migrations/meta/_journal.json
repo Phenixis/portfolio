@@ -57,6 +57,13 @@
       "when": 1743427295320,
       "tag": "0007_safe_master_mold",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1743427623063,
+      "tag": "0008_chief_celestials",
+      "breakpoints": true
     }
   ]
 }
