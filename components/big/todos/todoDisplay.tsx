@@ -153,10 +153,10 @@ export default function TodoDisplay({
 					<div className="flex space-x-2 items-center w-full">
 						<div
 							className={cn(
-								"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center",
+								"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center px-1",
 								isHovering
-									? "w-full xl:w-full xl:max-w-[18px] xl:opacity-100 ml-2"
-									: "w-full xl:w-0 xl:max-w-0 xl:opacity-0",
+									? "w-fit xl:w-full xl:max-w-[18px] xl:opacity-100 ml-2"
+									: "w-fit xl:w-0 xl:max-w-0 xl:opacity-0",
 							)}
 						>
 							{/* Only this div is clickable for toggling */}
@@ -172,7 +172,7 @@ export default function TodoDisplay({
 								/>
 							</div>
 						</div>
-						<p className={`${optimisticState ? "line-through text-muted-foreground" : ""}`}>
+						<p className={`w-full text-base ${optimisticState ? "line-through text-muted-foreground" : ""}`}>
 							{todo.title}
 							<span className="ml-2 text-xs text-neutral">{todo[orderedBy] as string}</span>
 						</p>

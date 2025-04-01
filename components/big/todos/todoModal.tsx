@@ -199,7 +199,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 						<Label htmlFor="title">Titre</Label>
 						<Input ref={titleRef} type="text" id="title" name="title" defaultValue={todo?.title || ""} autoFocus />
 					</div>
-					<div className="flex space-x-4">
+					<div className="flex flex-col justify-between lg:flex-row lg:space-x-4">
 						<div>
 							<Label htmlFor="importance">Importance</Label>
 							<Input
@@ -229,7 +229,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 								>
 									<Minus />
 								</Button>
-								<Button type="button" variant="outline" onClick={() => setShowCalendar(!showCalendar)}>
+								<Button type="button" variant="outline" className="w-full" onClick={() => setShowCalendar(!showCalendar)}>
 									{format(dueDate, "dd/MM/yyyy")}
 								</Button>
 								<Button
@@ -288,7 +288,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 									handleProjectChange(e.target.value)
 								}}
 							/>
-							{
+							{ project && (
 								<div className="mt-1 overflow-y-auto rounded-md border border-border bg-popover shadow-md">
 									{isLoading ? (
 										<div className="p-2 text-sm text-muted-foreground">
@@ -326,7 +326,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 										</div>
 									)}
 								</div>
-							}
+							)}
 						</div>
 					</div>
 					<DialogFooter>
