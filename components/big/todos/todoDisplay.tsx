@@ -172,7 +172,7 @@ export default function TodoDisplay({
 								/>
 							</div>
 						</div>
-						<p className={`w-full text-base ${optimisticState ? "line-through text-muted-foreground" : ""}`}>
+						<p className={`w-full text-base hyphens-auto ${optimisticState ? "line-through text-muted-foreground" : ""}`} lang="en">
 							{todo.title}
 							<span className="ml-2 text-xs text-neutral">{todo[orderedBy] as string}</span>
 						</p>
