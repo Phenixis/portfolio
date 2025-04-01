@@ -837,12 +837,13 @@ export async function deleteSeanceExercice(id: number) {
 
 // ## Create
 
-export async function createWorkout(name: string, seance_id: number) {
+export async function createWorkout(name: string, seance_id: number, date?: Date) {
 	const result = await db
 		.insert(Schema.workout)
 		.values({
 			name: name,
 			seance_id: seance_id,
+			date: date ? date : new Date(),
 		} as Schema.NewWorkout)
 		.returning({ id: Schema.workout.id })
 
