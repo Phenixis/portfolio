@@ -8,7 +8,9 @@ export default function BackOfficeLayout({
     return (
         <main className="relative w-full h-full">
             <Header />
-            {children}
+            <div className="w-full h-full p-4">
+                {children}
+            </div>
         </main>
     )
 }
