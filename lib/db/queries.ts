@@ -425,12 +425,12 @@ export async function createProject(title: string, description?: string) {
 
 // ## Read
 
-export async function searchProjects(title?: string, limit = 50) {
+export async function searchProjects(title: string, limit = 50) {
 	return await db
 		.select()
 		.from(Schema.project)
 		.where(and(
-			sql`${Schema.project.title} LIKE ${`%${title ? title : ""}%`}`,
+			sql`${Schema.project.title} LIKE ${`%${title}%`}`,
 			isNull(Schema.project.deleted_at)
 		))
 		.orderBy(asc(Schema.project.title))
