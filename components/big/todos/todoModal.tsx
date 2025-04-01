@@ -146,6 +146,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 				})
 
 			setDueDate(new Date())
+			setProject("")
 		} catch (error) {
 			console.error("Erreur lors de la soumission:", error)
 			isSubmittingRef.current = false
