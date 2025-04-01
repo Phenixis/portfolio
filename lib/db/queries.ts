@@ -647,3 +647,463 @@ export async function deleteExercice(id: number) {
 
 	return null
 }
+
+// # Seance
+
+// ## Create
+
+export async function createSeance(name: string) {
+	const result = await db
+		.insert(Schema.seance)
+		.values({
+			name: name,
+		} as Schema.NewSeance)
+		.returning({ id: Schema.seance.id })
+
+	// Revalidate all pages that might show exercices
+	revalidatePath("/", 'layout')
+
+	return result[0].id
+}
+
+// ## Read
+
+export async function getSeance(id: number) {
+	const dbresult = await db
+		.select()
+		.from(Schema.seance)
+		.where(and(eq(Schema.seance.id, id), isNull(Schema.seance.deleted_at))) as Schema.Seance[]
+
+	if (!dbresult) {
+		throw new Error("Seance not found")
+	}
+
+	return dbresult[0];
+}
+
+export async function getAllSeances() {
+	return await db
+		.select()
+		.from(Schema.seance)
+		.where(isNull(Schema.seance.deleted_at)) as Schema.Seance[]
+}
+
+export async function searchSeance(name: string, limit = 50) {
+	return await db
+		.select()
+		.from(Schema.seance)
+		.where(and(
+			sql`${Schema.seance.name} LIKE ${`%${name}%`}`,
+			isNull(Schema.seance.deleted_at)
+		))
+		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.Seance[]
+}
+
+// ## Update
+
+export async function updateSeance(id: number, name: string) {
+	const result = await db
+		.update(Schema.seance)
+		.set({
+			name: name,
+			updated_at: sql`CURRENT_TIMESTAMP`,
+		})
+		.where(eq(Schema.seance.id, id))
+		.returning({ id: Schema.seance.id })
+
+	// Revalidate all pages that might show exercices
+	revalidatePath("/", 'layout')
+
+	if (!result) {
+		return null
+	}
+
+	return result[0].id
+}
+
+// ## Delete
+
+export async function deleteSeance(id: number) {
+	const result = await db.update(Schema.seance)
+		.set({ deleted_at: sql`CURRENT_TIMESTAMP`, updated_at: sql`CURRENT_TIMESTAMP` })
+		.where(eq(Schema.seance.id, id))
+		.returning({ id: Schema.seance.id })
+
+	// Revalidate all pages that might show exercices
+	revalidatePath("/", 'layout')
+
+	if (result) {
+		return result[0].id
+	}
+
+	return null
+}
+
+// # SeanceExercice
+
+// ## Create
+
+export async function createSeanceExercice(seance_id: number, exercice_id: number) {
+	const result = await db
+		.insert(Schema.seanceExercice)
+		.values({
+			seance_id: seance_id,
+			exercice_id: exercice_id,
+		} as Schema.NewSeanceExercice)
+		.returning({ id: Schema.seanceExercice.id })
+
+	// Revalidate all pages that might show exercices
+	revalidatePath("/", 'layout')
+
+	return result[0].id
+}
+
+// ## Read
+
+export async function getSeanceExercice(id: number) {
+	const dbresult = await db
+		.select()
+		.from(Schema.seanceExercice)
+		.where(and(eq(Schema.seanceExercice.id, id), isNull(Schema.seanceExercice.deleted_at))) as Schema.SeanceExercice[]
+
+	if (!dbresult) {
+		throw new Error("SeanceExercice not found")
+	}
+
+	return dbresult[0];
+}
+
+export async function getAllSeanceExercices() {
+	return await db
+		.select()
+		.from(Schema.seanceExercice)
+		.where(isNull(Schema.seanceExercice.deleted_at)) as Schema.SeanceExercice[]
+}
+
+export async function searchSeanceExercice(seance_id: number, exercice_id: number, limit = 50) {
+	return await db
+		.select()
+		.from(Schema.seanceExercice)
+		.where(and(
+			eq(Schema.seanceExercice.seance_id, seance_id),
+			eq(Schema.seanceExercice.exercice_id, exercice_id),
+			isNull(Schema.seanceExercice.deleted_at)
+		))
+		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.SeanceExercice[]
+}
+
+// ## Update
+
+export async function updateSeanceExercice(id: number, seance_id: number, exercice_id: number) {
+	const result = await db
+		.update(Schema.seanceExercice)
+		.set({
+			seance_id: seance_id,
+			exercice_id: exercice_id,
+			updated_at: sql`CURRENT_TIMESTAMP`,
+		})
+		.where(eq(Schema.seanceExercice.id, id))
+		.returning({ id: Schema.seanceExercice.id })
+
+	// Revalidate all pages that might show exercices
+	revalidatePath("/", 'layout')
+
+	if (!result) {
+		return null
+	}
+
+	return result[0].id
+}
+
+// ## Delete
+
+export async function deleteSeanceExercice(id: number) {
+	const result = await db.update(Schema.seanceExercice)
+		.set({ deleted_at: sql`CURRENT_TIMESTAMP`, updated_at: sql`CURRENT_TIMESTAMP` })
+		.where(eq(Schema.seanceExercice.id, id))
+		.returning({ id: Schema.seanceExercice.id })
+
+	// Revalidate all pages that might show exercices
+	revalidatePath("/", 'layout')
+
+	if (result) {
+		return result[0].id
+	}
+
+	return null
+}
+
+// # Workout
+
+// ## Create
+
+export async function createWorkout(name: string, seance_id: number) {
+	const result = await db
+		.insert(Schema.workout)
+		.values({
+			name: name,
+			seance_id: seance_id,
+		} as Schema.NewWorkout)
+		.returning({ id: Schema.workout.id })
+
+	// Revalidate all pages that might show exercices
+	revalidatePath("/", 'layout')
+
+	return result[0].id
+}
+
+// ## Read
+
+export async function getWorkout(id: number) {
+	const dbresult = await db
+		.select()
+		.from(Schema.workout)
+		.where(and(eq(Schema.workout.id, id), isNull(Schema.workout.deleted_at))) as Schema.Workout[]
+
+	if (!dbresult) {
+		throw new Error("Workout not found")
+	}
+
+	return dbresult[0];
+}
+
+export async function getAllWorkouts() {
+	return await db
+		.select()
+		.from(Schema.workout)
+		.where(isNull(Schema.workout.deleted_at)) as Schema.Workout[]
+}
+
+export async function searchWorkout(date: Date, limit = 50) {
+	return await db
+		.select()
+		.from(Schema.workout)
+		.where(and(
+			eq(Schema.workout.date, date),
+			isNull(Schema.workout.deleted_at)
+		))
+		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.Workout[]
+}
+
+// ## Update
+
+export async function updateWorkout(id: number, note: number, seance_id: number) {
+	const result = await db
+		.update(Schema.workout)
+		.set({
+			note: note,
+			seance_id: seance_id,
+			updated_at: sql`CURRENT_TIMESTAMP`,
+		})
+		.where(eq(Schema.workout.id, id))
+		.returning({ id: Schema.workout.id })
+
+	// Revalidate all pages that might show exercices
+	revalidatePath("/", 'layout')
+
+	if (!result) {
+		return null
+	}
+
+	return result[0].id
+}
+
+// ## Delete
+
+export async function deleteWorkout(id: number) {
+	const result = await db.update(Schema.workout)
+		.set({ deleted_at: sql`CURRENT_TIMESTAMP`, updated_at: sql`CURRENT_TIMESTAMP` })
+		.where(eq(Schema.workout.id, id))
+		.returning({ id: Schema.workout.id })
+
+	// Revalidate all pages that might show exercices
+	revalidatePath("/", 'layout')
+
+	if (result) {
+		return result[0].id
+	}
+
+	return null
+}
+
+// # WorkoutExercice
+
+// ## Create
+
+export async function createWorkoutExercice(workout_id: number, exercice_id: number) {
+	const result = await db
+		.insert(Schema.workoutExercice)
+		.values({
+			workout_id: workout_id,
+			exercice_id: exercice_id,
+		} as Schema.NewWorkoutExercice)
+		.returning({ id: Schema.workoutExercice.id })
+
+	// Revalidate all pages that might show exercices
+	revalidatePath("/", 'layout')
+
+	return result[0].id
+}
+
+// ## Read
+
+export async function getWorkoutExercice(id: number) {
+	const dbresult = await db
+		.select()
+		.from(Schema.workoutExercice)
+		.where(and(eq(Schema.workoutExercice.id, id), isNull(Schema.workoutExercice.deleted_at))) as Schema.WorkoutExercice[]
+
+	if (!dbresult) {
+		throw new Error("WorkoutExercice not found")
+	}
+
+	return dbresult[0];
+}
+
+export async function getAllWorkoutExercices() {
+	return await db
+		.select()
+		.from(Schema.workoutExercice)
+		.where(isNull(Schema.workoutExercice.deleted_at)) as Schema.WorkoutExercice[]
+}
+
+// ## Update
+
+export async function updateWorkoutExercice(id: number, workout_id: number, exercice_id: number) {
+	const result = await db
+		.update(Schema.workoutExercice)
+		.set({
+			workout_id: workout_id,
+			exercice_id: exercice_id,
+			updated_at: sql`CURRENT_TIMESTAMP`,
+		})
+		.where(eq(Schema.workoutExercice.id, id))
+		.returning({ id: Schema.workoutExercice.id })
+
+	// Revalidate all pages that might show exercices
+	revalidatePath("/", 'layout')
+
+	if (!result) {
+		return null
+	}
+
+	return result[0].id
+}
+
+// ## Delete
+
+export async function deleteWorkoutExercice(id: number) {
+	const result = await db.update(Schema.workoutExercice)
+		.set({ deleted_at: sql`CURRENT_TIMESTAMP`, updated_at: sql`CURRENT_TIMESTAMP` })
+		.where(eq(Schema.workoutExercice.id, id))
+		.returning({ id: Schema.workoutExercice.id })
+
+	// Revalidate all pages that might show exercices
+	revalidatePath("/", 'layout')
+
+	if (result) {
+		return result[0].id
+	}
+
+	return null
+}
+
+// # Serie
+
+// ## Create
+
+export async function createSerie(workout_id: number, exercice_id: number, poids: number, reps: number, exercice_position: number) {
+	const result = await db
+		.insert(Schema.serie)
+		.values({
+			workout_id: workout_id,
+			exercice_id: exercice_id,
+			poids: poids,
+			reps: reps,
+			exercice_position: exercice_position,
+		} as Schema.NewSerie)
+		.returning({ id: Schema.serie.id })
+
+	// Revalidate all pages that might show exercices
+	revalidatePath("/", 'layout')
+
+	return result[0].id
+}
+
+// ## Read
+
+export async function getSerie(id: number) {
+	const dbresult = await db
+		.select()
+		.from(Schema.serie)
+		.where(and(eq(Schema.serie.id, id), isNull(Schema.serie.deleted_at))) as Schema.Serie[]
+
+	if (!dbresult) {
+		throw new Error("Serie not found")
+	}
+
+	return dbresult[0];
+}
+
+export async function getAllSeries() {
+	return await db
+		.select()
+		.from(Schema.serie)
+		.where(isNull(Schema.serie.deleted_at)) as Schema.Serie[]
+}
+
+export async function searchSerie(workout_id: number, exercice_id: number, limit = 50) {
+	return await db
+		.select()
+		.from(Schema.serie)
+		.where(and(
+			eq(Schema.serie.workout_id, workout_id),
+			eq(Schema.serie.exercice_id, exercice_id),
+			isNull(Schema.serie.deleted_at)
+		))
+		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.Serie[]
+}
+
+// ## Update
+
+export async function updateSerie(id: number, workout_id: number, exercice_id: number, poids: number, reps: number, exercice_position: number) {
+	const result = await db
+		.update(Schema.serie)
+		.set({
+			workout_id: workout_id,
+			exercice_id: exercice_id,
+			poids: poids,
+			reps: reps,
+			exercice_position: exercice_position,
+			updated_at: sql`CURRENT_TIMESTAMP`,
+		})
+		.where(eq(Schema.serie.id, id))
+		.returning({ id: Schema.serie.id })
+
+	// Revalidate all pages that might show exercices
+	revalidatePath("/", 'layout')
+
+	if (!result) {
+		return null
+	}
+
+	return result[0].id
+}
+
+// ## Delete
+
+export async function deleteSerie(id: number) {
+	const result = await db.update(Schema.serie)
+		.set({ deleted_at: sql`CURRENT_TIMESTAMP`, updated_at: sql`CURRENT_TIMESTAMP` })
+		.where(eq(Schema.serie.id, id))
+		.returning({ id: Schema.serie.id })
+
+	// Revalidate all pages that might show exercices
+	revalidatePath("/", 'layout')
+
+	if (result) {
+		return result[0].id
+	}
+
+	return null
+}
