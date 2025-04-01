@@ -288,7 +288,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 									handleProjectChange(e.target.value)
 								}}
 							/>
-							{ project && (
+							{ project && !(projects && projects.length == 1 && projects[0].title == project) && (
 								<div className="mt-1 overflow-y-auto rounded-md border border-border bg-popover shadow-md">
 									{isLoading ? (
 										<div className="p-2 text-sm text-muted-foreground">
