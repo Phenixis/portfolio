@@ -1,0 +1,1 @@
+ALTER TABLE "workout" ALTER COLUMN "note" SET DATA TYPE integer;

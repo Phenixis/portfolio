@@ -64,6 +64,13 @@
       "when": 1743427623063,
       "tag": "0008_chief_celestials",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1743437777373,
+      "tag": "0009_fearless_wildside",
+      "breakpoints": true
     }
   ]
 }

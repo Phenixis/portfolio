@@ -80,7 +80,7 @@ export const seanceExercice = pgTable('seance_exercice', {
 export const workout = pgTable('workout', {
     id: serial('id').primaryKey(),
     date: timestamp('date').notNull().defaultNow(),
-    note: text('note'),
+    note: integer('note'),
     seance_id: integer('seance_id').references(() => seance.id),
     created_at: timestamp('created_at').notNull().defaultNow(),
     updated_at: timestamp('updated_at').notNull().defaultNow(),
