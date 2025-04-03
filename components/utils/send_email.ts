@@ -11,7 +11,7 @@ export async function sendEmail(to: string, subject: string, htmlContent: string
         throw new Error('API key is missing');
     }
 
-    const html = `<html><body>${htmlContent}</body></html>`;
+    const html = htmlContent.includes("<html>") ? htmlContent : `<html><body>${htmlContent}</body></html>`;
 
     try {
         const response = await axios.post(apiUrl, {

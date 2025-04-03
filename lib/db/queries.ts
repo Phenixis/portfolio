@@ -192,6 +192,61 @@ export async function searchTodosByTitle(title: string, limit = 50) {
 		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.Todo[]
 }
 
+export async function getUncompletedAndDueInTheNextThreeDaysOrLessTodos(withProject: boolean = false, orderBy: keyof Schema.Todo = "score", orderingDirection?: "asc" | "desc", limit = 50) {
+	const today = new Date()
+	const threeDaysFromNow = new Date(today)
+	threeDaysFromNow.setDate(today.getDate() + 3)
+
+	if (withProject) {
+		return await db.select({
+			id: Schema.todo.id,
+			title: Schema.todo.title,
+			importance: Schema.todo.importance,
+			urgency: Schema.todo.urgency,
+			duration: Schema.todo.duration,
+			due: Schema.todo.due,
+			score: Schema.todo.score,
+			completed_at: Schema.todo.completed_at,
+			created_at: Schema.todo.created_at,
+			updated_at: Schema.todo.updated_at,
+			deleted_at: Schema.todo.deleted_at,
+			project_title: Schema.todo.project_title,
+			project: {
+				id: Schema.project.title,
+				title: Schema.project.title,
+				description: Schema.project.description,
+				completed: Schema.project.completed,
+				created_at: Schema.project.created_at,
+				updated_at: Schema.project.updated_at,
+				deleted_at: Schema.project.deleted_at,
+			}
+		})
+		.from(Schema.todo)
+		.leftJoin(Schema.project, eq(Schema.todo.project_title, Schema.project.title))
+		.where(and(
+			isNull(Schema.todo.completed_at),
+			isNull(Schema.todo.deleted_at),
+			sql`${Schema.todo.due} BETWEEN ${today} AND ${threeDaysFromNow}`
+		))
+		.orderBy(
+			orderingDirection === "asc" ? asc(Schema.todo[orderBy]) : desc(Schema.todo[orderBy])
+		)
+		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as (Schema.Todo & { project: Schema.Project })[];
+	} else {
+		return await db.select()
+			.from(Schema.todo)
+			.where(and(
+				isNull(Schema.todo.completed_at),
+				isNull(Schema.todo.deleted_at),
+				sql`${Schema.todo.due} BETWEEN ${today} AND ${threeDaysFromNow}`
+			))
+			.orderBy(
+				orderingDirection === "asc" ? asc(Schema.todo[orderBy]) : desc(Schema.todo[orderBy])
+			)
+			.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.Todo[];
+	}
+}
+
 // ## Update
 export async function updateTodo(id: number, title: string, importance: number, dueDate: Date, duration: number, projectTitle: string) {
 	const urgency = calculateUrgency(dueDate)
