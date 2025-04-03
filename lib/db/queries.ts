@@ -7,7 +7,8 @@ import {
 	isNull,
 	isNotNull,
 	sql,
-	and
+	and,
+	lte
 } from "drizzle-orm"
 import { db } from "./drizzle"
 import * as Schema from "./schema"
@@ -226,7 +227,7 @@ export async function getUncompletedAndDueInTheNextThreeDaysOrLessTodos(withProj
 		.where(and(
 			isNull(Schema.todo.completed_at),
 			isNull(Schema.todo.deleted_at),
-			sql`${Schema.todo.due} BETWEEN ${today} AND ${threeDaysFromNow}`
+			lte(Schema.todo.due, threeDaysFromNow),
 		))
 		.orderBy(
 			orderingDirection === "asc" ? asc(Schema.todo[orderBy]) : desc(Schema.todo[orderBy])
@@ -238,7 +239,7 @@ export async function getUncompletedAndDueInTheNextThreeDaysOrLessTodos(withProj
 			.where(and(
 				isNull(Schema.todo.completed_at),
 				isNull(Schema.todo.deleted_at),
-				sql`${Schema.todo.due} BETWEEN ${today} AND ${threeDaysFromNow}`
+				lte(Schema.todo.due, threeDaysFromNow),
 			))
 			.orderBy(
 				orderingDirection === "asc" ? asc(Schema.todo[orderBy]) : desc(Schema.todo[orderBy])
