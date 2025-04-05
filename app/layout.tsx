@@ -2,6 +2,9 @@ import './global.css'
 import type { Metadata } from 'next'
 import { baseUrl } from './sitemap'
 import { Domine, Geist_Mono, Ubuntu_Sans_Mono } from 'next/font/google';
+import {
+    TooltipProvider
+} from "@/components/ui/tooltip"
 
 const domine = Domine({
     subsets: ['latin'],
@@ -63,7 +66,9 @@ export default function RootLayout({
                 geistMono.className,
                 ubuntuSansMono.className,
             )}>
-                {children}
+                <TooltipProvider>
+                    {children}
+                </TooltipProvider>
             </body>
         </html>
     )

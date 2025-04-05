@@ -6,7 +6,12 @@ import { formatDistanceToNow } from 'date-fns';
 import {
     type Meteo
 } from '@/lib/db/schema';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CircleAlert } from 'lucide-react';
+import {
+    Tooltip,
+    TooltipTrigger,
+    TooltipContent
+} from "@/components/ui/tooltip";
 
 export default function Meteo({
     className,
@@ -51,7 +56,18 @@ export default function Meteo({
     }, [error]);
 
     if (error) {
-        return <div className={cn("text-center text-lg", className)}>{error}</div>;
+        return (
+            <Tooltip>
+                <TooltipTrigger className="hidden xl:group-hover/Time:block">
+                    <CircleAlert className="text-red-500" />
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>
+                        {error}
+                    </p>
+                </TooltipContent>
+            </Tooltip>
+        )
     }
 
     if (!meteo) {
