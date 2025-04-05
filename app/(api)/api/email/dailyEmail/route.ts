@@ -11,96 +11,66 @@ import {
 
 export async function GET(request: NextRequest) {
     try {
-        const todos = await getUncompletedAndDueInTheNextThreeDaysOrLessTodos(true)
-        const groupedTodos = todos.reduce((acc: Record<string, Record<string, typeof todos>>, todo) => {
-            const dueDate = new Date(todo.due);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+        const todos = await getUncompletedAndDueInTheNextThreeDaysOrLessTodos(true);
 
-            const diffTime = dueDate.getTime() - today.getTime();
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        // Sort todos by due date in ascending order
+        const sortedTodos = todos.sort((a, b) => new Date(a.due).getTime() - new Date(b.due).getTime());
 
-            let group;
-            if (diffDays < 0) {
-                group = "Overdue";
-            } else if (diffDays === 0) {
-                group = "Due Today";
-            } else if (diffDays <= 3) {
-                group = "Due in the Next 3 Days";
-            } else {
-                group = "Later";
+        // Group todos by days
+        const groupedByDays = sortedTodos.reduce((acc: Record<string, any[]>, todo) => {
+            const day = new Date(todo.due).toLocaleDateString("en-GB", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            if (!acc[day]) {
+                acc[day] = [];
             }
-
-            const dayKey = dueDate.toLocaleDateString("fr-FR", {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-                year: "numeric"
-            });
-
-            if (!acc[group]) {
-                acc[group] = {};
-            }
-            if (!acc[group][dayKey]) {
-                acc[group][dayKey] = [];
-            }
-            acc[group][dayKey].push(todo);
+            acc[day].push(todo);
             return acc;
         }, {});
 
-        // Sort todos by due date
-        Object.values(groupedTodos).forEach(days => {
-            Object.values(days).forEach(tasks => {
-                tasks.sort((a, b) => {
-                    const dateA = new Date(a.due).getTime();
-                    const dateB = new Date(b.due).getTime();
-                    return dateA - dateB;
-                });
-            });
-        });
+        // Group todos by projects within each day
+        const groupedByProjects = Object.entries(groupedByDays).reduce((acc: Record<string, any>, [day, todos]) => {
+            acc[day] = (todos as any[]).reduce((projectAcc: Record<string, any[]>, todo) => {
+                const project = todo.project_title || "No Project";
+                if (!projectAcc[project]) {
+                    projectAcc[project] = [];
+                }
+                projectAcc[project].push(todo);
+                return projectAcc;
+            }, {});
+            return acc;
+        }, {});
 
-        const emailContent = `
+        // Generate email content
+        let emailContent = `
             <html>
             <head>
-            <style>
-            body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            }
-            h1 {
-            color: #0070f3;
-            }
-            ul {
-            padding-left: 20px;
-            }
-            li {
-            margin-bottom: 10px;
-            }
-            </style>
+            <script src="https://cdn.tailwindcss.com"></script>
             </head>
-            <body>
-            ${Object.entries(groupedTodos).map(([group, days]) => `
-            <h2>${group}</h2>
-            ${Object.entries(days).map(([day, tasks]) => `
-            <h3>${day}</h3>
-            <ul>
-            ${tasks.map(todo => `
-            <li>
-            <strong>${todo.title}</strong> (${todo.project_title}) - Due: ${new Date(todo.due).toLocaleDateString()}
-            </li>
-            `).join("")}
-            </ul>
-            `).join("")}
-            `).join("")}
+            <body class="bg-gray-100 flex justify-center items-center min-h-screen">
+            <main class="max-w-3xl w-full mx-auto my-5 p-5 bg-white rounded-lg shadow-lg">
+            <h1 class="text-2xl font-bold text-blue-500 mb-4">Your Daily Todo List</h1>
+        `;
+
+        for (const [day, projects] of Object.entries(groupedByProjects)) {
+            emailContent += `<h2 class="text-xl font-semibold text-gray-700 mt-4">Due ${day}</h2>`;
+            for (const [project, todos] of Object.entries(projects)) {
+                emailContent += `<h3 class="text-lg font-medium text-gray-600 mt-2">${project}</h3><ul class="list-disc pl-5">`;
+                (todos as any[]).forEach((todo) => {
+                    emailContent += `<li class="text-gray-800">${todo.title}</li>`;
+                });
+                emailContent += `</ul>`;
+            }
+        }
+
+        emailContent += `
+            </main>
             </body>
             </html>
         `;
 
-        const result = sendEmail("max@maximeduhamel.com", "Your Daily Todo List", emailContent);
+        const today = new Date();
+        const formattedSubject = `${today.toLocaleDateString("en-GB", { weekday: 'long', day: '2-digit', month: 'long' })} - Your Daily Todo List`;
+        const result = sendEmail("max@maximeduhamel.com", formattedSubject, emailContent);
 
-        console.log(result);
-        
         if (!result) {
             return NextResponse.json({
                 error: "Failed to send email"
@@ -115,11 +85,11 @@ export async function GET(request: NextRequest) {
             status: 200
         });
     } catch (error) {
-        console.error("Error fetching projects:", error)
+        console.error("Error fetching todos:", error);
         return NextResponse.json({
-            error: "Failed to fetch projects"
+            error: "Failed to fetch todos"
         }, {
             status: 500
-        })
+        });
     }
 }
