@@ -184,7 +184,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 
 	const handleProjectChange = useDebouncedCallback((value: string) => {
 		setProject(value)
-	}, 300)
+	}, 200)
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
