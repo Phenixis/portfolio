@@ -8,7 +8,8 @@ import {
 	isNotNull,
 	sql,
 	and,
-	lte
+	lte,
+	inArray
 } from "drizzle-orm"
 import { db } from "./drizzle"
 import * as Schema from "./schema"
@@ -54,7 +55,7 @@ export async function getTodoById(id: number) {
 	return dbresult[0];
 }
 
-export async function getTodos(withProject: boolean = false, orderBy: keyof Schema.Todo = "score", orderingDirection?: "asc" | "desc", limit = 50) {
+export async function getTodos(withProject: boolean = false, orderBy: keyof Schema.Todo = "score", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[]) {
 	if (withProject) {
 		return await db.select({
 			id: Schema.todo.id,
@@ -78,13 +79,16 @@ export async function getTodos(withProject: boolean = false, orderBy: keyof Sche
 				deleted_at: Schema.project.deleted_at,
 			}
 		})
-		.from(Schema.todo)
-		.leftJoin(Schema.project, eq(Schema.todo.project_title, Schema.project.title))
-		.where(isNull(Schema.todo.deleted_at))
-		.orderBy(
-			orderingDirection === "asc" ? asc(Schema.todo[orderBy]) : desc(Schema.todo[orderBy])
-		)
-		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as (Schema.Todo & { project: Schema.Project })[];
+			.from(Schema.todo)
+			.leftJoin(Schema.project, eq(Schema.todo.project_title, Schema.project.title))
+			.where(and(
+				isNull(Schema.todo.deleted_at),
+				projectTitles ? inArray(Schema.todo.project_title, projectTitles) : sql`1 = 1`
+			))
+			.orderBy(
+				orderingDirection === "asc" ? asc(Schema.todo[orderBy]) : desc(Schema.todo[orderBy])
+			)
+			.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as (Schema.Todo & { project: Schema.Project })[];
 	} else {
 		return await db.select()
 			.from(Schema.todo)
@@ -96,7 +100,7 @@ export async function getTodos(withProject: boolean = false, orderBy: keyof Sche
 	}
 }
 
-export async function getCompletedTodos(withProject: boolean = false, orderBy: keyof Schema.Todo = "completed_at", orderingDirection?: "asc" | "desc", limit = 50) {
+export async function getCompletedTodos(withProject: boolean = false, orderBy: keyof Schema.Todo = "completed_at", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[]) {
 	if (withProject) {
 		return await db.select({
 			id: Schema.todo.id,
@@ -121,17 +125,21 @@ export async function getCompletedTodos(withProject: boolean = false, orderBy: k
 				deleted_at: Schema.project.deleted_at,
 			}
 		})
-		.from(Schema.todo)
-		.leftJoin(Schema.project, eq(Schema.todo.project_title, Schema.project.title))
-		.where(and(isNotNull(Schema.todo.completed_at), isNull(Schema.todo.deleted_at)))
-		.orderBy(
-			orderingDirection === "asc" ? asc(Schema.todo[orderBy]) : desc(Schema.todo[orderBy])
-		)
-		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as (Schema.Todo & { project: Schema.Project | null })[];
+			.from(Schema.todo)
+			.leftJoin(Schema.project, eq(Schema.todo.project_title, Schema.project.title))
+			.where(and(isNotNull(Schema.todo.completed_at), isNull(Schema.todo.deleted_at)))
+			.orderBy(
+				orderingDirection === "asc" ? asc(Schema.todo[orderBy]) : desc(Schema.todo[orderBy])
+			)
+			.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as (Schema.Todo & { project: Schema.Project | null })[];
 	} else {
 		return await db.select()
 			.from(Schema.todo)
-			.where(and(isNotNull(Schema.todo.completed_at), isNull(Schema.todo.deleted_at)))
+			.where(and(
+				isNotNull(Schema.todo.completed_at),
+				isNull(Schema.todo.deleted_at),
+				projectTitles ? inArray(Schema.todo.project_title, projectTitles) : sql`1 = 1`
+			))
 			.orderBy(
 				orderingDirection === "asc" ? asc(Schema.todo[orderBy]) : desc(Schema.todo[orderBy])
 			)
@@ -139,7 +147,7 @@ export async function getCompletedTodos(withProject: boolean = false, orderBy: k
 	}
 }
 
-export async function getUncompletedTodos(withProject: boolean = false, orderBy: keyof Schema.Todo = "score", orderingDirection?: "asc" | "desc", limit = 50) {
+export async function getUncompletedTodos(withProject: boolean = false, orderBy: keyof Schema.Todo = "score", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[]) {
 	if (withProject) {
 		return await db.select({
 			id: Schema.todo.id,
@@ -164,13 +172,17 @@ export async function getUncompletedTodos(withProject: boolean = false, orderBy:
 				deleted_at: Schema.project.deleted_at,
 			}
 		})
-		.from(Schema.todo)
-		.leftJoin(Schema.project, eq(Schema.todo.project_title, Schema.project.title))
-		.where(and(isNull(Schema.todo.completed_at), isNull(Schema.todo.deleted_at)))
-		.orderBy(
-			orderingDirection === "asc" ? asc(Schema.todo[orderBy]) : desc(Schema.todo[orderBy])
-		)
-		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as (Schema.Todo & { project: Schema.Project })[];
+			.from(Schema.todo)
+			.leftJoin(Schema.project, eq(Schema.todo.project_title, Schema.project.title))
+			.where(and(
+				isNull(Schema.todo.completed_at),
+				isNull(Schema.todo.deleted_at),
+				projectTitles ? inArray(Schema.todo.project_title, projectTitles) : sql`1 = 1`
+			))
+			.orderBy(
+				orderingDirection === "asc" ? asc(Schema.todo[orderBy]) : desc(Schema.todo[orderBy])
+			)
+			.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as (Schema.Todo & { project: Schema.Project })[];
 	} else {
 		return await db.select()
 			.from(Schema.todo)
@@ -222,17 +234,17 @@ export async function getUncompletedAndDueInTheNextThreeDaysOrLessTodos(withProj
 				deleted_at: Schema.project.deleted_at,
 			}
 		})
-		.from(Schema.todo)
-		.leftJoin(Schema.project, eq(Schema.todo.project_title, Schema.project.title))
-		.where(and(
-			isNull(Schema.todo.completed_at),
-			isNull(Schema.todo.deleted_at),
-			lte(Schema.todo.due, threeDaysFromNow),
-		))
-		.orderBy(
-			orderingDirection === "asc" ? asc(Schema.todo[orderBy]) : desc(Schema.todo[orderBy])
-		)
-		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as (Schema.Todo & { project: Schema.Project })[];
+			.from(Schema.todo)
+			.leftJoin(Schema.project, eq(Schema.todo.project_title, Schema.project.title))
+			.where(and(
+				isNull(Schema.todo.completed_at),
+				isNull(Schema.todo.deleted_at),
+				lte(Schema.todo.due, threeDaysFromNow),
+			))
+			.orderBy(
+				orderingDirection === "asc" ? asc(Schema.todo[orderBy]) : desc(Schema.todo[orderBy])
+			)
+			.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as (Schema.Todo & { project: Schema.Project })[];
 	} else {
 		return await db.select()
 			.from(Schema.todo)

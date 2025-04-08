@@ -8,13 +8,15 @@ export function useTodos({
   orderBy,
   limit,
   orderingDirection,
-  withProject
+  withProject,
+  projectTitles
 }: {
   completed?: boolean
   orderBy?: keyof Todo
   limit?: number
   orderingDirection?: "asc" | "desc"
   withProject?: boolean
+  projectTitles?: string[]
 }) {
   const { data, isLoading, isError, mutate } = useFilteredData<Todo[]>({
     endpoint: "/api/todo",
@@ -24,6 +26,7 @@ export function useTodos({
       limit,
       orderingDirection,
       withProject: withProject ? "true" : "false",
+      projectTitles: projectTitles?.join(","),
     },
   })
 

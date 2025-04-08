@@ -5,27 +5,17 @@ import { TodoModal } from "@/components/big/todos/todoModal"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import type { Todo } from "@/lib/db/schema"
-import { useState, useCallback, useTransition } from "react"
+import { useState, useCallback, useTransition, useMemo } from "react"
 import { Button } from "@/components/ui/button"
-import { Filter, SquareCheck, Square, SquareMinus, ArrowDown01, ArrowDown10, Infinity } from "lucide-react"
+import { Filter, SquareCheck, Square, SquareMinus, ArrowDown01, ArrowDown10, Infinity, ChevronDown } from "lucide-react"
 import TodoDisplay from "./todoDisplay"
 import { useTodos } from "@/hooks/useTodos"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import {
-	Collapsible,
-	CollapsibleContent,
-	CollapsibleTrigger,
-} from "@/components/ui/collapsible"
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
+import { useProjects } from "@/hooks/useProjects"
 
-
-function generateTitle(completed?: boolean, orderBy?: keyof Todo, orderingDirection?: "asc" | "desc", limit?: number) {
+function generateTitle(completed?: boolean, orderBy?: keyof Todo, orderingDirection?: "asc" | "desc", limit?: number, projectTitles?: string[]) {
 	let title = limit ? `The top ${limit} ` : "All "
 
 	if (orderBy) {
@@ -61,6 +51,11 @@ function generateTitle(completed?: boolean, orderBy?: keyof Todo, orderingDirect
 	}
 
 	title += "Todos"
+
+	if (projectTitles && projectTitles.length > 0) {
+		title += ` in ${projectTitles.join(", ")}`
+	}
+
 	return title.trim()
 }
 
@@ -87,6 +82,14 @@ export function TodosCard({
 	const [limit, setLimit] = useState<number | undefined>(initialLimit)
 	const [orderBy, setOrderBy] = useState<keyof Todo | undefined>(initialOrderBy)
 	const [orderingDirection, setOrderingDirection] = useState<"asc" | "desc" | undefined>(initialOrderingDirection)
+	const [selectedProjects, setSelectedProjects] = useState<string[]>([])
+	const [isProjectsOpen, setIsProjectsOpen] = useState(false)
+	const { projects } = useProjects({
+		completed: false,
+	})
+
+	// Add a new state variable for grouping by project after the other state variables
+	const [groupByProject, setGroupByProject] = useState(false)
 
 	// Use our custom hook to fetch todos
 	const { todos, isLoading } = useTodos({
@@ -94,7 +97,8 @@ export function TodosCard({
 		orderBy,
 		limit,
 		orderingDirection,
-		withProject
+		withProject,
+		projectTitles: selectedProjects.length > 0 ? selectedProjects : undefined,
 	})
 
 	// Memoize the cycleCompletedFilter function to prevent unnecessary re-renders
@@ -110,27 +114,61 @@ export function TodosCard({
 		})
 	}, [completed])
 
+	const toggleProject = useCallback((projectTitle: string) => {
+		startTransition(() => {
+			setSelectedProjects((prev) =>
+				prev.includes(projectTitle) ? prev.filter((id) => id !== projectTitle) : [...prev, projectTitle],
+			)
+		})
+	}, [])
+
+	const groupedTodos = useMemo(() => {
+		if (!todos) return {}
+
+		return todos.reduce(
+			(acc, todo) => {
+				const projectId = todo.project_title || "no-project"
+				const projectName = projects?.find((p) => p.title === todo.project_title)?.title || "No Project"
+
+				if (!acc[projectId]) {
+					acc[projectId] = {
+						name: projectName,
+						todos: [],
+					}
+				}
+
+				acc[projectId].todos.push(todo)
+				return acc
+			},
+			{} as Record<string, { name: string; todos: Todo[] }>,
+		)
+	}, [todos, projects])
+
 	return (
 		<Card className={cn(`w-full md:max-w-2xl group/TodoCard overflow-y-auto scrollbar-hide`, className)}>
 			<CardHeader className="flex flex-col sticky top-0 bg-background z-10">
 				<div className="flex flex-row items-center justify-between w-full gap-2">
 					<Link href={`/my/todos`}>
-						<CardTitle>{generateTitle(completed, orderBy, orderingDirection, limit)}</CardTitle>
+						<CardTitle>{generateTitle(completed, orderBy, orderingDirection, limit, selectedProjects)}</CardTitle>
 					</Link>
 					<TodoModal className="xl:opacity-0 duration-300 xl:group-hover/TodoCard:opacity-100" />
 				</div>
-				<Collapsible className="flex space-x-4">
+				<Collapsible className="flex space-x-4 w-full">
 					<CollapsibleTrigger>
 						<div className="h-10 py-2 flex items-center ">
 							<Filter className="h-4 w-4" />
 						</div>
 					</CollapsibleTrigger>
-					<CollapsibleContent>
+					<CollapsibleContent className="w-full">
 						<div className="flex flex-row gap-6 flex-wrap">
 							<div className="flex flex-row items-center gap-2">
-								<Select onValueChange={(newValue) => {
-									setOrderBy(newValue != "none" ? newValue as keyof Todo : initialOrderBy)
-								}} defaultValue={orderBy} disabled={isPending || isLoading}>
+								<Select
+									onValueChange={(newValue) => {
+										setOrderBy(newValue != "none" ? (newValue as keyof Todo) : initialOrderBy)
+									}}
+									defaultValue={orderBy}
+									disabled={isPending || isLoading}
+								>
 									<SelectTrigger>
 										<SelectValue placeholder="Order by" />
 									</SelectTrigger>
@@ -148,9 +186,7 @@ export function TodosCard({
 										setOrderingDirection(orderingDirection === "asc" ? "desc" : "asc")
 									}}
 									disabled={isPending || isLoading}
-									className={cn(
-										"flex items-center gap-1"
-									)}
+									className={cn("flex items-center gap-1")}
 								>
 									{orderingDirection === "asc" ? (
 										<ArrowDown01 className="h-4 w-4" />
@@ -165,9 +201,7 @@ export function TodosCard({
 									size="sm"
 									onClick={cycleCompletedFilter}
 									disabled={isPending || isLoading}
-									className={cn(
-										"flex items-center gap-1"
-									)}
+									className={cn("flex items-center gap-1")}
 								>
 									{completed === true ? (
 										<SquareCheck className="h-4 w-4" />
@@ -221,10 +255,46 @@ export function TodosCard({
 								</Button>
 							</div>
 						</div>
+						<div className="flex items-center justify-between mt-4 w-full">
+							<div className="flex items-center space-x-2 mt-4 mb-2">
+								<Checkbox
+									id="group-by-project"
+									checked={groupByProject}
+									onCheckedChange={(checked) => {
+										setGroupByProject(checked === true)
+										setSelectedProjects([])
+									}}
+								/>
+								<label htmlFor="group-by-project" className="text-sm cursor-pointer">
+									Group by Project
+								</label>
+							</div>
+							{groupByProject && (
+								<div className="w-full flex flex-col space-x-2">
+									<div className="mt-2 border rounded-md p-2 grid grid-cols-2 gap-2">
+										{projects?.length > 0 ? (
+											projects.map((project) => (
+												<div key={project.title} className="flex items-center space-x-2">
+													<Checkbox
+														id={`project-${project.title}`}
+														checked={selectedProjects.includes(project.title)}
+														onCheckedChange={() => toggleProject(project.title)}
+													/>
+													<label htmlFor={`project-${project.title}`} className="text-sm cursor-pointer">
+														{project.title}
+													</label>
+												</div>
+											))
+										) : (
+											<div className="text-sm text-muted-foreground">No projects found</div>
+										)}
+									</div>
+								</div>
+							)}
+						</div>
 					</CollapsibleContent>
 				</Collapsible>
-				<div className="flex gap-2">
-				</div>
+				<div className="flex gap-2"></div>
 			</CardHeader>
 			<CardContent>
 				{isLoading ? (
@@ -233,8 +303,23 @@ export function TodosCard({
 						.fill(null)
 						.map((_, i) => <TodoDisplay key={i} />)
 				) : todos?.length > 0 ? (
-					// Show todos
-					todos.map((todo: Todo) => <TodoDisplay key={todo.id} todo={todo} orderedBy={orderBy} className="mt-1" />)
+					// Show todos, grouped or ungrouped based on the groupByProject state
+					groupByProject ? (
+						// Grouped by project
+						Object.entries(groupedTodos).map(([projectId, { name, todos }]) => (
+							<div key={projectId} className="mb-4">
+								<h3 className="font-medium text-sm p-2 rounded-md">{name}</h3>
+								<div className="pl-2">
+									{todos.map((todo: Todo) => (
+										<TodoDisplay key={todo.id} todo={todo} orderedBy={orderBy} className="mt-1" />
+									))}
+								</div>
+							</div>
+						))
+					) : (
+						// Not grouped
+						todos.map((todo: Todo) => <TodoDisplay key={todo.id} todo={todo} orderedBy={orderBy} className="mt-1" />)
+					)
 				) : (
 					// Show empty state
 					<div className="text-center py-4">No todos found</div>
