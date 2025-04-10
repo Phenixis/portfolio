@@ -83,7 +83,6 @@ export function TodosCard({
 	const [orderBy, setOrderBy] = useState<keyof Todo | undefined>(initialOrderBy)
 	const [orderingDirection, setOrderingDirection] = useState<"asc" | "desc" | undefined>(initialOrderingDirection)
 	const [selectedProjects, setSelectedProjects] = useState<string[]>([])
-	const [isProjectsOpen, setIsProjectsOpen] = useState(false)
 	const { projects } = useProjects({
 		completed: false,
 	})
@@ -271,7 +270,7 @@ export function TodosCard({
 							</div>
 							{groupByProject && (
 								<div className="w-full flex flex-col space-x-2">
-									<div className="mt-2 border rounded-md p-2 grid grid-cols-2 gap-2">
+									<div className="w-full mt-2 border rounded-md p-2 grid grid-cols-2 gap-2">
 										{projects?.length > 0 ? (
 											projects.map((project) => (
 												<div key={project.title} className="flex items-center space-x-2">
@@ -280,13 +279,13 @@ export function TodosCard({
 														checked={selectedProjects.includes(project.title)}
 														onCheckedChange={() => toggleProject(project.title)}
 													/>
-													<label htmlFor={`project-${project.title != "" ? project.title : "no-project"}`} className="text-sm cursor-pointer">
-														{project.title != "" ? project.title : "No project"}
+													<label htmlFor={`project-${project.title}`} className="text-sm cursor-pointer">
+														{project.title}
 													</label>
 												</div>
 											))
 										) : (
-											<div className="text-sm text-muted-foreground">No projects found</div>
+											<div className="w-full text-sm text-center text-muted-foreground col-span-2">No projects found</div>
 										)}
 									</div>
 								</div>

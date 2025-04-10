@@ -8,6 +8,7 @@ import {
 	isNotNull,
 	sql,
 	and,
+	or,
 	lte,
 	inArray
 } from "drizzle-orm"
@@ -83,7 +84,7 @@ export async function getTodos(withProject: boolean = false, orderBy: keyof Sche
 			.leftJoin(Schema.project, eq(Schema.todo.project_title, Schema.project.title))
 			.where(and(
 				isNull(Schema.todo.deleted_at),
-				projectTitles ? inArray(Schema.todo.project_title, projectTitles) : sql`1 = 1`
+				projectTitles ? or(inArray(Schema.todo.project_title, projectTitles), sql`${isNull(Schema.todo.project_title)} AND ${projectTitles.includes("No project")}`) : sql`1 = 1`
 			))
 			.orderBy(
 				orderingDirection === "asc" ? asc(Schema.todo[orderBy]) : desc(Schema.todo[orderBy])
@@ -127,7 +128,11 @@ export async function getCompletedTodos(withProject: boolean = false, orderBy: k
 		})
 			.from(Schema.todo)
 			.leftJoin(Schema.project, eq(Schema.todo.project_title, Schema.project.title))
-			.where(and(isNotNull(Schema.todo.completed_at), isNull(Schema.todo.deleted_at)))
+			.where(and(
+				isNotNull(Schema.todo.completed_at),
+				isNull(Schema.todo.deleted_at),
+				projectTitles ? or(inArray(Schema.todo.project_title, projectTitles), sql`${isNull(Schema.todo.project_title)} AND ${projectTitles.includes("No project")}`) : sql`1 = 1`
+			))
 			.orderBy(
 				orderingDirection === "asc" ? asc(Schema.todo[orderBy]) : desc(Schema.todo[orderBy])
 			)
@@ -137,8 +142,6 @@ export async function getCompletedTodos(withProject: boolean = false, orderBy: k
 			.from(Schema.todo)
 			.where(and(
 				isNotNull(Schema.todo.completed_at),
-				isNull(Schema.todo.deleted_at),
-				projectTitles ? inArray(Schema.todo.project_title, projectTitles) : sql`1 = 1`
 			))
 			.orderBy(
 				orderingDirection === "asc" ? asc(Schema.todo[orderBy]) : desc(Schema.todo[orderBy])
@@ -148,6 +151,7 @@ export async function getCompletedTodos(withProject: boolean = false, orderBy: k
 }
 
 export async function getUncompletedTodos(withProject: boolean = false, orderBy: keyof Schema.Todo = "score", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[]) {
+	console.log(projectTitles, projectTitles?.includes("No project"));
 	if (withProject) {
 		return await db.select({
 			id: Schema.todo.id,
@@ -177,7 +181,7 @@ export async function getUncompletedTodos(withProject: boolean = false, orderBy:
 			.where(and(
 				isNull(Schema.todo.completed_at),
 				isNull(Schema.todo.deleted_at),
-				projectTitles ? inArray(Schema.todo.project_title, projectTitles) : sql`1 = 1`
+				projectTitles ? or(inArray(Schema.todo.project_title, projectTitles), sql`${isNull(Schema.todo.project_title)} AND ${projectTitles.includes("No project")}`) : sql`1 = 1`
 			))
 			.orderBy(
 				orderingDirection === "asc" ? asc(Schema.todo[orderBy]) : desc(Schema.todo[orderBy])
@@ -519,27 +523,66 @@ export async function getProject(title: string) {
 }
 
 export async function getProjects(limit = 50) {
-	return await db
+	const dbresult = await db
 		.select()
 		.from(Schema.project)
 		.where(isNull(Schema.project.deleted_at))
 		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.Project[]
+	
+	dbresult.push(
+		{
+			title: "No project",
+			description: null,
+			completed: false,
+			created_at: new Date(0),
+			updated_at: new Date(0),
+			deleted_at: null,
+		}
+	)
+
+	return dbresult;
 }
 
 export async function getCompletedProjects(limit = 50) {
-	return await db
+	const dbresult = await db
 		.select()
 		.from(Schema.project)
 		.where(and(eq(Schema.project.completed, true), isNull(Schema.project.deleted_at)))
 		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.Project[]
+	
+	dbresult.push(
+		{
+			title: "No project",
+			description: null,
+			completed: true,
+			created_at: new Date(0),
+			updated_at: new Date(0),
+			deleted_at: null,
+		}
+	)
+
+	return dbresult;
 }
 
 export async function getUncompletedProjects(limit = 50) {
-	return await db
+	const dbresult = await db
 		.select()
 		.from(Schema.project)
 		.where(and(eq(Schema.project.completed, false), isNull(Schema.project.deleted_at)))
 		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.Project[]
+	
+		dbresult.push(
+			{
+				title: "No project",
+				description: null,
+				completed: false,
+				created_at: new Date(0),
+				updated_at: new Date(0),
+				deleted_at: null,
+			}
+		)
+	
+		return dbresult;
 }
 
 // ## Update
