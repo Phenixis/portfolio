@@ -43,21 +43,65 @@ export async function GET(request: NextRequest) {
         let emailContent = `
             <html>
             <head>
-            <script src="https://cdn.tailwindcss.com"></script>
+            <style>
+            body {
+                background-color: #f3f4f6;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                margin: 0;
+                font-family: Arial, sans-serif;
+            }
+            main {
+                max-width: 768px;
+                width: 100%;
+                margin: 20px auto;
+                padding: 20px;
+                background-color: #ffffff;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            h1 {
+                font-size: 1.5rem;
+                font-weight: bold;
+                color: #3b82f6;
+                margin-bottom: 16px;
+            }
+            h2 {
+                font-size: 1.25rem;
+                font-weight: 600;
+                color: #374151;
+                margin-top: 16px;
+            }
+            h3 {
+                font-size: 1.125rem;
+                font-weight: 500;
+                color: #4b5563;
+                margin-top: 8px;
+            }
+            ul {
+                list-style-type: disc;
+                padding-left: 20px;
+            }
+            li {
+                color: #1f2937;
+            }
+            </style>
             </head>
-            <body class="bg-gray-100 flex justify-center items-center min-h-screen">
-            <main class="max-w-3xl w-full mx-auto my-5 p-5 bg-white rounded-lg shadow-lg">
-            <h1 class="text-2xl font-bold text-blue-500 mb-4">Your Daily Todo List</h1>
+            <body>
+            <main>
+            <h1>Your Daily Todo List</h1>
         `;
 
         for (const [day, projects] of Object.entries(groupedByProjects)) {
-            emailContent += `<h2 class="text-xl font-semibold text-gray-700 mt-4">Due ${day}</h2>`;
+            emailContent += `<h2>Due ${day}</h2>`;
             for (const [project, todos] of Object.entries(projects)) {
-                emailContent += `<h3 class="text-lg font-medium text-gray-600 mt-2">${project}</h3><ul class="list-disc pl-5">`;
-                (todos as any[]).forEach((todo) => {
-                    emailContent += `<li class="text-gray-800">${todo.title}</li>`;
-                });
-                emailContent += `</ul>`;
+            emailContent += `<h3>${project}</h3><ul>`;
+            (todos as any[]).forEach((todo) => {
+                emailContent += `<li>${todo.title}</li>`;
+            });
+            emailContent += `</ul>`;
             }
         }
 
