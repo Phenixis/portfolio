@@ -59,11 +59,11 @@ export async function POST(request: NextRequest) {
     }
 
     const project = projectTitle && await getProject(projectTitle)
-    if (!project) {
+    if (!project && projectTitle != "") {
       await createProject(projectTitle)
     }
 
-    const todoId = await createTodo(title, Number(importance), new Date(dueDate), Number(duration), projectTitle)
+    const todoId = await createTodo(title, Number(importance), new Date(dueDate), Number(duration), projectTitle != "" ? projectTitle : undefined)
 
     return NextResponse.json({ id: todoId }, { status: 201 })
   } catch (error) {

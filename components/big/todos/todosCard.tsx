@@ -280,8 +280,8 @@ export function TodosCard({
 														checked={selectedProjects.includes(project.title)}
 														onCheckedChange={() => toggleProject(project.title)}
 													/>
-													<label htmlFor={`project-${project.title}`} className="text-sm cursor-pointer">
-														{project.title}
+													<label htmlFor={`project-${project.title != "" ? project.title : "no-project"}`} className="text-sm cursor-pointer">
+														{project.title != "" ? project.title : "No project"}
 													</label>
 												</div>
 											))

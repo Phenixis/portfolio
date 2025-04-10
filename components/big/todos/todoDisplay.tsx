@@ -178,9 +178,9 @@ export default function TodoDisplay({
 						</p>
 					</div>
 					<div className="flex items-center">
-						{"project" in todo && todo.project && (
+						{todo.project_title && (
 							<Badge className="text-center" variant="outline">
-								{todo.project.title}
+								{todo.project_title}
 							</Badge>
 						)}
 

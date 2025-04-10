@@ -19,7 +19,7 @@ import { calculateUrgency } from "@/lib/utils"
 // # TODO
 
 // ## Create
-export async function createTodo(title: string, importance: number, dueDate: Date, duration: number, project?: number) {
+export async function createTodo(title: string, importance: number, dueDate: Date, duration: number, project?: string) {
 	const urgency = calculateUrgency(dueDate)
 
 	const result = await db
