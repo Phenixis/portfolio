@@ -75,9 +75,16 @@ export default function Meteo({
     }
 
     return (
-        <div className={cn("text-center text-xs xl:text-sm flex flex-col justify-center items-center", className)}>
-            <img src={`http://openweathermap.org/img/wn/${meteo.icon}@2x.png`} className="size-10 xl:transform duration-300 xl:translate-y-3 xl:group-hover/Time:-translate-y-0" alt="Weather icon" />
-            <p className="duration-300 -translate-y-2 xl:transform xl:-translate-y-4 xl:opacity-0 xl:group-hover/Time:opacity-100 xl:group-hover/Time:-translate-y-2">{meteo.temperature.toFixed(0)}°C</p>
-        </div>
+        <Tooltip>
+            <TooltipTrigger className={cn("text-center text-xs xl:text-sm flex flex-col justify-center items-center", className)}>
+                <img src={`http://openweathermap.org/img/wn/${meteo.icon}@2x.png`} className="size-10 xl:transform duration-300 xl:translate-y-3 xl:group-hover/Time:-translate-y-0" alt="Weather icon" />
+                <p className="duration-300 -translate-y-2 xl:transform xl:-translate-y-4 xl:opacity-0 xl:group-hover/Time:opacity-100 xl:group-hover/Time:-translate-y-2">{meteo.temperature.toFixed(0)}°C</p>
+            </TooltipTrigger>
+            <TooltipContent>
+                <p className="text-sm text-center">
+                    {date !== (new Date()).toLocaleDateString('fr-FR', { year: 'numeric', month: '2-digit', day: '2-digit' }) ? 'Tomorrow, ' : 'Today, '} {meteo.summary}
+                </p>
+            </TooltipContent>
+        </Tooltip>
     );
 }
