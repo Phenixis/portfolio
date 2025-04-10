@@ -28,12 +28,12 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 	const { projects, isLoading, isError } = useSearchProject({ query: project, limit: 5 })
 	const { mutate } = useSWRConfig()
 
-	// Utiliser des refs pour accéder aux valeurs des champs
+	// Use refs to access field values
 	const titleRef = useRef<HTMLInputElement>(null)
 	const importanceRef = useRef<HTMLInputElement>(null)
 	const durationRef = useRef<HTMLInputElement>(null)
 
-	// État pour suivre si une soumission est en cours (pour éviter les doubles soumissions)
+	// Track if a submission is in progress (to prevent duplicates)
 	const isSubmittingRef = useRef(false)
 
 	// Close calendar when clicking outside
@@ -52,32 +52,29 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 		}
 	}, [showCalendar])
 
-	// Fonction optimisée pour gérer la soumission
+	// Optimized function to handle submission
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 
-		// Éviter les doubles soumissions
+		// Avoid duplicate submissions
 		if (isSubmittingRef.current) return
 		isSubmittingRef.current = true
 
 		try {
-			// Extraire les valeurs directement des refs
 			const title = titleRef.current?.value || ""
 			const importance = Number.parseInt(importanceRef.current?.value || "0")
 			const duration = Number.parseInt(durationRef.current?.value || "0")
 			const id = todo?.id
 
-			// Validation rapide
 			if (!title.trim()) {
 				isSubmittingRef.current = false
 				return
 			}
 
-			// Créer l'objet todo pour la mise à jour optimiste
 			const urgency = calculateUrgency(dueDate)
 			const score = importance * urgency - duration
 			const todoData = {
-				id: mode === "edit" ? id : -1, // ID temporaire pour création
+				id: mode === "edit" ? id : -1,
 				title,
 				importance,
 				urgency,
@@ -91,10 +88,8 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 				completed_at: todo?.completed_at || null,
 			} as Todo
 
-			// Fermer immédiatement le modal pour une expérience instantanée
 			setOpen(false)
 
-			// Mise à jour optimiste du cache SWR
 			mutate(
 				(key) => typeof key === "string" && key.startsWith("/api/todo"),
 				async (currentData) => {
@@ -107,13 +102,11 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 						updatedData = [todoData, ...currentData]
 					}
 
-					// Order the data based on the score of the item
 					return updatedData.sort((a, b) => b.score - a.score)
 				},
 				{ revalidate: false },
 			)
 
-			// Effectuer l'appel API en arrière-plan
 			fetch("/api/todo", {
 				method: mode === "edit" ? "PUT" : "POST",
 				headers: {
@@ -135,13 +128,10 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 					return response.json()
 				})
 				.then(() => {
-					// Revalider silencieusement après la réponse API
 					mutate((key) => typeof key === "string" && key.startsWith("/api/todo"))
 				})
 				.catch((error) => {
 					console.error("Erreur lors de l'opération:", error)
-
-					// Revalider pour restaurer l'état correct
 					mutate((key) => typeof key === "string" && key.startsWith("/api/todo"))
 				})
 
@@ -154,7 +144,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 		}
 	}
 
-	// Gestionnaire de raccourci clavier pour soumettre avec Ctrl+Enter
+	// Keyboard shortcut handler to submit with Ctrl+Enter
 	useEffect(() => {
 		const handleKeyPress = (event: KeyboardEvent) => {
 			if (event.ctrlKey && event.key === "Enter" && open) {
@@ -171,7 +161,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 		}
 	}, [open])
 
-	// Réinitialiser l'état de soumission quand le modal s'ouvre/se ferme
+	// Reset submission state when modal opens/closes
 	useEffect(() => {
 		isSubmittingRef.current = false
 	}, [open])
@@ -194,11 +184,11 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 			</DialogTrigger>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>{mode === "edit" ? "Modifier Todo" : "Créer Todo"}</DialogTitle>
+					<DialogTitle>{mode === "edit" ? "Edit Todo" : "Create Todo"}</DialogTitle>
 				</DialogHeader>
 				<form id="todo-form" onSubmit={handleSubmit} className="space-y-4">
 					<div>
-						<Label htmlFor="title">Titre</Label>
+						<Label htmlFor="title">Title</Label>
 						<Input ref={titleRef} type="text" id="title" name="title" defaultValue={todo?.title || ""} autoFocus />
 					</div>
 					<div className="flex flex-col justify-between lg:flex-row lg:space-x-4">
@@ -265,7 +255,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 							)}
 						</div>
 						<div>
-							<Label htmlFor="duration">Durée</Label>
+							<Label htmlFor="duration">Duration</Label>
 							<Input
 								ref={durationRef}
 								type="number"
@@ -290,7 +280,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 									handleProjectChange(e.target.value)
 								}}
 							/>
-							{ project && !(projects && projects.length == 1 && projects[0].title == project) && (
+							{project && !(projects && projects.length == 1 && projects[0].title == project) && (
 								<div className="mt-1 overflow-y-auto rounded-md border border-border bg-popover shadow-md">
 									{isLoading ? (
 										<div className="p-2 text-sm text-muted-foreground">
@@ -310,7 +300,6 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 														const selectedProject = proj.title
 														setInputValue(selectedProject)
 														setProject(selectedProject)
-														// Close the dropdown after selection
 														setTimeout(() => {
 															if (durationRef.current) {
 																durationRef.current.focus()
@@ -332,7 +321,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 						</div>
 					</div>
 					<DialogFooter>
-						<Button type="submit">{mode === "edit" ? "Enregistrer" : "Créer"}</Button>
+						<Button type="submit">{mode === "edit" ? "Save" : "Create"}</Button>
 					</DialogFooter>
 				</form>
 			</DialogContent>
