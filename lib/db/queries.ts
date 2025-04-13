@@ -151,7 +151,6 @@ export async function getCompletedTodos(withProject: boolean = false, orderBy: k
 }
 
 export async function getUncompletedTodos(withProject: boolean = false, orderBy: keyof Schema.Todo = "score", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[]) {
-	console.log(projectTitles, projectTitles?.includes("No project"));
 	if (withProject) {
 		return await db.select({
 			id: Schema.todo.id,
