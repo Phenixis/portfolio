@@ -10,11 +10,9 @@ import { Button } from "@/components/ui/button"
 import { Filter, SquareCheck, Square, SquareMinus, ArrowDown01, ArrowDown10, Infinity, ChevronDown, FolderTree } from "lucide-react"
 import TodoDisplay from "./todoDisplay"
 import { useTodos } from "@/hooks/useTodos"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useProjects } from "@/hooks/useProjects"
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 
 function generateTitle(completed?: boolean, orderBy?: keyof Todo, orderingDirection?: "asc" | "desc", limit?: number, projectTitles?: string[]) {
 	let title = limit ? `The top ${limit} ` : "All "
@@ -146,7 +144,7 @@ export function TodosCard({
 	}, [todos, projects])
 
 	return (
-		<Card className={cn(`w-full md:max-w-2xl group/TodoCard h-fit max-h-screen overflow-y-auto scrollbar-hide`, className)}>
+		<Card className={cn(`w-full md:max-w-xl group/TodoCard h-fit max-h-screen overflow-y-auto scrollbar-hide`, className)}>
 			<CardHeader className="flex flex-col sticky top-0 bg-background z-10">
 				<div className="flex flex-row items-center justify-between w-full gap-2">
 					<Link href={`/my/todos`}>
