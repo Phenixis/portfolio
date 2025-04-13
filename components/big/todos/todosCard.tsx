@@ -7,13 +7,14 @@ import Link from "next/link"
 import type { Todo } from "@/lib/db/schema"
 import { useState, useCallback, useTransition, useMemo } from "react"
 import { Button } from "@/components/ui/button"
-import { Filter, SquareCheck, Square, SquareMinus, ArrowDown01, ArrowDown10, Infinity, ChevronDown } from "lucide-react"
+import { Filter, SquareCheck, Square, SquareMinus, ArrowDown01, ArrowDown10, Infinity, ChevronDown, FolderTree } from "lucide-react"
 import TodoDisplay from "./todoDisplay"
 import { useTodos } from "@/hooks/useTodos"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useProjects } from "@/hooks/useProjects"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 
 function generateTitle(completed?: boolean, orderBy?: keyof Todo, orderingDirection?: "asc" | "desc", limit?: number, projectTitles?: string[]) {
 	let title = limit ? `The top ${limit} ` : "All "
@@ -78,6 +79,7 @@ export function TodosCard({
 	const [isPending, startTransition] = useTransition()
 
 	// State for filter controls
+	const [isFilterOpen, setIsFilterOpen] = useState(false)
 	const [completed, setCompleted] = useState<boolean | undefined>(initialCompleted)
 	const [limit, setLimit] = useState<number | undefined>(initialLimit)
 	const [orderBy, setOrderBy] = useState<keyof Todo | undefined>(initialOrderBy)
@@ -144,156 +146,158 @@ export function TodosCard({
 	}, [todos, projects])
 
 	return (
-		<Card className={cn(`w-full md:max-w-2xl group/TodoCard overflow-y-auto scrollbar-hide`, className)}>
+		<Card className={cn(`w-full md:max-w-2xl group/TodoCard h-fit max-h-screen overflow-y-auto scrollbar-hide`, className)}>
 			<CardHeader className="flex flex-col sticky top-0 bg-background z-10">
 				<div className="flex flex-row items-center justify-between w-full gap-2">
 					<Link href={`/my/todos`}>
 						<CardTitle>{generateTitle(completed, orderBy, orderingDirection, limit, selectedProjects)}</CardTitle>
 					</Link>
-					<TodoModal className="xl:opacity-0 duration-300 xl:group-hover/TodoCard:opacity-100" />
-				</div>
-				<Collapsible className="flex space-x-4 w-full">
-					<CollapsibleTrigger>
-						<div className="h-10 py-2 flex items-center ">
+					<div className="flex gap-2 xl:opacity-0 duration-300 xl:group-hover/TodoCard:opacity-100">
+						<div className="h-10 py-2 flex items-center cursor-pointer" onClick={() => setIsFilterOpen((prev) => !prev)}>
 							<Filter className="h-4 w-4" />
 						</div>
-					</CollapsibleTrigger>
-					<CollapsibleContent className="w-full">
-						<div className="flex flex-row gap-6 flex-wrap">
-							<div className="flex flex-row items-center gap-2">
-								<Select
-									onValueChange={(newValue) => {
-										setOrderBy(newValue != "none" ? (newValue as keyof Todo) : initialOrderBy)
-									}}
-									defaultValue={orderBy}
-									disabled={isPending || isLoading}
-								>
-									<SelectTrigger>
-										<SelectValue placeholder="Order by" />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="importance">Importance</SelectItem>
-										<SelectItem value="duration">Duration</SelectItem>
-										<SelectItem value="urgency">Urgency</SelectItem>
-										<SelectItem value="score">Score</SelectItem>
-									</SelectContent>
-								</Select>
-								<Button
-									variant="outline"
-									size="sm"
-									onClick={() => {
-										setOrderingDirection(orderingDirection === "asc" ? "desc" : "asc")
-									}}
-									disabled={isPending || isLoading}
-									className={cn("flex items-center gap-1")}
-								>
-									{orderingDirection === "asc" ? (
-										<ArrowDown01 className="h-4 w-4" />
-									) : (
-										<ArrowDown10 className="h-4 w-4" />
-									)}
-								</Button>
-							</div>
-							<div className="flex flex-row items-center gap-2">
-								<Button
-									variant="outline"
-									size="sm"
-									onClick={cycleCompletedFilter}
-									disabled={isPending || isLoading}
-									className={cn("flex items-center gap-1")}
-								>
-									{completed === true ? (
-										<SquareCheck className="h-4 w-4" />
-									) : completed === false ? (
-										<Square className="h-4 w-4" />
-									) : (
-										<SquareMinus className="h-4 w-4" />
-									)}
-								</Button>
-							</div>
-							<div className="flex flex-row items-center gap-2">
-								<Button
-									variant={limit === undefined ? "default" : "outline"}
-									size="sm"
-									onClick={() => setLimit(undefined)}
-									disabled={isPending || isLoading}
-								>
-									<Infinity className="h-4 w-4" />
-								</Button>
-								<Button
-									variant={limit === 5 ? "default" : "outline"}
-									size="sm"
-									onClick={() => setLimit(5)}
-									disabled={isPending || isLoading}
-								>
-									5
-								</Button>
-								<Button
-									variant={limit === 10 ? "default" : "outline"}
-									size="sm"
-									onClick={() => setLimit(10)}
-									disabled={isPending || isLoading}
-								>
-									10
-								</Button>
-								<Button
-									variant={limit === 25 ? "default" : "outline"}
-									size="sm"
-									onClick={() => setLimit(25)}
-									disabled={isPending || isLoading}
-								>
-									25
-								</Button>
-								<Button
-									variant={limit === 50 ? "default" : "outline"}
-									size="sm"
-									onClick={() => setLimit(50)}
-									disabled={isPending || isLoading}
-								>
-									50
-								</Button>
-							</div>
+						<TodoModal />
+					</div>
+				</div>
+				<div className={`${!isFilterOpen && "hidden"} flex flex-col gap-2`}>
+					<div className="flex flex-row gap-6 flex-wrap">
+						<div className="flex flex-row items-center gap-2">
+							<Select
+								onValueChange={(newValue) => {
+									setOrderBy(newValue != "none" ? (newValue as keyof Todo) : initialOrderBy)
+								}}
+								defaultValue={orderBy}
+								disabled={isPending || isLoading}
+							>
+								<SelectTrigger>
+									<SelectValue placeholder="Order by" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="importance">Importance</SelectItem>
+									<SelectItem value="duration">Duration</SelectItem>
+									<SelectItem value="urgency">Urgency</SelectItem>
+									<SelectItem value="score">Score</SelectItem>
+								</SelectContent>
+							</Select>
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => {
+									setOrderingDirection(orderingDirection === "asc" ? "desc" : "asc")
+								}}
+								disabled={isPending || isLoading}
+								className={cn("flex items-center gap-1")}
+								tooltip={`Order by ${orderingDirection === "asc" ? "descending" : "ascending"}`}
+							>
+								{orderingDirection === "asc" ? (
+									<ArrowDown01 className="h-4 w-4" />
+								) : (
+									<ArrowDown10 className="h-4 w-4" />
+								)}
+							</Button>
 						</div>
-						<div className="flex items-center justify-between mt-4 w-full">
-							<div className="flex items-center space-x-2 mt-4 mb-2">
-								<Checkbox
-									id="group-by-project"
-									checked={groupByProject}
-									onCheckedChange={(checked) => {
-										setGroupByProject(checked === true)
-										setSelectedProjects([])
-									}}
-								/>
-								<label htmlFor="group-by-project" className="text-sm cursor-pointer">
-									Group by Project
-								</label>
-							</div>
-							{groupByProject && (
-								<div className="w-full flex flex-col space-x-2">
-									<div className="w-full mt-2 border rounded-md p-2 grid grid-cols-2 gap-2">
-										{projects?.length > 0 ? (
-											projects.map((project) => (
-												<div key={project.title} className="flex items-center space-x-2">
-													<Checkbox
-														id={`project-${project.title}`}
-														checked={selectedProjects.includes(project.title)}
-														onCheckedChange={() => toggleProject(project.title)}
-													/>
-													<label htmlFor={`project-${project.title}`} className="text-sm cursor-pointer">
-														{project.title}
-													</label>
-												</div>
-											))
-										) : (
-											<div className="w-full text-sm text-center text-muted-foreground col-span-2">No projects found</div>
-										)}
-									</div>
+						<div className="flex flex-row items-center gap-2">
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={cycleCompletedFilter}
+								disabled={isPending || isLoading}
+								className={cn("flex items-center gap-1")}
+								tooltip={`
+									${completed === true ? "Completed" : completed === false ? "Uncompleted" : "All"} todos
+								`}
+							>
+								{completed === true ? (
+									<SquareCheck className="h-4 w-4" />
+								) : completed === false ? (
+									<Square className="h-4 w-4" />
+								) : (
+									<SquareMinus className="h-4 w-4" />
+								)}
+							</Button>
+						</div>
+						<div className="flex flex-row items-center gap-2">
+							<Button
+								variant={limit === undefined ? "default" : "outline"}
+								size="sm"
+								onClick={() => setLimit(undefined)}
+								disabled={isPending || isLoading}
+								tooltip="No limit"
+							>
+								<Infinity className="h-4 w-4" />
+							</Button>
+							<Button
+								variant={limit === 5 ? "default" : "outline"}
+								size="sm"
+								onClick={() => setLimit(5)}
+								disabled={isPending || isLoading}
+								tooltip="Limit to 5 todos"
+							>
+								5
+							</Button>
+							<Button
+								variant={limit === 10 ? "default" : "outline"}
+								size="sm"
+								onClick={() => setLimit(10)}
+								disabled={isPending || isLoading}
+								tooltip="Limit to 10 todos"
+							>
+								10
+							</Button>
+							<Button
+								variant={limit === 25 ? "default" : "outline"}
+								size="sm"
+								onClick={() => setLimit(25)}
+								disabled={isPending || isLoading}
+								tooltip="Limit to 25 todos"
+							>
+								25
+							</Button>
+							<Button
+								variant={limit === 50 ? "default" : "outline"}
+								size="sm"
+								onClick={() => setLimit(50)}
+								disabled={isPending || isLoading}
+								tooltip="Limit to 50 todos"
+							>
+								50
+							</Button>
+						</div>
+						<Button
+							variant={groupByProject ? "default" : "outline"}
+							size="sm"
+							onClick={() => setGroupByProject(!groupByProject)}
+							disabled={isPending || isLoading}
+							tooltip="Group by project"
+						>
+							<FolderTree className="h-4 w-4" />
+						</Button>
+					</div>
+					<div className="flex items-center justify-between w-full">
+						{groupByProject && (
+							<div className="w-full flex flex-col space-x-2">
+								<div className="w-full mt-2 border rounded-md p-2 grid grid-cols-2 gap-2">
+									{projects?.length > 0 ? (
+										projects.map((project) => (
+											<div key={project.title} className="flex items-center space-x-2">
+												<Checkbox
+													id={`project-${project.title}`}
+													checked={selectedProjects.includes(project.title)}
+													onCheckedChange={() => toggleProject(project.title)}
+												/>
+												<label htmlFor={`project-${project.title}`} className="text-sm cursor-pointer">
+													{project.title}
+												</label>
+											</div>
+										))
+									) : (
+										<div className="w-full text-sm text-center text-muted-foreground col-span-2">No projects found</div>
+									)}
 								</div>
-							)}
-						</div>
-					</CollapsibleContent>
-				</Collapsible>
-				<div className="flex gap-2"></div>
+							</div>
+						)}
+					</div>
+				</div>
 			</CardHeader>
 			<CardContent>
 				{isLoading ? (
