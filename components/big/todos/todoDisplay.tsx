@@ -6,7 +6,7 @@ import { useState, useOptimistic, startTransition, useRef, useEffect } from "rea
 import { Skeleton } from "@/components/ui/skeleton"
 import type { Todo, Project } from "@/lib/db/schema"
 import { TodoModal } from "./todoModal"
-import { TrashIcon } from "lucide-react"
+import { ChevronsDownUp, ChevronsUpDown, TrashIcon } from "lucide-react"
 import { useSWRConfig } from "swr"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
@@ -20,6 +20,8 @@ export default function TodoDisplay({
 	const [isDeleting, setIsDeleting] = useState(false)
 	const [isHovering, setIsHovering] = useState(false)
 	const [showTrash, setShowTrash] = useState(false)
+	const [isCollapsibleOpen, setIsCollapsibleOpen] = useState(false)
+	const [optimisticState, toggleOptimistic] = useOptimistic(isToggled, (prev) => !prev)
 	const containerRef = useRef<HTMLDivElement>(null)
 	const { mutate } = useSWRConfig()
 	const skeleton = todo !== undefined && orderedBy !== undefined
@@ -136,8 +138,6 @@ export default function TodoDisplay({
 		}
 	}
 
-	const [optimisticState, toggleOptimistic] = useOptimistic(isToggled, (prev) => !prev)
-
 	function handleMouseEnter() {
 		if (window.innerWidth >= 1024) {
 			setIsHovering(true)
@@ -154,7 +154,7 @@ export default function TodoDisplay({
 		<div
 			ref={containerRef}
 			className={cn(
-				`flex flex-col xl:flex-row justify-between items-end xl:items-center group/todo p-1 duration-300 text-xs xl:text-base ${daysBeforeDue < 0 ? "bg-red-500/10 dark:bg-red-500/15 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/10 dark:bg-orange-500/15 lg:hover:bg-orange-500/25" : "lg:hover:bg-primary/10"} space-x-2 xl:space-x-4 ${isDeleting ? "opacity-50" : ""}`,
+				`flex flex-col group/todo p-1 duration-300 text-xs xl:text-base ${daysBeforeDue < 0 ? "bg-red-500/10 dark:bg-red-500/15 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/10 dark:bg-orange-500/15 lg:hover:bg-orange-500/25" : "lg:hover:bg-primary/10"} space-y-2 ${isDeleting ? "opacity-50" : ""}`,
 				className,
 			)}
 			onMouseEnter={handleMouseEnter}
@@ -162,34 +162,58 @@ export default function TodoDisplay({
 		>
 			{skeleton ? (
 				<>
-					<div className="flex space-x-2 items-center w-full">
+					<div className="flex space-x-2 items-center justify-between w-full">
+						<div className="flex space-x-2 items-center w-full">
+							<div
+								className={cn(
+									"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center px-1",
+									isHovering
+										? "w-fit xl:w-full xl:max-w-[18px] xl:opacity-100 ml-2"
+										: "w-fit xl:w-0 xl:max-w-0 xl:opacity-0",
+								)}
+							>
+								{/* Only this div is clickable for toggling */}
+								<div
+									className={`relative p-2 size-1 border border-neutral-300 dark:border-neutral-700 rounded-300 cursor-pointer ${optimisticState ? "bg-primary" : ""}`}
+									onClick={() => toggle()}
+									role="checkbox"
+									aria-checked={optimisticState}
+									tabIndex={0}
+								>
+									<div
+										className={`absolute inset-0 w-1/2 h-1/2 z-20 m-auto duration-300 ${optimisticState ? "xl:group-hover/todo:bg-background" : "xl:group-hover/todo:bg-primary"}`}
+									/>
+								</div>
+							</div>
+							<p className={`w-full text-base hyphens-auto ${optimisticState ? "line-through text-muted-foreground" : ""}`} lang="en">
+								{todo.title}
+							</p>
+						</div>
 						<div
 							className={cn(
 								"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center px-1",
 								isHovering
-									? "w-fit xl:w-full xl:max-w-[18px] xl:opacity-100 ml-2"
+									? "w-fit xl:w-full xl:max-w-[18px] xl:opacity-100 mr-2"
 									: "w-fit xl:w-0 xl:max-w-0 xl:opacity-0",
 							)}
 						>
-							{/* Only this div is clickable for toggling */}
-							<div
-								className={`relative p-2 size-1 border border-neutral-300 dark:border-neutral-700 rounded-300 cursor-pointer ${optimisticState ? "bg-primary" : ""}`}
-								onClick={() => toggle()}
-								role="checkbox"
-								aria-checked={optimisticState}
-								tabIndex={0}
-							>
-								<div
-									className={`absolute inset-0 w-1/2 h-1/2 z-20 m-auto duration-300 ${optimisticState ? "xl:group-hover/todo:bg-background" : "xl:group-hover/todo:bg-primary"}`}
-								/>
-							</div>
+							{
+								isCollapsibleOpen ? (
+									<ChevronsDownUp
+										className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-black cursor-pointer duration-300"
+										onClick={() => setIsCollapsibleOpen(!isCollapsibleOpen)}
+									/>
+
+								) : (
+									<ChevronsUpDown
+										className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-black cursor-pointer duration-300"
+										onClick={() => setIsCollapsibleOpen(!isCollapsibleOpen)}
+									/>
+								)
+							}
 						</div>
-						<p className={`w-full text-base hyphens-auto ${optimisticState ? "line-through text-muted-foreground" : ""}`} lang="en">
-							{todo.title}
-							<span className="ml-2 text-xs text-neutral">{todo[orderedBy] as string}</span>
-						</p>
 					</div>
-					<div className="flex items-center">
+					<div className={`flex space-x-2 ${!isCollapsibleOpen && "hidden"}`}>
 						{todo.project_title && (
 							<Badge className="text-center" variant="outline">
 								{todo.project_title}
