@@ -19,33 +19,12 @@ export default function TodoDisplay({
 	const [isToggled, setIsToggled] = useState(todo ? todo.completed_at !== null : false)
 	const [isDeleting, setIsDeleting] = useState(false)
 	const [isHovering, setIsHovering] = useState(false)
-	const [showTrash, setShowTrash] = useState(false)
 	const [isCollapsibleOpen, setIsCollapsibleOpen] = useState(false)
 	const [optimisticState, toggleOptimistic] = useOptimistic(isToggled, (prev) => !prev)
 	const containerRef = useRef<HTMLDivElement>(null)
 	const { mutate } = useSWRConfig()
 	const skeleton = todo !== undefined && orderedBy !== undefined
 	const daysBeforeDue = todo ? Math.ceil((new Date(todo.due).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 4
-
-	// Handle delayed appearance of trash icon
-	useEffect(() => {
-		let timeoutId: NodeJS.Timeout
-
-		if (isHovering) {
-			// Set timeout to show trash icon after 1200ms
-			timeoutId = setTimeout(() => {
-				setShowTrash(true)
-			}, 1200)
-		} else {
-			// Hide trash icon immediately
-			setShowTrash(false)
-		}
-
-		// Cleanup timeout on component unmount or when isHovering changes
-		return () => {
-			clearTimeout(timeoutId)
-		}
-	}, [isHovering])
 
 	// Fonction améliorée pour supprimer une todo avec SWR
 	async function deleteTodo(e: React.MouseEvent) {
@@ -162,13 +141,13 @@ export default function TodoDisplay({
 		>
 			{skeleton ? (
 				<>
-					<div className="flex space-x-2 items-center justify-between w-full">
-						<div className="flex space-x-2 items-center w-full">
+					<div className="flex items-center justify-between w-full">
+						<div className="flex space-x- items-center w-full">
 							<div
 								className={cn(
-									"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center px-1",
+									"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center ",
 									isHovering
-										? "w-fit xl:w-full xl:max-w-[18px] xl:opacity-100 ml-2"
+										? "w-fit xl:w-full xl:max-w-[18px] xl:opacity-100 mx-1"
 										: "w-fit xl:w-0 xl:max-w-0 xl:opacity-0",
 								)}
 							>
@@ -193,7 +172,7 @@ export default function TodoDisplay({
 							className={cn(
 								"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center px-1",
 								isHovering
-									? "w-fit xl:w-full xl:max-w-[18px] xl:opacity-100 mr-2"
+									? "w-fit xl:w-full xl:max-w-[18px] xl:opacity-100 mx-1"
 									: "w-fit xl:w-0 xl:max-w-0 xl:opacity-0",
 							)}
 						>
@@ -213,37 +192,47 @@ export default function TodoDisplay({
 							}
 						</div>
 					</div>
-					<div className={`flex space-x-2 ${!isCollapsibleOpen && "hidden"}`}>
-						{todo.project_title && (
-							<Badge className="text-center" variant="outline">
-								{todo.project_title}
-							</Badge>
-						)}
-
-						{/* TrashIcon with delayed appearance */}
-						<div
-							className={cn(
-								"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center",
-								showTrash
-									? "w-full xl:max-w-[16px] xl:opacity-100 ml-2"
-									: "w-full xl:w-0 xl:max-w-0 xl:opacity-0",
+					<div className={`flex space-x-4 justify-between ${!isCollapsibleOpen && "hidden"}`}>
+						<div className="space-y-1">
+							{todo.importance && (
+								<p className="text-sm text-muted-foreground">
+									<span>Importance: {todo.importance}</span>
+								</p>
 							)}
-						>
+							{todo.due && (
+								<p className="text-sm text-muted-foreground">
+									<span>
+										Due: {new Date(todo.due).toLocaleDateString(navigator.language || "fr-FR")}
+									</span>
+								</p>
+							)}
+							{todo.duration !== undefined && (
+								<p className="text-sm text-muted-foreground">
+									<span>
+										Duration:{" "}
+										{todo.duration === 0
+											? "0-15 minutes"
+											: todo.duration === 1
+											? "15-30 minutes"
+											: todo.duration === 2
+											? "30-60 minutes"
+											: "60+ minutes"}
+									</span>
+								</p>
+							)}
+						</div>
+						<div className="flex space-x-2">
+							{todo.project_title && (
+								<Badge className="text-center h-fit" variant="outline">
+									{todo.project_title}
+								</Badge>
+							)}
+
 							<TrashIcon
 								className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-destructive cursor-pointer lg:hover:text-destructive/80 duration-300"
 								onClick={deleteTodo}
 							/>
-						</div>
 
-						{/* TodoModal with immediate appearance on hover */}
-						<div
-							className={cn(
-								"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center",
-								isHovering
-									? "w-full xl:max-w-[16px] xl:opacity-100 ml-2"
-									: "w-full xl:w-0 xl:max-w-0 xl:opacity-0",
-							)}
-						>
 							<TodoModal className="duration-300" todo={todo} />
 						</div>
 					</div>
