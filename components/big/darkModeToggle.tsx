@@ -23,7 +23,7 @@ export default function DarkModeToggle({
     return (
         <div
             onClick={toggleDarkMode}
-            className={cn("lg:hover:rotate-[46deg] duration-1000 flex align-middle relative transition-all text-neutral-800 lg:hover:text-neutral-500 dark:text-neutral-200 dark:hover:text-neutral-500 cursor-pointer", className)}
+            className={cn("lg:hover:rotate-[46deg] duration-1000 flex align-middle relative transition-all text-neutral-800 lg:hover:text-neutral-500 dark:text-neutral-200 dark:lg:hover:text-neutral-500 cursor-pointer", className)}
         >
             {isDarkMode ? (
                 <Moon />

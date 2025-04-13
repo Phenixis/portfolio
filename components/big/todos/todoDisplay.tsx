@@ -142,7 +142,7 @@ export default function TodoDisplay({
 		<div
 			ref={containerRef}
 			className={cn(
-				`flex flex-col xl:flex-row justify-between items-end xl:items-center group/todo p-1 duration-300 text-xs xl:text-base ${daysBeforeDue < 0 ? "bg-red-500/10 dark:bg-red-500/15 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/10 dark:bg-orange-500/15 lg:hover:bg-orange-500/25" : "hover:bg-primary/10"} space-x-2 xl:space-x-4 ${isDeleting ? "opacity-50" : ""}`,
+				`flex flex-col xl:flex-row justify-between items-end xl:items-center group/todo p-1 duration-300 text-xs xl:text-base ${daysBeforeDue < 0 ? "bg-red-500/10 dark:bg-red-500/15 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/10 dark:bg-orange-500/15 lg:hover:bg-orange-500/25" : "lg:hover:bg-primary/10"} space-x-2 xl:space-x-4 ${isDeleting ? "opacity-50" : ""}`,
 				className,
 			)}
 			onMouseEnter={() => setIsHovering(true)}

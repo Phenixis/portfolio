@@ -32,7 +32,7 @@ export default function Navbar({ actualPath }: { actualPath: string }) {
 								<Link
 									key={path}
 									href={path}
-									className={`group/nav duration-1000 flex items-center transition-all lg:hover:text-neutral-800 dark:hover:text-neutral-200 align-middle relative py-1 px-2 m-1 ${actualPath === path ? 'underline underline-offset-8 decoration-dashed' : 'text-neutral-500 dark:text-neutral-400'}`}
+									className={`group/nav duration-1000 flex items-center transition-all lg:hover:text-neutral-800 dark:lg:hover:text-neutral-200 align-middle relative py-1 px-2 m-1 ${actualPath === path ? 'underline underline-offset-8 decoration-dashed' : 'text-neutral-500 dark:text-neutral-400'}`}
 								>
 									{name}
 								</Link>
