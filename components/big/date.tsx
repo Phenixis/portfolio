@@ -9,18 +9,21 @@ export default function DateDisplay({
     className?: string
 }) {
     const [currentDate, setCurrentDate] = useState(new Date());
+    const [locale, setLocale] = useState("fr-FR");
 
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentDate(new Date());
         }, 3600000);
 
+        setLocale(navigator.language);
+
         return () => clearInterval(timer);
     }, []);
 
     return (
         <div className={cn("text-center text-lg", className)}>
-            {currentDate.toLocaleDateString('fr-FR', {year: 'numeric', month: '2-digit', day: '2-digit'})}
+            {currentDate.toLocaleDateString(locale)}
         </div>
     );
 }
