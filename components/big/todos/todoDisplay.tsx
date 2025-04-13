@@ -138,6 +138,18 @@ export default function TodoDisplay({
 
 	const [optimisticState, toggleOptimistic] = useOptimistic(isToggled, (prev) => !prev)
 
+	function handleMouseEnter() {
+		if (window.innerWidth >= 1024) {
+			setIsHovering(true)
+		}
+	}
+
+	function handleMouseLeave() {
+		if (window.innerWidth >= 1024) {
+			setIsHovering(false)
+		}
+	}
+
 	return (
 		<div
 			ref={containerRef}
@@ -145,8 +157,8 @@ export default function TodoDisplay({
 				`flex flex-col xl:flex-row justify-between items-end xl:items-center group/todo p-1 duration-300 text-xs xl:text-base ${daysBeforeDue < 0 ? "bg-red-500/10 dark:bg-red-500/15 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/10 dark:bg-orange-500/15 lg:hover:bg-orange-500/25" : "lg:hover:bg-primary/10"} space-x-2 xl:space-x-4 ${isDeleting ? "opacity-50" : ""}`,
 				className,
 			)}
-			onMouseEnter={() => setIsHovering(true)}
-			onMouseLeave={() => setIsHovering(false)}
+			onMouseEnter={handleMouseEnter}
+			onMouseLeave={handleMouseLeave}
 		>
 			{skeleton ? (
 				<>
