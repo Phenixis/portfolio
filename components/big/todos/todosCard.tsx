@@ -97,7 +97,7 @@ export function TodosCard({
 		limit,
 		orderingDirection,
 		withProject,
-		projectTitles: selectedProjects.length > 0 ? selectedProjects : undefined,
+		projectTitles: (groupByProject && selectedProjects.length > 0) ? selectedProjects : undefined,
 	})
 
 	// Memoize the cycleCompletedFilter function to prevent unnecessary re-renders
