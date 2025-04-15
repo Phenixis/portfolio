@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { TodoModal } from "@/components/big/todos/todoModal"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
-import type { Todo } from "@/lib/db/schema"
+import type { Todo, Project, Importance, Duration } from "@/lib/db/schema"
 import { useState, useCallback, useTransition, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Filter, SquareCheck, Square, SquareMinus, ArrowDown01, ArrowDown10, Infinity, ChevronDown, FolderTree } from "lucide-react"
@@ -139,7 +139,7 @@ export function TodosCard({
 				acc[projectId].todos.push(todo)
 				return acc
 			},
-			{} as Record<string, { name: string; todos: Todo[] }>,
+			{} as Record<string, { name: string; todos: (Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration })[] }>,
 		)
 	}, [todos, projects])
 
@@ -302,7 +302,7 @@ export function TodosCard({
 							<div key={projectId} className="mb-4">
 								<h3 className="font-medium text-sm p-2 rounded-md">{name}</h3>
 								<div className="pl-2">
-									{todos.map((todo: Todo) => (
+									{todos.map((todo: (Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration })) => (
 										<TodoDisplay key={todo.id} todo={todo} orderedBy={orderBy} className="mt-1" />
 									))}
 								</div>
@@ -310,7 +310,7 @@ export function TodosCard({
 						))
 					) : (
 						// Not grouped
-						todos.map((todo: Todo) => <TodoDisplay key={todo.id} todo={todo} orderedBy={orderBy} className="mt-1" />)
+						todos.map((todo: (Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration })) => <TodoDisplay key={todo.id} todo={todo} orderedBy={orderBy} className="mt-1" />)
 					)
 				) : (
 					// Show empty state

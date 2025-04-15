@@ -35,10 +35,10 @@ export async function GET(request: NextRequest) {
   try {
     const todos =
       completed === true
-        ? await getCompletedTodos(withProject, orderBy || undefined, orderingDirection, limit, projectTitles)
+        ? await getCompletedTodos(orderBy || undefined, orderingDirection, limit, projectTitles)
         : completed === false
-          ? await getUncompletedTodos(withProject, orderBy || undefined, orderingDirection, limit, projectTitles)
-          : await getTodos(withProject, orderBy || undefined, orderingDirection, limit, projectTitles)
+          ? await getUncompletedTodos(orderBy || undefined, orderingDirection, limit, projectTitles)
+          : await getTodos(orderBy || undefined, orderingDirection, limit, projectTitles)
 
     return NextResponse.json(todos)
   } catch (error) {

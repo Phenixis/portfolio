@@ -1,6 +1,6 @@
 "use client"
 
-import type { Todo, Project } from "@/lib/db/schema"
+import type { Todo, Project, Duration, Importance } from "@/lib/db/schema"
 import { useFilteredData } from "./useFilteredData"
 
 export function useTodos({
@@ -31,7 +31,7 @@ export function useTodos({
   })
 
   return {
-    todos: data as (Todo | (Todo & { project: Project }))[],
+    todos: data as (Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration })[],
     isLoading,
     isError,
     mutate,

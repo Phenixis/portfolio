@@ -16,6 +16,16 @@ import { fr } from "date-fns/locale"
 import { format } from "date-fns"
 import { useDebouncedCallback } from "use-debounce"
 import { useSearchProject } from "@/hooks/useSearchProject"
+import { useImportanceAndDuration } from "@/hooks/useImportanceAndDuration"
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select"
+import { cn } from "@/lib/utils"
+
 
 export function TodoModal({ className, todo }: { className?: string; todo?: Todo }) {
 	const mode = todo ? "edit" : "create"
@@ -26,6 +36,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 	const [project, setProject] = useState<string>(todo?.project_title || "")
 	const [inputValue, setInputValue] = useState<string>(todo?.project_title || "")
 	const { projects, isLoading, isError } = useSearchProject({ query: project, limit: 5 })
+	const { importanceData, durationData } = useImportanceAndDuration();
 	const { mutate } = useSWRConfig()
 
 	// Use refs to access field values
@@ -179,10 +190,10 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger className={className}>
-				{mode === "edit" ? <PenIcon className="size-4" /> : <PlusIcon className="size-6" />}
+			<DialogTrigger className={cn("h-fit",  className)}>
+				{mode === "edit" ? <PenIcon className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px]" /> : <PlusIcon className="size-6" />}
 			</DialogTrigger>
-			<DialogContent>
+			<DialogContent className="max-w-2xl">
 				<DialogHeader>
 					<DialogTitle>{mode === "edit" ? "Edit Todo" : "Create Todo"}</DialogTitle>
 				</DialogHeader>
@@ -194,15 +205,22 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 					<div className="flex flex-col justify-between lg:flex-row lg:space-x-4">
 						<div>
 							<Label htmlFor="importance">Importance</Label>
-							<Input
-								ref={importanceRef}
-								type="number"
-								id="importance"
-								name="importance"
-								defaultValue={todo?.importance || 0}
-								min={0}
-								max={5}
-							/>
+							<Select defaultValue={todo?.importance?.toString()}>
+								<SelectTrigger className="w-full">
+									<SelectValue placeholder="Select importance" />
+								</SelectTrigger>
+								<SelectContent>
+									{importanceData ? importanceData.map((item) => (
+										<SelectItem key={item.level} value={item.level.toString()}>
+											{item.name}
+										</SelectItem>
+									)) : (
+										<SelectItem value="-1" disabled>
+											Loading...
+										</SelectItem>
+									)}
+								</SelectContent>
+							</Select>
 						</div>
 						<div className="relative">
 							<Label htmlFor="dueDate">Due date</Label>
@@ -256,15 +274,22 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 						</div>
 						<div>
 							<Label htmlFor="duration">Duration</Label>
-							<Input
-								ref={durationRef}
-								type="number"
-								id="duration"
-								name="duration"
-								defaultValue={todo?.duration || 0}
-								min={0}
-								max={3}
-							/>
+							<Select defaultValue={todo?.duration?.toString()}>
+								<SelectTrigger className="w-full">
+									<SelectValue placeholder="Select duration" />
+								</SelectTrigger>
+								<SelectContent>
+									{durationData ? durationData.map((item) => (
+										<SelectItem key={item.level} value={item.level.toString()}>
+											{item.name}
+										</SelectItem>
+									)) : (
+										<SelectItem value="-1" disabled>
+											Loading...
+										</SelectItem>
+									)}
+								</SelectContent>
+							</Select>
 						</div>
 					</div>
 					<div className="flex space-x-4">

@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useOptimistic, startTransition, useRef, useEffect } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import type { Todo, Project } from "@/lib/db/schema"
+import type { Todo, Project, Importance, Duration } from "@/lib/db/schema"
 import { TodoModal } from "./todoModal"
 import { ChevronsDownUp, ChevronsUpDown, TrashIcon } from "lucide-react"
 import { useSWRConfig } from "swr"
@@ -15,7 +15,7 @@ export default function TodoDisplay({
 	todo,
 	orderedBy,
 	className,
-}: { todo?: Todo | (Todo & { project: Project }); orderedBy?: keyof Todo; className?: string }) {
+}: { todo?: (Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration }); orderedBy?: keyof Todo; className?: string }) {
 	const [isToggled, setIsToggled] = useState(todo ? todo.completed_at !== null : false)
 	const [isDeleting, setIsDeleting] = useState(false)
 	const [isHovering, setIsHovering] = useState(false)
@@ -153,26 +153,31 @@ export default function TodoDisplay({
 							>
 								{/* Only this div is clickable for toggling */}
 								<div
-									className={`relative p-2 size-1 border border-neutral-300 dark:border-neutral-700 rounded-300 cursor-pointer ${optimisticState ? "bg-primary" : ""}`}
+									className={`relative p-2 size-1 border border-neutral-300 dark:border-neutral-700 rounded-300 cursor-pointer group/Clickable ${optimisticState ? "bg-primary" : ""}`}
 									onClick={() => toggle()}
 									role="checkbox"
 									aria-checked={optimisticState}
 									tabIndex={0}
 								>
 									<div
-										className={`absolute inset-0 w-1/2 h-1/2 z-20 m-auto duration-300 ${optimisticState ? "xl:group-hover/todo:bg-background" : "xl:group-hover/todo:bg-primary"}`}
+										className={`absolute inset-0 w-1/2 h-1/2 z-20 m-auto duration-300 ${optimisticState ? "xl:group-hover/Clickable:bg-background" : "xl:group-hover/Clickable:bg-primary"}`}
 									/>
 								</div>
 							</div>
 							<p className={`w-full text-base hyphens-auto ${optimisticState ? "line-through text-muted-foreground" : ""}`} lang="en">
 								{todo.title}
 							</p>
+							{todo.project_title && (
+								<Badge className="text-center h-fit" variant="outline">
+									{todo.project_title}
+								</Badge>
+							)}
 						</div>
 						<div
 							className={cn(
-								"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center px-1",
+								"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center",
 								isHovering
-									? "w-fit xl:w-full xl:max-w-[18px] xl:opacity-100 mx-1"
+									? "w-fit xl:w-full xl:max-w-[16px] xl:opacity-100 ml-1"
 									: "w-fit xl:w-0 xl:max-w-0 xl:opacity-0",
 							)}
 						>
@@ -196,7 +201,7 @@ export default function TodoDisplay({
 						<div className="space-y-1">
 							{todo.importance && (
 								<p className="text-sm text-muted-foreground">
-									<span>Importance: {todo.importance}</span>
+									<span>Importance: {todo.importanceDetails.name}</span>
 								</p>
 							)}
 							{todo.due && (
@@ -214,31 +219,18 @@ export default function TodoDisplay({
 							{todo.duration !== undefined && (
 								<p className="text-sm text-muted-foreground">
 									<span>
-										Duration:{" "}
-										{todo.duration === 0
-											? "0-15 minutes"
-											: todo.duration === 1
-												? "15-30 minutes"
-												: todo.duration === 2
-													? "30-60 minutes"
-													: "60+ minutes"}
+										Duration:{" "}{todo.durationDetails.name}
 									</span>
 								</p>
 							)}
 						</div>
-						<div className="flex space-x-2">
-							{todo.project_title && (
-								<Badge className="text-center h-fit" variant="outline">
-									{todo.project_title}
-								</Badge>
-							)}
+						<div className="flex flex-col justify-between">
+							<TodoModal className="duration-300" todo={todo} />
 
 							<TrashIcon
 								className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-destructive cursor-pointer lg:hover:text-destructive/80 duration-300"
 								onClick={deleteTodo}
 							/>
-
-							<TodoModal className="duration-300" todo={todo} />
 						</div>
 					</div>
 				</>
