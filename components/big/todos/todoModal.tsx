@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import type { Todo } from "@/lib/db/schema"
+import type { Todo, Project, Importance, Duration } from "@/lib/db/schema"
 import { PlusIcon, PenIcon, Minus, Plus } from "lucide-react"
 import { useRef, useState, useEffect } from "react"
 import { useSWRConfig } from "swr"
@@ -17,17 +17,10 @@ import { format } from "date-fns"
 import { useDebouncedCallback } from "use-debounce"
 import { useSearchProject } from "@/hooks/useSearchProject"
 import { useImportanceAndDuration } from "@/hooks/useImportanceAndDuration"
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 
-
-export function TodoModal({ className, todo }: { className?: string; todo?: Todo }) {
+export function TodoModal({ className, todo }: { className?: string; todo?: (Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration }) }) {
 	const mode = todo ? "edit" : "create"
 	const [open, setOpen] = useState(false)
 	const [dueDate, setDueDate] = useState<Date>(todo ? new Date(todo.due) : new Date())
@@ -36,13 +29,14 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 	const [project, setProject] = useState<string>(todo?.project_title || "")
 	const [inputValue, setInputValue] = useState<string>(todo?.project_title || "")
 	const { projects, isLoading, isError } = useSearchProject({ query: project, limit: 5 })
-	const { importanceData, durationData } = useImportanceAndDuration();
+	const { importanceData, durationData } = useImportanceAndDuration()
 	const { mutate } = useSWRConfig()
 
 	// Use refs to access field values
 	const titleRef = useRef<HTMLInputElement>(null)
-	const importanceRef = useRef<HTMLInputElement>(null)
-	const durationRef = useRef<HTMLInputElement>(null)
+	const importanceRef = useRef<string>(todo?.importance?.toString() || "0")
+	const durationRef = useRef<string>(todo?.duration?.toString() || "0")
+	const durationTriggerRef = useRef<HTMLButtonElement>(null)
 
 	// Track if a submission is in progress (to prevent duplicates)
 	const isSubmittingRef = useRef(false)
@@ -73,8 +67,8 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 
 		try {
 			const title = titleRef.current?.value || ""
-			const importance = Number.parseInt(importanceRef.current?.value || "0")
-			const duration = Number.parseInt(durationRef.current?.value || "0")
+			const importance = Number.parseInt(importanceRef.current || "0")
+			const duration = Number.parseInt(durationRef.current || "0")
 			const id = todo?.id
 
 			if (!title.trim()) {
@@ -97,7 +91,21 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 				updated_at: new Date(),
 				deleted_at: todo?.deleted_at || null,
 				completed_at: todo?.completed_at || null,
-			} as Todo
+				project: {
+					title: project,
+					completed: false,
+					created_at: new Date(),
+					updated_at: new Date(),
+				} as Project,
+				importanceDetails: {
+					level: importance,
+					name: importanceData?.find((item) => item.level === importance)?.name || "",
+				},
+				durationDetails: {
+					level: duration,
+					name: durationData?.find((item) => item.level === duration)?.name || "",
+				}
+			} as (Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration })
 
 			setOpen(false)
 
@@ -190,8 +198,12 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger className={cn("h-fit",  className)}>
-				{mode === "edit" ? <PenIcon className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px]" /> : <PlusIcon className="size-6" />}
+			<DialogTrigger className={cn(mode === "edit" && "h-fit", className)}>
+				{mode === "edit" ? (
+					<PenIcon className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px]" />
+				) : (
+					<PlusIcon className="size-6" />
+				)}
 			</DialogTrigger>
 			<DialogContent className="max-w-2xl">
 				<DialogHeader>
@@ -205,16 +217,22 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 					<div className="flex flex-col justify-between lg:flex-row lg:space-x-4">
 						<div>
 							<Label htmlFor="importance">Importance</Label>
-							<Select defaultValue={todo?.importance?.toString()}>
+							<Select
+								name="importance"
+								defaultValue={todo?.importance?.toString()}
+								onValueChange={(value) => (importanceRef.current = value)}
+							>
 								<SelectTrigger className="w-full">
 									<SelectValue placeholder="Select importance" />
 								</SelectTrigger>
 								<SelectContent>
-									{importanceData ? importanceData.map((item) => (
-										<SelectItem key={item.level} value={item.level.toString()}>
-											{item.name}
-										</SelectItem>
-									)) : (
+									{importanceData ? (
+										importanceData.map((item) => (
+											<SelectItem key={item.level} value={item.level.toString()}>
+												{item.name}
+											</SelectItem>
+										))
+									) : (
 										<SelectItem value="-1" disabled>
 											Loading...
 										</SelectItem>
@@ -239,7 +257,12 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 								>
 									<Minus />
 								</Button>
-								<Button type="button" variant="outline" className="w-full" onClick={() => setShowCalendar(!showCalendar)}>
+								<Button
+									type="button"
+									variant="outline"
+									className="w-full"
+									onClick={() => setShowCalendar(!showCalendar)}
+								>
 									{format(dueDate, "dd/MM/yyyy")}
 								</Button>
 								<Button
@@ -274,16 +297,22 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 						</div>
 						<div>
 							<Label htmlFor="duration">Duration</Label>
-							<Select defaultValue={todo?.duration?.toString()}>
-								<SelectTrigger className="w-full">
+							<Select
+								name="duration"
+								defaultValue={todo?.duration?.toString()}
+								onValueChange={(value) => (durationRef.current = value)}
+							>
+								<SelectTrigger ref={durationTriggerRef} className="w-full">
 									<SelectValue placeholder="Select duration" />
 								</SelectTrigger>
 								<SelectContent>
-									{durationData ? durationData.map((item) => (
-										<SelectItem key={item.level} value={item.level.toString()}>
-											{item.name}
-										</SelectItem>
-									)) : (
+									{durationData ? (
+										durationData.map((item) => (
+											<SelectItem key={item.level} value={item.level.toString()}>
+												{item.name}
+											</SelectItem>
+										))
+									) : (
 										<SelectItem value="-1" disabled>
 											Loading...
 										</SelectItem>
@@ -308,13 +337,9 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 							{project && !(projects && projects.length == 1 && projects[0].title == project) && (
 								<div className="mt-1 overflow-y-auto rounded-md border border-border bg-popover shadow-md">
 									{isLoading ? (
-										<div className="p-2 text-sm text-muted-foreground">
-											Loading projects...
-										</div>
+										<div className="p-2 text-sm text-muted-foreground">Loading projects...</div>
 									) : isError ? (
-										<div className="p-2 text-sm text-destructive">
-											Error loading projects
-										</div>
+										<div className="p-2 text-sm text-destructive">Error loading projects</div>
 									) : projects && projects.length > 0 ? (
 										<ul className="py-1">
 											{projects.map((proj, index) => (
@@ -326,8 +351,8 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 														setInputValue(selectedProject)
 														setProject(selectedProject)
 														setTimeout(() => {
-															if (durationRef.current) {
-																durationRef.current.focus()
+															if (durationTriggerRef.current) {
+																durationTriggerRef.current.focus()
 															}
 														}, 0)
 													}}
@@ -337,9 +362,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: Todo
 											))}
 										</ul>
 									) : (
-										<div className="p-2 text-sm text-muted-foreground">
-											No projects found
-										</div>
+										<div className="p-2 text-sm text-muted-foreground">No projects found</div>
 									)}
 								</div>
 							)}
