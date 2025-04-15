@@ -9,7 +9,7 @@ export function useTodos({
   limit,
   orderingDirection,
   withProject,
-  projectTitles
+  projectTitles,
 }: {
   completed?: boolean
   orderBy?: keyof Todo
@@ -18,6 +18,8 @@ export function useTodos({
   withProject?: boolean
   projectTitles?: string[]
 }) {
+  // We don't need to skip fetching for this hook as all parameters are optional
+  // and the API should handle undefined parameters gracefully
   const { data, isLoading, isError, mutate } = useFilteredData<Todo[]>({
     endpoint: "/api/todo",
     params: {
@@ -31,10 +33,10 @@ export function useTodos({
   })
 
   return {
-    todos: data as (Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration })[],
+    todos:
+      (data as (Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration })[]) || [],
     isLoading,
     isError,
     mutate,
   }
 }
-
