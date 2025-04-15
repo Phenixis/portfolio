@@ -202,7 +202,12 @@ export default function TodoDisplay({
 							{todo.due && (
 								<p className="text-sm text-muted-foreground">
 									<span>
-										Due: {new Date(todo.due).toLocaleDateString(navigator.language || "fr-FR")}
+										Due:{" "}
+										{(() => {
+											const daysDifference = Math.ceil((new Date(todo.due).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+											const formatter = new Intl.RelativeTimeFormat(navigator.language || "fr-FR", { numeric: "auto" });
+											return formatter.format(daysDifference, "day");
+										})()}
 									</span>
 								</p>
 							)}
@@ -213,10 +218,10 @@ export default function TodoDisplay({
 										{todo.duration === 0
 											? "0-15 minutes"
 											: todo.duration === 1
-											? "15-30 minutes"
-											: todo.duration === 2
-											? "30-60 minutes"
-											: "60+ minutes"}
+												? "15-30 minutes"
+												: todo.duration === 2
+													? "30-60 minutes"
+													: "60+ minutes"}
 									</span>
 								</p>
 							)}
