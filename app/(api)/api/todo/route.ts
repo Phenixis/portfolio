@@ -21,7 +21,6 @@ export async function GET(request: NextRequest) {
   const orderBy = searchParams.get("orderBy") as keyof Todo | null
   const limitParam = searchParams.get("limit")
   const orderingDirection = searchParams.get("orderingDirection") as "asc" | "desc" | undefined
-  const withProject = searchParams.get("withProject") === "true"
   const projectTitles = searchParams.get("projectTitles")
     ? searchParams.get("projectTitles")?.split(",")
     : undefined
@@ -76,6 +75,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
+    console.log(body);
     const { id, title, importance, dueDate, duration, projectTitle } = body
 
     // Validation
