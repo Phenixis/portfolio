@@ -6,9 +6,11 @@ import useSWR from "swr"
 export function useFilteredData<T>({
   endpoint,
   params,
+  skipFetch = false,
 }: {
   endpoint: string
   params?: Record<string, string | number | boolean | undefined>
+  skipFetch?: boolean
 }) {
   // Convert params to URLSearchParams
   const searchParams = new URLSearchParams()
@@ -21,7 +23,7 @@ export function useFilteredData<T>({
   }
 
   // Create the SWR key
-  const swrKey = `${endpoint}?${searchParams.toString()}`
+  const swrKey = skipFetch ? null : `${endpoint}?${searchParams.toString()}`
 
   // Fetch data using SWR
   const { data, error, isLoading, mutate } = useSWR(swrKey, fetcher, {
@@ -31,10 +33,9 @@ export function useFilteredData<T>({
   })
 
   return {
-    data,
-    isLoading,
-    isError: error,
+    data: skipFetch ? ([] as unknown as T) : data,
+    isLoading: skipFetch ? false : isLoading,
+    isError: skipFetch ? undefined : error,
     mutate,
   }
 }
-
