@@ -216,15 +216,6 @@ export function TodosCard({
 						</div>
 						<div className="flex flex-row items-center gap-2">
 							<Button
-								variant={limit === undefined ? "default" : "outline"}
-								size="sm"
-								onClick={() => setLimit(undefined)}
-								disabled={isPending || isLoading}
-								tooltip="No limit"
-							>
-								<Infinity className="h-4 w-4" />
-							</Button>
-							<Button
 								variant={limit === 5 ? "default" : "outline"}
 								size="sm"
 								onClick={() => setLimit(5)}
