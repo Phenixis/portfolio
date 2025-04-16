@@ -151,9 +151,16 @@ export function TodosCard({
 						<CardTitle>{generateTitle(completed, orderBy, orderingDirection, limit, selectedProjects)}</CardTitle>
 					</Link>
 					<div className="flex gap-2 xl:opacity-0 duration-300 xl:group-hover/TodoCard:opacity-100">
-						<div className="h-10 py-2 flex items-center cursor-pointer" onClick={() => setIsFilterOpen((prev) => !prev)}>
+						<Button
+							variant={isFilterOpen ? "default" : "outline"}
+							size="sm"
+							onClick={() => setIsFilterOpen((prev) => !prev)}
+							disabled={isPending || isLoading}
+							tooltip="Filter/group the todos"
+							className="h-10 py-2 flex items-center border-none"
+						>
 							<Filter className="h-4 w-4" />
-						</div>
+						</Button>
 						<TodoModal />
 					</div>
 				</div>

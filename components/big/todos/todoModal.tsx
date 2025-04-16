@@ -198,11 +198,18 @@ export function TodoModal({ className, todo }: { className?: string; todo?: (Tod
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger className={cn(mode === "edit" && "h-fit", className)}>
+			<DialogTrigger className={cn(mode === "edit" && "h-fit", className)} asChild>
 				{mode === "edit" ? (
-					<PenIcon className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px]" />
+					<PenIcon className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] cursor-pointer" />
 				) : (
-					<PlusIcon className="size-6" />
+					<Button
+						variant="outline"
+						size="sm"
+						tooltip="Create a new todo"
+						className="h-10 px-2 flex items-center border-none"
+					>
+						<PlusIcon className="min-w-[24px] max-w-[24px] min-h-[24px] max-h-[24px]" />
+					</Button>
 				)}
 			</DialogTrigger>
 			<DialogContent className="max-w-2xl">
