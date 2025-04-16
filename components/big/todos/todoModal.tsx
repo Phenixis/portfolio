@@ -19,8 +19,24 @@ import { useSearchProject } from "@/hooks/useSearchProject"
 import { useImportanceAndDuration } from "@/hooks/useImportanceAndDuration"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
-export function TodoModal({ className, todo }: { className?: string; todo?: (Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration }) }) {
+export function TodoModal({
+	className,
+	todo,
+}: {
+	className?: string
+	todo?: Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration }
+}) {
 	const mode = todo ? "edit" : "create"
 	const [open, setOpen] = useState(false)
 	const [dueDate, setDueDate] = useState<Date>(todo ? new Date(todo.due) : new Date())
@@ -31,6 +47,9 @@ export function TodoModal({ className, todo }: { className?: string; todo?: (Tod
 	const { projects, isLoading, isError } = useSearchProject({ query: project, limit: 5 })
 	const { importanceData, durationData } = useImportanceAndDuration()
 	const { mutate } = useSWRConfig()
+	const [formChanged, setFormChanged] = useState(false)
+	const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+	const closeDialogRef = useRef<() => void>(() => { })
 
 	// Use refs to access field values
 	const titleRef = useRef<HTMLInputElement>(null)
@@ -56,6 +75,13 @@ export function TodoModal({ className, todo }: { className?: string; todo?: (Tod
 			document.removeEventListener("mousedown", handleClickOutside)
 		}
 	}, [showCalendar])
+
+	// Reset form state when dialog opens
+	useEffect(() => {
+		if (open) {
+			setFormChanged(false)
+		}
+	}, [open])
 
 	// Optimized function to handle submission
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -104,8 +130,8 @@ export function TodoModal({ className, todo }: { className?: string; todo?: (Tod
 				durationDetails: {
 					level: duration,
 					name: durationData?.find((item) => item.level === duration)?.name || "",
-				}
-			} as (Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration })
+				},
+			} as Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration }
 
 			setOpen(false)
 
@@ -157,6 +183,7 @@ export function TodoModal({ className, todo }: { className?: string; todo?: (Tod
 			setDueDate(new Date())
 			setInputValue("")
 			setProject("")
+			setFormChanged(false)
 		} catch (error) {
 			console.error("Erreur lors de la soumission:", error)
 			isSubmittingRef.current = false
@@ -189,6 +216,9 @@ export function TodoModal({ className, todo }: { className?: string; todo?: (Tod
 		if (date) {
 			setDueDate(date)
 			setShowCalendar(false)
+			setFormChanged(
+				(date.getTime() !== todo?.due.getTime() && mode === "edit") || mode === "create"
+			)
 		}
 	}
 
@@ -196,190 +226,273 @@ export function TodoModal({ className, todo }: { className?: string; todo?: (Tod
 		setProject(value)
 	}, 200)
 
-	return (
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger className={cn(mode === "edit" && "h-fit", className)} asChild>
-				{mode === "edit" ? (
-					<PenIcon className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] cursor-pointer" />
-				) : (
-					<Button
-						variant="outline"
-						size="sm"
-						tooltip="Create a new todo"
-						className="h-10 px-2 flex items-center border-none"
-					>
-						<PlusIcon className="min-w-[24px] max-w-[24px] min-h-[24px] max-h-[24px]" />
-					</Button>
-				)}
-			</DialogTrigger>
-			<DialogContent className="max-w-2xl">
-				<DialogHeader>
-					<DialogTitle>{mode === "edit" ? "Edit Todo" : "Create Todo"}</DialogTitle>
-				</DialogHeader>
-				<form id="todo-form" onSubmit={handleSubmit} className="space-y-4">
-					<div>
-						<Label htmlFor="title">Title</Label>
-						<Input ref={titleRef} type="text" id="title" name="title" defaultValue={todo?.title || ""} autoFocus />
-					</div>
-					<div className="flex flex-col justify-between lg:flex-row lg:space-x-4">
-						<div>
-							<Label htmlFor="importance">Importance</Label>
-							<Select
-								name="importance"
-								defaultValue={todo?.importance?.toString()}
-								onValueChange={(value) => (importanceRef.current = value)}
-							>
-								<SelectTrigger className="w-full">
-									<SelectValue placeholder="Select importance" />
-								</SelectTrigger>
-								<SelectContent>
-									{importanceData ? (
-										importanceData.map((item) => (
-											<SelectItem key={item.level} value={item.level.toString()}>
-												{item.name}
-											</SelectItem>
-										))
-									) : (
-										<SelectItem value="-1" disabled>
-											Loading...
-										</SelectItem>
-									)}
-								</SelectContent>
-							</Select>
-						</div>
-						<div className="relative">
-							<Label htmlFor="dueDate">Due date</Label>
-							<div className="flex gap-1">
-								<Button
-									type="button"
-									variant="outline"
-									onClick={() => {
-										const newDate = new Date(dueDate.getTime() - 24 * 60 * 60 * 1000)
-										const today = new Date()
-										today.setHours(0, 0, 0, 0)
-										if (newDate >= today) {
-											setDueDate(newDate)
-										}
-									}}
-								>
-									<Minus />
-								</Button>
-								<Button
-									type="button"
-									variant="outline"
-									className="w-full"
-									onClick={() => setShowCalendar(!showCalendar)}
-								>
-									{format(dueDate, "dd/MM/yyyy")}
-								</Button>
-								<Button
-									type="button"
-									variant="outline"
-									onClick={() => {
-										setDueDate(new Date(dueDate.getTime() + 24 * 60 * 60 * 1000))
-									}}
-								>
-									<Plus />
-								</Button>
-							</div>
+	// Handle dialog close attempt
+	const handleCloseAttempt = () => {
+		if (formChanged) {
+			// Store the close function for later use
+			closeDialogRef.current = () => setOpen(false)
+			// Show confirmation dialog
+			setShowConfirmDialog(true)
+		} else {
+			// No changes, close immediately
+			setOpen(false)
+		}
+	}
 
-							{showCalendar && (
-								<div
-									ref={calendarRef}
-									className="absolute z-50 mt-1 bg-popover p-3 rounded-md shadow-md border border-border"
+	// Handle confirmation dialog result
+	const handleConfirmDiscard = () => {
+		// Close confirmation dialog
+		setShowConfirmDialog(false)
+		// Reset form state
+		setFormChanged(false)
+		// Execute the stored close function
+		setTimeout(() => {
+			closeDialogRef.current()
+		}, 100)
+	}
+
+	return (
+		<>
+			<Dialog
+				open={open}
+				onOpenChange={(newOpenState) => {
+					if (open && !newOpenState) {
+						// Attempting to close
+						handleCloseAttempt()
+					} else {
+						// Opening the dialog
+						setOpen(newOpenState)
+					}
+				}}
+			>
+				<DialogTrigger className={cn(mode === "edit" && "h-fit", className)} asChild>
+					{mode === "edit" ? (
+						<PenIcon className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] cursor-pointer" />
+					) : (
+						<Button
+							variant="outline"
+							size="sm"
+							tooltip="Create a new todo"
+							className="h-10 px-2 flex items-center border-none"
+						>
+							<PlusIcon className="min-w-[24px] max-w-[24px] min-h-[24px]" />
+						</Button>
+					)}
+				</DialogTrigger>
+				<DialogContent className="max-w-2xl">
+					<DialogHeader>
+						<DialogTitle>{mode === "edit" ? "Edit Todo" : "Create Todo"}</DialogTitle>
+					</DialogHeader>
+					<form id="todo-form" onSubmit={handleSubmit} className="space-y-4">
+						<div>
+							<Label htmlFor="title">Title</Label>
+							<Input
+								ref={titleRef}
+								type="text"
+								id="title"
+								name="title"
+								defaultValue={todo?.title || ""}
+								autoFocus
+								onChange={() => setFormChanged(
+									(titleRef.current?.value !== todo?.title && mode === "edit") || mode === "create"
+								)}
+							/>
+						</div>
+						<div className="flex flex-col justify-between lg:flex-row lg:space-x-4">
+							<div>
+								<Label htmlFor="importance">Importance</Label>
+								<Select
+									name="importance"
+									defaultValue={todo?.importance?.toString()}
+									onValueChange={(value) => {
+										importanceRef.current = value
+										setFormChanged(
+											(value !== todo?.importance?.toString() && mode === "edit") || mode === "create"
+										)
+									}}
 								>
-									<Calendar
-										mode="single"
-										selected={dueDate}
-										onSelect={handleDateChange}
-										disabled={(date) => {
+									<SelectTrigger className="w-full">
+										<SelectValue placeholder="Select importance" />
+									</SelectTrigger>
+									<SelectContent>
+										{importanceData ? (
+											importanceData.map((item) => (
+												<SelectItem key={item.level} value={item.level.toString()}>
+													{item.name}
+												</SelectItem>
+											))
+										) : (
+											<SelectItem value="-1" disabled>
+												Loading...
+											</SelectItem>
+										)}
+									</SelectContent>
+								</Select>
+							</div>
+							<div className="relative">
+								<Label htmlFor="dueDate">Due date</Label>
+								<div className="flex gap-1">
+									<Button
+										type="button"
+										variant="outline"
+										onClick={() => {
+											const newDate = new Date(dueDate.getTime() - 24 * 60 * 60 * 1000)
 											const today = new Date()
 											today.setHours(0, 0, 0, 0)
-											return date < today
+											if (newDate >= today) {
+												setDueDate(newDate)
+												setFormChanged(
+													(newDate.getTime() !== todo?.due.getTime() && mode === "edit") || mode === "create"
+												)
+											}
 										}}
-										locale={fr}
-									/>
+									>
+										<Minus />
+									</Button>
+									<Button
+										type="button"
+										variant="outline"
+										className="w-full"
+										onClick={() => setShowCalendar(!showCalendar)}
+									>
+										{format(dueDate, "dd/MM/yyyy")}
+									</Button>
+									<Button
+										type="button"
+										variant="outline"
+										onClick={() => {
+											setDueDate(new Date(dueDate.getTime() + 24 * 60 * 60 * 1000))
+											setFormChanged(
+												(new Date(dueDate.getTime() + 24 * 60 * 60 * 1000).getTime() !== todo?.due.getTime() && mode === "edit") || mode === "create"
+											)
+										}}
+									>
+										<Plus />
+									</Button>
 								</div>
-							)}
-						</div>
-						<div>
-							<Label htmlFor="duration">Duration</Label>
-							<Select
-								name="duration"
-								defaultValue={todo?.duration?.toString()}
-								onValueChange={(value) => (durationRef.current = value)}
-							>
-								<SelectTrigger ref={durationTriggerRef} className="w-full">
-									<SelectValue placeholder="Select duration" />
-								</SelectTrigger>
-								<SelectContent>
-									{durationData ? (
-										durationData.map((item) => (
-											<SelectItem key={item.level} value={item.level.toString()}>
-												{item.name}
+
+								{showCalendar && (
+									<div
+										ref={calendarRef}
+										className="absolute z-50 mt-1 bg-popover p-3 rounded-md shadow-md border border-border"
+									>
+										<Calendar
+											mode="single"
+											selected={dueDate}
+											onSelect={handleDateChange}
+											disabled={(date) => {
+												const today = new Date()
+												today.setHours(0, 0, 0, 0)
+												return date < today
+											}}
+											locale={fr}
+										/>
+									</div>
+								)}
+							</div>
+							<div>
+								<Label htmlFor="duration">Duration</Label>
+								<Select
+									name="duration"
+									defaultValue={todo?.duration?.toString()}
+									onValueChange={(value) => {
+										durationRef.current = value
+										setFormChanged(
+											(value !== todo?.duration?.toString() && mode === "edit") || mode === "create"
+										)
+									}}
+								>
+									<SelectTrigger ref={durationTriggerRef} className="w-full">
+										<SelectValue placeholder="Select duration" />
+									</SelectTrigger>
+									<SelectContent>
+										{durationData ? (
+											durationData.map((item) => (
+												<SelectItem key={item.level} value={item.level.toString()}>
+													{item.name}
+												</SelectItem>
+											))
+										) : (
+											<SelectItem value="-1" disabled>
+												Loading...
 											</SelectItem>
-										))
-									) : (
-										<SelectItem value="-1" disabled>
-											Loading...
-										</SelectItem>
-									)}
-								</SelectContent>
-							</Select>
+										)}
+									</SelectContent>
+								</Select>
+							</div>
 						</div>
-					</div>
-					<div className="flex space-x-4">
-						<div className="w-full">
-							<Label htmlFor="project">Project</Label>
-							<Input
-								type="text"
-								id="project"
-								name="project"
-								value={inputValue}
-								onChange={(e) => {
-									setInputValue(e.target.value)
-									handleProjectChange(e.target.value)
-								}}
-							/>
-							{project && !(projects && projects.length == 1 && projects[0].title == project) && (
-								<div className="mt-1 overflow-y-auto rounded-md border border-border bg-popover shadow-md">
-									{isLoading ? (
-										<div className="p-2 text-sm text-muted-foreground">Loading projects...</div>
-									) : isError ? (
-										<div className="p-2 text-sm text-destructive">Error loading projects</div>
-									) : projects && projects.length > 0 ? (
-										<ul className="py-1">
-											{projects.map((proj, index) => (
-												<li
-													key={index}
-													className="cursor-pointer px-3 py-2 text-sm lg:hover:bg-accent"
-													onClick={() => {
-														const selectedProject = proj.title
-														setInputValue(selectedProject)
-														setProject(selectedProject)
-														setTimeout(() => {
-															if (durationTriggerRef.current) {
-																durationTriggerRef.current.focus()
-															}
-														}, 0)
-													}}
-												>
-													{proj.title}
-												</li>
-											))}
-										</ul>
-									) : (
-										<div className="p-2 text-sm text-muted-foreground">No projects found</div>
-									)}
-								</div>
-							)}
+						<div className="flex space-x-4">
+							<div className="w-full">
+								<Label htmlFor="project">Project</Label>
+								<Input
+									type="text"
+									id="project"
+									name="project"
+									value={inputValue}
+									onChange={(e) => {
+										setInputValue(e.target.value)
+										handleProjectChange(e.target.value)
+										setFormChanged(
+											(e.target.value !== todo?.project_title && mode === "edit") || mode === "create"
+										)
+									}}
+								/>
+								{project && !(projects && projects.length == 1 && projects[0].title == project) && (
+									<div className="mt-1 overflow-y-auto rounded-md border border-border bg-popover shadow-md">
+										{isLoading ? (
+											<div className="p-2 text-sm text-muted-foreground">Loading projects...</div>
+										) : isError ? (
+											<div className="p-2 text-sm text-destructive">Error loading projects</div>
+										) : projects && projects.length > 0 ? (
+											<ul className="py-1">
+												{projects.map((proj, index) => (
+													<li
+														key={index}
+														className="cursor-pointer px-3 py-2 text-sm lg:hover:bg-accent"
+														onClick={() => {
+															const selectedProject = proj.title
+															setInputValue(selectedProject)
+															setProject(selectedProject)
+															setTimeout(() => {
+																if (durationTriggerRef.current) {
+																	durationTriggerRef.current.focus()
+																}
+															}, 0)
+														}}
+													>
+														{proj.title}
+													</li>
+												))}
+											</ul>
+										) : (
+											<div className="p-2 text-sm text-muted-foreground">No projects found</div>
+										)}
+									</div>
+								)}
+							</div>
 						</div>
-					</div>
-					<DialogFooter>
-						<Button type="submit">{mode === "edit" ? "Save" : "Create"}</Button>
-					</DialogFooter>
-				</form>
-			</DialogContent>
-		</Dialog>
+						<DialogFooter>
+							<Button type="submit">{mode === "edit" ? "Save" : "Create"}</Button>
+						</DialogFooter>
+					</form>
+				</DialogContent>
+			</Dialog>
+
+			{/* Separate confirmation dialog */}
+			<AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Discard changes?</AlertDialogTitle>
+						<AlertDialogDescription>
+							You have unsaved changes. Are you sure you want to close without saving?
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogAction onClick={handleConfirmDiscard}>Discard</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+		</>
 	)
 }
