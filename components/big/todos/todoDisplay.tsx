@@ -153,7 +153,7 @@ export default function TodoDisplay({
 							>
 								{/* Only this div is clickable for toggling */}
 								<div
-									className={`relative p-2 size-1 border border-neutral-300 dark:border-neutral-700 rounded-300 cursor-pointer group/Clickable ${optimisticState ? "bg-primary" : ""}`}
+									className={`relative p-2 size-1 border border-neutral-400 dark:border-neutral-600 rounded-300 cursor-pointer group/Clickable ${optimisticState ? "bg-primary" : ""}`}
 									onClick={() => toggle()}
 									role="checkbox"
 									aria-checked={optimisticState}
@@ -167,11 +167,6 @@ export default function TodoDisplay({
 							<p className={`w-full text-base hyphens-auto ${optimisticState ? "line-through text-muted-foreground" : ""}`} lang="en">
 								{todo.title}
 							</p>
-							{todo.project_title && (
-								<Badge className="text-center h-fit" variant="outline">
-									{todo.project_title}
-								</Badge>
-							)}
 						</div>
 						<div
 							className={cn(
@@ -184,13 +179,13 @@ export default function TodoDisplay({
 							{
 								isCollapsibleOpen ? (
 									<ChevronsDownUp
-										className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-black cursor-pointer duration-300"
+										className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-black dark:text-white cursor-pointer duration-300"
 										onClick={() => setIsCollapsibleOpen(!isCollapsibleOpen)}
 									/>
 
 								) : (
 									<ChevronsUpDown
-										className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-black cursor-pointer duration-300"
+										className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-black dark:text-white cursor-pointer duration-300"
 										onClick={() => setIsCollapsibleOpen(!isCollapsibleOpen)}
 									/>
 								)
@@ -199,15 +194,20 @@ export default function TodoDisplay({
 					</div>
 					<div className={`flex space-x-4 justify-between ${!isCollapsibleOpen && "hidden"}`}>
 						<div className="space-y-1">
+							{todo.project_title && (
+								<p className="text-sm text-muted-foreground">
+									Project: <span className="text-black dark:text-white">{todo.project_title}</span>
+								</p>
+							)}
 							{todo.importance && (
 								<p className="text-sm text-muted-foreground">
-									<span>Importance: {todo.importanceDetails.name}</span>
+									Importance: <span className="text-black dark:text-white">{todo.importanceDetails.name}</span>
 								</p>
 							)}
 							{todo.due && (
 								<p className="text-sm text-muted-foreground">
-									<span>
-										Due:{" "}
+									Due:{" "}
+									<span className="text-black dark:text-white">
 										{(() => {
 											const daysDifference = Math.ceil((new Date(todo.due).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 											const formatter = new Intl.RelativeTimeFormat(navigator.language || "fr-FR", { numeric: "auto" });
@@ -218,9 +218,7 @@ export default function TodoDisplay({
 							)}
 							{todo.duration !== undefined && (
 								<p className="text-sm text-muted-foreground">
-									<span>
-										Duration:{" "}{todo.durationDetails.name}
-									</span>
+									Duration: <span className="text-black dark:text-white">{todo.durationDetails.name}</span>
 								</p>
 							)}
 						</div>
