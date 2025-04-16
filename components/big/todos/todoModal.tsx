@@ -217,7 +217,7 @@ export function TodoModal({
 			setDueDate(date)
 			setShowCalendar(false)
 			setFormChanged(
-				(date.getTime() !== todo?.due.getTime() && mode === "edit") || mode === "create"
+				(date.getDate() !== todo?.due.getDate() && mode === "edit") || date.getDate() !== new Date().getDate() 
 			)
 		}
 	}
@@ -294,7 +294,7 @@ export function TodoModal({
 								defaultValue={todo?.title || ""}
 								autoFocus
 								onChange={() => setFormChanged(
-									(titleRef.current?.value !== todo?.title && mode === "edit") || mode === "create"
+									(titleRef.current?.value !== todo?.title && mode === "edit") || titleRef.current?.value !== ""
 								)}
 							/>
 						</div>
@@ -303,11 +303,11 @@ export function TodoModal({
 								<Label htmlFor="importance">Importance</Label>
 								<Select
 									name="importance"
-									defaultValue={todo?.importance?.toString()}
+									defaultValue={todo?.importance?.toString() || "0"}
 									onValueChange={(value) => {
 										importanceRef.current = value
 										setFormChanged(
-											(value !== todo?.importance?.toString() && mode === "edit") || mode === "create"
+											(value !== todo?.importance?.toString() && mode === "edit") || value !== "0"
 										)
 									}}
 								>
@@ -342,7 +342,7 @@ export function TodoModal({
 											if (newDate >= today) {
 												setDueDate(newDate)
 												setFormChanged(
-													(newDate.getTime() !== todo?.due.getTime() && mode === "edit") || mode === "create"
+													(newDate.getDate() !== todo?.due.getDate() && mode === "edit") || newDate.getDate() !== new Date().getDate() 
 												)
 											}
 										}}
@@ -363,7 +363,7 @@ export function TodoModal({
 										onClick={() => {
 											setDueDate(new Date(dueDate.getTime() + 24 * 60 * 60 * 1000))
 											setFormChanged(
-												(new Date(dueDate.getTime() + 24 * 60 * 60 * 1000).getTime() !== todo?.due.getTime() && mode === "edit") || mode === "create"
+												(new Date(dueDate.getTime() + 24 * 60 * 60 * 1000).getDate() !== todo?.due.getDate() && mode === "edit") || new Date(dueDate.getTime() + 24 * 60 * 60 * 1000).getDate() !== new Date().getDate()
 											)
 										}}
 									>
@@ -398,7 +398,7 @@ export function TodoModal({
 									onValueChange={(value) => {
 										durationRef.current = value
 										setFormChanged(
-											(value !== todo?.duration?.toString() && mode === "edit") || mode === "create"
+											(value !== todo?.duration?.toString() && mode === "edit") || value !== "0"
 										)
 									}}
 								>
@@ -433,7 +433,7 @@ export function TodoModal({
 										setInputValue(e.target.value)
 										handleProjectChange(e.target.value)
 										setFormChanged(
-											(e.target.value !== todo?.project_title && mode === "edit") || mode === "create"
+											(e.target.value !== todo?.project_title && mode === "edit") || e.target.value !== ""
 										)
 									}}
 								/>
