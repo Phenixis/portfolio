@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { formatDistanceToNow } from 'date-fns';
 import {
     type Meteo
 } from '@/lib/db/schema';
@@ -12,6 +11,7 @@ import {
     TooltipTrigger,
     TooltipContent
 } from "@/components/ui/tooltip";
+import Image from 'next/image'
 
 export default function Meteo({
     className,
@@ -77,7 +77,13 @@ export default function Meteo({
     return (
         <Tooltip>
             <TooltipTrigger className={cn("text-center text-xs xl:text-sm flex flex-col justify-center items-center", className)}>
-                <img src={`http://openweathermap.org/img/wn/${meteo.icon}@2x.png`} className="size-10 xl:transform duration-300 xl:translate-y-3 xl:group-hover/Time:-translate-y-0" alt="Weather icon" />
+                <Image
+                    src={`https://openweathermap.org/img/wn/${meteo.icon}@2x.png`}
+                    className="size-10 xl:transform duration-300 xl:translate-y-3 xl:group-hover/Time:-translate-y-0"
+                    alt="Weather icon"
+                    width={40}
+                    height={40}
+                />
                 <p className="duration-300 -translate-y-2 xl:transform xl:-translate-y-4 xl:opacity-0 xl:group-hover/Time:opacity-100 xl:group-hover/Time:-translate-y-2">{meteo.temperature.toFixed(0)}°C</p>
             </TooltipTrigger>
             <TooltipContent>
