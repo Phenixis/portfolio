@@ -61,6 +61,8 @@ export default function RootLayout({
         >
             <head>
                 <link rel="icon" href="/favicon.png" sizes='any' />
+                <link rel="manifest" href="/manifest.json" />
+                <link rel="apple-touch-icon" href="/favicon.png" />
             </head>
             <body className={cx(
                 'antialiased text-black bg-white dark:text-white dark:bg-black h-screen min-h-screen w-screen min-w-screen',
