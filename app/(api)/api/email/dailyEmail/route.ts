@@ -46,10 +46,6 @@ export async function GET(request: NextRequest) {
             <style>
             body {
                 background-color: #f3f4f6;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                min-height: 100vh;
                 margin: 0;
                 font-family: Arial, sans-serif;
             }
@@ -67,6 +63,7 @@ export async function GET(request: NextRequest) {
                 font-weight: bold;
                 color: #3b82f6;
                 margin-bottom: 16px;
+                text-align: center;
             }
             h2 {
                 font-size: 1.25rem;
@@ -83,9 +80,31 @@ export async function GET(request: NextRequest) {
             ul {
                 list-style-type: disc;
                 padding-left: 20px;
+                margin: 0;
             }
             li {
                 color: #1f2937;
+                margin-bottom: 8px;
+            }
+            @media (max-width: 600px) {
+                main {
+                    padding: 10px;
+                }
+                h1 {
+                    font-size: 1.25rem;
+                }
+                h2 {
+                    font-size: 1rem;
+                }
+                h3 {
+                    font-size: 0.875rem;
+                }
+                ul {
+                    padding-left: 15px;
+                }
+                li {
+                    font-size: 0.875rem;
+                }
             }
             </style>
             </head>
