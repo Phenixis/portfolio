@@ -1,7 +1,6 @@
 import {
     Tooltip,
     TooltipContent,
-    TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
 import {
@@ -35,19 +34,17 @@ export default function Page() {
                     <p>
                         As I was learning how to code in Python, I decided that I would build a small program that would make it for me. There was no API so I needed to use the graphical interface. I searched for a library to move the mouse to click on the 3 dots button, click on "Delete" and start again for the next error.
                     </p>
-                    <TooltipProvider>
-                        <p>
-                            It took me probably a full afternoon to build the program from A to Z, but I had a problem, so I built something to solve it. Since then, the
-                            <Tooltip>
-                                <TooltipTrigger className="underline cursor-help">
-                                    producer mindset
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    In opposition with the "consumer" mindset, producters build the solution to their problems instead of buying them.
-                                </TooltipContent>
-                            </Tooltip> has a little place in a corner of my mind.
-                        </p>
-                    </TooltipProvider>
+                    <p>
+                        It took me probably a full afternoon to build the program from A to Z, but I had a problem, so I built something to solve it. Since then, the
+                        <Tooltip>
+                            <TooltipTrigger className="underline cursor-help">
+                                producer mindset
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                In opposition with the "consumer" mindset, producters build the solution to their problems instead of buying them.
+                            </TooltipContent>
+                        </Tooltip> has a little place in a corner of my mind.
+                    </p>
                 </CollapsibleContent>
             </Collapsible>
             <Projects />
