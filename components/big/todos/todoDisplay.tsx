@@ -142,7 +142,7 @@ export default function TodoDisplay({
 			{skeleton ? (
 				<>
 					<div className="flex items-center justify-between w-full">
-						<div className="flex space-x- items-center w-full">
+						<div className="flex items-center w-full">
 							<div
 								className={cn(
 									"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center ",
@@ -153,7 +153,7 @@ export default function TodoDisplay({
 							>
 								{/* Only this div is clickable for toggling */}
 								<div
-									className={`relative p-2 size-1 border border-neutral-400 dark:border-neutral-600 rounded-300 cursor-pointer group/Clickable ${optimisticState ? "bg-primary" : ""}`}
+									className={`relative p-2 ml-1 lg:ml-0 mr-2 lg:mr-0 size-1 border border-neutral-400 dark:border-neutral-600 rounded-300 cursor-pointer group/Clickable ${optimisticState ? "bg-primary" : ""}`}
 									onClick={() => toggle()}
 									role="checkbox"
 									aria-checked={optimisticState}
