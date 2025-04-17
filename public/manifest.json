@@ -1,0 +1,16 @@
+{
+    "name": "Maxime Duhamel Portfolio",
+    "short_name": "MDPortfolio",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#000000",
+    "icons": [
+      {
+        "src": "/favicon.png",
+        "sizes": "64x64",
+        "type": "image/png"
+      }
+    ]
+  }
+  

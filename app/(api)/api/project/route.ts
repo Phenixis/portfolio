@@ -1,6 +1,8 @@
 import {
     getProject,
     getProjects,
+    getCompletedProjects,
+    getUncompletedProjects,
     createProject,
     updateProject,
     deleteProject
@@ -14,7 +16,13 @@ export async function GET(request: NextRequest) {
     const projectTitle = searchParams.get('projectTitle');
     const limitParam = searchParams.get('limit');
     const limit = limitParam ? Number.parseInt(limitParam) : undefined;
-    const projects = projectTitle ? await getProject(projectTitle) : await getProjects(limit);
+    const completed = searchParams.get('completed');
+
+    const projects = projectTitle ?
+    await getProject(projectTitle) :
+    completed == "true" ? await getCompletedProjects(limit) :
+    completed == "false" ? await getUncompletedProjects(limit) :
+    await getProjects(limit);
 
     return NextResponse.json(projects);
 }

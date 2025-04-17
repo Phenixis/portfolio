@@ -1,31 +1,68 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { getSession } from '@/lib/auth/session';
+import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
+import { verifyToken, signToken } from "@/lib/auth/session"
 
 export type ActionState = {
-    error?: string;
-    success?: string;
-    [key: string]: any; // This allows for additional properties
-};
+	error?: string
+	success?: string
+	[key: string]: any // This allows for additional properties
+}
 
-const protectedRoutes = ['/my'];
-const unaccessibleWhenLoggedIn = ['/login'];
+const protectedRoutes = ["/my"]
+const unaccessibleWhenLoggedIn = ["/login"]
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+	const { pathname } = request.nextUrl
 
-  const session = await getSession();
-  const isProtectedRoute = protectedRoutes.includes(pathname);
+	// Get the session cookie directly from the request
+	const sessionCookie = request.cookies.get("session")?.value
 
-  if (isProtectedRoute && !session) {
-    return NextResponse.redirect(new URL(`/login?redirectTo=${pathname}`, request.url));
-  }
+	// Verify the session token
+	const session = sessionCookie ? await verifyToken(sessionCookie) : null
 
-  if (unaccessibleWhenLoggedIn.includes(pathname) && session) {
-    return NextResponse.redirect(new URL('/my', request.url));
-  }
+	const isProtectedRoute = protectedRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`))
+
+	// Handle protected routes
+	if (isProtectedRoute && !session) {
+		return NextResponse.redirect(new URL(`/login?redirectTo=${pathname}`, request.url))
+	}
+
+	// Handle routes that shouldn't be accessible when logged in
+	if (unaccessibleWhenLoggedIn.includes(pathname) && session) {
+		return NextResponse.redirect(new URL("/my", request.url))
+	}
+
+	// If we have a valid session, extend it
+	if (session) {
+		// Create a new response or clone the original
+		const response = NextResponse.next()
+
+		// Extend session expiration
+		const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000)
+		const sessionData = {
+			expires: expiresInOneDay.toISOString(),
+		}
+
+		// Sign a new token
+		const newToken = await signToken(sessionData)
+
+		// Set the new cookie in the response
+		response.cookies.set({
+			name: "session",
+			value: newToken,
+			expires: expiresInOneDay,
+			httpOnly: true,
+			secure: true,
+			sameSite: "lax",
+		})
+
+		return response
+	}
+
+	// Default: continue with the request
+	return NextResponse.next()
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
-};
+	matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+}

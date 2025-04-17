@@ -2,48 +2,33 @@
 
 import type React from "react"
 
-import { useState, useOptimistic, startTransition, useRef, useEffect } from "react"
+import { useState, useOptimistic, startTransition, useRef } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import type { Todo, Project } from "@/lib/db/schema"
-import { TodoModal } from "./todoModal"
-import { TrashIcon } from "lucide-react"
+import type { Todo, Project, Importance, Duration } from "@/lib/db/schema"
+import dynamic from "next/dynamic"
+const TodoModal = dynamic(() => import("@/components/big/todos/todoModal"), { ssr: false })
+import { ChevronsDownUp, ChevronsUpDown, TrashIcon } from "lucide-react"
 import { useSWRConfig } from "swr"
-import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
 export default function TodoDisplay({
 	todo,
 	orderedBy,
 	className,
-}: { todo?: Todo | (Todo & { project: Project }); orderedBy?: keyof Todo; className?: string }) {
+}: {
+	todo?: Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration }
+	orderedBy?: keyof Todo
+	className?: string
+}) {
 	const [isToggled, setIsToggled] = useState(todo ? todo.completed_at !== null : false)
 	const [isDeleting, setIsDeleting] = useState(false)
 	const [isHovering, setIsHovering] = useState(false)
-	const [showTrash, setShowTrash] = useState(false)
+	const [isCollapsibleOpen, setIsCollapsibleOpen] = useState(false)
+	const [optimisticState, toggleOptimistic] = useOptimistic(isToggled, (prev) => !prev)
 	const containerRef = useRef<HTMLDivElement>(null)
 	const { mutate } = useSWRConfig()
 	const skeleton = todo !== undefined && orderedBy !== undefined
 	const daysBeforeDue = todo ? Math.ceil((new Date(todo.due).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 4
-
-	// Handle delayed appearance of trash icon
-	useEffect(() => {
-		let timeoutId: NodeJS.Timeout
-
-		if (isHovering) {
-			// Set timeout to show trash icon after 1200ms
-			timeoutId = setTimeout(() => {
-				setShowTrash(true)
-			}, 1200)
-		} else {
-			// Hide trash icon immediately
-			setShowTrash(false)
-		}
-
-		// Cleanup timeout on component unmount or when isHovering changes
-		return () => {
-			clearTimeout(timeoutId)
-		}
-	}, [isHovering])
 
 	// Fonction améliorée pour supprimer une todo avec SWR
 	async function deleteTodo(e: React.MouseEvent) {
@@ -88,12 +73,16 @@ export default function TodoDisplay({
 	async function toggle() {
 		if (!todo) return
 
+		// Immediately update local state
+		setIsToggled(!isToggled)
+
+		// Also update optimistic state for consistent UI
 		startTransition(() => {
-			toggleOptimistic(isToggled)
+			toggleOptimistic(!isToggled)
 		})
 
 		try {
-			// Optimistic UI update for toggling
+			// Optimistic UI update for SWR cache
 			mutate(
 				(key: unknown) => typeof key === "string" && key.startsWith("/api/todo"),
 				async (currentData: unknown): Promise<unknown> => {
@@ -119,14 +108,14 @@ export default function TodoDisplay({
 				body: JSON.stringify({ id: todo.id, completed: !isToggled }),
 			})
 
-			setIsToggled(!isToggled)
-
+			// No need to set state again since we already did it optimistically
 			// Revalidate after successful toggle
 			mutate((key) => typeof key === "string" && key.startsWith("/api/todo"))
 		} catch (error) {
 			console.error("Error toggling todo:", error)
 
-			// Revert optimistic update
+			// Revert both states on error
+			setIsToggled(isToggled)
 			startTransition(() => {
 				toggleOptimistic(isToggled)
 			})
@@ -136,79 +125,120 @@ export default function TodoDisplay({
 		}
 	}
 
-	const [optimisticState, toggleOptimistic] = useOptimistic(isToggled, (prev) => !prev)
+	function handleMouseEnter() {
+		if (window.innerWidth >= 1024) {
+			setIsHovering(true)
+		}
+	}
+
+	function handleMouseLeave() {
+		if (window.innerWidth >= 1024) {
+			setIsHovering(false)
+		}
+	}
 
 	return (
 		<div
 			ref={containerRef}
 			className={cn(
-				`flex flex-col xl:flex-row justify-between items-end xl:items-center group/todo p-1 duration-300 text-xs xl:text-base ${daysBeforeDue <= 0 ? "bg-red-500/10 dark:bg-red-500/15 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/10 dark:bg-orange-500/15 lg:hover:bg-orange-500/25" : "hover:bg-primary/10"} space-x-2 xl:space-x-4 ${isDeleting ? "opacity-50" : ""}`,
+				`flex flex-col group/todo p-1 duration-300 text-xs xl:text-base ${daysBeforeDue < 0 ? "bg-red-500/10 dark:bg-red-500/15 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/10 dark:bg-orange-500/15 lg:hover:bg-orange-500/25" : "lg:hover:bg-primary/10"} space-y-2 ${isDeleting ? "opacity-50" : ""}`,
 				className,
 			)}
-			onMouseEnter={() => setIsHovering(true)}
-			onMouseLeave={() => setIsHovering(false)}
+			onMouseEnter={handleMouseEnter}
+			onMouseLeave={handleMouseLeave}
 		>
 			{skeleton ? (
 				<>
-					<div className="flex space-x-2 items-center w-full">
-						<div
-							className={cn(
-								"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center px-1",
-								isHovering
-									? "w-fit xl:w-full xl:max-w-[18px] xl:opacity-100 ml-2"
-									: "w-fit xl:w-0 xl:max-w-0 xl:opacity-0",
-							)}
-						>
-							{/* Only this div is clickable for toggling */}
+					<div className="flex items-center justify-between w-full">
+						<div className="flex items-center w-full">
 							<div
-								className={`relative p-2 size-1 border border-neutral-300 dark:border-neutral-700 rounded-300 cursor-pointer ${optimisticState ? "bg-primary" : ""}`}
-								onClick={() => toggle()}
-								role="checkbox"
-								aria-checked={optimisticState}
-								tabIndex={0}
+								className={cn(
+									"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center ",
+									isHovering
+										? "w-fit xl:w-full xl:max-w-[18px] xl:opacity-100 mx-1"
+										: "w-fit xl:w-0 xl:max-w-0 xl:opacity-0",
+								)}
 							>
+								{/* Only this div is clickable for toggling */}
 								<div
-									className={`absolute inset-0 w-1/2 h-1/2 z-20 m-auto duration-300 ${optimisticState ? "xl:group-hover/todo:bg-background" : "xl:group-hover/todo:bg-primary"}`}
-								/>
+									className={`relative p-2 ml-1 lg:ml-0 mr-2 lg:mr-0 size-1 border border-neutral-400 dark:border-neutral-600 rounded-300 cursor-pointer group/Clickable ${optimisticState ? "bg-primary" : ""}`}
+									onClick={() => toggle()}
+									role="checkbox"
+									aria-checked={optimisticState}
+									tabIndex={0}
+								>
+									<div
+										className={`absolute inset-0 w-1/2 h-1/2 z-20 m-auto duration-300 ${optimisticState ? "xl:group-hover/Clickable:bg-background" : "xl:group-hover/Clickable:bg-primary"}`}
+									/>
+								</div>
 							</div>
+							<p
+								className={`w-full text-base hyphens-auto ${optimisticState ? "line-through text-muted-foreground" : ""}`}
+								lang="en"
+							>
+								{todo.title}
+							</p>
 						</div>
-						<p className={`w-full text-base ${optimisticState ? "line-through text-muted-foreground" : ""}`}>
-							{todo.title}
-							<span className="ml-2 text-xs text-neutral">{todo[orderedBy] as string}</span>
-						</p>
-					</div>
-					<div className="flex items-center">
-						{"project" in todo && todo.project && (
-							<Badge className="text-center" variant="outline">
-								{todo.project.title}
-							</Badge>
-						)}
-
-						{/* TrashIcon with delayed appearance */}
 						<div
 							className={cn(
 								"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center",
-								showTrash
-									? "w-full xl:max-w-[16px] xl:opacity-100 ml-2"
-									: "w-full xl:w-0 xl:max-w-0 xl:opacity-0",
+								isHovering
+									? "w-fit xl:w-full xl:max-w-[16px] xl:opacity-100 ml-1"
+									: "w-fit xl:w-0 xl:max-w-0 xl:opacity-0",
 							)}
 						>
+							{isCollapsibleOpen ? (
+								<ChevronsDownUp
+									className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-black dark:text-white cursor-pointer duration-300"
+									onClick={() => setIsCollapsibleOpen(!isCollapsibleOpen)}
+								/>
+							) : (
+								<ChevronsUpDown
+									className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-black dark:text-white cursor-pointer duration-300"
+									onClick={() => setIsCollapsibleOpen(!isCollapsibleOpen)}
+								/>
+							)}
+						</div>
+					</div>
+					<div className={`flex space-x-4 justify-between ${!isCollapsibleOpen && "hidden"}`}>
+						<div className="space-y-1">
+							{todo.project_title && (
+								<p className="text-sm text-muted-foreground">
+									Project: <span className="text-black dark:text-white">{todo.project_title}</span>
+								</p>
+							)}
+							{todo.importance && (
+								<p className="text-sm text-muted-foreground">
+									Importance: <span className="text-black dark:text-white">{todo.importanceDetails.name}</span>
+								</p>
+							)}
+							{todo.due && (
+								<p className="text-sm text-muted-foreground">
+									Due:{" "}
+									<span className="text-black dark:text-white">
+										{(() => {
+											const daysDifference = Math.ceil(
+												(new Date(todo.due).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+											)
+											const formatter = new Intl.RelativeTimeFormat(navigator.language || "fr-FR", { numeric: "auto" })
+											return formatter.format(daysDifference, "day")
+										})()}
+									</span>
+								</p>
+							)}
+							{todo.duration !== undefined && (
+								<p className="text-sm text-muted-foreground">
+									Duration: <span className="text-black dark:text-white">{todo.durationDetails.name}</span>
+								</p>
+							)}
+						</div>
+						<div className="flex flex-col justify-between">
+							<TodoModal className="duration-300" todo={todo} />
+
 							<TrashIcon
 								className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-destructive cursor-pointer lg:hover:text-destructive/80 duration-300"
 								onClick={deleteTodo}
 							/>
-						</div>
-
-						{/* TodoModal with immediate appearance on hover */}
-						<div
-							className={cn(
-								"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center",
-								isHovering
-									? "w-full xl:max-w-[16px] xl:opacity-100 ml-2"
-									: "w-full xl:w-0 xl:max-w-0 xl:opacity-0",
-							)}
-						>
-							<TodoModal className="duration-300" todo={todo} />
 						</div>
 					</div>
 				</>
@@ -221,4 +251,3 @@ export default function TodoDisplay({
 		</div>
 	)
 }
-

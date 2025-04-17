@@ -21,7 +21,9 @@ export async function GET(request: NextRequest) {
   const orderBy = searchParams.get("orderBy") as keyof Todo | null
   const limitParam = searchParams.get("limit")
   const orderingDirection = searchParams.get("orderingDirection") as "asc" | "desc" | undefined
-  const withProject = searchParams.get("withProject") === "true"
+  const projectTitles = searchParams.get("projectTitles")
+    ? searchParams.get("projectTitles")?.split(",")
+    : undefined
 
   const limit = limitParam ? Number.parseInt(limitParam) : undefined
   let completed: boolean | undefined = undefined
@@ -32,10 +34,10 @@ export async function GET(request: NextRequest) {
   try {
     const todos =
       completed === true
-        ? await getCompletedTodos(withProject, orderBy || undefined, orderingDirection, limit)
+        ? await getCompletedTodos(orderBy || undefined, orderingDirection, limit, projectTitles)
         : completed === false
-          ? await getUncompletedTodos(withProject, orderBy || undefined, orderingDirection, limit)
-          : await getTodos(withProject, orderBy || undefined, orderingDirection, limit)
+          ? await getUncompletedTodos(orderBy || undefined, orderingDirection, limit, projectTitles)
+          : await getTodos(orderBy || undefined, orderingDirection, limit, projectTitles)
 
     return NextResponse.json(todos)
   } catch (error) {
@@ -56,11 +58,11 @@ export async function POST(request: NextRequest) {
     }
 
     const project = projectTitle && await getProject(projectTitle)
-    if (!project) {
+    if (!project && projectTitle != "") {
       await createProject(projectTitle)
     }
 
-    const todoId = await createTodo(title, Number(importance), new Date(dueDate), Number(duration), projectTitle)
+    const todoId = await createTodo(title, Number(importance), new Date(dueDate), Number(duration), projectTitle != "" ? projectTitle : undefined)
 
     return NextResponse.json({ id: todoId }, { status: 201 })
   } catch (error) {

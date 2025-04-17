@@ -61,15 +61,37 @@
     {
       "idx": 8,
       "version": "7",
-      "when": 1743427623063,
-      "tag": "0008_chief_celestials",
+      "when": 1744703190482,
+      "tag": "0007_unusual_nitro",
       "breakpoints": true
     },
     {
       "idx": 9,
       "version": "7",
+      "when": 1743427623063,
+      "tag": "0008_chief_celestials",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1744738450837,
+      "tag": "0008_spooky_zombie",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
       "when": 1743437777373,
       "tag": "0009_fearless_wildside",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1743437777373,
+      "when": 1744738614248,
+      "tag": "0009_tired_mauler",
       "breakpoints": true
     }
   ]

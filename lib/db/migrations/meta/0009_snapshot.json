@@ -1,44 +1,49 @@
 {
-  "id": "0c329e4a-d847-427c-ae5c-2fe27c9ebfca",
-  "prevId": "3cd2f23c-b67e-4835-b563-cdfadccfa326",
+  "id": "f74053f9-a269-435d-a9ce-8502b2d0e3b7",
+  "prevId": "7fd33b14-9cb5-458f-8c48-c1187aee1572",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.exercice": {
-      "name": "exercice",
+    "public.duration": {
+      "name": "duration",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
+        "level": {
+          "name": "level",
+          "type": "integer",
           "primaryKey": true,
           "notNull": true
         },
         "name": {
           "name": "name",
-          "type": "varchar(255)",
+          "type": "varchar(50)",
           "primaryKey": false,
           "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.importance": {
+      "name": "importance",
+      "schema": "",
+      "columns": {
+        "level": {
+          "name": "level",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
         },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
+        "name": {
+          "name": "name",
+          "type": "varchar(50)",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         }
       },
       "indexes": {},
@@ -158,231 +163,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.seance": {
-      "name": "seance",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.seance_exercice": {
-      "name": "seance_exercice",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "seance_id": {
-          "name": "seance_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "exercice_id": {
-          "name": "exercice_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "position": {
-          "name": "position",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "seance_exercice_seance_id_seance_id_fk": {
-          "name": "seance_exercice_seance_id_seance_id_fk",
-          "tableFrom": "seance_exercice",
-          "tableTo": "seance",
-          "columnsFrom": [
-            "seance_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "seance_exercice_exercice_id_exercice_id_fk": {
-          "name": "seance_exercice_exercice_id_exercice_id_fk",
-          "tableFrom": "seance_exercice",
-          "tableTo": "exercice",
-          "columnsFrom": [
-            "exercice_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.serie": {
-      "name": "serie",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "workout_id": {
-          "name": "workout_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "exercice_id": {
-          "name": "exercice_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "poids": {
-          "name": "poids",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "reps": {
-          "name": "reps",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "exercice_position": {
-          "name": "exercice_position",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "serie_workout_id_workout_id_fk": {
-          "name": "serie_workout_id_workout_id_fk",
-          "tableFrom": "serie",
-          "tableTo": "workout",
-          "columnsFrom": [
-            "workout_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "serie_exercice_id_exercice_id_fk": {
-          "name": "serie_exercice_id_exercice_id_fk",
-          "tableFrom": "serie",
-          "tableTo": "exercice",
-          "columnsFrom": [
-            "exercice_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.todo": {
       "name": "todo",
       "schema": "",
@@ -469,6 +249,32 @@
       },
       "indexes": {},
       "foreignKeys": {
+        "todo_importance_importance_level_fk": {
+          "name": "todo_importance_importance_level_fk",
+          "tableFrom": "todo",
+          "tableTo": "importance",
+          "columnsFrom": [
+            "importance"
+          ],
+          "columnsTo": [
+            "level"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "todo_duration_duration_level_fk": {
+          "name": "todo_duration_duration_level_fk",
+          "tableFrom": "todo",
+          "tableTo": "duration",
+          "columnsFrom": [
+            "duration"
+          ],
+          "columnsTo": [
+            "level"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "todo_project_title_project_title_fk": {
           "name": "todo_project_title_project_title_fk",
           "tableFrom": "todo",
@@ -478,162 +284,6 @@
           ],
           "columnsTo": [
             "title"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.workout": {
-      "name": "workout",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "date": {
-          "name": "date",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "note": {
-          "name": "note",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "seance_id": {
-          "name": "seance_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "workout_seance_id_seance_id_fk": {
-          "name": "workout_seance_id_seance_id_fk",
-          "tableFrom": "workout",
-          "tableTo": "seance",
-          "columnsFrom": [
-            "seance_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.workout_exercice": {
-      "name": "workout_exercice",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "workout_id": {
-          "name": "workout_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "exercice_id": {
-          "name": "exercice_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "position": {
-          "name": "position",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "workout_exercice_workout_id_workout_id_fk": {
-          "name": "workout_exercice_workout_id_workout_id_fk",
-          "tableFrom": "workout_exercice",
-          "tableTo": "workout",
-          "columnsFrom": [
-            "workout_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "workout_exercice_exercice_id_exercice_id_fk": {
-          "name": "workout_exercice_exercice_id_exercice_id_fk",
-          "tableFrom": "workout_exercice",
-          "tableTo": "exercice",
-          "columnsFrom": [
-            "exercice_id"
-          ],
-          "columnsTo": [
-            "id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"

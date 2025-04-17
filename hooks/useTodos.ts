@@ -1,6 +1,6 @@
 "use client"
 
-import type { Todo, Project } from "@/lib/db/schema"
+import type { Todo, Project, Duration, Importance } from "@/lib/db/schema"
 import { useFilteredData } from "./useFilteredData"
 
 export function useTodos({
@@ -8,14 +8,18 @@ export function useTodos({
   orderBy,
   limit,
   orderingDirection,
-  withProject
+  withProject,
+  projectTitles,
 }: {
   completed?: boolean
   orderBy?: keyof Todo
   limit?: number
   orderingDirection?: "asc" | "desc"
   withProject?: boolean
+  projectTitles?: string[]
 }) {
+  // We don't need to skip fetching for this hook as all parameters are optional
+  // and the API should handle undefined parameters gracefully
   const { data, isLoading, isError, mutate } = useFilteredData<Todo[]>({
     endpoint: "/api/todo",
     params: {
@@ -24,14 +28,15 @@ export function useTodos({
       limit,
       orderingDirection,
       withProject: withProject ? "true" : "false",
+      projectTitles: projectTitles?.join(","),
     },
   })
 
   return {
-    todos: data as (Todo | (Todo & { project: Project }))[],
+    todos:
+      (data as (Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration })[]) || [],
     isLoading,
     isError,
     mutate,
   }
 }
-

@@ -2,6 +2,11 @@ import './global.css'
 import type { Metadata } from 'next'
 import { baseUrl } from './sitemap'
 import { Domine, Geist_Mono, Ubuntu_Sans_Mono } from 'next/font/google';
+import {
+    TooltipProvider
+} from "@/components/ui/tooltip"
+import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from '@vercel/analytics/next';
 
 const domine = Domine({
     subsets: ['latin'],
@@ -56,6 +61,8 @@ export default function RootLayout({
         >
             <head>
                 <link rel="icon" href="/favicon.png" sizes='any' />
+                <link rel="manifest" href="/manifest.json" />
+                <link rel="apple-touch-icon" href="/favicon.png" />
             </head>
             <body className={cx(
                 'antialiased text-black bg-white dark:text-white dark:bg-black h-screen min-h-screen w-screen min-w-screen',
@@ -63,7 +70,11 @@ export default function RootLayout({
                 geistMono.className,
                 ubuntuSansMono.className,
             )}>
-                {children}
+                <TooltipProvider>
+                    {children}
+                </TooltipProvider>
+                <SpeedInsights />
+                <Analytics />
             </body>
         </html>
     )

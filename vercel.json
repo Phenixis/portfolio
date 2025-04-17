@@ -1,6 +1,12 @@
 {
-    "crons": [{
+  "crons": [
+    {
       "path": "/api/todo/updateUrgency",
       "schedule": "30 0 * * *"
-    }]
-  }
+    },
+    {
+      "path": "/api/email/dailyEmail",
+      "schedule": "0 4 * * *"
+    }
+  ]
+}
