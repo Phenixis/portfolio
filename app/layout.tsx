@@ -5,6 +5,7 @@ import { Domine, Geist_Mono, Ubuntu_Sans_Mono } from 'next/font/google';
 import {
     TooltipProvider
 } from "@/components/ui/tooltip"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const domine = Domine({
     subsets: ['latin'],
@@ -68,6 +69,7 @@ export default function RootLayout({
             )}>
                 <TooltipProvider>
                     {children}
+                    <SpeedInsights />
                 </TooltipProvider>
             </body>
         </html>
