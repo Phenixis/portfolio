@@ -60,7 +60,7 @@ export default function RootLayout({
             lang="en"
         >
             <head>
-                <link rel="icon" href="/public/favicon.png" sizes='any' />
+                <link rel="icon" href="/favicon.png" sizes='any' />
             </head>
             <body className={cx(
                 'antialiased text-black bg-white dark:text-white dark:bg-black h-screen min-h-screen w-screen min-w-screen',
