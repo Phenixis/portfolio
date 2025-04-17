@@ -1,7 +1,8 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { TodoModal } from "@/components/big/todos/todoModal"
+import dynamic from 'next/dynamic';
+const TodoModal = dynamic(() => import('@/components/big/todos/todoModal'), {ssr: false});
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import type { Todo, Project, Importance, Duration } from "@/lib/db/schema"

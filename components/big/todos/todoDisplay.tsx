@@ -5,10 +5,10 @@ import type React from "react"
 import { useState, useOptimistic, startTransition, useRef, useEffect } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { Todo, Project, Importance, Duration } from "@/lib/db/schema"
-import { TodoModal } from "./todoModal"
+import dynamic from 'next/dynamic';
+const TodoModal = dynamic(() => import('@/components/big/todos/todoModal'), {ssr: false});
 import { ChevronsDownUp, ChevronsUpDown, TrashIcon } from "lucide-react"
 import { useSWRConfig } from "swr"
-import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
 export default function TodoDisplay({

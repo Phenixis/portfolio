@@ -30,7 +30,7 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-export function TodoModal({
+export default function TodoModal({
 	className,
 	todo,
 }: {
