@@ -16,17 +16,25 @@ export async function GET(request: NextRequest) {
         // Sort todos by due date in ascending order
         const sortedTodos = todos.sort((a, b) => new Date(a.due).getTime() - new Date(b.due).getTime());
 
-        // Group todos by days
+        // Helper function to calculate relative days
+        const getRelativeDay = (dueDate: Date): string => {
+            const today = new Date();
+            const diffInDays = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+            return rtf.format(diffInDays, "day");
+        };
+
+        // Group todos by relative days
         const groupedByDays = sortedTodos.reduce((acc: Record<string, any[]>, todo) => {
-            const day = new Date(todo.due).toLocaleDateString("en-GB", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            if (!acc[day]) {
-                acc[day] = [];
+            const relativeDay = getRelativeDay(new Date(todo.due));
+            if (!acc[relativeDay]) {
+                acc[relativeDay] = [];
             }
-            acc[day].push(todo);
+            acc[relativeDay].push(todo);
             return acc;
         }, {});
 
-        // Group todos by projects within each day
+        // Group todos by projects within each relative day
         const groupedByProjects = Object.entries(groupedByDays).reduce((acc: Record<string, any>, [day, todos]) => {
             acc[day] = (todos as any[]).reduce((projectAcc: Record<string, any[]>, todo) => {
                 const project = todo.project_title || "No Project";
@@ -116,11 +124,11 @@ export async function GET(request: NextRequest) {
         for (const [day, projects] of Object.entries(groupedByProjects)) {
             emailContent += `<h2>Due ${day}</h2>`;
             for (const [project, todos] of Object.entries(projects)) {
-            emailContent += `<h3>${project}</h3><ul>`;
-            (todos as any[]).forEach((todo) => {
-                emailContent += `<li>${todo.title}</li>`;
-            });
-            emailContent += `</ul>`;
+                emailContent += `<h3>${project}</h3><ul>`;
+                (todos as any[]).forEach((todo) => {
+                    emailContent += `<li>${todo.title}</li>`;
+                });
+                emailContent += `</ul>`;
             }
         }
 
