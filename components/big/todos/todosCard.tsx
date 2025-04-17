@@ -165,7 +165,7 @@ export function TodosCard({
 					</div>
 				</div>
 				<div className={`${!isFilterOpen && "hidden"} flex flex-col gap-2`}>
-					<div className="flex flex-row gap-6 flex-wrap">
+					<div className="flex flex-row justify-between items-center gap-6 flex-wrap">
 						<div className="flex flex-row items-center gap-2">
 							<Select
 								onValueChange={(newValue) => {
