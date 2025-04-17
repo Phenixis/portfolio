@@ -342,7 +342,7 @@ export default function TodoModal({
 											if (newDate >= today) {
 												setDueDate(newDate)
 												setFormChanged(
-													(newDate.getDate() !== todo?.due.getDate() && mode === "edit") || newDate.getDate() !== new Date().getDate() 
+													(mode === "edit" && todo && newDate.getDate() !== new Date(todo.due).getDate()) || newDate.getDate() !== new Date().getDate() 
 												)
 											}
 										}}
@@ -363,7 +363,7 @@ export default function TodoModal({
 										onClick={() => {
 											setDueDate(new Date(dueDate.getTime() + 24 * 60 * 60 * 1000))
 											setFormChanged(
-												(new Date(dueDate.getTime() + 24 * 60 * 60 * 1000).getDate() !== todo?.due.getDate() && mode === "edit") || new Date(dueDate.getTime() + 24 * 60 * 60 * 1000).getDate() !== new Date().getDate()
+												(mode === "edit" && todo && new Date(dueDate.getTime() + 24 * 60 * 60 * 1000).getDate() !== new Date(todo.due).getDate()) || new Date(dueDate.getTime() + 24 * 60 * 60 * 1000).getDate() !== new Date().getDate()
 											)
 										}}
 									>
