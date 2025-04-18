@@ -427,12 +427,14 @@ export async function deleteTodoById(id: number) {
 
 // ## Create
 
-export async function createMeteo(dayOrMeteo: string | Schema.NewMeteo, temperature?: number, summary?: string, icon?: string) {
+export async function createMeteo(dayOrMeteo: string | Schema.NewMeteo, latitude?: string, longitude?: string, temperature?: number, summary?: string, icon?: string) {
 	let newMeteo: Schema.NewMeteo;
 
 	if (typeof dayOrMeteo === "string") {
 		newMeteo = {
 			day: dayOrMeteo,
+			latitude: latitude!,
+			longitude: longitude!,
 			temperature: temperature!,
 			summary: summary!,
 			icon: icon!,
@@ -469,12 +471,14 @@ export async function getMeteo() {
 
 // ## Update
 
-export async function updateMeteo(dayOrMeteo: string | Schema.NewMeteo, temperature?: number, summary?: string, icon?: string) {
+export async function updateMeteo(dayOrMeteo: string | Schema.NewMeteo, latitude?: string, longitude?: string, temperature?: number, summary?: string, icon?: string) {
 	let updatedMeteo: Partial<Schema.NewMeteo>;
 
 	if (typeof dayOrMeteo === "string") {
 		updatedMeteo = {
 			day: dayOrMeteo,
+			latitude: latitude!,
+			longitude: longitude!,
 			temperature: temperature!,
 			summary: summary!,
 			icon: icon!,
@@ -714,70 +718,66 @@ export async function deleteProject(title: string) {
 	return null
 }
 
+//=============================================================================
 // # Exercice
+//=============================================================================
 
 // ## Create
 
-export async function createExercice(name: string) {
-	const result = await db
-		.insert(Schema.exercice)
-		.values({
-			name: name,
-		} as Schema.NewExercice)
-		.returning({ id: Schema.exercice.id })
+export async function createExercice(nameOrExercice: string | Schema.NewExercice, name?: string) {
+	let newExercice: Schema.NewExercice
+
+	if (typeof nameOrExercice === "string") {
+		newExercice = {
+			name: nameOrExercice,
+		}
+	} else {
+		newExercice = nameOrExercice
+	}
+
+	const result = await db.insert(Schema.exercice).values(newExercice).returning({ id: Schema.exercice.id })
 
 	// Revalidate all pages that might show exercices
-	revalidatePath("/", 'layout')
+	revalidatePath("/", "layout")
 
 	return result[0].id
 }
 
 // ## Read
 
-export async function getExercice(id: number) {
-	const dbresult = await db
-		.select()
-		.from(Schema.exercice)
-		.where(and(eq(Schema.exercice.id, id), isNull(Schema.exercice.deleted_at))) as Schema.Exercice[]
-
-	if (!dbresult) {
-		throw new Error("Exercice not found")
-	}
-
-	return dbresult[0];
+export async function getExerciceById(id: number) {
+	return (await db.select().from(Schema.exercice).where(eq(Schema.exercice.id, id))) as Schema.Exercice[]
 }
 
-export async function getAllExercices() {
-	return await db
-		.select()
-		.from(Schema.exercice)
-		.where(isNull(Schema.exercice.deleted_at)) as Schema.Exercice[]
-}
-
-export async function searchExercice(name: string, limit = 50) {
-	return await db
-		.select()
-		.from(Schema.exercice)
-		.where(and(
-			sql`${Schema.exercice.name} LIKE ${`%${name}%`}`,
-			isNull(Schema.exercice.deleted_at)
-		))
-		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.Exercice[]
+export async function getExercices() {
+	return (await db.select().from(Schema.exercice).where(isNull(Schema.exercice.deleted_at))) as Schema.Exercice[]
 }
 
 // ## Update
-export async function updateExercice(id: number, name: string) {
+
+export async function updateExercice(idOrExercice: number | Schema.NewExercice, name?: string) {
+	let updatedExercice: Partial<Schema.NewExercice>
+
+	if (typeof idOrExercice === "number") {
+		updatedExercice = {
+			name: name!,
+			updated_at: new Date(),
+		}
+	} else {
+		updatedExercice = {
+			...idOrExercice,
+			updated_at: new Date(),
+		}
+	}
+
 	const result = await db
 		.update(Schema.exercice)
-		.set({
-			name: name,
-			updated_at: sql`CURRENT_TIMESTAMP`,
-		})
-		.where(eq(Schema.exercice.id, id))
+		.set(updatedExercice)
+		.where(eq(Schema.exercice.id, typeof idOrExercice === "number" ? idOrExercice : idOrExercice.id!))
 		.returning({ id: Schema.exercice.id })
 
 	// Revalidate all pages that might show exercices
-	revalidatePath("/", 'layout')
+	revalidatePath("/", "layout")
 
 	if (!result) {
 		return null
@@ -788,14 +788,15 @@ export async function updateExercice(id: number, name: string) {
 
 // ## Delete
 
-export async function deleteExercice(id: number) {
-	const result = await db.update(Schema.exercice)
-		.set({ deleted_at: sql`CURRENT_TIMESTAMP`, updated_at: sql`CURRENT_TIMESTAMP` })
+export async function deleteExerciceById(id: number) {
+	const result = await db
+		.update(Schema.exercice)
+		.set({ deleted_at: sql`CURRENT_TIMESTAMP` })
 		.where(eq(Schema.exercice.id, id))
 		.returning({ id: Schema.exercice.id })
 
 	// Revalidate all pages that might show exercices
-	revalidatePath("/", 'layout')
+	revalidatePath("/", "layout")
 
 	if (result) {
 		return result[0].id
@@ -804,71 +805,66 @@ export async function deleteExercice(id: number) {
 	return null
 }
 
+//=============================================================================
 // # Seance
+//=============================================================================
 
 // ## Create
 
-export async function createSeance(name: string) {
-	const result = await db
-		.insert(Schema.seance)
-		.values({
-			name: name,
-		} as Schema.NewSeance)
-		.returning({ id: Schema.seance.id })
+export async function createSeance(nameOrSeance: string | Schema.NewSeance, name?: string) {
+	let newSeance: Schema.NewSeance
 
-	// Revalidate all pages that might show exercices
-	revalidatePath("/", 'layout')
+	if (typeof nameOrSeance === "string") {
+		newSeance = {
+			name: nameOrSeance,
+		}
+	} else {
+		newSeance = nameOrSeance
+	}
+
+	const result = await db.insert(Schema.seance).values(newSeance).returning({ id: Schema.seance.id })
+
+	// Revalidate all pages that might show seances
+	revalidatePath("/", "layout")
 
 	return result[0].id
 }
 
 // ## Read
 
-export async function getSeance(id: number) {
-	const dbresult = await db
-		.select()
-		.from(Schema.seance)
-		.where(and(eq(Schema.seance.id, id), isNull(Schema.seance.deleted_at))) as Schema.Seance[]
-
-	if (!dbresult) {
-		throw new Error("Seance not found")
-	}
-
-	return dbresult[0];
+export async function getSeanceById(id: number) {
+	return (await db.select().from(Schema.seance).where(eq(Schema.seance.id, id))) as Schema.Seance[]
 }
 
-export async function getAllSeances() {
-	return await db
-		.select()
-		.from(Schema.seance)
-		.where(isNull(Schema.seance.deleted_at)) as Schema.Seance[]
-}
-
-export async function searchSeance(name: string, limit = 50) {
-	return await db
-		.select()
-		.from(Schema.seance)
-		.where(and(
-			sql`${Schema.seance.name} LIKE ${`%${name}%`}`,
-			isNull(Schema.seance.deleted_at)
-		))
-		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.Seance[]
+export async function getSeances() {
+	return (await db.select().from(Schema.seance).where(isNull(Schema.seance.deleted_at))) as Schema.Seance[]
 }
 
 // ## Update
 
-export async function updateSeance(id: number, name: string) {
+export async function updateSeance(idOrSeance: number | Schema.NewSeance, name?: string) {
+	let updatedSeance: Partial<Schema.NewSeance>
+
+	if (typeof idOrSeance === "number") {
+		updatedSeance = {
+			name: name!,
+			updated_at: new Date(),
+		}
+	} else {
+		updatedSeance = {
+			...idOrSeance,
+			updated_at: new Date(),
+		}
+	}
+
 	const result = await db
 		.update(Schema.seance)
-		.set({
-			name: name,
-			updated_at: sql`CURRENT_TIMESTAMP`,
-		})
-		.where(eq(Schema.seance.id, id))
+		.set(updatedSeance)
+		.where(eq(Schema.seance.id, typeof idOrSeance === "number" ? idOrSeance : idOrSeance.id!))
 		.returning({ id: Schema.seance.id })
 
-	// Revalidate all pages that might show exercices
-	revalidatePath("/", 'layout')
+	// Revalidate all pages that might show seances
+	revalidatePath("/", "layout")
 
 	if (!result) {
 		return null
@@ -879,14 +875,15 @@ export async function updateSeance(id: number, name: string) {
 
 // ## Delete
 
-export async function deleteSeance(id: number) {
-	const result = await db.update(Schema.seance)
-		.set({ deleted_at: sql`CURRENT_TIMESTAMP`, updated_at: sql`CURRENT_TIMESTAMP` })
+export async function deleteSeanceById(id: number) {
+	const result = await db
+		.update(Schema.seance)
+		.set({ deleted_at: sql`CURRENT_TIMESTAMP` })
 		.where(eq(Schema.seance.id, id))
 		.returning({ id: Schema.seance.id })
 
-	// Revalidate all pages that might show exercices
-	revalidatePath("/", 'layout')
+	// Revalidate all pages that might show seances
+	revalidatePath("/", "layout")
 
 	if (result) {
 		return result[0].id
@@ -895,74 +892,105 @@ export async function deleteSeance(id: number) {
 	return null
 }
 
+//=============================================================================
 // # SeanceExercice
+//=============================================================================
 
 // ## Create
 
-export async function createSeanceExercice(seance_id: number, exercice_id: number) {
+export async function createSeanceExercice(
+	seanceIdOrSeanceExercice: number | Schema.NewSeanceExercice,
+	exercice_id?: number,
+	position?: number,
+	nb_series?: number,
+) {
+	let newSeanceExercice: Schema.NewSeanceExercice
+
+	if (typeof seanceIdOrSeanceExercice === "number") {
+		newSeanceExercice = {
+			seance_id: seanceIdOrSeanceExercice,
+			exercice_id: exercice_id!,
+			position: position!,
+			nb_series: nb_series!,
+		}
+	} else {
+		newSeanceExercice = seanceIdOrSeanceExercice
+	}
+
 	const result = await db
 		.insert(Schema.seanceExercice)
-		.values({
-			seance_id: seance_id,
-			exercice_id: exercice_id,
-		} as Schema.NewSeanceExercice)
+		.values(newSeanceExercice)
 		.returning({ id: Schema.seanceExercice.id })
 
-	// Revalidate all pages that might show exercices
-	revalidatePath("/", 'layout')
+	// Revalidate all pages that might show seance exercices
+	revalidatePath("/", "layout")
 
 	return result[0].id
 }
 
 // ## Read
 
-export async function getSeanceExercice(id: number) {
-	const dbresult = await db
+export async function getSeanceExerciceById(id: number) {
+	return (await db
 		.select()
 		.from(Schema.seanceExercice)
-		.where(and(eq(Schema.seanceExercice.id, id), isNull(Schema.seanceExercice.deleted_at))) as Schema.SeanceExercice[]
-
-	if (!dbresult) {
-		throw new Error("SeanceExercice not found")
-	}
-
-	return dbresult[0];
+		.where(eq(Schema.seanceExercice.id, id))) as Schema.SeanceExercice[]
 }
 
-export async function getAllSeanceExercices() {
-	return await db
+export async function getSeanceExercicesBySeanceId(seance_id: number) {
+	return (await db
 		.select()
 		.from(Schema.seanceExercice)
-		.where(isNull(Schema.seanceExercice.deleted_at)) as Schema.SeanceExercice[]
+		.where(and(eq(Schema.seanceExercice.seance_id, seance_id), isNull(Schema.seanceExercice.deleted_at)))
+		.orderBy(asc(Schema.seanceExercice.position))) as Schema.SeanceExercice[]
 }
 
-export async function searchSeanceExercice(seance_id: number, exercice_id: number, limit = 50) {
-	return await db
+export async function getSeanceExercices() {
+	return (await db
 		.select()
 		.from(Schema.seanceExercice)
-		.where(and(
-			eq(Schema.seanceExercice.seance_id, seance_id),
-			eq(Schema.seanceExercice.exercice_id, exercice_id),
-			isNull(Schema.seanceExercice.deleted_at)
-		))
-		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.SeanceExercice[]
+		.where(isNull(Schema.seanceExercice.deleted_at))) as Schema.SeanceExercice[]
 }
 
 // ## Update
 
-export async function updateSeanceExercice(id: number, seance_id: number, exercice_id: number) {
+export async function updateSeanceExercice(
+	idOrSeanceExercice: number | Schema.NewSeanceExercice,
+	seance_id?: number,
+	exercice_id?: number,
+	position?: number,
+	nb_series?: number,
+) {
+	let updatedSeanceExercice: Partial<Schema.NewSeanceExercice>
+
+	if (typeof idOrSeanceExercice === "number") {
+		updatedSeanceExercice = {
+			seance_id: seance_id,
+			exercice_id: exercice_id,
+			position: position,
+			nb_series: nb_series,
+			updated_at: new Date(),
+		}
+	} else {
+		updatedSeanceExercice = {
+			...idOrSeanceExercice,
+			updated_at: new Date(),
+		}
+	}
+
 	const result = await db
 		.update(Schema.seanceExercice)
-		.set({
-			seance_id: seance_id,
-			exercice_id: exercice_id,
-			updated_at: sql`CURRENT_TIMESTAMP`,
-		})
-		.where(eq(Schema.seanceExercice.id, id))
+		.set(updatedSeanceExercice)
+		.where(
+			eq(
+				Schema.seanceExercice.id,
+				typeof idOrSeanceExercice === "number" ? idOrSeanceExercice : idOrSeanceExercice.id!,
+			),
+		)
 		.returning({ id: Schema.seanceExercice.id })
 
-	// Revalidate all pages that might show exercices
-	revalidatePath("/", 'layout')
+	// Revalidate all pages that might show seance exercices
+	revalidatePath("/", "layout")
 
 	if (!result) {
 		return null
@@ -973,14 +1001,15 @@ export async function updateSeanceExercice(id: number, seance_id: number, exerci
 
 // ## Delete
 
-export async function deleteSeanceExercice(id: number) {
-	const result = await db.update(Schema.seanceExercice)
-		.set({ deleted_at: sql`CURRENT_TIMESTAMP`, updated_at: sql`CURRENT_TIMESTAMP` })
+export async function deleteSeanceExerciceById(id: number) {
+	const result = await db
+		.update(Schema.seanceExercice)
+		.set({ deleted_at: sql`CURRENT_TIMESTAMP` })
 		.where(eq(Schema.seanceExercice.id, id))
 		.returning({ id: Schema.seanceExercice.id })
 
-	// Revalidate all pages that might show exercices
-	revalidatePath("/", 'layout')
+	// Revalidate all pages that might show seance exercices
+	revalidatePath("/", "layout")
 
 	if (result) {
 		return result[0].id
@@ -989,74 +1018,104 @@ export async function deleteSeanceExercice(id: number) {
 	return null
 }
 
+//=============================================================================
 // # Workout
+//=============================================================================
 
 // ## Create
 
-export async function createWorkout(name: string, seance_id: number, date?: Date) {
-	const result = await db
-		.insert(Schema.workout)
-		.values({
-			name: name,
-			seance_id: seance_id,
-			date: date ? date : new Date(),
-		} as Schema.NewWorkout)
-		.returning({ id: Schema.workout.id })
+export async function createWorkout(
+	dateOrWorkout: Date | Schema.NewWorkout,
+	note?: number,
+	comment?: string,
+	seance_id?: number,
+) {
+	let newWorkout: Schema.NewWorkout
 
-	// Revalidate all pages that might show exercices
-	revalidatePath("/", 'layout')
+	if (dateOrWorkout instanceof Date) {
+		newWorkout = {
+			date: dateOrWorkout,
+			note: note,
+			comment: comment,
+			seance_id: seance_id,
+		}
+	} else {
+		newWorkout = dateOrWorkout
+	}
+
+	const result = await db.insert(Schema.workout).values(newWorkout).returning({ id: Schema.workout.id })
+
+	// Revalidate all pages that might show workouts
+	revalidatePath("/", "layout")
 
 	return result[0].id
 }
 
 // ## Read
 
-export async function getWorkout(id: number) {
-	const dbresult = await db
-		.select()
-		.from(Schema.workout)
-		.where(and(eq(Schema.workout.id, id), isNull(Schema.workout.deleted_at))) as Schema.Workout[]
-
-	if (!dbresult) {
-		throw new Error("Workout not found")
-	}
-
-	return dbresult[0];
+export async function getWorkoutById(id: number) {
+	return (await db.select().from(Schema.workout).where(eq(Schema.workout.id, id))) as Schema.Workout[]
 }
 
-export async function getAllWorkouts() {
-	return await db
+export async function getWorkouts() {
+	return (await db
 		.select()
 		.from(Schema.workout)
-		.where(isNull(Schema.workout.deleted_at)) as Schema.Workout[]
+		.where(isNull(Schema.workout.deleted_at))
+		.orderBy(desc(Schema.workout.date))) as Schema.Workout[]
 }
 
-export async function searchWorkout(date: Date, limit = 50) {
-	return await db
+export async function getRecentWorkouts(limit = 5) {
+	return (await db
 		.select()
 		.from(Schema.workout)
-		.where(and(
-			eq(Schema.workout.date, date),
-			isNull(Schema.workout.deleted_at)
-		))
-		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.Workout[]
+		.where(isNull(Schema.workout.deleted_at))
+		.orderBy(desc(Schema.workout.date))
+		.limit(limit)) as Schema.Workout[]
+}
+
+export async function getWorkoutsBySeanceId(seance_id: number) {
+	return (await db
+		.select()
+		.from(Schema.workout)
+		.where(and(eq(Schema.workout.seance_id, seance_id), isNull(Schema.workout.deleted_at)))
+		.orderBy(desc(Schema.workout.date))) as Schema.Workout[]
 }
 
 // ## Update
 
-export async function updateWorkout(id: number, note: number, seance_id: number) {
+export async function updateWorkout(
+	idOrWorkout: number | Schema.NewWorkout,
+	date?: Date,
+	note?: number,
+	comment?: string,
+	seance_id?: number,
+) {
+	let updatedWorkout: Partial<Schema.NewWorkout>
+
+	if (typeof idOrWorkout === "number") {
+		updatedWorkout = {
+			date: date,
+			note: note,
+			comment: comment,
+			seance_id: seance_id,
+			updated_at: new Date(),
+		}
+	} else {
+		updatedWorkout = {
+			...idOrWorkout,
+			updated_at: new Date(),
+		}
+	}
+
 	const result = await db
 		.update(Schema.workout)
-		.set({
-			note: note,
-			seance_id: seance_id,
-			updated_at: sql`CURRENT_TIMESTAMP`,
-		})
-		.where(eq(Schema.workout.id, id))
+		.set(updatedWorkout)
+		.where(eq(Schema.workout.id, typeof idOrWorkout === "number" ? idOrWorkout : idOrWorkout.id!))
 		.returning({ id: Schema.workout.id })
 
-	// Revalidate all pages that might show exercices
-	revalidatePath("/", 'layout')
+	// Revalidate all pages that might show workouts
+	revalidatePath("/", "layout")
 
 	if (!result) {
 		return null
@@ -1067,14 +1126,15 @@ export async function updateWorkout(id: number, note: number, seance_id: number)
 
 // ## Delete
 
-export async function deleteWorkout(id: number) {
-	const result = await db.update(Schema.workout)
-		.set({ deleted_at: sql`CURRENT_TIMESTAMP`, updated_at: sql`CURRENT_TIMESTAMP` })
+export async function deleteWorkoutById(id: number) {
+	const result = await db
+		.update(Schema.workout)
+		.set({ deleted_at: sql`CURRENT_TIMESTAMP` })
 		.where(eq(Schema.workout.id, id))
 		.returning({ id: Schema.workout.id })
 
-	// Revalidate all pages that might show exercices
-	revalidatePath("/", 'layout')
+	// Revalidate all pages that might show workouts
+	revalidatePath("/", "layout")
 
 	if (result) {
 		return result[0].id
@@ -1083,162 +1143,139 @@ export async function deleteWorkout(id: number) {
 	return null
 }
 
-// # WorkoutExercice
+//=============================================================================
+// # Serie
+//=============================================================================
 
 // ## Create
 
-export async function createWorkoutExercice(workout_id: number, exercice_id: number) {
-	const result = await db
-		.insert(Schema.workoutExercice)
-		.values({
-			workout_id: workout_id,
-			exercice_id: exercice_id,
-		} as Schema.NewWorkoutExercice)
-		.returning({ id: Schema.workoutExercice.id })
+export async function createSerie(
+	workoutIdOrSerie: number | Schema.NewSerie,
+	exercice_id?: number,
+	poids?: number,
+	reps?: number,
+	exercice_position?: number,
+	serie_position?: number,
+) {
+	let newSerie: Schema.NewSerie
 
-	// Revalidate all pages that might show exercices
-	revalidatePath("/", 'layout')
+	if (typeof workoutIdOrSerie === "number") {
+		newSerie = {
+			workout_id: workoutIdOrSerie,
+			exercice_id: exercice_id!,
+			poids: poids,
+			reps: reps,
+			exercice_position: exercice_position!,
+			serie_position: serie_position!,
+		}
+	} else {
+		newSerie = workoutIdOrSerie
+	}
+
+	const result = await db.insert(Schema.serie).values(newSerie).returning({ id: Schema.serie.id })
+
+	// Revalidate all pages that might show series
+	revalidatePath("/", "layout")
 
 	return result[0].id
 }
 
 // ## Read
 
-export async function getWorkoutExercice(id: number) {
-	const dbresult = await db
-		.select()
-		.from(Schema.workoutExercice)
-		.where(and(eq(Schema.workoutExercice.id, id), isNull(Schema.workoutExercice.deleted_at))) as Schema.WorkoutExercice[]
-
-	if (!dbresult) {
-		throw new Error("WorkoutExercice not found")
-	}
-
-	return dbresult[0];
+export async function getSerieById(id: number) {
+	return (await db.select().from(Schema.serie).where(eq(Schema.serie.id, id))) as Schema.Serie[]
 }
 
-export async function getAllWorkoutExercices() {
-	return await db
+export async function getSeriesByWorkoutId(workout_id: number) {
+	return (await db
 		.select()
-		.from(Schema.workoutExercice)
-		.where(isNull(Schema.workoutExercice.deleted_at)) as Schema.WorkoutExercice[]
+		.from(Schema.serie)
+		.where(and(eq(Schema.serie.workout_id, workout_id), isNull(Schema.serie.deleted_at)))
+		.orderBy(asc(Schema.serie.exercice_position), asc(Schema.serie.serie_position))) as Schema.Serie[]
+}
+
+export async function getSeriesByExerciceId(exercice_id: number) {
+	return (await db
+		.select({
+			id: Schema.serie.id,
+			workout_id: Schema.serie.workout_id,
+			exercice_id: Schema.serie.exercice_id,
+			poids: Schema.serie.poids,
+			reps: Schema.serie.reps,
+			exercice_position: Schema.serie.exercice_position,
+			serie_position: Schema.serie.serie_position,
+			created_at: Schema.serie.created_at,
+			updated_at: Schema.serie.updated_at,
+			deleted_at: Schema.serie.deleted_at
+		})
+		.from(Schema.serie)
+		.where(and(eq(Schema.serie.exercice_id, exercice_id), isNull(Schema.serie.deleted_at)))
+		.orderBy(desc(Schema.workout.date), asc(Schema.serie.exercice_position), asc(Schema.serie.serie_position))
+		.innerJoin(Schema.workout, eq(Schema.serie.workout_id, Schema.workout.id))) as Schema.Serie[]
+}
+
+export async function getSeries() {
+	return (await db.select().from(Schema.serie).where(isNull(Schema.serie.deleted_at))) as Schema.Serie[]
+}
+
+export async function getSeriesByExerciceIds(exercice_ids: number[]) {
+	return (await db
+		.select({
+			id: Schema.serie.id,
+			workout_id: Schema.serie.workout_id,
+			exercice_id: Schema.serie.exercice_id,
+			poids: Schema.serie.poids,
+			reps: Schema.serie.reps,
+			exercice_position: Schema.serie.exercice_position,
+			serie_position: Schema.serie.serie_position,
+			created_at: Schema.serie.created_at,
+			updated_at: Schema.serie.updated_at,
+			deleted_at: Schema.serie.deleted_at
+		})
+		.from(Schema.serie)
+		.where(and(inArray(Schema.serie.exercice_id, exercice_ids), isNull(Schema.serie.deleted_at)))
+		.orderBy(desc(Schema.workout.date), asc(Schema.serie.exercice_position), asc(Schema.serie.serie_position))
+		.innerJoin(Schema.workout, eq(Schema.serie.workout_id, Schema.workout.id))) as Schema.Serie[]
 }
 
 // ## Update
 
-export async function updateWorkoutExercice(id: number, workout_id: number, exercice_id: number) {
-	const result = await db
-		.update(Schema.workoutExercice)
-		.set({
-			workout_id: workout_id,
-			exercice_id: exercice_id,
-			updated_at: sql`CURRENT_TIMESTAMP`,
-		})
-		.where(eq(Schema.workoutExercice.id, id))
-		.returning({ id: Schema.workoutExercice.id })
+export async function updateSerie(
+	idOrSerie: number | Schema.NewSerie,
+	workout_id?: number,
+	exercice_id?: number,
+	poids?: number,
+	reps?: number,
+	exercice_position?: number,
+	serie_position?: number,
+) {
+	let updatedSerie: Partial<Schema.NewSerie>
 
-	// Revalidate all pages that might show exercices
-	revalidatePath("/", 'layout')
-
-	if (!result) {
-		return null
-	}
-
-	return result[0].id
-}
-
-// ## Delete
-
-export async function deleteWorkoutExercice(id: number) {
-	const result = await db.update(Schema.workoutExercice)
-		.set({ deleted_at: sql`CURRENT_TIMESTAMP`, updated_at: sql`CURRENT_TIMESTAMP` })
-		.where(eq(Schema.workoutExercice.id, id))
-		.returning({ id: Schema.workoutExercice.id })
-
-	// Revalidate all pages that might show exercices
-	revalidatePath("/", 'layout')
-
-	if (result) {
-		return result[0].id
-	}
-
-	return null
-}
-
-// # Serie
-
-// ## Create
-
-export async function createSerie(workout_id: number, exercice_id: number, poids: number, reps: number, exercice_position: number) {
-	const result = await db
-		.insert(Schema.serie)
-		.values({
+	if (typeof idOrSerie === "number") {
+		updatedSerie = {
 			workout_id: workout_id,
 			exercice_id: exercice_id,
 			poids: poids,
 			reps: reps,
 			exercice_position: exercice_position,
-		} as Schema.NewSerie)
-		.returning({ id: Schema.serie.id })
-
-	// Revalidate all pages that might show exercices
-	revalidatePath("/", 'layout')
-
-	return result[0].id
-}
-
-// ## Read
-
-export async function getSerie(id: number) {
-	const dbresult = await db
-		.select()
-		.from(Schema.serie)
-		.where(and(eq(Schema.serie.id, id), isNull(Schema.serie.deleted_at))) as Schema.Serie[]
-
-	if (!dbresult) {
-		throw new Error("Serie not found")
+			serie_position: serie_position,
+			updated_at: new Date(),
+		}
+	} else {
+		updatedSerie = {
+			...idOrSerie,
+			updated_at: new Date(),
+		}
 	}
 
-	return dbresult[0];
-}
-
-export async function getAllSeries() {
-	return await db
-		.select()
-		.from(Schema.serie)
-		.where(isNull(Schema.serie.deleted_at)) as Schema.Serie[]
-}
-
-export async function searchSerie(workout_id: number, exercice_id: number, limit = 50) {
-	return await db
-		.select()
-		.from(Schema.serie)
-		.where(and(
-			eq(Schema.serie.workout_id, workout_id),
-			eq(Schema.serie.exercice_id, exercice_id),
-			isNull(Schema.serie.deleted_at)
-		))
-		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.Serie[]
-}
-
-// ## Update
-
-export async function updateSerie(id: number, workout_id: number, exercice_id: number, poids: number, reps: number, exercice_position: number) {
 	const result = await db
 		.update(Schema.serie)
-		.set({
-			workout_id: workout_id,
-			exercice_id: exercice_id,
-			poids: poids,
-			reps: reps,
-			exercice_position: exercice_position,
-			updated_at: sql`CURRENT_TIMESTAMP`,
-		})
-		.where(eq(Schema.serie.id, id))
+		.set(updatedSerie)
+		.where(eq(Schema.serie.id, typeof idOrSerie === "number" ? idOrSerie : idOrSerie.id!))
 		.returning({ id: Schema.serie.id })
 
-	// Revalidate all pages that might show exercices
-	revalidatePath("/", 'layout')
+	// Revalidate all pages that might show series
+	revalidatePath("/", "layout")
 
 	if (!result) {
 		return null
@@ -1249,14 +1286,15 @@ export async function updateSerie(id: number, workout_id: number, exercice_id: n
 
 // ## Delete
 
-export async function deleteSerie(id: number) {
-	const result = await db.update(Schema.serie)
-		.set({ deleted_at: sql`CURRENT_TIMESTAMP`, updated_at: sql`CURRENT_TIMESTAMP` })
+export async function deleteSerieById(id: number) {
+	const result = await db
+		.update(Schema.serie)
+		.set({ deleted_at: sql`CURRENT_TIMESTAMP` })
 		.where(eq(Schema.serie.id, id))
 		.returning({ id: Schema.serie.id })
 
-	// Revalidate all pages that might show exercices
-	revalidatePath("/", 'layout')
+	// Revalidate all pages that might show series
+	revalidatePath("/", "layout")
 
 	if (result) {
 		return result[0].id

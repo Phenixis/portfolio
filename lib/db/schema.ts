@@ -56,6 +56,8 @@ export const todo = pgTable('todo', {
 // Table Meteo
 export const meteo = pgTable('meteo', {
     day: varchar('day', { length: 10 }).primaryKey(),
+    latitude: varchar('latitude', { length: 10}).default("-1").notNull(),
+    longitude: varchar('longitude', { length: 10}).default("-1").notNull(),
     temperature: integer('temperature').notNull(),
     summary: varchar('summary', { length: 255 }).notNull(),
     icon: varchar('icon', { length: 255 }).notNull(),
@@ -88,6 +90,7 @@ export const seanceExercice = pgTable('seance_exercice', {
     seance_id: integer('seance_id').references(() => seance.id).notNull(),
     exercice_id: integer('exercice_id').references(() => exercice.id).notNull(),
     position: integer('position').notNull(),
+    nb_series: integer('nb_series').notNull(),
     created_at: timestamp('created_at').notNull().defaultNow(),
     updated_at: timestamp('updated_at').notNull().defaultNow(),
     deleted_at: timestamp('deleted_at'),
@@ -98,18 +101,8 @@ export const workout = pgTable('workout', {
     id: serial('id').primaryKey(),
     date: timestamp('date').notNull().defaultNow(),
     note: integer('note'),
+    comment: text('comment'),
     seance_id: integer('seance_id').references(() => seance.id),
-    created_at: timestamp('created_at').notNull().defaultNow(),
-    updated_at: timestamp('updated_at').notNull().defaultNow(),
-    deleted_at: timestamp('deleted_at'),
-});
-
-// Table Workout_Exercice (Exercices réellement faits dans un workout)
-export const workoutExercice = pgTable('workout_exercice', {
-    id: serial('id').primaryKey(),
-    workout_id: integer('workout_id').references(() => workout.id).notNull(),
-    exercice_id: integer('exercice_id').references(() => exercice.id).notNull(),
-    position: integer('position').notNull(),
     created_at: timestamp('created_at').notNull().defaultNow(),
     updated_at: timestamp('updated_at').notNull().defaultNow(),
     deleted_at: timestamp('deleted_at'),
@@ -122,7 +115,8 @@ export const serie = pgTable('serie', {
     exercice_id: integer('exercice_id').references(() => exercice.id).notNull(),
     poids: integer('poids'),
     reps: integer('reps'),
-    exercice_position: integer('exercice_position').notNull(),
+    exercice_position: integer('exercice_position').notNull(), // Premier, second, etc. exercice de la séance
+    serie_position: integer('serie_position').notNull(), // Première, seconde, etc. série de l'exercice
     created_at: timestamp('created_at').notNull().defaultNow(),
     updated_at: timestamp('updated_at').notNull().defaultNow(),
     deleted_at: timestamp('deleted_at'),
@@ -144,29 +138,41 @@ export const seanceRelations = relations(seance, ({ many }) => ({
     exercices: many(seanceExercice)
 }));
 
-export const workoutRelations = relations(workout, ({ many, one }) => ({
-    exercices: many(workoutExercice),
+export const seanceExerciceRelations = relations(seanceExercice, ({ one }) => ({
     seance: one(seance, {
-        fields: [workout.seance_id],
+        fields: [seanceExercice.seance_id],
         references: [seance.id]
+    }),
+    exercice: one(exercice, {
+        fields: [seanceExercice.exercice_id],
+        references: [exercice.id]
     })
 }));
 
-export const exerciceRelations = relations(exercice, ({ many }) => ({
-    seance_exercices: many(seanceExercice),
-    workout_exercices: many(workoutExercice),
-    series: many(serie)
+export const workoutRelations = relations(workout, ({ one }) => ({
+    seance: one(seance, {
+        fields: [workout.seance_id],
+        references: [seance.id]
+    }),
 }));
 
-export const workoutExerciceRelations = relations(workoutExercice, ({ one, many }) => ({
+export const serieRelations = relations(serie, ({ one }) => ({
     workout: one(workout, {
-        fields: [workoutExercice.workout_id],
+        fields: [serie.workout_id],
         references: [workout.id]
     }),
     exercice: one(exercice, {
-        fields: [workoutExercice.exercice_id],
+        fields: [serie.exercice_id],
         references: [exercice.id]
-    }),
+    })
+}));
+
+export const workoutExerciceRelations = relations(workout, ({ many }) => ({
+    exercices: many(serie)
+}));
+
+export const exerciceRelations = relations(exercice, ({ many }) => ({
+    seanceExercices: many(seanceExercice),
     series: many(serie)
 }));
 
@@ -184,8 +190,6 @@ export type SeanceExercice = typeof seanceExercice.$inferSelect;
 export type NewSeanceExercice = typeof seanceExercice.$inferInsert;
 export type Workout = typeof workout.$inferSelect;
 export type NewWorkout = typeof workout.$inferInsert;
-export type WorkoutExercice = typeof workoutExercice.$inferSelect;
-export type NewWorkoutExercice = typeof workoutExercice.$inferInsert;
 export type Serie = typeof serie.$inferSelect;
 export type NewSerie = typeof serie.$inferInsert;
 export type Importance = typeof importance.$inferSelect;
