@@ -1060,7 +1060,7 @@ export async function getWorkoutById(id: number) {
 	return (await db.select().from(Schema.workout).where(eq(Schema.workout.id, id))) as Schema.Workout[]
 }
 
-export async function getWorkouts() {
+export async function getAllWorkouts() {
 	return (await db
 		.select()
 		.from(Schema.workout)
