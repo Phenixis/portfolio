@@ -38,9 +38,9 @@ export async function GET(request: NextRequest) {
         const data = await result.json();
 
         if (savedMeteo.length === 0) {
-            await createMeteo(day, parseInt(data.daily[0].feels_like.day as string), data.daily[0].summary, data.daily[0].weather[0].icon);
+            await createMeteo(day, parseInt(data.daily[0].feels_like.day as string), data.daily[0].summary, data.daily[0].weather[0].icon, lat, lon);
         } else {
-            await updateMeteo(day, parseInt(data.daily[0].feels_like.day as string), data.daily[0].summary, data.daily[0].weather[0].icon);
+            await updateMeteo(day, parseInt(data.daily[0].feels_like.day as string), data.daily[0].summary, data.daily[0].weather[0].icon, lat, lon);
         }
 
         return NextResponse.json({
@@ -49,6 +49,8 @@ export async function GET(request: NextRequest) {
             summary: data.daily[0].summary,
             icon: data.daily[0].weather[0].icon,
             updated_at: new Date(),
+            latitude: lat,
+            longitude: lon,
         } as Meteo);
     } else {
         return NextResponse.json(savedMeteo[0]);

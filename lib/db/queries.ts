@@ -430,7 +430,7 @@ export async function deleteTodoById(id: number) {
 
 // ## Create
 
-export async function createMeteo(dayOrMeteo: string | Schema.NewMeteo, latitude?: string, longitude?: string, temperature?: number, summary?: string, icon?: string) {
+export async function createMeteo(dayOrMeteo: string | Schema.NewMeteo, temperature?: number, summary?: string, icon?: string, latitude?: string, longitude?: string) {
 	let newMeteo: Schema.NewMeteo;
 
 	if (typeof dayOrMeteo === "string") {
@@ -474,7 +474,7 @@ export async function getMeteo() {
 
 // ## Update
 
-export async function updateMeteo(dayOrMeteo: string | Schema.NewMeteo, latitude?: string, longitude?: string, temperature?: number, summary?: string, icon?: string) {
+export async function updateMeteo(dayOrMeteo: string | Schema.NewMeteo, temperature?: number, summary?: string, icon?: string, latitude?: string, longitude?: string) {
 	let updatedMeteo: Partial<Schema.NewMeteo>;
 
 	if (typeof dayOrMeteo === "string") {
