@@ -108,9 +108,9 @@ export default function DarkModeToggle({
                 <Dialog open={showDialog} onOpenChange={setShowDialog}>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>It's getting late</DialogTitle>
+                            <DialogTitle>Hi sir, Jarvis Here</DialogTitle>
                             <DialogDescription>
-                                It's getting late and dark and I don't want to flash you, do you want to turn on dark mode?
+                                It's getting late and dark and I don't want to flash you, do you want me to turn on dark mode automatically after 7pm ?
                             </DialogDescription>
                         </DialogHeader>
                         <DialogFooter>
