@@ -1,48 +1,59 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import dynamic from 'next/dynamic';
-const TodoModal = dynamic(() => import('@/components/big/todos/todoModal'), {ssr: false});
+import dynamic from "next/dynamic"
+const TodoModal = dynamic(() => import("@/components/big/todos/todoModal"), { ssr: false })
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import type { Todo, Project, Importance, Duration } from "@/lib/db/schema"
 import { useState, useCallback, useTransition, useMemo } from "react"
 import { Button } from "@/components/ui/button"
-import { Filter, SquareCheck, Square, SquareMinus, ArrowDown01, ArrowDown10, FolderTree } from "lucide-react"
+import { Filter, SquareCheck, Square, SquareMinus, FolderTree, Calendar } from "lucide-react"
 import TodoDisplay from "./todoDisplay"
 import { useTodos } from "@/hooks/useTodos"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useProjects } from "@/hooks/useProjects"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import { format } from "date-fns"
 
-function generateTitle(completed?: boolean, orderBy?: keyof Todo, orderingDirection?: "asc" | "desc", limit?: number, projectTitles?: string[]) {
+function generateTitle(
+	completed?: boolean,
+	orderBy?: keyof Todo,
+	orderingDirection?: "asc" | "desc",
+	limit?: number,
+	projectTitles?: string[],
+	dueBeforeDate?: Date,
+) {
 	let title = limit ? `The top ${limit} ` : "All "
 
+	/* OrderBy title generation - commented out as requested
 	if (orderBy) {
-		switch (orderBy) {
-			case "importance":
-				title += orderingDirection === "asc" ? "least important " : "most important "
-				break
-			case "duration":
-				title += orderingDirection === "asc" ? "shortest " : "longest "
-				break
-			case "urgency":
-				title += orderingDirection === "asc" ? "least urgent " : "most urgent "
-				break
-			case "score":
-				title += orderingDirection === "asc" ? "lowest scoring " : "highest scoring "
-				break
-			case "created_at":
-				title += orderingDirection === "asc" ? "oldest " : "newest "
-				break
-			case "completed_at":
-				title += orderingDirection === "asc" ? "earliest " : "latest "
-				break
-			default:
-				title += `${orderBy} `
-				break
-		}
+	  switch (orderBy) {
+		case "importance":
+		  title += orderingDirection === "asc" ? "least important " : "most important "
+		  break
+		case "duration":
+		  title += orderingDirection === "asc" ? "shortest " : "longest "
+		  break
+		case "urgency":
+		  title += orderingDirection === "asc" ? "least urgent " : "most urgent "
+		  break
+		case "score":
+		  title += orderingDirection === "asc" ? "lowest scoring " : "highest scoring "
+		  break
+		case "created_at":
+		  title += orderingDirection === "asc" ? "oldest " : "newest "
+		  break
+		case "completed_at":
+		  title += orderingDirection === "asc" ? "earliest " : "latest "
+		  break
+		default:
+		  title += `${orderBy} `
+		  break
+	  }
 	}
+	*/
 
 	if (completed === true) {
 		title += "completed "
@@ -54,6 +65,10 @@ function generateTitle(completed?: boolean, orderBy?: keyof Todo, orderingDirect
 
 	if (projectTitles && projectTitles.length > 0) {
 		title += ` in ${projectTitles.join(", ")}`
+	}
+
+	if (dueBeforeDate) {
+		title += ` due before ${format(dueBeforeDate, "MMM d, yyyy")}`
 	}
 
 	return title.trim()
@@ -84,6 +99,7 @@ export function TodosCard({
 	const [orderBy, setOrderBy] = useState<keyof Todo | undefined>(initialOrderBy)
 	const [orderingDirection, setOrderingDirection] = useState<"asc" | "desc" | undefined>(initialOrderingDirection)
 	const [selectedProjects, setSelectedProjects] = useState<string[]>([])
+	const [dueBeforeDate, setDueBeforeDate] = useState<Date | undefined>(undefined)
 	const { projects } = useProjects({
 		completed: false,
 	})
@@ -98,7 +114,8 @@ export function TodosCard({
 		limit,
 		orderingDirection,
 		withProject,
-		projectTitles: (groupByProject && selectedProjects.length > 0) ? selectedProjects : undefined,
+		projectTitles: groupByProject && selectedProjects.length > 0 ? selectedProjects : undefined,
+		dueBefore: dueBeforeDate,
 	})
 
 	// Memoize the cycleCompletedFilter function to prevent unnecessary re-renders
@@ -122,6 +139,12 @@ export function TodosCard({
 		})
 	}, [])
 
+	const clearDueBeforeFilter = useCallback(() => {
+		startTransition(() => {
+			setDueBeforeDate(undefined)
+		})
+	}, [])
+
 	const groupedTodos = useMemo(() => {
 		if (!todos) return {}
 
@@ -140,16 +163,26 @@ export function TodosCard({
 				acc[projectId].todos.push(todo)
 				return acc
 			},
-			{} as Record<string, { name: string; todos: (Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration })[] }>,
+			{} as Record<
+				string,
+				{
+					name: string
+					todos: (Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration })[]
+				}
+			>,
 		)
 	}, [todos, projects])
 
 	return (
-		<Card className={cn(`w-full md:max-w-xl group/TodoCard h-fit max-h-screen overflow-y-auto scrollbar-hide`, className)}>
+		<Card
+			className={cn(`w-full md:max-w-xl group/TodoCard h-fit max-h-screen overflow-y-auto scrollbar-hide`, className)}
+		>
 			<CardHeader className="flex flex-col sticky top-0 bg-background z-10">
 				<div className="flex flex-row items-center justify-between w-full gap-2">
 					<Link href={`/my/todos`}>
-						<CardTitle>{generateTitle(completed, orderBy, orderingDirection, limit, selectedProjects)}</CardTitle>
+						<CardTitle>
+							{generateTitle(completed, orderBy, orderingDirection, limit, selectedProjects, dueBeforeDate)}
+						</CardTitle>
 					</Link>
 					<div className="flex gap-2 xl:opacity-0 duration-300 xl:group-hover/TodoCard:opacity-100">
 						<Button
@@ -167,41 +200,67 @@ export function TodosCard({
 				</div>
 				<div className={`${!isFilterOpen && "hidden"} flex flex-col gap-2`}>
 					<div className="flex flex-row justify-between items-center gap-6 flex-wrap">
-						<div className="flex flex-row items-center gap-2">
-							<Select
-								onValueChange={(newValue) => {
-									setOrderBy(newValue != "none" ? (newValue as keyof Todo) : initialOrderBy)
-								}}
-								defaultValue={orderBy}
-								disabled={isPending || isLoading}
-							>
-								<SelectTrigger>
-									<SelectValue placeholder="Order by" />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="importance">Importance</SelectItem>
-									<SelectItem value="duration">Duration</SelectItem>
-									<SelectItem value="urgency">Urgency</SelectItem>
-									<SelectItem value="score">Score</SelectItem>
-								</SelectContent>
-							</Select>
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => {
-									setOrderingDirection(orderingDirection === "asc" ? "desc" : "asc")
-								}}
-								disabled={isPending || isLoading}
-								className={cn("flex items-center gap-1")}
-								tooltip={`Order by ${orderingDirection === "asc" ? "descending" : "ascending"}`}
-							>
-								{orderingDirection === "asc" ? (
-									<ArrowDown01 className="h-4 w-4" />
-								) : (
-									<ArrowDown10 className="h-4 w-4" />
-								)}
-							</Button>
-						</div>
+						{/* OrderBy filter - commented out as requested
+            <div className="flex flex-row items-center gap-2">
+              <Select
+                onValueChange={(newValue) => {
+                  setOrderBy(newValue != "none" ? (newValue as keyof Todo) : initialOrderBy)
+                }}
+                defaultValue={orderBy}
+                disabled={isPending || isLoading}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Order by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="importance">Importance</SelectItem>
+                  <SelectItem value="duration">Duration</SelectItem>
+                  <SelectItem value="urgency">Urgency</SelectItem>
+                  <SelectItem value="score">Score</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setOrderingDirection(orderingDirection === "asc" ? "desc" : "asc")
+                }}
+                disabled={isPending || isLoading}
+                className={cn("flex items-center gap-1")}
+                tooltip={`Order by ${orderingDirection === "asc" ? "descending" : "ascending"}`}
+              >
+                {orderingDirection === "asc" ? (
+                  <ArrowDown01 className="h-4 w-4" />
+                ) : (
+                  <ArrowDown10 className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+            */}
+
+						{/* Due Before Date Filter */}
+						<Popover>
+							<PopoverTrigger asChild>
+								<Button
+									variant={dueBeforeDate ? "default" : "outline"}
+									size="sm"
+									disabled={isPending || isLoading}
+									tooltip="Filter by due date"
+									className="flex items-center gap-1"
+								>
+									<Calendar className="h-4 w-4" />
+									{dueBeforeDate ? format(dueBeforeDate, "MMM d") : "Due Before"}
+								</Button>
+							</PopoverTrigger>
+							<PopoverContent className="w-auto p-0" align="start">
+								<CalendarComponent
+									mode="single"
+									selected={dueBeforeDate}
+									onSelect={(date) => setDueBeforeDate(date)}
+									initialFocus
+								/>
+							</PopoverContent>
+						</Popover>
 						<div className="flex flex-row items-center gap-2">
 							<Button
 								variant="outline"
@@ -310,15 +369,27 @@ export function TodosCard({
 							<div key={projectId} className="mb-4">
 								<h3 className="font-medium text-sm p-2 rounded-md">{name}</h3>
 								<div className="pl-2">
-									{todos.map((todo: (Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration })) => (
-										<TodoDisplay key={todo.id} todo={todo} orderedBy={orderBy} className="mt-1" />
-									))}
+									{todos.map(
+										(
+											todo: Todo & {
+												project: Project | null
+												importanceDetails: Importance
+												durationDetails: Duration
+											},
+										) => (
+											<TodoDisplay key={todo.id} todo={todo} orderedBy={orderBy} className="mt-1" />
+										),
+									)}
 								</div>
 							</div>
 						))
 					) : (
 						// Not grouped
-						todos.map((todo: (Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration })) => <TodoDisplay key={todo.id} todo={todo} orderedBy={orderBy} className="mt-1" />)
+						todos.map(
+							(todo: Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration }) => (
+								<TodoDisplay key={todo.id} todo={todo} orderedBy={orderBy} className="mt-1" />
+							),
+						)
 					)
 				) : (
 					// Show empty state

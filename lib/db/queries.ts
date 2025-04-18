@@ -88,7 +88,7 @@ export async function getTodoById(id: number) {
 	return dbresult[0];
 }
 
-export async function getTodos(orderBy: keyof Schema.Todo = "score", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[]) {
+export async function getTodos(orderBy: keyof Schema.Todo = "score", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[], dueBefore?: Date) {
 	return await db.select({
 		id: Schema.todo.id,
 		title: Schema.todo.title,
@@ -128,7 +128,8 @@ export async function getTodos(orderBy: keyof Schema.Todo = "score", orderingDir
 			projectTitles ? or(
 				inArray(Schema.todo.project_title, projectTitles),
 				sql`${isNull(Schema.todo.project_title)} AND ${projectTitles.includes("No project")}`
-			) : sql`1 = 1`
+			) : sql`1 = 1`,
+			dueBefore ? lte(Schema.todo.due, dueBefore) : sql`1 = 1`
 		))
 		.orderBy(
 			orderingDirection === "asc" ? asc(Schema.todo[orderBy]) : desc(Schema.todo[orderBy])
@@ -136,7 +137,7 @@ export async function getTodos(orderBy: keyof Schema.Todo = "score", orderingDir
 		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as (Schema.Todo & { project: Schema.Project | null; importanceDetails: Schema.Importance; durationDetails: Schema.Duration })[];
 }
 
-export async function getCompletedTodos(orderBy: keyof Schema.Todo = "completed_at", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[]) {
+export async function getCompletedTodos(orderBy: keyof Schema.Todo = "completed_at", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[], dueBefore?: Date) {
 	return await db.select({
 		id: Schema.todo.id,
 		title: Schema.todo.title,
@@ -177,7 +178,8 @@ export async function getCompletedTodos(orderBy: keyof Schema.Todo = "completed_
 			projectTitles ? or(
 				inArray(Schema.todo.project_title, projectTitles),
 				sql`${isNull(Schema.todo.project_title)} AND ${projectTitles.includes("No project")}`
-			) : sql`1 = 1`
+			) : sql`1 = 1`,
+			dueBefore ? lte(Schema.todo.due, dueBefore) : sql`1 = 1`
 		))
 		.orderBy(
 			orderingDirection === "asc" ? asc(Schema.todo[orderBy]) : desc(Schema.todo[orderBy])
@@ -185,7 +187,7 @@ export async function getCompletedTodos(orderBy: keyof Schema.Todo = "completed_
 		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as (Schema.Todo & { project: Schema.Project | null; importanceDetails: Schema.Importance; durationDetails: Schema.Duration })[];
 }
 
-export async function getUncompletedTodos(orderBy: keyof Schema.Todo = "score", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[]) {
+export async function getUncompletedTodos(orderBy: keyof Schema.Todo = "score", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[], dueBefore?: Date) {
 	return await db.select({
 		id: Schema.todo.id,
 		title: Schema.todo.title,
@@ -226,7 +228,8 @@ export async function getUncompletedTodos(orderBy: keyof Schema.Todo = "score", 
 			projectTitles ? or(
 				inArray(Schema.todo.project_title, projectTitles),
 				sql`${isNull(Schema.todo.project_title)} AND ${projectTitles.includes("No project")}`
-			) : sql`1 = 1`
+			) : sql`1 = 1`,
+			dueBefore ? lte(Schema.todo.due, dueBefore) : sql`1 = 1`
 		))
 		.orderBy(
 			orderingDirection === "asc" ? asc(Schema.todo[orderBy]) : desc(Schema.todo[orderBy])

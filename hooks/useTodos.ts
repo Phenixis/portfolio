@@ -10,6 +10,7 @@ export function useTodos({
   orderingDirection,
   withProject,
   projectTitles,
+  dueBefore,
 }: {
   completed?: boolean
   orderBy?: keyof Todo
@@ -17,6 +18,7 @@ export function useTodos({
   orderingDirection?: "asc" | "desc"
   withProject?: boolean
   projectTitles?: string[]
+  dueBefore?: Date
 }) {
   // We don't need to skip fetching for this hook as all parameters are optional
   // and the API should handle undefined parameters gracefully
@@ -29,6 +31,7 @@ export function useTodos({
       orderingDirection,
       withProject: withProject ? "true" : "false",
       projectTitles: projectTitles?.join(","),
+      dueBefore: dueBefore ? dueBefore.toISOString() : undefined,
     },
   })
 

@@ -24,9 +24,13 @@ export async function GET(request: NextRequest) {
   const projectTitles = searchParams.get("projectTitles")
     ? searchParams.get("projectTitles")?.split(",")
     : undefined
-
+  const dueBefore = searchParams.get("dueBefore")
+    ? new Date(searchParams.get("dueBefore") as string)
+    : undefined
   const limit = limitParam ? Number.parseInt(limitParam) : undefined
   let completed: boolean | undefined = undefined
+
+  console.log("Due before:", dueBefore)
 
   if (completedParam === "true") completed = true
   else if (completedParam === "false") completed = false
@@ -34,10 +38,10 @@ export async function GET(request: NextRequest) {
   try {
     const todos =
       completed === true
-        ? await getCompletedTodos(orderBy || undefined, orderingDirection, limit, projectTitles)
+        ? await getCompletedTodos(orderBy || undefined, orderingDirection, limit, projectTitles, dueBefore)
         : completed === false
-          ? await getUncompletedTodos(orderBy || undefined, orderingDirection, limit, projectTitles)
-          : await getTodos(orderBy || undefined, orderingDirection, limit, projectTitles)
+          ? await getUncompletedTodos(orderBy || undefined, orderingDirection, limit, projectTitles, dueBefore)
+          : await getTodos(orderBy || undefined, orderingDirection, limit, projectTitles, dueBefore)
 
     return NextResponse.json(todos)
   } catch (error) {
