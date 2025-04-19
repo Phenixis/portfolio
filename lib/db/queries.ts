@@ -232,7 +232,8 @@ export async function getUncompletedTodos(orderBy: keyof Schema.Todo = "score", 
 			dueBefore ? lte(Schema.todo.due, dueBefore) : sql`1 = 1`
 		))
 		.orderBy(
-			orderingDirection === "asc" ? asc(Schema.todo[orderBy]) : desc(Schema.todo[orderBy])
+			orderingDirection === "asc" ? asc(Schema.todo[orderBy]) : desc(Schema.todo[orderBy]),
+			asc(Schema.todo.title)
 		)
 		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as (Schema.Todo & { project: Schema.Project | null; importanceDetails: Schema.Importance; durationDetails: Schema.Duration })[];
 }

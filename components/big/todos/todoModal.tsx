@@ -33,9 +33,11 @@ import {
 export default function TodoModal({
 	className,
 	todo,
+	currentLimit,
 }: {
 	className?: string
-	todo?: Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration }
+	todo?: Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration },
+	currentLimit?: number
 }) {
 	const mode = todo ? "edit" : "create"
 	const [open, setOpen] = useState(false)
@@ -147,7 +149,8 @@ export default function TodoModal({
 						updatedData = [todoData, ...currentData]
 					}
 
-					return updatedData.sort((a, b) => b.score - a.score)
+					const sortedData = updatedData.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
+					return currentLimit ? sortedData.slice(0, currentLimit) : sortedData
 				},
 				{ revalidate: false },
 			)

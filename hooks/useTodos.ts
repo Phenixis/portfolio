@@ -20,14 +20,12 @@ export function useTodos({
   projectTitles?: string[]
   dueBefore?: Date
 }) {
-  // We don't need to skip fetching for this hook as all parameters are optional
-  // and the API should handle undefined parameters gracefully
   const { data, isLoading, isError, mutate } = useFilteredData<Todo[]>({
     endpoint: "/api/todo",
     params: {
       completed,
       orderBy: orderBy as string,
-      limit,
+      limit: limit ? limit+1 : undefined,
       orderingDirection,
       withProject: withProject ? "true" : "false",
       projectTitles: projectTitles?.join(","),

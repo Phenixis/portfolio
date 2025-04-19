@@ -195,7 +195,7 @@ export function TodosCard({
 						>
 							<Filter className="h-4 w-4" />
 						</Button>
-						<TodoModal />
+						<TodoModal currentLimit={limit}/>
 					</div>
 				</div>
 				<div className={`${!isFilterOpen && "hidden"} flex flex-col gap-2`}>
@@ -377,7 +377,7 @@ export function TodosCard({
 												durationDetails: Duration
 											},
 										) => (
-											<TodoDisplay key={todo.id} todo={todo} orderedBy={orderBy} className="mt-1" />
+											<TodoDisplay key={todo.id} todo={todo} orderedBy={orderBy} className="mt-1" currentLimit={limit} />
 										),
 									)}
 								</div>
@@ -385,9 +385,9 @@ export function TodosCard({
 						))
 					) : (
 						// Not grouped
-						todos.map(
+						todos.slice(0, limit).map(
 							(todo: Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration }) => (
-								<TodoDisplay key={todo.id} todo={todo} orderedBy={orderBy} className="mt-1" />
+								<TodoDisplay key={todo.id} todo={todo} orderedBy={orderBy} className="mt-1" currentLimit={limit} />
 							),
 						)
 					)

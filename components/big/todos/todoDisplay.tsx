@@ -15,10 +15,12 @@ export default function TodoDisplay({
 	todo,
 	orderedBy,
 	className,
+	currentLimit,
 }: {
 	todo?: Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration }
 	orderedBy?: keyof Todo
 	className?: string
+	currentLimit?: number
 }) {
 	const [isToggled, setIsToggled] = useState(todo ? todo.completed_at !== null : false)
 	const [isDeleting, setIsDeleting] = useState(false)
@@ -45,7 +47,10 @@ export default function TodoDisplay({
 				async (currentData) => {
 					// Filter out the todo being deleted from all cached lists
 					if (Array.isArray(currentData)) {
-						return currentData.filter((item) => item.id !== todo.id)
+						return currentData
+							.filter((item) => item.id !== todo.id)
+							.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
+							.slice(0, currentLimit || Number.MAX_SAFE_INTEGER)
 					}
 					return currentData
 				},
