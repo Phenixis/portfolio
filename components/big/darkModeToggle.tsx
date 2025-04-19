@@ -37,7 +37,7 @@ export default function DarkModeToggle({
                     setIsDarkMode(true);
                     document.documentElement.classList.add('dark');
                     setShowDialog(true);
-                } else if (dialogAnswer === 'true') {
+                } else if (currentHour >= 19 && dialogAnswer === 'true') {
                     setShowDialog(false);
                     setIsDarkMode(true);
                     document.documentElement.classList.add('dark');
