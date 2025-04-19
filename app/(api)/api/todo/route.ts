@@ -30,8 +30,6 @@ export async function GET(request: NextRequest) {
   const limit = limitParam ? Number.parseInt(limitParam) : undefined
   let completed: boolean | undefined = undefined
 
-  console.log("Due before:", dueBefore)
-
   if (completedParam === "true") completed = true
   else if (completedParam === "false") completed = false
 
