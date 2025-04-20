@@ -53,6 +53,19 @@ export const todo = pgTable('todo', {
     deleted_at: timestamp('deleted_at')
 });
 
+export const todoAfter = pgTable('todo_after', {
+    id: serial('id').primaryKey(),
+    todo_id: integer('todo_id')
+        .notNull()
+        .references(() => todo.id),
+    after_id: integer('after_id')
+        .notNull()
+        .references(() => todo.id),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow(),
+    deleted_at: timestamp('deleted_at')
+});
+
 // Table Meteo
 export const meteo = pgTable('meteo', {
     day: varchar('day', { length: 10 }).primaryKey(),
@@ -127,11 +140,16 @@ export const projectRelations = relations(project, ({ many }) => ({
     todos: many(todo)
 }));
 
-export const todoRelations = relations(todo, ({ one }) => ({
+export const todoRelations = relations(todo, ({ one, many }) => ({
     project: one(project, {
         fields: [todo.project_title],
         references: [project.title]
-    })
+    }),
+    todoAfter: many(todoAfter)
+}));
+
+export const todoAfterRelations = relations(todoAfter, ({ many }) => ({
+    todos: many(todo)
 }));
 
 export const seanceRelations = relations(seance, ({ many }) => ({
@@ -178,6 +196,8 @@ export const exerciceRelations = relations(exercice, ({ many }) => ({
 
 export type Todo = typeof todo.$inferSelect;
 export type NewTodo = typeof todo.$inferInsert;
+export type TodoAfter = typeof todoAfter.$inferSelect;
+export type NewTodoAfter = typeof todoAfter.$inferInsert;
 export type Meteo = typeof meteo.$inferSelect;
 export type NewMeteo = typeof meteo.$inferInsert;
 export type Project = typeof project.$inferSelect;
