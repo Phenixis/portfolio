@@ -344,6 +344,7 @@ export default function TodoModal({
 										variant="outline"
 										onClick={() => {
 											const newDate = new Date(dueDate.getTime() - 24 * 60 * 60 * 1000)
+											newDate.setHours(0, 0, 0, 0)
 											const today = new Date()
 											today.setHours(0, 0, 0, 0)
 											if (newDate >= today) {
