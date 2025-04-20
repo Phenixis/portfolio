@@ -369,7 +369,7 @@ export function TodosCard({
 							<div key={projectId} className="mb-4">
 								<h3 className="font-medium text-sm p-2 rounded-md">{name}</h3>
 								<div className="pl-2">
-									{todos.map(
+									{todos.slice(0, limit).map(
 										(
 											todo: Todo & {
 												project: Project | null
