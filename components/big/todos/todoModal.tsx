@@ -41,7 +41,11 @@ export default function TodoModal({
 }) {
 	const mode = todo ? "edit" : "create"
 	const [open, setOpen] = useState(false)
-	const [dueDate, setDueDate] = useState<Date>(todo ? new Date(todo.due) : new Date())
+	const [dueDate, setDueDate] = useState<Date>(() => {
+		const initialDate = todo ? new Date(todo.due) : new Date()
+		initialDate.setHours(0, 0, 0, 0)
+		return initialDate
+	})
 	const [showCalendar, setShowCalendar] = useState(false)
 	const calendarRef = useRef<HTMLDivElement>(null)
 	const [project, setProject] = useState<string>(todo?.project_title || "")

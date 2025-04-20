@@ -256,7 +256,9 @@ export function TodosCard({
 								<CalendarComponent
 									mode="single"
 									selected={dueBeforeDate}
-									onSelect={(date) => setDueBeforeDate(date)}
+									onSelect={(date) => {
+										setDueBeforeDate(date)
+									}}
 									initialFocus
 								/>
 							</PopoverContent>

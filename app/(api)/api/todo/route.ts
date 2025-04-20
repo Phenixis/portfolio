@@ -64,7 +64,10 @@ export async function POST(request: NextRequest) {
       await createProject(projectTitle)
     }
 
-    const todoId = await createTodo(title, Number(importance), new Date(dueDate), Number(duration), projectTitle != "" ? projectTitle : undefined)
+    const dueDateAtMidnight = new Date(dueDate)
+    dueDateAtMidnight.setHours(0, 0, 0, 0)
+
+    const todoId = await createTodo(title, Number(importance), dueDateAtMidnight, Number(duration), projectTitle != "" ? projectTitle : undefined)
 
     return NextResponse.json({ id: todoId }, { status: 201 })
   } catch (error) {
