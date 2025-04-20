@@ -6,7 +6,7 @@ const TodoModal = dynamic(() => import("@/components/big/todos/todoModal"), { ss
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import type { Todo, Project, Importance, Duration } from "@/lib/db/schema"
-import { useState, useCallback, useTransition, useMemo } from "react"
+import { useState, useCallback, useTransition, useMemo, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Filter, Square, SquareMinus, FolderTree, Calendar } from "lucide-react"
 import TodoDisplay from "./todoDisplay"
@@ -16,6 +16,7 @@ import { useProjects } from "@/hooks/useProjects"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { format } from "date-fns"
+import { useRouter, useSearchParams } from "next/navigation"
 
 function generateTitle(
 	completed?: boolean,
@@ -26,34 +27,6 @@ function generateTitle(
 	dueBeforeDate?: Date,
 ) {
 	let title = limit ? `The top ${limit} ` : "All "
-
-	/* OrderBy title generation - commented out as requested
-	if (orderBy) {
-	  switch (orderBy) {
-		case "importance":
-		  title += orderingDirection === "asc" ? "least important " : "most important "
-		  break
-		case "duration":
-		  title += orderingDirection === "asc" ? "shortest " : "longest "
-		  break
-		case "urgency":
-		  title += orderingDirection === "asc" ? "least urgent " : "most urgent "
-		  break
-		case "score":
-		  title += orderingDirection === "asc" ? "lowest scoring " : "highest scoring "
-		  break
-		case "created_at":
-		  title += orderingDirection === "asc" ? "oldest " : "newest "
-		  break
-		case "completed_at":
-		  title += orderingDirection === "asc" ? "earliest " : "latest "
-		  break
-		default:
-		  title += `${orderBy} `
-		  break
-	  }
-	}
-	*/
 
 	if (completed === true) {
 		title += "completed "
@@ -89,23 +62,85 @@ export function TodosCard({
 	orderingDirection?: "asc" | "desc"
 	withProject?: boolean
 }) {
+	const router = useRouter()
+	const searchParams = useSearchParams()
+
 	// Use isPending to prevent multiple clicks during transitions
 	const [isPending, startTransition] = useTransition()
 
 	// State for filter controls
 	const [isFilterOpen, setIsFilterOpen] = useState(false)
-	const [completed, setCompleted] = useState<boolean | undefined>(initialCompleted)
-	const [limit, setLimit] = useState<number | undefined>(initialLimit)
-	const [orderBy, setOrderBy] = useState<keyof Todo | undefined>(initialOrderBy)
-	const [orderingDirection, setOrderingDirection] = useState<"asc" | "desc" | undefined>(initialOrderingDirection)
-	const [selectedProjects, setSelectedProjects] = useState<string[]>([])
-	const [dueBeforeDate, setDueBeforeDate] = useState<Date | undefined>(undefined)
+	const [completed, setCompleted] = useState<boolean | undefined>(
+		searchParams.has("completed")
+			? searchParams.get("completed") === "true"
+				? true
+				: searchParams.get("completed") === "false"
+					? false
+					: undefined
+			: initialCompleted,
+	)
+	const [limit, setLimit] = useState<number | undefined>(
+		searchParams.has("limit") ? Number.parseInt(searchParams.get("limit") || "") || initialLimit : initialLimit,
+	)
+	const [orderBy, setOrderBy] = useState<keyof Todo | undefined>(
+		(searchParams.get("orderBy") as keyof Todo) || initialOrderBy,
+	)
+	const [orderingDirection, setOrderingDirection] = useState<"asc" | "desc" | undefined>(
+		(searchParams.get("orderingDirection") as "asc" | "desc") || initialOrderingDirection,
+	)
+	const [selectedProjects, setSelectedProjects] = useState<string[]>(
+		searchParams.has("projects") ? searchParams.get("projects")?.split(",") || [] : [],
+	)
+	const [dueBeforeDate, setDueBeforeDate] = useState<Date | undefined>(
+		searchParams.has("dueBefore") ? new Date(searchParams.get("dueBefore") || "") : undefined,
+	)
 	const { projects } = useProjects({
 		completed: false,
 	})
 
 	// Add a new state variable for grouping by project after the other state variables
-	const [groupByProject, setGroupByProject] = useState(false)
+	const [groupByProject, setGroupByProject] = useState(searchParams.get("groupByProject") === "true")
+
+	// Function to update URL parameters
+	const updateUrlParams = useCallback(() => {
+		const params = new URLSearchParams()
+
+		if (completed !== undefined) {
+			params.set("completed", completed.toString())
+		}
+
+		if (limit) {
+			params.set("limit", limit.toString())
+		}
+
+		if (orderBy) {
+			params.set("orderBy", orderBy as string)
+		}
+
+		if (orderingDirection) {
+			params.set("orderingDirection", orderingDirection)
+		}
+
+		if (selectedProjects.length > 0) {
+			params.set("projects", selectedProjects.join(","))
+		}
+
+		if (dueBeforeDate) {
+			params.set("dueBefore", dueBeforeDate.toISOString())
+		}
+
+		if (groupByProject) {
+			params.set("groupByProject", "true")
+		}
+
+		// Update the URL without refreshing the page
+		router.push(`?${params.toString()}`, { scroll: false })
+	}, [completed, limit, orderBy, orderingDirection, selectedProjects, dueBeforeDate, groupByProject, router])
+
+	// Update URL when filters change
+	useEffect(() => {
+		updateUrlParams()
+	}, [completed, limit, orderBy, orderingDirection, selectedProjects, dueBeforeDate, groupByProject, updateUrlParams])
 
 	// Use our custom hook to fetch todos
 	const { todos, isLoading } = useTodos({
@@ -195,49 +230,11 @@ export function TodosCard({
 						>
 							<Filter className="h-4 w-4" />
 						</Button>
-						<TodoModal currentLimit={limit} currentDueBefore={dueBeforeDate} currentProjects={selectedProjects}/>
+						<TodoModal currentLimit={limit} currentDueBefore={dueBeforeDate} currentProjects={selectedProjects} />
 					</div>
 				</div>
 				<div className={`${!isFilterOpen && "hidden"} flex flex-col gap-2`}>
 					<div className="flex flex-row justify-between items-center gap-6 flex-wrap">
-						{/* OrderBy filter - commented out as requested
-            <div className="flex flex-row items-center gap-2">
-              <Select
-                onValueChange={(newValue) => {
-                  setOrderBy(newValue != "none" ? (newValue as keyof Todo) : initialOrderBy)
-                }}
-                defaultValue={orderBy}
-                disabled={isPending || isLoading}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Order by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="importance">Importance</SelectItem>
-                  <SelectItem value="duration">Duration</SelectItem>
-                  <SelectItem value="urgency">Urgency</SelectItem>
-                  <SelectItem value="score">Score</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setOrderingDirection(orderingDirection === "asc" ? "desc" : "asc")
-                }}
-                disabled={isPending || isLoading}
-                className={cn("flex items-center gap-1")}
-                tooltip={`Order by ${orderingDirection === "asc" ? "descending" : "ascending"}`}
-              >
-                {orderingDirection === "asc" ? (
-                  <ArrowDown01 className="h-4 w-4" />
-                ) : (
-                  <ArrowDown10 className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-            */}
-
 						{/* Due Before Date Filter */}
 						<Popover>
 							<PopoverTrigger asChild>
@@ -271,8 +268,8 @@ export function TodosCard({
 								disabled={isPending || isLoading}
 								className={cn("flex items-center gap-1")}
 								tooltip={`
-									${completed === true ? "Completed" : completed === false ? "Uncompleted" : "All"} todos
-								`}
+                  ${completed === true ? "Completed" : completed === false ? "Uncompleted" : "All"} todos
+                `}
 							>
 								{completed === true ? (
 									<Square className="rounded-sm bg-card-foreground h-4 w-4" />
@@ -379,7 +376,13 @@ export function TodosCard({
 												durationDetails: Duration
 											},
 										) => (
-											<TodoDisplay key={todo.id} todo={todo} orderedBy={orderBy} className="mt-1" currentLimit={limit} />
+											<TodoDisplay
+												key={todo.id}
+												todo={todo}
+												orderedBy={orderBy}
+												className="mt-1"
+												currentLimit={limit}
+											/>
 										),
 									)}
 								</div>
@@ -387,11 +390,15 @@ export function TodosCard({
 						))
 					) : (
 						// Not grouped
-						todos.slice(0, limit).map(
-							(todo: Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration }) => (
-								<TodoDisplay key={todo.id} todo={todo} orderedBy={orderBy} className="mt-1" currentLimit={limit} />
-							),
-						)
+						todos
+							.slice(0, limit)
+							.map(
+								(
+									todo: Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration },
+								) => (
+									<TodoDisplay key={todo.id} todo={todo} orderedBy={orderBy} className="mt-1" currentLimit={limit} />
+								),
+							)
 					)
 				) : (
 					// Show empty state
