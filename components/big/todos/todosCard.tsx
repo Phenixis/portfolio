@@ -382,6 +382,8 @@ export function TodosCard({
 												orderedBy={orderBy}
 												className="mt-1"
 												currentLimit={limit}
+												currentDueBefore={dueBeforeDate}
+												currentProjects={selectedProjects}
 											/>
 										),
 									)}
@@ -396,7 +398,7 @@ export function TodosCard({
 								(
 									todo: Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration },
 								) => (
-									<TodoDisplay key={todo.id} todo={todo} orderedBy={orderBy} className="mt-1" currentLimit={limit} />
+									<TodoDisplay key={todo.id} todo={todo} orderedBy={orderBy} className="mt-1" currentLimit={limit} currentDueBefore={dueBeforeDate} currentProjects={selectedProjects} />
 								),
 							)
 					)

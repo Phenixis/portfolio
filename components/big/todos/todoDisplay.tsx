@@ -16,11 +16,15 @@ export default function TodoDisplay({
 	orderedBy,
 	className,
 	currentLimit,
+	currentDueBefore,
+	currentProjects,
 }: {
 	todo?: Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration }
 	orderedBy?: keyof Todo
 	className?: string
 	currentLimit?: number
+	currentDueBefore?: Date
+	currentProjects?: string[]
 }) {
 	const [isToggled, setIsToggled] = useState(todo ? todo.completed_at !== null : false)
 	const [isDeleting, setIsDeleting] = useState(false)
@@ -238,7 +242,7 @@ export default function TodoDisplay({
 							)}
 						</div>
 						<div className="flex flex-col justify-between">
-							<TodoModal className="duration-300" todo={todo} />
+							<TodoModal className="duration-300" todo={todo} currentDueBefore={currentDueBefore} currentLimit={currentLimit} currentProjects={currentProjects} />
 
 							<TrashIcon
 								className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-destructive cursor-pointer lg:hover:text-destructive/80 duration-300"
