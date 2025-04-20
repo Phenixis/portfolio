@@ -12,7 +12,6 @@ import { useRef, useState, useEffect } from "react"
 import { useSWRConfig } from "swr"
 import { Calendar } from "@/components/ui/calendar"
 import { calculateUrgency } from "@/lib/utils"
-import { fr } from "date-fns/locale"
 import { format } from "date-fns"
 import { useDebouncedCallback } from "use-debounce"
 import { useSearchProject } from "@/hooks/useSearchProject"
@@ -156,7 +155,7 @@ export default function TodoModal({
 					} else {
 						updatedData = [todoData, ...currentData]
 					}
-					
+
 					const filteredData = updatedData.filter((item) => {
 						if (currentDueBefore && item.due > currentDueBefore) return false
 						if (currentProjects && currentProjects.length > 0) {
@@ -403,7 +402,6 @@ export default function TodoModal({
 												today.setHours(0, 0, 0, 0)
 												return date < today
 											}}
-											locale={fr}
 										/>
 									</div>
 								)}
