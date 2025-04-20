@@ -139,6 +139,8 @@ export default function TodoModal({
 				},
 			} as Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration }
 
+			console.log("Due date:", dueDate)
+
 			setOpen(false)
 
 			mutate(
@@ -224,7 +226,7 @@ export default function TodoModal({
 			setDueDate(date)
 			setShowCalendar(false)
 			setFormChanged(
-				(date.getDate() !== todo?.due.getDate() && mode === "edit") || date.getDate() !== new Date().getDate() 
+				(mode === "edit" && todo && date.getDate() !== new Date(todo.due).getDate()) || date.getDate() !== new Date().getDate() 
 			)
 		}
 	}
@@ -344,7 +346,6 @@ export default function TodoModal({
 										variant="outline"
 										onClick={() => {
 											const newDate = new Date(dueDate.getTime() - 24 * 60 * 60 * 1000)
-											newDate.setHours(0, 0, 0, 0)
 											const today = new Date()
 											today.setHours(0, 0, 0, 0)
 											if (newDate >= today) {
