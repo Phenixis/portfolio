@@ -184,7 +184,7 @@ export function TodosCard({
 	const groupedTodos = useMemo(() => {
 		if (!todos) return {}
 
-		return todos.reduce(
+		return todos.slice(0, limit).reduce(
 			(acc, todo) => {
 				const projectId = todo.project_title || "no-project"
 				const projectName = projects?.find((p) => p.title === todo.project_title)?.title || "No Project"
@@ -369,7 +369,7 @@ export function TodosCard({
 							<div key={projectId} className="mb-4">
 								<h3 className="font-medium text-sm p-2 rounded-md">{name}</h3>
 								<div className="pl-2">
-									{todos.slice(0, limit).map(
+									{todos.map(
 										(
 											todo: Todo & {
 												project: Project | null
