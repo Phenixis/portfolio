@@ -139,8 +139,6 @@ export default function TodoModal({
 				},
 			} as Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration }
 
-			console.log("Due date:", dueDate)
-
 			setOpen(false)
 
 			mutate(

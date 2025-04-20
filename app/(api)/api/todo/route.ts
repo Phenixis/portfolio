@@ -65,7 +65,6 @@ export async function POST(request: NextRequest) {
     }
 
     const dueDateAtMidnight = new Date(dueDate)
-    dueDateAtMidnight.setHours(0, 0, 0, 0)
 
     const todoId = await createTodo(title, Number(importance), dueDateAtMidnight, Number(duration), projectTitle != "" ? projectTitle : undefined)
 
