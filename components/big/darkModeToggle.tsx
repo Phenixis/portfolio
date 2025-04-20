@@ -28,9 +28,6 @@ export default function DarkModeToggle({
             const savedPreference = localStorage.getItem('darkMode');
             const dialogAnswer = localStorage.getItem('dialogAnswer');
 
-            console.log('Saved Preference:', savedPreference);
-            console.log('Dialog Answer:', dialogAnswer);
-
             if (savedPreference === 'false') {
                 const currentHour = new Date().getHours();
                 if (currentHour >= 19 && dialogAnswer === null) {
