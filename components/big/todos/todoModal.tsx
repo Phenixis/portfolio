@@ -34,10 +34,14 @@ export default function TodoModal({
 	className,
 	todo,
 	currentLimit,
+	currentDueBefore,
+	currentProjects,
 }: {
 	className?: string
 	todo?: Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration },
 	currentLimit?: number
+	currentDueBefore?: Date
+	currentProjects?: string[]
 }) {
 	const mode = todo ? "edit" : "create"
 	const [open, setOpen] = useState(false)
@@ -48,8 +52,8 @@ export default function TodoModal({
 	})
 	const [showCalendar, setShowCalendar] = useState(false)
 	const calendarRef = useRef<HTMLDivElement>(null)
-	const [project, setProject] = useState<string>(todo?.project_title || "")
-	const [inputValue, setInputValue] = useState<string>(todo?.project_title || "")
+	const [project, setProject] = useState<string>(todo?.project_title || (currentProjects && currentProjects.length === 1 ? currentProjects[0] : ""))
+	const [inputValue, setInputValue] = useState<string>(todo?.project_title || (currentProjects && currentProjects.length === 1 ? currentProjects[0] : ""))
 	const { projects, isLoading, isError } = useSearchProject({ query: project, limit: 5 })
 	const { importanceData, durationData } = useImportanceAndDuration()
 	const { mutate } = useSWRConfig()
@@ -152,8 +156,15 @@ export default function TodoModal({
 					} else {
 						updatedData = [todoData, ...currentData]
 					}
-
-					const sortedData = updatedData.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
+					
+					const filteredData = updatedData.filter((item) => {
+						if (currentDueBefore && item.due > currentDueBefore) return false
+						if (currentProjects && currentProjects.length > 0) {
+							return currentProjects.some((project) => item.project_title === project)
+						}
+						return true
+					})
+					const sortedData = filteredData.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
 					return currentLimit ? sortedData.slice(0, currentLimit) : sortedData
 				},
 				{ revalidate: false },

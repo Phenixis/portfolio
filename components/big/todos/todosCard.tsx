@@ -8,7 +8,7 @@ import Link from "next/link"
 import type { Todo, Project, Importance, Duration } from "@/lib/db/schema"
 import { useState, useCallback, useTransition, useMemo } from "react"
 import { Button } from "@/components/ui/button"
-import { Filter, SquareCheck, Square, SquareMinus, FolderTree, Calendar } from "lucide-react"
+import { Filter, Square, SquareMinus, FolderTree, Calendar } from "lucide-react"
 import TodoDisplay from "./todoDisplay"
 import { useTodos } from "@/hooks/useTodos"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -195,7 +195,7 @@ export function TodosCard({
 						>
 							<Filter className="h-4 w-4" />
 						</Button>
-						<TodoModal currentLimit={limit}/>
+						<TodoModal currentLimit={limit} currentDueBefore={dueBeforeDate} currentProjects={selectedProjects}/>
 					</div>
 				</div>
 				<div className={`${!isFilterOpen && "hidden"} flex flex-col gap-2`}>
@@ -275,7 +275,7 @@ export function TodosCard({
 								`}
 							>
 								{completed === true ? (
-									<SquareCheck className="h-4 w-4" />
+									<Square className="rounded-sm bg-card-foreground h-4 w-4" />
 								) : completed === false ? (
 									<Square className="h-4 w-4" />
 								) : (
