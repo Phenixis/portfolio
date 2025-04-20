@@ -23,6 +23,7 @@ function generateTitle(
 	orderBy?: keyof Todo,
 	orderingDirection?: "asc" | "desc",
 	limit?: number,
+	groupedByProject?: boolean,
 	projectTitles?: string[],
 	dueBeforeDate?: Date,
 ) {
@@ -36,7 +37,7 @@ function generateTitle(
 
 	title += "Todos"
 
-	if (projectTitles && projectTitles.length > 0) {
+	if (groupedByProject && projectTitles && projectTitles.length > 0) {
 		title += ` in ${projectTitles.join(", ")}`
 	}
 
@@ -216,7 +217,7 @@ export function TodosCard({
 				<div className="flex flex-row items-center justify-between w-full gap-2">
 					<Link href={`/my/todos`}>
 						<CardTitle>
-							{generateTitle(completed, orderBy, orderingDirection, limit, selectedProjects, dueBeforeDate)}
+							{generateTitle(completed, orderBy, orderingDirection, limit, groupByProject, selectedProjects, dueBeforeDate)}
 						</CardTitle>
 					</Link>
 					<div className="flex gap-2 xl:opacity-0 duration-300 xl:group-hover/TodoCard:opacity-100">
