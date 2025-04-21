@@ -211,9 +211,6 @@ export async function getTasks(
 			dueBefore ? lte(Schema.task.due, dueBefore) : sql`1 = 1`,
 			completed !== undefined ? (completed ? isNotNull(Schema.task.completed_at) : isNull(Schema.task.completed_at)) : sql`1 = 1`
 		))
-		.orderBy(
-			orderingDirection === "asc" ? asc(Schema.task[orderBy]) : desc(Schema.task[orderBy])
-		)
 		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit)
 
 	const groupedTasks: Record<string, Schema.TaskWithRelations> = {};
@@ -254,7 +251,13 @@ export async function getTasks(
 		}
 	}
 
-	const result = Object.values(groupedTasks);
+	const result = Object.values(groupedTasks).sort((a, b) => {
+		if ((a[orderBy] ?? 0) < (b[orderBy] ?? 0)) return orderingDirection === "asc" ? -1 : 1;
+		if ((a[orderBy] ?? 0) > (b[orderBy] ?? 0)) return orderingDirection === "asc" ? 1 : -1;
+		if (a.title < b.title) return -1;
+		if (a.title > b.title) return 1;
+		return 0;
+	});
 
 	return result as Schema.TaskWithRelations[]
 }
