@@ -103,13 +103,7 @@ export async function getTaskById(id: number, recursive: boolean = false) {
 		.leftJoin(taskToDoBeforeAlias, eq(Schema.task.id, taskToDoBeforeAlias.after_task_id)) // tasks to do before this task
 		.where(and(
 			eq(Schema.task.id, id),
-			isNull(taskToDoAfterAlias.deleted_at),
-			isNull(taskToDoBeforeAlias.deleted_at),
 		))
-
-	if (!dbresult) {
-		throw new Error("Task not found")
-	}
 	
 	if (recursive) {
 		const result : any = {
@@ -126,7 +120,7 @@ export async function getTaskById(id: number, recursive: boolean = false) {
 
 			if (row.tasksToDoAfter?.after_task_id) {
 				const afterTaskId = row.tasksToDoAfter.after_task_id;
-				if (dbresult[taskId].tasksToDoAfter && !(dbresult[taskId].tasksToDoAfter.id === afterTaskId)) {
+				if (dbresult[taskId].tasksToDoAfter && dbresult[taskId].tasksToDoAfter.deleted_at === null && !(dbresult[taskId].tasksToDoAfter.id === afterTaskId)) {
 					const fullTask = await getTaskById(afterTaskId);
 					if (fullTask) result.tasksToDoAfter.push(fullTask);
 				}
@@ -134,7 +128,7 @@ export async function getTaskById(id: number, recursive: boolean = false) {
 
 			if (row.tasksToDoBefore?.task_id) {
 				const beforeTaskId = row.tasksToDoBefore.task_id;
-				if (dbresult[taskId].tasksToDoBefore && !(dbresult[taskId].tasksToDoBefore.id === beforeTaskId)) {
+				if (dbresult[taskId].tasksToDoBefore && dbresult[taskId].tasksToDoBefore.deleted_at === null && !(dbresult[taskId].tasksToDoBefore.id === beforeTaskId)) {
 					const fullTask = await getTaskById(beforeTaskId);
 					if (fullTask) result.tasksToDoBefore.push(fullTask);
 				}
