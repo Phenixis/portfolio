@@ -99,6 +99,7 @@ export async function PUT(request: NextRequest) {
 
 		// Validation
 		if (!id || !title || importance === undefined || dueDate === undefined || duration === undefined) {
+			console.log("Missing required fields:", { id, title, importance, dueDate, duration })
 			return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
 		}
 
@@ -110,23 +111,24 @@ export async function PUT(request: NextRequest) {
 		// Validate toDoAfterId if provided
 		if (toDoAfterId !== undefined) {
 			// Check if the referenced task exists
-			if (toDoAfterId !== "-1") {
+			if (toDoAfterId !== -1) {
 				const toDoAfter = toDoAfterId && await getTaskById(Number(toDoAfterId))
 				if (!toDoAfter) {
+					console.log("Invalid toDoAfterId:", toDoAfterId)
 					return NextResponse.json({ error: "Invalid toDoAfterId" }, { status: 400 })
 				}
-			}
-
-			// Get existing toDoAfter relations for this task
-			const existingRelations = await getTasksToDoAfter(Number(id))
-
-			const filteredRelations = existingRelations.filter(
-				(relation) => relation.deleted_at === null
-			)
-
-			// Create new relation if there isn't already one, toDoAfterId is provided and not -1
-			if (filteredRelations.length === 0 && toDoAfterId && toDoAfterId !== "-1") {
-				await createTaskToDoAfter(Number(id), Number(toDoAfterId))
+				
+				// Get existing toDoAfter relations for this task
+				const existingRelations = await getTasksToDoAfter(Number(id))
+				
+				const filteredRelations = existingRelations.filter(
+					(relation) => relation.deleted_at === null
+				)
+				
+				// Create new relation if there isn't already one, toDoAfterId is provided and not -1
+				if (filteredRelations.length === 0 && toDoAfterId && toDoAfterId !== "-1") {
+					await createTaskToDoAfter(Number(id), Number(toDoAfterId))
+				}
 			}
 		}
 
