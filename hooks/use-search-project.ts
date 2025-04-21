@@ -1,7 +1,7 @@
 "use client"
 
 import type { Project } from "@/lib/db/schema"
-import { useFilteredData } from "./useFilteredData"
+import { useFilteredData } from "./use-filtered-data"
 
 export function useSearchProject({
   query,

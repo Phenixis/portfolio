@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import DarkModeToggle from './darkModeToggle'
+import DarkModeToggle from './dark-mode-toggle'
 import Logo from './logo'
 
 const navItems = {

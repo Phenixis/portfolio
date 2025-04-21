@@ -1,6 +1,6 @@
 "use client"
 
-import DarkModeToggle from "@/components/big/darkModeToggle"
+import DarkModeToggle from "@/components/big/dark-mode-toggle"
 import Meteo from "@/components/big/meteo"
 import { Button } from "@/components/ui/button"
 import { logout } from "@/lib/auth/actions"

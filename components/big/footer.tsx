@@ -1,4 +1,4 @@
-import LifeElapsed from '@/components/big/lifeElapsed'
+import LifeElapsed from '@/components/big/life-elapsed'
 
 function ArrowIcon() {
     return (

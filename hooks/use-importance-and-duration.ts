@@ -1,6 +1,6 @@
 "use client"
 
-import { useFilteredData } from "./useFilteredData"
+import { useFilteredData } from "./use-filtered-data"
 import type { Importance, Duration } from "@/lib/db/schema"
 
 export function useImportanceAndDuration() {
