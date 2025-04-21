@@ -1306,3 +1306,135 @@ export async function deleteSerieById(id: number) {
 
 	return null
 }
+
+// # TodoAfter
+
+// ## Create
+export async function createTodoAfter(
+	todoIdOrTodoAfter: number | Schema.NewTodoAfter,
+	after_todo_id?: number
+) {
+	let newTodoAfter: Schema.NewTodoAfter
+
+	if (typeof todoIdOrTodoAfter === "number") {
+		newTodoAfter = {
+			todo_id: todoIdOrTodoAfter,
+			after_id: after_todo_id!,
+		}
+	} else {
+		newTodoAfter = todoIdOrTodoAfter
+	}
+
+	const result = await db
+		.insert(Schema.todoAfter)
+		.values(newTodoAfter)
+		.returning({ id: Schema.todoAfter.id })
+
+	return result[0].id
+}
+
+// ## Read
+export async function getTodoAfterById(id: number) {
+	return (await db
+		.select()
+		.from(Schema.todoAfter)
+		.where(eq(Schema.todoAfter.id, id))) as Schema.TodoAfter[]
+}
+
+export async function getTodoAfterByTodoId(todo_id: number) {
+	return (await db
+		.select()
+		.from(Schema.todoAfter)
+		.where(eq(Schema.todoAfter.todo_id, todo_id))) as Schema.TodoAfter[]
+}
+
+export async function getTasksToDoAfter(todo_id: number) {
+	return getTodoAfterByTodoId(todo_id);
+}
+
+export async function getTodoAfterByAfterId(after_id: number) {
+	return (await db
+		.select()
+		.from(Schema.todoAfter)
+		.where(eq(Schema.todoAfter.after_id, after_id))) as Schema.TodoAfter[]
+}
+
+export async function getTasksToDoBefore(after_id: number) {
+	return getTodoAfterByAfterId(after_id);
+}
+
+// ## Update
+
+export async function updateTodoAfter(
+	idOrTodoAfter: number | Schema.NewTodoAfter,
+	todo_id?: number,
+	after_id?: number
+) {
+	let updatedTodoAfter: Partial<Schema.NewTodoAfter>
+
+	if (typeof idOrTodoAfter === "number") {
+		updatedTodoAfter = {
+			todo_id: todo_id,
+			after_id: after_id,
+			updated_at: new Date(),
+		}
+	} else {
+		updatedTodoAfter = {
+			...idOrTodoAfter,
+			updated_at: new Date(),
+		}
+	}
+
+	const result = await db
+		.update(Schema.todoAfter)
+		.set(updatedTodoAfter)
+		.where(eq(Schema.todoAfter.id, typeof idOrTodoAfter === "number" ? idOrTodoAfter : idOrTodoAfter.id!))
+		.returning({ id: Schema.todoAfter.id })
+
+	return result[0].id
+}
+
+// ## Delete
+
+export async function deleteTodoAfterById(id: number) {
+	const result = await db
+		.update(Schema.todoAfter)
+		.set({ deleted_at: sql`CURRENT_TIMESTAMP` })
+		.where(eq(Schema.todoAfter.id, id))
+		.returning({ id: Schema.todoAfter.id })
+
+	if (result) {
+		return result[0].id
+	}
+
+	return null
+}
+
+export async function deleteTodoAfterByTodoId(todo_id: number) {
+	const result = await db
+		.update(Schema.todoAfter)
+		.set({ deleted_at: sql`CURRENT_TIMESTAMP` })
+		.where(eq(Schema.todoAfter.todo_id, todo_id))
+		.returning({ id: Schema.todoAfter.id })
+
+	if (result) {
+		return result[0].id
+	}
+
+	return null
+}
+
+export async function deleteTodoAfterByAfterId(after_id: number) {
+	const result = await db
+		.update(Schema.todoAfter)
+		.set({ deleted_at: sql`CURRENT_TIMESTAMP` })
+		.where(eq(Schema.todoAfter.after_id, after_id))
+		.returning({ id: Schema.todoAfter.id })
+
+	if (result) {
+		return result[0].id
+	}
+
+	return null
+}
+
