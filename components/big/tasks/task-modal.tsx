@@ -163,26 +163,29 @@ export default function TaskModal({
 			setOpen(false)
 
 			mutate(
-				(key) => typeof key === "string" && key.startsWith("/api/task"),
-				async (currentData) => {
+				(key: unknown) => typeof key === "string" && key.startsWith("/api/task"),
+				async (currentData: unknown): Promise<TaskWithRelations[] | unknown> => {
 					if (!Array.isArray(currentData)) return currentData
 
-					let updatedData
+					let updatedData: TaskWithRelations[]
 					if (mode === "edit") {
-						updatedData = currentData.map((item) => (item.id === id ? todoData : item))
+						updatedData = currentData.map((item: TaskWithRelations) => (item.id === id ? todoData : item))
 					} else {
 						updatedData = [todoData, ...currentData]
 					}
 
-					const filteredData = updatedData.filter((item) => {
+					const filteredData: TaskWithRelations[] = updatedData.filter((item: TaskWithRelations) => {
 						if (currentDueBefore && item.due > currentDueBefore) return false
 						if (currentProjects && currentProjects.length > 0) {
-							return currentProjects.some((project) => item.project_title === project)
+							return currentProjects.some((project: string) => item.project_title === project)
 						}
 						return true
 					})
 
-					const sortedData = filteredData.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
+					const sortedData: TaskWithRelations[] = filteredData.sort(
+						(a: TaskWithRelations, b: TaskWithRelations) =>
+							b.score - a.score || a.title.localeCompare(b.title)
+					)
 					return currentLimit ? sortedData.slice(0, currentLimit) : sortedData
 				},
 				{ revalidate: false },
