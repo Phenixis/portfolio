@@ -1,6 +1,6 @@
 import Image from 'next/image'
-import * as ListIconLight from 'public/listIconLight.png';
-import * as ListIconDark from 'public/listIconDark.png';
+import * as ListIconLight from 'public/list-icon-light.png';
+import * as ListIconDark from 'public/list-icon-dark.png';
 import Link from 'next/link'
 
 export default function Logo({ className, size=16 } : { className?: string, size?: number }) {
