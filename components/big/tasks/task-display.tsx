@@ -11,6 +11,15 @@ import { ChevronsDownUp, ChevronsUpDown, TrashIcon } from "lucide-react"
 import { useSWRConfig } from "swr"
 import { cn } from "@/lib/utils"
 import Tooltip from "@/components/big/tooltip"
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 
 export default function TaskDisplay({
 	task,
@@ -39,117 +48,34 @@ export default function TaskDisplay({
 	const skeleton = task !== undefined && orderedBy !== undefined
 	const daysBeforeDue = task ? Math.ceil((new Date(task.due).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 4
 
-	// Fonction améliorée pour supprimer une task avec SWR
-	async function deleteTask(e: React.MouseEvent) {
-		e.stopPropagation() // Empêche le clic de se propager
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+	const [isDependencyDialogOpen, setIsDependencyDialogOpen] = useState(false)
+	const [dependencyToDelete, setDependencyToDelete] = useState<number | null>(null)
 
-		if (!task) return
+	// Add a new state variable for the toggle confirmation dialog
+	const [isToggleDialogOpen, setIsToggleDialogOpen] = useState(false)
 
-		try {
-			setIsDeleting(true)
-
-			// Optimistic UI update - remove the task from all lists
-			mutate(
-				(key: unknown) => typeof key === "string" && key.startsWith("/api/task"),
-				async (currentData: unknown): Promise<unknown> => {
-					// Filter out the task being deleted from all cached lists
-					if (Array.isArray(currentData)) {
-						return currentData
-							.filter((item: TaskWithRelations | TaskWithNonRecursiveRelations) => item.id !== task.id)
-							.sort((a: TaskWithRelations | TaskWithNonRecursiveRelations, b: TaskWithRelations | TaskWithNonRecursiveRelations) =>
-								b.score - a.score || a.title.localeCompare(b.title)
-							)
-							.slice(0, currentLimit || Number.MAX_SAFE_INTEGER)
-					}
-					return currentData
-				},
-				{ revalidate: false }, // Don't revalidate immediately
-			)
-
-			// Actual deletion
-			await fetch(`/api/task?id=${task.id}`, {
-				method: "DELETE",
-			})
-
-			// Revalidate after successful deletion
-			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
-		} catch (error) {
-			console.error("Error deleting task:", error)
-
-			// Revalidate to restore the correct state
-			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
-		} finally {
-			setIsDeleting(false)
-		}
-	}
-
-	async function deleteDependency(id: number) {
-		if (!task) return
-
-		try {
-			// Optimistic UI update - update the task's dependencies in all lists
-			mutate(
-				(key: unknown) => typeof key === "string" && key.startsWith("/api/task"),
-				async (currentData: unknown): Promise<unknown> => {
-					// Find the task and update its dependencies
-					if (Array.isArray(currentData)) {
-						const filteredData = currentData.map((item: TaskWithRelations | TaskWithNonRecursiveRelations) => {
-							if (item.id === task.id || item.id === id) {
-								if (item.recursive) {
-									return {
-										...item,
-										tasksToDoBefore: item.tasksToDoBefore?.filter(
-											(task) => task.id !== id && task.id !== task.id
-										),
-										tasksToDoAfter: item.tasksToDoAfter?.filter(
-											(task) => task.id !== id && task.id !== task.id
-										),
-									}
-								} else {
-									return {
-										...item,
-										tasksToDoBefore: item.tasksToDoBefore?.filter(
-											(dep) =>
-												(dep.task_id !== task.id && dep.after_task_id !== id) &&
-												(dep.task_id !== id && dep.after_task_id !== task.id)
-										),
-										tasksToDoAfter: item.tasksToDoAfter?.filter(
-											(dep) =>
-												(dep.task_id !== task.id && dep.after_task_id !== id) &&
-												(dep.task_id !== id && dep.after_task_id !== task.id),
-										),
-									}
-								}
-							}
-							return item
-						})
-						return filteredData
-					}
-					return currentData
-				},
-				{ revalidate: false }, // Don't revalidate immediately
-			)
-
-			// Actual deletion
-			await fetch(`/api/task/dependency?id1=${task.id}&id2=${id}`, {
-				method: "DELETE",
-			})
-
-			// Revalidate after successful deletion
-			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
-		} catch (error) {
-			console.error("Error deleting dependency:", error)
-
-			// Revalidate to restore the correct state
-			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
-		} finally {
-			setIsDeleting(false)
-		}
-	}
-
-	// Fonction améliorée pour basculer l'état d'une task avec SWR
+	// Modify the toggle function to check for prerequisite tasks
 	async function toggle() {
 		if (!task) return
+
+		// Check if the task has prerequisites and is being marked as complete
+		if (!isToggled && task.tasksToDoAfter && task.tasksToDoAfter.length > 0) {
+			// Show confirmation dialog
+			setIsToggleDialogOpen(true)
+			return
+		}
+
+		// Proceed with toggling
+		performToggle()
+	}
+
+	// Extract the actual toggle logic to a separate function
+	async function performToggle() {
+		if (!task) return
+
+		// Close the dialog if it was open
+		setIsToggleDialogOpen(false)
 
 		// Immediately update local state
 		setIsToggled(!isToggled)
@@ -200,6 +126,146 @@ export default function TaskDisplay({
 
 			// Revalidate to restore the correct state
 			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
+		}
+	}
+
+	// Fonction améliorée pour supprimer une task avec SWR
+	async function deleteTask(e?: React.MouseEvent) {
+		if (e) e.stopPropagation() // Empêche le clic de se propager
+
+		if (!task) return
+
+		// If called without confirmation, show the dialog
+		if (!isDeleteDialogOpen) {
+			setIsDeleteDialogOpen(true)
+			return
+		}
+
+		// Close the dialog
+		setIsDeleteDialogOpen(false)
+
+		try {
+			setIsDeleting(true)
+
+			// Optimistic UI update - remove the task from all lists
+			mutate(
+				(key: unknown) => typeof key === "string" && key.startsWith("/api/task"),
+				async (currentData: unknown): Promise<unknown> => {
+					// Filter out the task being deleted from all cached lists
+					if (Array.isArray(currentData)) {
+						return currentData
+							.filter((item: TaskWithRelations | TaskWithNonRecursiveRelations) => item.id !== task.id)
+							.sort(
+								(
+									a: TaskWithRelations | TaskWithNonRecursiveRelations,
+									b: TaskWithRelations | TaskWithNonRecursiveRelations,
+								) => b.score - a.score || a.title.localeCompare(b.title),
+							)
+							.slice(0, currentLimit || Number.MAX_SAFE_INTEGER)
+					}
+					return currentData
+				},
+				{ revalidate: false }, // Don't revalidate immediately
+			)
+
+			// Actual deletion
+			await fetch(`/api/task?id=${task.id}`, {
+				method: "DELETE",
+			})
+
+			// Revalidate after successful deletion
+			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
+		} catch (error) {
+			console.error("Error deleting task:", error)
+
+			// Revalidate to restore the correct state
+			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
+		} finally {
+			setIsDeleting(false)
+		}
+	}
+
+	async function deleteDependency(id: number) {
+		if (!task) return
+
+		// If called without confirmation, show the dialog
+		if (!isDependencyDialogOpen) {
+			setDependencyToDelete(id)
+			setIsDependencyDialogOpen(true)
+			return
+		}
+
+		// Close the dialog
+		setIsDependencyDialogOpen(false)
+
+		// Reset the dependency to delete
+		const idToDelete = dependencyToDelete
+		setDependencyToDelete(null)
+
+		if (idToDelete === null) return
+
+		try {
+			// Optimistic UI update - update the task's dependencies in all lists
+			mutate(
+				(key: unknown) => typeof key === "string" && key.startsWith("/api/task"),
+				async (currentData: unknown): Promise<unknown> => {
+					// Find the task and update its dependencies
+					if (Array.isArray(currentData)) {
+						const filteredData = currentData.map((item: TaskWithRelations | TaskWithNonRecursiveRelations) => {
+							if (item.id === task.id || item.id === idToDelete) {
+								if (item.recursive) {
+									return {
+										...item,
+										tasksToDoBefore: item.tasksToDoBefore?.filter(
+											(task) => task.id !== idToDelete && task.id !== task.id,
+										),
+										tasksToDoAfter: item.tasksToDoAfter?.filter(
+											(task) => task.id !== idToDelete && task.id !== task.id,
+										),
+									}
+								} else {
+									return {
+										...item,
+										tasksToDoBefore: item.tasksToDoBefore?.filter(
+											(dep) =>
+												dep.task_id !== task.id &&
+												dep.after_task_id !== idToDelete &&
+												dep.task_id !== idToDelete &&
+												dep.after_task_id !== task.id,
+										),
+										tasksToDoAfter: item.tasksToDoAfter?.filter(
+											(dep) =>
+												dep.task_id !== task.id &&
+												dep.after_task_id !== idToDelete &&
+												dep.task_id !== idToDelete &&
+												dep.after_task_id !== task.id,
+										),
+									}
+								}
+							}
+							return item
+						})
+						return filteredData
+					}
+					return currentData
+				},
+				{ revalidate: false }, // Don't revalidate immediately
+			)
+
+			// Actual deletion
+			await fetch(`/api/task/dependency?id1=${task.id}&id2=${idToDelete}`, {
+				method: "DELETE",
+			})
+
+			// Revalidate after successful deletion
+			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
+		} catch (error) {
+			console.error("Error deleting dependency:", error)
+
+			// Revalidate to restore the correct state
+			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
+		} finally {
+			setIsDeleting(false)
 		}
 	}
 
@@ -293,85 +359,112 @@ export default function TaskDisplay({
 							)}
 						</div>
 					</div>
-					{
-						task.recursive && (
-							<div className={`flex flex-col space-y-1 ${!isCollapsibleOpen && "hidden"}`}>
-								{
-									task.tasksToDoBefore && task.tasksToDoBefore.length > 0 && (
-										<div className="flex flex-col space-y-1">
-											<p className="text-sm text-muted-foreground">Task{task.tasksToDoBefore.length > 1 && 's'} that ha{task.tasksToDoBefore.length > 1 ? 've' : 's'} to be done after:</p>
-											{task.tasksToDoBefore.map((beforeTask) => (
-												<TaskDisplay key={beforeTask.id} task={beforeTask} orderedBy={orderedBy} currentLimit={currentLimit} currentDueBefore={currentDueBefore} currentProjects={currentProjects} className="ml-6" otherId={task.id} />
-											))}
-										</div>
-									)
-								}
-								{
-									task.tasksToDoAfter && task.tasksToDoAfter.length > 0 && (
-										<div className="flex flex-col space-y-1">
-											<p className="text-sm text-muted-foreground">Task{task.tasksToDoAfter.length > 1 && 's'} that ha{task.tasksToDoAfter.length > 1 ? 've' : 's'} to be done before:</p>
-											{task.tasksToDoAfter.map((afterTask) => (
-												<TaskDisplay key={afterTask.id} task={afterTask} orderedBy={orderedBy} currentLimit={currentLimit} currentDueBefore={currentDueBefore} currentProjects={currentProjects} className="ml-6" otherId={task.id} />
-											))}
-										</div>
-									)
-								}
-								<div className={`flex space-x-4 justify-between`}>
-									<div className="space-y-1">
-										{task.project_title && (
+					{task.recursive && (
+						<div className={`flex flex-col space-y-1 ${!isCollapsibleOpen && "hidden"}`}>
+							{task.tasksToDoBefore && task.tasksToDoBefore.length > 0 && (
+								<div className="flex flex-col space-y-1">
+									<p className="text-sm text-muted-foreground">
+										Task{task.tasksToDoBefore.length > 1 && "s"} that ha{task.tasksToDoBefore.length > 1 ? "ve" : "s"}{" "}
+										to be done after:
+									</p>
+									{task.tasksToDoBefore.map((beforeTask) => (
+										<TaskDisplay
+											key={beforeTask.id}
+											task={beforeTask}
+											orderedBy={orderedBy}
+											currentLimit={currentLimit}
+											currentDueBefore={currentDueBefore}
+											currentProjects={currentProjects}
+											className="ml-6"
+											otherId={task.id}
+										/>
+									))}
+								</div>
+							)}
+							{task.tasksToDoAfter && task.tasksToDoAfter.length > 0 && (
+								<div className="flex flex-col space-y-1">
+									<p className="text-sm text-muted-foreground">
+										Task{task.tasksToDoAfter.length > 1 && "s"} that ha{task.tasksToDoAfter.length > 1 ? "ve" : "s"} to
+										be done before:
+									</p>
+									{task.tasksToDoAfter.map((afterTask) => (
+										<TaskDisplay
+											key={afterTask.id}
+											task={afterTask}
+											orderedBy={orderedBy}
+											currentLimit={currentLimit}
+											currentDueBefore={currentDueBefore}
+											currentProjects={currentProjects}
+											className="ml-6"
+											otherId={task.id}
+										/>
+									))}
+								</div>
+							)}
+							<div className={`flex space-x-4 justify-between`}>
+								<div className="space-y-1">
+									{task.project_title && (
+										<p className="text-sm text-muted-foreground">
+											Project: <span className="text-black dark:text-white">{task.project_title}</span>
+										</p>
+									)}
+									{task.importance && (
+										<p className="text-sm text-muted-foreground">
+											Importance: <span className="text-black dark:text-white">{task.importanceDetails.name}</span>
+										</p>
+									)}
+									{task.due && (
+										<Tooltip tooltip={`${new Date(task.due).toLocaleDateString()}`} cursorPointer={false}>
 											<p className="text-sm text-muted-foreground">
-												Project: <span className="text-black dark:text-white">{task.project_title}</span>
+												Due:{" "}
+												<span className="text-black dark:text-white">
+													{(() => {
+														const daysDifference = Math.ceil(
+															(new Date(task.due).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+														)
+														const formatter = new Intl.RelativeTimeFormat(navigator.language || "fr-FR", {
+															numeric: "auto",
+														})
+														return formatter.format(daysDifference, "day")
+													})()}
+												</span>
 											</p>
-										)}
-										{task.importance && (
-											<p className="text-sm text-muted-foreground">
-												Importance: <span className="text-black dark:text-white">{task.importanceDetails.name}</span>
-											</p>
-										)}
-										{task.due && (
-											<Tooltip tooltip={`${new Date(task.due).toLocaleDateString()}`} cursorPointer={false}>
-												<p className="text-sm text-muted-foreground">
-													Due:{" "}
-													<span className="text-black dark:text-white">
-														{(() => {
-															const daysDifference = Math.ceil(
-																(new Date(task.due).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-															)
-															const formatter = new Intl.RelativeTimeFormat(navigator.language || "fr-FR", { numeric: "auto" })
-															return formatter.format(daysDifference, "day")
-														})()}
-													</span>
-												</p>
-											</Tooltip>
-										)}
-										{task.duration !== undefined && (
-											<p className="text-sm text-muted-foreground">
-												Duration: <span className="text-black dark:text-white">{task.durationDetails.name}</span>
-											</p>
-										)}
-									</div>
-									<div
-										className={cn(
-											"overflow-hidden transition-all duration-300 ease-in-out flex flex-col items-center justify-between",
-											isHovering
-												? "w-fit xl:w-full xl:max-w-[16px] xl:opacity-100 ml-1"
-												: "w-fit xl:w-0 xl:max-w-0 xl:opacity-0",
-										)}
-									>
-										<Tooltip tooltip="Edit task">
-											<TaskModal className="duration-300" task={task} currentDueBefore={currentDueBefore} currentLimit={currentLimit} currentProjects={currentProjects} />
 										</Tooltip>
+									)}
+									{task.duration !== undefined && (
+										<p className="text-sm text-muted-foreground">
+											Duration: <span className="text-black dark:text-white">{task.durationDetails.name}</span>
+										</p>
+									)}
+								</div>
+								<div
+									className={cn(
+										"overflow-hidden transition-all duration-300 ease-in-out flex flex-col items-center justify-between",
+										isHovering
+											? "w-fit xl:w-full xl:max-w-[16px] xl:opacity-100 ml-1"
+											: "w-fit xl:w-0 xl:max-w-0 xl:opacity-0",
+									)}
+								>
+									<Tooltip tooltip="Edit task">
+										<TaskModal
+											className="duration-300"
+											task={task}
+											currentDueBefore={currentDueBefore}
+											currentLimit={currentLimit}
+											currentProjects={currentProjects}
+										/>
+									</Tooltip>
 
-										<Tooltip tooltip="Delete task">
-											<TrashIcon
-												className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-destructive cursor-pointer lg:hover:text-destructive/80 duration-300"
-												onClick={deleteTask}
-											/>
-										</Tooltip>
-									</div>
+									<Tooltip tooltip="Delete task">
+										<TrashIcon
+											className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-destructive cursor-pointer lg:hover:text-destructive/80 duration-300"
+											onClick={deleteTask}
+										/>
+									</Tooltip>
 								</div>
 							</div>
-						)}
+						</div>
+					)}
 				</>
 			) : (
 				<div className="flex space-x-2 items-center w-full">
@@ -379,6 +472,69 @@ export default function TaskDisplay({
 					<Skeleton className="w-full h-4" />
 				</div>
 			)}
+			{/* Delete Task Confirmation Dialog */}
+			<Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle>Delete Task</DialogTitle>
+						<DialogDescription>
+							Are you sure you want to delete this task?<br/><br/>You will be able to find it back in your Trash (Settings &gt; Trash &gt; Tasks).
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter className="flex justify-between sm:justify-between">
+						<Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+							Cancel
+						</Button>
+						<Button variant="destructive" onClick={() => deleteTask()}>
+							Delete
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			{/* Delete Dependency Confirmation Dialog */}
+			<Dialog open={isDependencyDialogOpen} onOpenChange={setIsDependencyDialogOpen}>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle>Remove Dependency</DialogTitle>
+						<DialogDescription>
+							Are you sure you want to remove this dependency?<br/><br/>This action cannot be undone.
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter className="flex justify-between sm:justify-between">
+						<Button
+							variant="outline"
+							onClick={() => {
+								setIsDependencyDialogOpen(false)
+								setDependencyToDelete(null)
+							}}
+						>
+							Cancel
+						</Button>
+						<Button variant="destructive" onClick={() => deleteDependency(dependencyToDelete || -1)}>
+							Remove
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+			{/* Add the Toggle Confirmation Dialog */}
+			<Dialog open={isToggleDialogOpen} onOpenChange={setIsToggleDialogOpen}>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle>Mark Task as Complete</DialogTitle>
+						<DialogDescription>
+							This task has tasks that should be done before that haven't been completed yet.<br/><br/>Are you sure you want to mark it as
+							complete?
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter className="flex justify-between sm:justify-between">
+						<Button variant="outline" onClick={() => setIsToggleDialogOpen(false)}>
+							Cancel
+						</Button>
+						<Button onClick={() => performToggle()}>Mark as Complete</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	)
 }

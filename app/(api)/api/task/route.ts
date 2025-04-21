@@ -13,6 +13,7 @@ import {
 	getProject,
 	createTaskToDoAfter,
 	getTasksToDoAfter,
+	getTasksToDoBefore,
 	deleteTaskToDoAfterById,
 	deleteTaskToDoAfterByTodoId,
 	deleteTaskToDoAfterByAfterId,
@@ -157,6 +158,35 @@ export async function PATCH(request: NextRequest) {
 		} else {
 			// Si completed est un booléen indiquant l'état actuel, on utilise toggleTask
 			taskId = await toggleTask(Number(id), completed)
+		}
+
+		const task = await getTaskById(Number(taskId))
+
+		if (task) {
+			// Si le task a une relation toDoAfter, on la supprime
+			const existingToDoAfterRelations = await getTasksToDoAfter(Number(taskId))
+
+			const filteredToDoAfterRelations = existingToDoAfterRelations.filter(
+				(relation) => relation.deleted_at === null
+			)
+
+			if (filteredToDoAfterRelations.length > 0) {
+				filteredToDoAfterRelations.forEach(async (relation) => {
+					deleteTaskToDoAfterById(relation.id)
+				})
+			}
+
+			const existiingToDoBeforeRelations = await getTasksToDoBefore(Number(taskId))
+
+			const filteredToDoBeforeRelations = existiingToDoBeforeRelations.filter(
+				(relation) => relation.deleted_at === null
+			)
+
+			if (filteredToDoBeforeRelations.length > 0) {
+				filteredToDoBeforeRelations.forEach(async (relation) => {
+					deleteTaskToDoAfterById(relation.id)
+				})
+			}
 		}
 
 		return NextResponse.json({ id: taskId })
