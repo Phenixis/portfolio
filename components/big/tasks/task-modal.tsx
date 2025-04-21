@@ -217,7 +217,11 @@ export default function TaskModal({
 					mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
 				})
 
-			setDueDate(new Date())
+			setDueDate(() => {
+				const initialDate = task ? new Date(task.due) : new Date()
+				initialDate.setHours(0, 0, 0, 0)
+				return initialDate
+			})
 			setProjectInputValue("")
 			setProject("")
 			setFormChanged(false)
@@ -251,6 +255,7 @@ export default function TaskModal({
 
 	const handleDateChange = (date: Date | undefined) => {
 		if (date) {
+			date.setHours(0, 0, 0, 0)
 			setDueDate(date)
 			setShowCalendar(false)
 			setFormChanged(
