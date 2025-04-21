@@ -9,6 +9,12 @@ import {
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const query = searchParams.get("query")
+    const excludeIdsParam = searchParams.get("excludeIds")
+
+    const excludeIds = excludeIdsParam
+        ? excludeIdsParam.split(",").map((id) => Number.parseInt(id))
+        : []
+    
 
     if (!query) {
         return NextResponse.json({
@@ -23,7 +29,16 @@ export async function GET(request: NextRequest) {
 
     try {
         const tasks = await searchTasksByTitle(query, limit)
-        return NextResponse.json(tasks)
+
+        // Filter out tasks with excluded IDs
+        const filteredTasks = tasks.filter((task) => !excludeIds.includes(task.id))
+
+        // If no tasks are found, return an empty array
+        if (filteredTasks.length === 0) {
+            return NextResponse.json([])
+        }
+
+        return NextResponse.json(filteredTasks)
     } catch (error) {
         console.error("Error fetching tasks:", error)
         return NextResponse.json({
