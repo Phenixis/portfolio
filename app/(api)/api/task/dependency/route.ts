@@ -35,9 +35,17 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: "Dependency not found" }, { status: 404 })
         }
 
-        console.log("Deleting taskToDoAfter:", taskToDoAfter[0])
+        const filteredDependencies = taskToDoAfter.filter((dependency) => {
+            return dependency.deleted_at === null
+        })
 
-        const depedencyId = await deleteTaskToDoAfterById(taskToDoAfter[0].id)
+        if (filteredDependencies.length === 0) {
+            console.error("No active dependencies found between tasks:", id1, id2)
+            return NextResponse.json({ error: "No active dependencies found" }, { status: 404 })
+        }
+
+        // Because there can be only one active dependency between two tasks at a time, we can safely use the first element
+        const depedencyId = await deleteTaskToDoAfterById(filteredDependencies[0].id)
 
         if (!depedencyId) {
             return NextResponse.json({ error: "Failed to delete dependency" }, { status: 500 })
