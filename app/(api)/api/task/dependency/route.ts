@@ -1,0 +1,51 @@
+import {
+    createTaskToDoAfter,
+    getTaskToDoAfterById,
+    getTasksToDoAfter,
+    getTasksToDoBefore,
+    getTaskToDoAfterById1AndId2,
+    updateTaskToDoAfter,
+    deleteTaskToDoAfterById,
+} from "@/lib/db/queries"
+import type { TaskToDoAfter } from "@/lib/db/schema"
+import { type NextRequest, NextResponse } from "next/server"
+
+// DELETE - Supprimer un taskToDoAfter
+export async function DELETE(request: NextRequest) {
+    const url = new URL(request.url)
+    const id1Param = url.searchParams.get("id1")
+    const id2Param = url.searchParams.get("id2")
+
+    if (!id1Param || !id2Param) {
+        return NextResponse.json({ error: "Missing id1 or id2" }, { status: 400 })
+    }
+
+    const id1 = parseInt(id1Param)
+    const id2 = parseInt(id2Param)
+    
+    try {
+        let taskToDoAfter = await getTaskToDoAfterById1AndId2(id1, id2)
+
+        if (!taskToDoAfter || taskToDoAfter.length === 0) {
+            taskToDoAfter = await getTaskToDoAfterById1AndId2(id2, id1)
+        }
+
+        if (!taskToDoAfter || taskToDoAfter.length === 0) {
+            console.error("Dependency not found between tasks:", id1, id2)
+            return NextResponse.json({ error: "Dependency not found" }, { status: 404 })
+        }
+
+        console.log("Deleting taskToDoAfter:", taskToDoAfter[0])
+
+        const depedencyId = await deleteTaskToDoAfterById(taskToDoAfter[0].id)
+
+        if (!depedencyId) {
+            return NextResponse.json({ error: "Failed to delete dependency" }, { status: 500 })
+        }
+        
+        return NextResponse.json({ id: depedencyId })
+    } catch (error) {
+        console.error("Error deleting taskToDoAfter:", error)
+        return NextResponse.json({ error: "Failed to delete taskToDoAfter" }, { status: 500 })
+    }
+}

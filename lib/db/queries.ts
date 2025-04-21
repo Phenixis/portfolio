@@ -143,7 +143,7 @@ export async function getTaskById(id: number, recursive: boolean = false) {
 
 		return result as Schema.TaskWithRelations;
 	} else {
-		return {...dbresult[0], recursive: false} as Schema.TaskWithNonRecursiveRelations;
+		return dbresult[0] ? {...dbresult[0], recursive: false} as Schema.TaskWithNonRecursiveRelations : null;
 	}
 
 }
@@ -210,8 +210,6 @@ export async function getTasks(
 		.leftJoin(taskToDoBeforeAlias, eq(Schema.task.id, taskToDoBeforeAlias.after_task_id)) // tasks to do before this task
 		.where(and(
 			isNull(Schema.task.deleted_at),
-			isNull(taskToDoAfterAlias.deleted_at),
-			isNull(taskToDoBeforeAlias.deleted_at),
 			projectTitles ? or(
 				inArray(Schema.task.project_title, projectTitles),
 				sql`${isNull(Schema.task.project_title)} AND ${projectTitles.includes("No project")}`
@@ -243,7 +241,7 @@ export async function getTasks(
 		// For after tasks
 		if (row.tasksToDoAfter?.after_task_id) {
 			const afterTaskId = row.tasksToDoAfter.after_task_id;
-			if (groupedTasks[taskId].tasksToDoAfter && !groupedTasks[taskId].tasksToDoAfter.some(t => t.id === afterTaskId)) {
+			if (groupedTasks[taskId].tasksToDoAfter && groupedTasks[taskId].deleted_at === null && !groupedTasks[taskId].tasksToDoAfter.some(t => t.id === afterTaskId)) {
 				const fullTask = await getTaskById(afterTaskId);
 				if (fullTask && fullTask.recursive === false) {
 					groupedTasks[taskId].tasksToDoAfter.push(fullTask);
@@ -254,7 +252,7 @@ export async function getTasks(
 		// For before tasks
 		if (row.tasksToDoBefore?.task_id) {
 			const beforeTaskId = row.tasksToDoBefore.task_id;
-			if (groupedTasks[taskId].tasksToDoBefore && !groupedTasks[taskId].tasksToDoBefore.some(t => t.id === beforeTaskId)) {
+			if (groupedTasks[taskId].tasksToDoBefore && groupedTasks[taskId].deleted_at === null && !groupedTasks[taskId].tasksToDoBefore.some(t => t.id === beforeTaskId)) {
 				const fullTask = await getTaskById(beforeTaskId);
 				if (fullTask && fullTask.recursive === false) groupedTasks[taskId].tasksToDoBefore.push(fullTask);
 			}
@@ -1398,6 +1396,16 @@ export async function getTaskToDoAfterByAfterId(after_task_id: number) {
 
 export async function getTasksToDoBefore(after_task_id: number) {
 	return getTaskToDoAfterByAfterId(after_task_id);
+}
+
+export async function getTaskToDoAfterById1AndId2(task_id: number, after_task_id: number) {
+	return (await db
+		.select()
+		.from(Schema.taskToDoAfter)
+		.where(and(
+			eq(Schema.taskToDoAfter.task_id, task_id),
+			eq(Schema.taskToDoAfter.after_task_id, after_task_id)
+		))) as Schema.TaskToDoAfter[]
 }
 
 // ## Update

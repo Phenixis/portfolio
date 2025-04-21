@@ -18,6 +18,7 @@ export default function TaskDisplay({
 	currentLimit,
 	currentDueBefore,
 	currentProjects,
+	otherId,
 }: {
 	task?: TaskWithRelations | TaskWithNonRecursiveRelations
 	orderedBy?: keyof Task
@@ -25,6 +26,7 @@ export default function TaskDisplay({
 	currentLimit?: number
 	currentDueBefore?: Date
 	currentProjects?: string[]
+	otherId?: number
 }) {
 	const [isToggled, setIsToggled] = useState(task ? task.completed_at !== null : false)
 	const [isDeleting, setIsDeleting] = useState(false)
@@ -70,6 +72,55 @@ export default function TaskDisplay({
 			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
 		} catch (error) {
 			console.error("Error deleting task:", error)
+
+			// Revalidate to restore the correct state
+			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
+		} finally {
+			setIsDeleting(false)
+		}
+	}
+
+	async function deleteDependency(id: number) {
+		if (!task) return
+
+		try {
+			// Optimistic UI update - update the task's dependencies in all lists
+			mutate(
+				(key) => typeof key === "string" && key.startsWith("/api/task"),
+				async (currentData) => {
+					// Find the task and update its dependencies
+					if (Array.isArray(currentData)) {
+						return currentData.map((item) => {
+							if (item.id === task.id) {
+								return {
+									...item,
+									tasksToDoBefore: item.tasksToDoBefore?.filter((dep: any) => (dep.task_id !== task.id && dep.after_task_id !== id) && (dep.task_id !== id && dep.after_task_id !== task.id)),
+									tasksToDoAfter: item.tasksToDoAfter?.filter((dep: any) => (dep.task_id !== task.id && dep.after_task_id !== id) && (dep.task_id !== id && dep.after_task_id !== task.id)),
+								}
+							} else if (item.id === id) {
+								return {
+									...item,
+									tasksToDoBefore: item.tasksToDoBefore?.filter((dep: any) => (dep.task_id !== task.id && dep.after_task_id !== id) || (dep.task_id !== id && dep.after_task_id !== task.id)),
+									tasksToDoAfter: item.tasksToDoAfter?.filter((dep: any) => (dep.task_id !== task.id && dep.after_task_id !== id) || (dep.task_id !== id && dep.after_task_id !== task.id)),
+								}
+							}
+							return item
+						})
+					}
+					return currentData
+				},
+				{ revalidate: false }, // Don't revalidate immediately
+			)
+
+			// Actual deletion
+			await fetch(`/api/task/dependency?id1=${task.id}&id2=${id}`, {
+				method: "DELETE",
+			})
+
+			// Revalidate after successful deletion
+			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
+		} catch (error) {
+			console.error("Error deleting dependency:", error)
 
 			// Revalidate to restore the correct state
 			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
@@ -188,29 +239,35 @@ export default function TaskDisplay({
 								{task.title}
 							</p>
 						</div>
-						{
-							task.recursive && (
-								<div
-									className={cn(
-										"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center",
-										isHovering
-											? "w-fit xl:w-full xl:max-w-[16px] xl:opacity-100 ml-1"
-											: "w-fit xl:w-0 xl:max-w-0 xl:opacity-0",
-									)}
-								>
-									{isCollapsibleOpen ? (
-										<ChevronsDownUp
-											className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-black dark:text-white cursor-pointer duration-300"
-											onClick={() => setIsCollapsibleOpen(!isCollapsibleOpen)}
-										/>
-									) : (
-										<ChevronsUpDown
-											className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-black dark:text-white cursor-pointer duration-300"
-											onClick={() => setIsCollapsibleOpen(!isCollapsibleOpen)}
-										/>
-									)}
-								</div>
+						<div
+							className={cn(
+								"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center",
+								isHovering
+									? "w-fit xl:w-full xl:max-w-[16px] xl:opacity-100 ml-1"
+									: "w-fit xl:w-0 xl:max-w-0 xl:opacity-0",
 							)}
+						>
+							{task.recursive ? (
+								isCollapsibleOpen ? (
+									<ChevronsDownUp
+										className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-black dark:text-white cursor-pointer duration-300"
+										onClick={() => setIsCollapsibleOpen(!isCollapsibleOpen)}
+									/>
+								) : (
+									<ChevronsUpDown
+										className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-black dark:text-white cursor-pointer duration-300"
+										onClick={() => setIsCollapsibleOpen(!isCollapsibleOpen)}
+									/>
+								)
+							) : (
+								<TrashIcon
+									className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-destructive cursor-pointer lg:hover:text-destructive/80 duration-300"
+									onClick={() => {
+										deleteDependency(otherId || -1)
+									}}
+								/>
+							)}
+						</div>
 					</div>
 					{
 						task.recursive && (
@@ -220,7 +277,7 @@ export default function TaskDisplay({
 										<div className="flex flex-col space-y-1">
 											<p className="text-sm text-muted-foreground">Task{task.tasksToDoBefore.length > 1 && 's'} that ha{task.tasksToDoBefore.length > 1 ? 've' : 's'} to be done after:</p>
 											{task.tasksToDoBefore.map((beforeTask) => (
-												<TaskDisplay key={beforeTask.id} task={beforeTask} orderedBy={orderedBy} currentLimit={currentLimit} currentDueBefore={currentDueBefore} currentProjects={currentProjects} className="ml-6" />
+												<TaskDisplay key={beforeTask.id} task={beforeTask} orderedBy={orderedBy} currentLimit={currentLimit} currentDueBefore={currentDueBefore} currentProjects={currentProjects} className="ml-6" otherId={task.id}  />
 											))}
 										</div>
 									)
@@ -230,7 +287,7 @@ export default function TaskDisplay({
 										<div className="flex flex-col space-y-1">
 											<p className="text-sm text-muted-foreground">Task{task.tasksToDoAfter.length > 1 && 's'} that ha{task.tasksToDoAfter.length > 1 ? 've' : 's'} to be done before:</p>
 											{task.tasksToDoAfter.map((afterTask) => (
-												<TaskDisplay key={afterTask.id} task={afterTask} orderedBy={orderedBy} currentLimit={currentLimit} currentDueBefore={currentDueBefore} currentProjects={currentProjects} className="ml-6" />
+												<TaskDisplay key={afterTask.id} task={afterTask} orderedBy={orderedBy} currentLimit={currentLimit} currentDueBefore={currentDueBefore} currentProjects={currentProjects} className="ml-6" otherId={task.id} />
 											))}
 										</div>
 									)
