@@ -206,8 +206,8 @@ export async function getTasks(
 		.leftJoin(Schema.project, eq(Schema.task.project_title, Schema.project.title))
 		.leftJoin(Schema.importance, eq(Schema.task.importance, Schema.importance.level))
 		.leftJoin(Schema.duration, eq(Schema.task.duration, Schema.duration.level))
-		.leftJoin(taskToDoAfterAlias, eq(Schema.task.id, taskToDoAfterAlias.task_id)) // tasks to do after this task
-		.leftJoin(taskToDoBeforeAlias, eq(Schema.task.id, taskToDoBeforeAlias.after_task_id)) // tasks to do before this task
+		.leftJoin(taskToDoAfterAlias, eq(Schema.task.id, taskToDoAfterAlias.after_task_id)) // tasks to do after this task
+		.leftJoin(taskToDoBeforeAlias, eq(Schema.task.id, taskToDoBeforeAlias.task_id)) // tasks to do before this task
 		.where(and(
 			isNull(Schema.task.deleted_at),
 			isNull(taskToDoAfterAlias.deleted_at),
