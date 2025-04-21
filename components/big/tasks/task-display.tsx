@@ -49,13 +49,15 @@ export default function TaskDisplay({
 
 			// Optimistic UI update - remove the task from all lists
 			mutate(
-				(key) => typeof key === "string" && key.startsWith("/api/task"),
-				async (currentData) => {
+				(key: unknown) => typeof key === "string" && key.startsWith("/api/task"),
+				async (currentData: unknown): Promise<unknown> => {
 					// Filter out the task being deleted from all cached lists
 					if (Array.isArray(currentData)) {
 						return currentData
-							.filter((item) => item.id !== task.id)
-							.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
+							.filter((item: TaskWithRelations | TaskWithNonRecursiveRelations) => item.id !== task.id)
+							.sort((a: TaskWithRelations | TaskWithNonRecursiveRelations, b: TaskWithRelations | TaskWithNonRecursiveRelations) => 
+								b.score - a.score || a.title.localeCompare(b.title)
+							)
 							.slice(0, currentLimit || Number.MAX_SAFE_INTEGER)
 					}
 					return currentData
