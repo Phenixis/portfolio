@@ -218,7 +218,7 @@ export default function TaskDisplay({
 								{
 									task.tasksToDoBefore && task.tasksToDoBefore.length > 0 && (
 										<div className="flex flex-col space-y-1">
-											<p className="text-sm text-muted-foreground">Tasks to do before:</p>
+											<p className="text-sm text-muted-foreground">Task{task.tasksToDoBefore.length > 1 && 's'} that ha{task.tasksToDoBefore.length > 1 ? 've' : 's'} to be done after:</p>
 											{task.tasksToDoBefore.map((beforeTask) => (
 												<TaskDisplay key={beforeTask.id} task={beforeTask} orderedBy={orderedBy} currentLimit={currentLimit} currentDueBefore={currentDueBefore} currentProjects={currentProjects} className="ml-6" />
 											))}
@@ -228,7 +228,7 @@ export default function TaskDisplay({
 								{
 									task.tasksToDoAfter && task.tasksToDoAfter.length > 0 && (
 										<div className="flex flex-col space-y-1">
-											<p className="text-sm text-muted-foreground">Tasks to do after:</p>
+											<p className="text-sm text-muted-foreground">Task{task.tasksToDoAfter.length > 1 && 's'} that ha{task.tasksToDoAfter.length > 1 ? 've' : 's'} to be done before:</p>
 											{task.tasksToDoAfter.map((afterTask) => (
 												<TaskDisplay key={afterTask.id} task={afterTask} orderedBy={orderedBy} currentLimit={currentLimit} currentDueBefore={currentDueBefore} currentProjects={currentProjects} className="ml-6" />
 											))}
