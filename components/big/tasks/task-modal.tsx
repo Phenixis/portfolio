@@ -250,17 +250,6 @@ export default function TaskModal({
 		}
 	}
 
-	const handleProjectChange = useDebouncedCallback((value: string) => {
-		setProject(value)
-	}, 200)
-
-	const handleToDoAfterChange = useDebouncedCallback((value: string) => {
-		setToDoAfter(
-			Number.parseInt(value) || -1
-		)
-	}
-	, 200)
-
 	// Handle dialog close attempt
 	const handleCloseAttempt = () => {
 		if (formChanged) {
@@ -465,7 +454,6 @@ export default function TaskModal({
 									value={projectProjectInputValue}
 									onChange={(e) => {
 										setProjectInputValue(e.target.value)
-										handleProjectChange(e.target.value)
 										setFormChanged(
 											(e.target.value !== task?.project_title && mode === "edit") || e.target.value !== ""
 										)
