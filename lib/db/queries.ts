@@ -244,7 +244,8 @@ export async function searchTasksByTitle(title: string, limit = 50) {
 		.from(Schema.task)
 		.where(and(
 			sql`${Schema.task.title} LIKE ${`%${title}%`}`,
-			isNull(Schema.task.deleted_at)
+			isNull(Schema.task.deleted_at),
+			isNull(Schema.task.completed_at),
 		))
 		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.Task[]
 }

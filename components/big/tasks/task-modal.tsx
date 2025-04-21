@@ -15,6 +15,7 @@ import { calculateUrgency } from "@/lib/utils"
 import { format } from "date-fns"
 import { useDebouncedCallback } from "use-debounce"
 import { useSearchProject } from "@/hooks/use-search-project"
+import { useSearchTasks } from "@/hooks/use-search-tasks"
 import { useImportanceAndDuration } from "@/hooks/use-importance-and-duration"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
@@ -58,8 +59,11 @@ export default function TaskModal({
 	const [showCalendar, setShowCalendar] = useState(false)
 	const calendarRef = useRef<HTMLDivElement>(null)
 	const [project, setProject] = useState<string>(task?.project_title || (currentProjects && currentProjects.length === 1 ? currentProjects[0] : ""))
-	const [inputValue, setInputValue] = useState<string>(task?.project_title || (currentProjects && currentProjects.length === 1 ? currentProjects[0] : ""))
-	const { projects, isLoading, isError } = useSearchProject({ query: project, limit: 5 })
+	const [projectProjectInputValue, setProjectInputValue] = useState<string>(task?.project_title || (currentProjects && currentProjects.length === 1 ? currentProjects[0] : ""))
+	const [toDoAfter, setToDoAfter] = useState<number>(-1)
+	const [toDoAfterInputValue, setToDoAfterInputValue] = useState<string>("")
+	const { projects, isLoading, isError } = useSearchProject({ query: projectProjectInputValue, limit: 5 })
+	const { tasks, isLoading: isLoadingTasks, isError: isErrorTasks } = useSearchTasks({ query: toDoAfterInputValue, limit: 5 })
 	const { importanceData, durationData } = useImportanceAndDuration()
 	const { mutate } = useSWRConfig()
 	const [formChanged, setFormChanged] = useState(false)
@@ -205,7 +209,7 @@ export default function TaskModal({
 				})
 
 			setDueDate(new Date())
-			setInputValue("")
+			setProjectInputValue("")
 			setProject("")
 			setFormChanged(false)
 		} catch (error) {
@@ -249,6 +253,13 @@ export default function TaskModal({
 	const handleProjectChange = useDebouncedCallback((value: string) => {
 		setProject(value)
 	}, 200)
+
+	const handleToDoAfterChange = useDebouncedCallback((value: string) => {
+		setToDoAfter(
+			Number.parseInt(value) || -1
+		)
+	}
+	, 200)
 
 	// Handle dialog close attempt
 	const handleCloseAttempt = () => {
@@ -451,16 +462,16 @@ export default function TaskModal({
 									type="text"
 									id="project"
 									name="project"
-									value={inputValue}
+									value={projectProjectInputValue}
 									onChange={(e) => {
-										setInputValue(e.target.value)
+										setProjectInputValue(e.target.value)
 										handleProjectChange(e.target.value)
 										setFormChanged(
 											(e.target.value !== task?.project_title && mode === "edit") || e.target.value !== ""
 										)
 									}}
 								/>
-								{project && !(projects && projects.length == 1 && projects[0].title == project) && (
+								{projectProjectInputValue && !(projects && projects.length == 1 && projects[0].title == project) && (
 									<div className="mt-1 overflow-y-auto rounded-md border border-border bg-popover shadow-md">
 										{isLoading ? (
 											<div className="p-2 text-sm text-muted-foreground">Loading projects...</div>
@@ -474,7 +485,7 @@ export default function TaskModal({
 														className="cursor-pointer px-3 py-2 text-sm lg:hover:bg-accent"
 														onClick={() => {
 															const selectedProject = proj.title
-															setInputValue(selectedProject)
+															setProjectInputValue(selectedProject)
 															setProject(selectedProject)
 															setTimeout(() => {
 																if (durationTriggerRef.current) {
@@ -502,36 +513,35 @@ export default function TaskModal({
 							<CollapsibleContent className="space-y-4">
 								<div className="flex space-x-4">
 									<div className="w-full">
-										<Label htmlFor="project">Task Depends On</Label>
+										<Label htmlFor="task">To Do After</Label>
 										<Input
 											type="text"
-											id="project"
-											name="project"
-											value={inputValue}
+											id="task"
+											name="task"
+											value={toDoAfterInputValue}
 											onChange={(e) => {
-												setInputValue(e.target.value)
-												handleProjectChange(e.target.value)
+												setToDoAfterInputValue(e.target.value)
+												// handleToDoAfterChange(e.target.value)
 												setFormChanged(
-													(e.target.value !== task?.project_title && mode === "edit") || e.target.value !== ""
+													(mode === "edit" && task && e.target.value !== task.project_title) || e.target.value !== ""
 												)
 											}}
 										/>
-										{project && !(projects && projects.length == 1 && projects[0].title == project) && (
+										{toDoAfterInputValue && !(tasks && tasks.length == 1 && tasks[0].id == toDoAfter) && (
 											<div className="mt-1 overflow-y-auto rounded-md border border-border bg-popover shadow-md">
-												{isLoading ? (
-													<div className="p-2 text-sm text-muted-foreground">Loading projects...</div>
-												) : isError ? (
-													<div className="p-2 text-sm text-destructive">Error loading projects</div>
-												) : projects && projects.length > 0 ? (
+												{isLoadingTasks ? (
+													<div className="p-2 text-sm text-muted-foreground">Loading tasks...</div>
+												) : isErrorTasks ? (
+													<div className="p-2 text-sm text-destructive">Error loading tasks</div>
+												) : tasks && tasks.length > 0 ? (
 													<ul className="py-1">
-														{projects.map((proj, index) => (
+														{tasks.map((task, index) => (
 															<li
 																key={index}
 																className="cursor-pointer px-3 py-2 text-sm lg:hover:bg-accent"
 																onClick={() => {
-																	const selectedProject = proj.title
-																	setInputValue(selectedProject)
-																	setProject(selectedProject)
+																	setToDoAfterInputValue(task.title)
+																	setToDoAfter(task.id)
 																	setTimeout(() => {
 																		if (durationTriggerRef.current) {
 																			durationTriggerRef.current.focus()
@@ -539,12 +549,12 @@ export default function TaskModal({
 																	}, 0)
 																}}
 															>
-																{proj.title}
+																{task.title}
 															</li>
 														))}
 													</ul>
 												) : (
-													<div className="p-2 text-sm text-muted-foreground">No projects found</div>
+													<div className="p-2 text-sm text-muted-foreground">No tasks found</div>
 												)}
 											</div>
 										)}
