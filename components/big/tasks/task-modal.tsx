@@ -379,10 +379,12 @@ export default function TaskModal({
 											today.setHours(0, 0, 0, 0)
 											if (newDate >= today) {
 												setDueDate(newDate)
-												setFormChanged(
-													(mode === "edit" && task && newDate.getDate() !== new Date(task.due).getDate()) || newDate.getDate() !== new Date().getDate()
-												)
+											} else {
+												setDueDate(today)
 											}
+											setFormChanged(
+												(mode === "edit" && task && today.getDate() !== new Date(task.due).getDate()) || today.getDate() !== new Date().getDate()
+											)
 										}}
 									>
 										<Minus />
