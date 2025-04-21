@@ -1,6 +1,7 @@
 import {
   getCompletedTasks,
   getUncompletedTasks,
+  getTaskById,
   getTasks,
   createTask,
   updateTask,
@@ -10,6 +11,11 @@ import {
   deleteTaskById,
   createProject,
   getProject,
+  createTaskToDoAfter,
+  getTasksToDoAfter,
+  deleteTaskToDoAfterById,
+  deleteTaskToDoAfterByTodoId,
+  deleteTaskToDoAfterByAfterId,
 } from "@/lib/db/queries"
 import type { Task } from "@/lib/db/schema"
 import { type NextRequest, NextResponse } from "next/server"
@@ -52,7 +58,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { title, importance, dueDate, duration, projectTitle } = body
+    const { title, importance, dueDate, duration, projectTitle, toDoAfterId } = body
 
     // Validation
     if (!title || importance === undefined || dueDate === undefined || duration === undefined) {
@@ -64,9 +70,18 @@ export async function POST(request: NextRequest) {
       await createProject(projectTitle)
     }
 
+    const toDoAfter = toDoAfterId && await getTaskById(Number(toDoAfterId))
+    if (!toDoAfter && toDoAfterId != "-1") {
+      return NextResponse.json({ error: "Invalid toDoAfterId" }, { status: 400 })
+    }
+
     const dueDateAtMidnight = new Date(dueDate)
 
     const taskId = await createTask(title, Number(importance), dueDateAtMidnight, Number(duration), projectTitle != "" ? projectTitle : undefined)
+
+    if (toDoAfterId && toDoAfterId != "-1") {
+      await createTaskToDoAfter(taskId, Number(toDoAfterId))
+    }
 
     return NextResponse.json({ id: taskId }, { status: 201 })
   } catch (error) {
@@ -79,7 +94,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
-    const { id, title, importance, dueDate, duration, projectTitle } = body
+    const { id, title, importance, dueDate, duration, projectTitle, toDoAfterId } = body
 
     // Validation
     if (!id || !title || importance === undefined || dueDate === undefined || duration === undefined) {
@@ -87,8 +102,32 @@ export async function PUT(request: NextRequest) {
     }
 
     const project = projectTitle && await getProject(projectTitle)
-    if (!project) {
+    if (!project && projectTitle) {
       await createProject(projectTitle)
+    }
+
+    // Validate toDoAfterId if provided
+    if (toDoAfterId !== undefined) {
+      // Check if the referenced task exists
+      if (toDoAfterId !== "-1") {
+        const toDoAfter = toDoAfterId && await getTaskById(Number(toDoAfterId))
+        if (!toDoAfter) {
+          return NextResponse.json({ error: "Invalid toDoAfterId" }, { status: 400 })
+        }
+      }
+
+      // Get existing toDoAfter relations for this task
+      const existingRelations = await getTasksToDoAfter(Number(id))
+      
+      // Delete existing relations
+      for (const relation of existingRelations) {
+        await deleteTaskToDoAfterById(relation.id)
+      }
+      
+      // Create new relation if toDoAfterId is provided and not -1
+      if (toDoAfterId && toDoAfterId !== "-1") {
+        await createTaskToDoAfter(Number(id), Number(toDoAfterId))
+      }
     }
 
     const taskId = await updateTask(Number(id), title, Number(importance), new Date(dueDate), Number(duration), projectTitle)
@@ -139,6 +178,13 @@ export async function DELETE(request: NextRequest) {
     }
 
     const id = Number(idParam)
+    
+    // Delete any task dependency relationships
+    // 1. Where this task depends on another task
+    await deleteTaskToDoAfterByTodoId(id)
+    // 2. Where other tasks depend on this task
+    await deleteTaskToDoAfterByAfterId(id)
+    
     const taskId = await deleteTaskById(id)
 
     return NextResponse.json({ id: taskId })
