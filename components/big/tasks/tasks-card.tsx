@@ -2,15 +2,15 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import dynamic from "next/dynamic"
-const TodoModal = dynamic(() => import("@/components/big/todos/todoModal"), { ssr: false })
+const TaskModal = dynamic(() => import("@/components/big/tasks/task-modal"), { ssr: false })
 import { cn } from "@/lib/utils"
 import Link from "next/link"
-import type { Todo, Project, Importance, Duration } from "@/lib/db/schema"
+import type { Task, Project, Importance, Duration } from "@/lib/db/schema"
 import { useState, useCallback, useTransition, useMemo, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Filter, Square, SquareMinus, FolderTree, Calendar } from "lucide-react"
-import TodoDisplay from "./todoDisplay"
-import { useTodos } from "@/hooks/useTodos"
+import TaskDisplay from "./task-display"
+import { useTasks } from "@/hooks/use-tasks"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useProjects } from "@/hooks/useProjects"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -20,7 +20,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 
 function generateTitle(
 	completed?: boolean,
-	orderBy?: keyof Todo,
+	orderBy?: keyof Task,
 	orderingDirection?: "asc" | "desc",
 	limit?: number,
 	groupedByProject?: boolean,
@@ -35,7 +35,7 @@ function generateTitle(
 		title += "uncompleted "
 	}
 
-	title += "Todos"
+	title += "Tasks"
 
 	if (groupedByProject && projectTitles && projectTitles.length > 0) {
 		title += ` in ${projectTitles.join(", ")}`
@@ -48,7 +48,7 @@ function generateTitle(
 	return title.trim()
 }
 
-export function TodosCard({
+export function TasksCard({
 	className,
 	initialCompleted = false,
 	limit: initialLimit,
@@ -59,7 +59,7 @@ export function TodosCard({
 	className?: string
 	initialCompleted?: boolean
 	limit?: number
-	orderBy?: keyof Todo
+	orderBy?: keyof Task
 	orderingDirection?: "asc" | "desc"
 	withProject?: boolean
 }) {
@@ -83,8 +83,8 @@ export function TodosCard({
 	const [limit, setLimit] = useState<number | undefined>(
 		searchParams.has("limit") ? Number.parseInt(searchParams.get("limit") || "") || initialLimit : initialLimit,
 	)
-	const [orderBy, setOrderBy] = useState<keyof Todo | undefined>(
-		(searchParams.get("orderBy") as keyof Todo) || initialOrderBy,
+	const [orderBy, setOrderBy] = useState<keyof Task | undefined>(
+		(searchParams.get("orderBy") as keyof Task) || initialOrderBy,
 	)
 	const [orderingDirection, setOrderingDirection] = useState<"asc" | "desc" | undefined>(
 		(searchParams.get("orderingDirection") as "asc" | "desc") || initialOrderingDirection,
@@ -143,8 +143,8 @@ export function TodosCard({
 		updateUrlParams()
 	}, [completed, limit, orderBy, orderingDirection, selectedProjects, dueBeforeDate, groupByProject, updateUrlParams])
 
-	// Use our custom hook to fetch todos
-	const { todos, isLoading } = useTodos({
+	// Use our custom hook to fetch tasks
+	const { tasks, isLoading } = useTasks({
 		completed,
 		orderBy,
 		limit,
@@ -182,32 +182,32 @@ export function TodosCard({
 	}, [])
 
 	const groupedTodos = useMemo(() => {
-		if (!todos) return {}
+		if (!tasks) return {}
 
-		return todos.slice(0, limit).reduce(
-			(acc, todo) => {
-				const projectId = todo.project_title || "no-project"
-				const projectName = projects?.find((p) => p.title === todo.project_title)?.title || "No Project"
+		return tasks.slice(0, limit).reduce(
+			(acc, task) => {
+				const projectId = task.project_title || "no-project"
+				const projectName = projects?.find((p) => p.title === task.project_title)?.title || "No Project"
 
 				if (!acc[projectId]) {
 					acc[projectId] = {
 						name: projectName,
-						todos: [],
+						tasks: [],
 					}
 				}
 
-				acc[projectId].todos.push(todo)
+				acc[projectId].tasks.push(task)
 				return acc
 			},
 			{} as Record<
 				string,
 				{
 					name: string
-					todos: (Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration })[]
+					tasks: (Task & { project: Project | null; importanceDetails: Importance; durationDetails: Duration })[]
 				}
 			>,
 		)
-	}, [todos, projects])
+	}, [tasks, projects])
 
 	return (
 		<Card
@@ -215,7 +215,7 @@ export function TodosCard({
 		>
 			<CardHeader className="flex flex-col sticky top-0 bg-background z-10">
 				<div className="flex flex-row items-center justify-between w-full gap-2">
-					<Link href={`/my/todos`}>
+					<Link href={`/my/tasks`}>
 						<CardTitle>
 							{generateTitle(completed, orderBy, orderingDirection, limit, groupByProject, selectedProjects, dueBeforeDate)}
 						</CardTitle>
@@ -226,12 +226,12 @@ export function TodosCard({
 							size="sm"
 							onClick={() => setIsFilterOpen((prev) => !prev)}
 							disabled={isPending || isLoading}
-							tooltip="Filter/group the todos"
+							tooltip="Filter/group the tasks"
 							className="h-10 py-2 flex items-center border-none"
 						>
 							<Filter className="h-4 w-4" />
 						</Button>
-						<TodoModal currentLimit={limit} currentDueBefore={dueBeforeDate} currentProjects={selectedProjects} />
+						<TaskModal currentLimit={limit} currentDueBefore={dueBeforeDate} currentProjects={selectedProjects} />
 					</div>
 				</div>
 				<div className={`${!isFilterOpen && "hidden"} flex flex-col gap-2`}>
@@ -269,7 +269,7 @@ export function TodosCard({
 								disabled={isPending || isLoading}
 								className={cn("flex items-center gap-1")}
 								tooltip={`
-                  ${completed === true ? "Completed" : completed === false ? "Uncompleted" : "All"} todos
+                  ${completed === true ? "Completed" : completed === false ? "Uncompleted" : "All"} tasks
                 `}
 							>
 								{completed === true ? (
@@ -287,7 +287,7 @@ export function TodosCard({
 								size="sm"
 								onClick={() => setLimit(5)}
 								disabled={isPending || isLoading}
-								tooltip="Limit to 5 todos"
+								tooltip="Limit to 5 tasks"
 							>
 								5
 							</Button>
@@ -296,7 +296,7 @@ export function TodosCard({
 								size="sm"
 								onClick={() => setLimit(10)}
 								disabled={isPending || isLoading}
-								tooltip="Limit to 10 todos"
+								tooltip="Limit to 10 tasks"
 							>
 								10
 							</Button>
@@ -305,7 +305,7 @@ export function TodosCard({
 								size="sm"
 								onClick={() => setLimit(25)}
 								disabled={isPending || isLoading}
-								tooltip="Limit to 25 todos"
+								tooltip="Limit to 25 tasks"
 							>
 								25
 							</Button>
@@ -314,7 +314,7 @@ export function TodosCard({
 								size="sm"
 								onClick={() => setLimit(50)}
 								disabled={isPending || isLoading}
-								tooltip="Limit to 50 todos"
+								tooltip="Limit to 50 tasks"
 							>
 								50
 							</Button>
@@ -360,26 +360,26 @@ export function TodosCard({
 					// Show loading state
 					Array(5)
 						.fill(null)
-						.map((_, i) => <TodoDisplay key={i} />)
-				) : todos?.length > 0 ? (
-					// Show todos, grouped or ungrouped based on the groupByProject state
+						.map((_, i) => <TaskDisplay key={i} />)
+				) : tasks?.length > 0 ? (
+					// Show tasks, grouped or ungrouped based on the groupByProject state
 					groupByProject ? (
 						// Grouped by project
-						Object.entries(groupedTodos).map(([projectId, { name, todos }]) => (
+						Object.entries(groupedTodos).map(([projectId, { name, tasks }]) => (
 							<div key={projectId} className="mb-4">
 								<h3 className="font-medium text-sm p-2 rounded-md">{name}</h3>
 								<div className="pl-2">
-									{todos.map(
+									{tasks.map(
 										(
-											todo: Todo & {
+											task: Task & {
 												project: Project | null
 												importanceDetails: Importance
 												durationDetails: Duration
 											},
 										) => (
-											<TodoDisplay
-												key={todo.id}
-												todo={todo}
+											<TaskDisplay
+												key={task.id}
+												task={task}
 												orderedBy={orderBy}
 												className="mt-1"
 												currentLimit={limit}
@@ -393,19 +393,19 @@ export function TodosCard({
 						))
 					) : (
 						// Not grouped
-						todos
+						tasks
 							.slice(0, limit)
 							.map(
 								(
-									todo: Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration },
+									task: Task & { project: Project | null; importanceDetails: Importance; durationDetails: Duration },
 								) => (
-									<TodoDisplay key={todo.id} todo={todo} orderedBy={orderBy} className="mt-1" currentLimit={limit} currentDueBefore={dueBeforeDate} currentProjects={selectedProjects} />
+									<TaskDisplay key={task.id} task={task} orderedBy={orderBy} className="mt-1" currentLimit={limit} currentDueBefore={dueBeforeDate} currentProjects={selectedProjects} />
 								),
 							)
 					)
 				) : (
 					// Show empty state
-					<div className="text-center py-4">No todos found</div>
+					<div className="text-center py-4">No tasks found</div>
 				)}
 			</CardContent>
 		</Card>

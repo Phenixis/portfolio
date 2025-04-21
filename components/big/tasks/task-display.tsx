@@ -4,55 +4,55 @@ import type React from "react"
 
 import { useState, useOptimistic, startTransition, useRef } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import type { Todo, Project, Importance, Duration } from "@/lib/db/schema"
+import type { Task, Project, Importance, Duration } from "@/lib/db/schema"
 import dynamic from "next/dynamic"
-const TodoModal = dynamic(() => import("@/components/big/todos/todoModal"), { ssr: false })
+const TaskModal = dynamic(() => import("@/components/big/tasks/task-modal"), { ssr: false })
 import { ChevronsDownUp, ChevronsUpDown, TrashIcon } from "lucide-react"
 import { useSWRConfig } from "swr"
 import { cn } from "@/lib/utils"
 
-export default function TodoDisplay({
-	todo,
+export default function TaskDisplay({
+	task,
 	orderedBy,
 	className,
 	currentLimit,
 	currentDueBefore,
 	currentProjects,
 }: {
-	todo?: Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration }
-	orderedBy?: keyof Todo
+	task?: Task & { project: Project | null; importanceDetails: Importance; durationDetails: Duration }
+	orderedBy?: keyof Task
 	className?: string
 	currentLimit?: number
 	currentDueBefore?: Date
 	currentProjects?: string[]
 }) {
-	const [isToggled, setIsToggled] = useState(todo ? todo.completed_at !== null : false)
+	const [isToggled, setIsToggled] = useState(task ? task.completed_at !== null : false)
 	const [isDeleting, setIsDeleting] = useState(false)
 	const [isHovering, setIsHovering] = useState(false)
 	const [isCollapsibleOpen, setIsCollapsibleOpen] = useState(false)
 	const [optimisticState, toggleOptimistic] = useOptimistic(isToggled, (prev) => !prev)
 	const containerRef = useRef<HTMLDivElement>(null)
 	const { mutate } = useSWRConfig()
-	const skeleton = todo !== undefined && orderedBy !== undefined
-	const daysBeforeDue = todo ? Math.ceil((new Date(todo.due).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 4
+	const skeleton = task !== undefined && orderedBy !== undefined
+	const daysBeforeDue = task ? Math.ceil((new Date(task.due).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 4
 
-	// Fonction améliorée pour supprimer une todo avec SWR
-	async function deleteTodo(e: React.MouseEvent) {
+	// Fonction améliorée pour supprimer une task avec SWR
+	async function deleteTask(e: React.MouseEvent) {
 		e.stopPropagation() // Empêche le clic de se propager
 
-		if (!todo) return
+		if (!task) return
 
 		try {
 			setIsDeleting(true)
 
-			// Optimistic UI update - remove the todo from all lists
+			// Optimistic UI update - remove the task from all lists
 			mutate(
-				(key) => typeof key === "string" && key.startsWith("/api/todo"),
+				(key) => typeof key === "string" && key.startsWith("/api/task"),
 				async (currentData) => {
-					// Filter out the todo being deleted from all cached lists
+					// Filter out the task being deleted from all cached lists
 					if (Array.isArray(currentData)) {
 						return currentData
-							.filter((item) => item.id !== todo.id)
+							.filter((item) => item.id !== task.id)
 							.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
 							.slice(0, currentLimit || Number.MAX_SAFE_INTEGER)
 					}
@@ -62,25 +62,25 @@ export default function TodoDisplay({
 			)
 
 			// Actual deletion
-			await fetch(`/api/todo?id=${todo.id}`, {
+			await fetch(`/api/task?id=${task.id}`, {
 				method: "DELETE",
 			})
 
 			// Revalidate after successful deletion
-			mutate((key) => typeof key === "string" && key.startsWith("/api/todo"))
+			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
 		} catch (error) {
-			console.error("Error deleting todo:", error)
+			console.error("Error deleting task:", error)
 
 			// Revalidate to restore the correct state
-			mutate((key) => typeof key === "string" && key.startsWith("/api/todo"))
+			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
 		} finally {
 			setIsDeleting(false)
 		}
 	}
 
-	// Fonction améliorée pour basculer l'état d'une todo avec SWR
+	// Fonction améliorée pour basculer l'état d'une task avec SWR
 	async function toggle() {
-		if (!todo) return
+		if (!task) return
 
 		// Immediately update local state
 		setIsToggled(!isToggled)
@@ -93,12 +93,12 @@ export default function TodoDisplay({
 		try {
 			// Optimistic UI update for SWR cache
 			mutate(
-				(key: unknown) => typeof key === "string" && key.startsWith("/api/todo"),
+				(key: unknown) => typeof key === "string" && key.startsWith("/api/task"),
 				async (currentData: unknown): Promise<unknown> => {
 					if (!Array.isArray(currentData)) return currentData
 
-					return currentData.map((item: Todo) => {
-						if (item.id === todo.id) {
+					return currentData.map((item: Task) => {
+						if (item.id === task.id) {
 							return {
 								...item,
 								completed_at: !isToggled ? new Date().toISOString() : null,
@@ -111,17 +111,17 @@ export default function TodoDisplay({
 			)
 
 			// Actual API call
-			await fetch("/api/todo", {
+			await fetch("/api/task", {
 				method: "PATCH",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ id: todo.id, completed: !isToggled }),
+				body: JSON.stringify({ id: task.id, completed: !isToggled }),
 			})
 
 			// No need to set state again since we already did it optimistically
 			// Revalidate after successful toggle
-			mutate((key) => typeof key === "string" && key.startsWith("/api/todo"))
+			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
 		} catch (error) {
-			console.error("Error toggling todo:", error)
+			console.error("Error toggling task:", error)
 
 			// Revert both states on error
 			setIsToggled(isToggled)
@@ -130,7 +130,7 @@ export default function TodoDisplay({
 			})
 
 			// Revalidate to restore the correct state
-			mutate((key) => typeof key === "string" && key.startsWith("/api/todo"))
+			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
 		}
 	}
 
@@ -150,7 +150,7 @@ export default function TodoDisplay({
 		<div
 			ref={containerRef}
 			className={cn(
-				`flex flex-col group/todo p-1 duration-300 text-xs xl:text-base ${daysBeforeDue < 0 ? "bg-red-500/10 dark:bg-red-500/15 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/10 dark:bg-orange-500/15 lg:hover:bg-orange-500/25" : "lg:hover:bg-primary/10"} space-y-2 ${isDeleting ? "opacity-50" : ""}`,
+				`flex flex-col group/task p-1 duration-300 text-xs xl:text-base ${daysBeforeDue < 0 ? "bg-red-500/10 dark:bg-red-500/15 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/10 dark:bg-orange-500/15 lg:hover:bg-orange-500/25" : "lg:hover:bg-primary/10"} space-y-2 ${isDeleting ? "opacity-50" : ""}`,
 				className,
 			)}
 			onMouseEnter={handleMouseEnter}
@@ -185,7 +185,7 @@ export default function TodoDisplay({
 								className={`w-full text-base hyphens-auto ${optimisticState ? "line-through text-muted-foreground" : ""}`}
 								lang="en"
 							>
-								{todo.title}
+								{task.title}
 							</p>
 						</div>
 						<div
@@ -211,23 +211,23 @@ export default function TodoDisplay({
 					</div>
 					<div className={`flex space-x-4 justify-between ${!isCollapsibleOpen && "hidden"}`}>
 						<div className="space-y-1">
-							{todo.project_title && (
+							{task.project_title && (
 								<p className="text-sm text-muted-foreground">
-									Project: <span className="text-black dark:text-white">{todo.project_title}</span>
+									Project: <span className="text-black dark:text-white">{task.project_title}</span>
 								</p>
 							)}
-							{todo.importance && (
+							{task.importance && (
 								<p className="text-sm text-muted-foreground">
-									Importance: <span className="text-black dark:text-white">{todo.importanceDetails.name}</span>
+									Importance: <span className="text-black dark:text-white">{task.importanceDetails.name}</span>
 								</p>
 							)}
-							{todo.due && (
+							{task.due && (
 								<p className="text-sm text-muted-foreground">
 									Due:{" "}
 									<span className="text-black dark:text-white">
 										{(() => {
 											const daysDifference = Math.ceil(
-												(new Date(todo.due).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+												(new Date(task.due).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
 											)
 											const formatter = new Intl.RelativeTimeFormat(navigator.language || "fr-FR", { numeric: "auto" })
 											return formatter.format(daysDifference, "day")
@@ -235,18 +235,18 @@ export default function TodoDisplay({
 									</span>
 								</p>
 							)}
-							{todo.duration !== undefined && (
+							{task.duration !== undefined && (
 								<p className="text-sm text-muted-foreground">
-									Duration: <span className="text-black dark:text-white">{todo.durationDetails.name}</span>
+									Duration: <span className="text-black dark:text-white">{task.durationDetails.name}</span>
 								</p>
 							)}
 						</div>
 						<div className="flex flex-col justify-between">
-							<TodoModal className="duration-300" todo={todo} currentDueBefore={currentDueBefore} currentLimit={currentLimit} currentProjects={currentProjects} />
+							<TaskModal className="duration-300" task={task} currentDueBefore={currentDueBefore} currentLimit={currentLimit} currentProjects={currentProjects} />
 
 							<TrashIcon
 								className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-destructive cursor-pointer lg:hover:text-destructive/80 duration-300"
-								onClick={deleteTodo}
+								onClick={deleteTask}
 							/>
 						</div>
 					</div>

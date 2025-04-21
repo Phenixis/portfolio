@@ -1,6 +1,6 @@
 {
-  "id": "340ff596-634a-408b-a38d-dfe7982034c5",
-  "prevId": "10b878ff-200c-4875-bb69-44420118fae0",
+  "id": "0021b181-3857-4bb2-948b-baa6bab7686c",
+  "prevId": "340ff596-634a-408b-a38d-dfe7982034c5",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -459,8 +459,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.todo": {
-      "name": "todo",
+    "public.task": {
+      "name": "task",
       "schema": "",
       "columns": {
         "id": {
@@ -545,9 +545,9 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "todo_importance_importance_level_fk": {
-          "name": "todo_importance_importance_level_fk",
-          "tableFrom": "todo",
+        "task_importance_importance_level_fk": {
+          "name": "task_importance_importance_level_fk",
+          "tableFrom": "task",
           "tableTo": "importance",
           "columnsFrom": [
             "importance"
@@ -558,9 +558,9 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "todo_duration_duration_level_fk": {
-          "name": "todo_duration_duration_level_fk",
-          "tableFrom": "todo",
+        "task_duration_duration_level_fk": {
+          "name": "task_duration_duration_level_fk",
+          "tableFrom": "task",
           "tableTo": "duration",
           "columnsFrom": [
             "duration"
@@ -571,9 +571,9 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "todo_project_title_project_title_fk": {
-          "name": "todo_project_title_project_title_fk",
-          "tableFrom": "todo",
+        "task_project_title_project_title_fk": {
+          "name": "task_project_title_project_title_fk",
+          "tableFrom": "task",
           "tableTo": "project",
           "columnsFrom": [
             "project_title"
@@ -591,8 +591,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.todo_after": {
-      "name": "todo_after",
+    "public.task_to_do_after": {
+      "name": "task_to_do_after",
       "schema": "",
       "columns": {
         "id": {
@@ -607,8 +607,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "after_id": {
-          "name": "after_id",
+        "after_task_id": {
+          "name": "after_task_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
@@ -636,10 +636,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "todo_after_task_id_task_id_fk": {
-          "name": "todo_after_task_id_task_id_fk",
-          "tableFrom": "todo_after",
-          "tableTo": "todo",
+        "task_to_do_after_task_id_task_id_fk": {
+          "name": "task_to_do_after_task_id_task_id_fk",
+          "tableFrom": "task_to_do_after",
+          "tableTo": "task",
           "columnsFrom": [
             "task_id"
           ],
@@ -649,12 +649,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "todo_after_after_id_task_id_fk": {
-          "name": "todo_after_after_id_task_id_fk",
-          "tableFrom": "todo_after",
-          "tableTo": "todo",
+        "task_to_do_after_after_task_id_task_id_fk": {
+          "name": "task_to_do_after_after_task_id_task_id_fk",
+          "tableFrom": "task_to_do_after",
+          "tableTo": "task",
           "columnsFrom": [
-            "after_id"
+            "after_task_id"
           ],
           "columnsTo": [
             "id"

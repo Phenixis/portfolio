@@ -1,9 +1,9 @@
 "use client"
 
-import type { Todo, Project, Duration, Importance } from "@/lib/db/schema"
+import type { Task, Project, Duration, Importance } from "@/lib/db/schema"
 import { useFilteredData } from "./useFilteredData"
 
-export function useTodos({
+export function useTasks({
   completed,
   orderBy,
   limit,
@@ -13,15 +13,15 @@ export function useTodos({
   dueBefore,
 }: {
   completed?: boolean
-  orderBy?: keyof Todo
+  orderBy?: keyof Task
   limit?: number
   orderingDirection?: "asc" | "desc"
   withProject?: boolean
   projectTitles?: string[]
   dueBefore?: Date
 }) {
-  const { data, isLoading, isError, mutate } = useFilteredData<Todo[]>({
-    endpoint: "/api/todo",
+  const { data, isLoading, isError, mutate } = useFilteredData<Task[]>({
+    endpoint: "/api/task",
     params: {
       completed,
       orderBy: orderBy as string,
@@ -34,8 +34,8 @@ export function useTodos({
   })
 
   return {
-    todos:
-      (data as (Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration })[]) || [],
+    tasks:
+      (data as (Task & { project: Project | null; importanceDetails: Importance; durationDetails: Duration })[]) || [],
     isLoading,
     isError,
     mutate,

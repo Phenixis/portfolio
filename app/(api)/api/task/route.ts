@@ -1,24 +1,24 @@
 import {
-  getCompletedTodos,
-  getUncompletedTodos,
-  getTodos,
-  createTodo,
-  updateTodo,
-  markTodoAsDone,
-  markTodoAsUndone,
-  toggleTodo,
-  deleteTodoById,
+  getCompletedTasks,
+  getUncompletedTasks,
+  getTasks,
+  createTask,
+  updateTask,
+  markTaskAsDone,
+  markTaskAsUndone,
+  toggleTask,
+  deleteTaskById,
   createProject,
   getProject,
 } from "@/lib/db/queries"
-import type { Todo } from "@/lib/db/schema"
+import type { Task } from "@/lib/db/schema"
 import { type NextRequest, NextResponse } from "next/server"
 
-// GET - Récupérer les todos
+// GET - Récupérer les tasks
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const completedParam = searchParams.get("completed")
-  const orderBy = searchParams.get("orderBy") as keyof Todo | null
+  const orderBy = searchParams.get("orderBy") as keyof Task | null
   const limitParam = searchParams.get("limit")
   const orderingDirection = searchParams.get("orderingDirection") as "asc" | "desc" | undefined
   const projectTitles = searchParams.get("projectTitles")
@@ -34,21 +34,21 @@ export async function GET(request: NextRequest) {
   else if (completedParam === "false") completed = false
 
   try {
-    const todos =
+    const tasks =
       completed === true
-        ? await getCompletedTodos(orderBy || undefined, orderingDirection, limit, projectTitles, dueBefore)
+        ? await getCompletedTasks(orderBy || undefined, orderingDirection, limit, projectTitles, dueBefore)
         : completed === false
-          ? await getUncompletedTodos(orderBy || undefined, orderingDirection, limit, projectTitles, dueBefore)
-          : await getTodos(orderBy || undefined, orderingDirection, limit, projectTitles, dueBefore)
+          ? await getUncompletedTasks(orderBy || undefined, orderingDirection, limit, projectTitles, dueBefore)
+          : await getTasks(orderBy || undefined, orderingDirection, limit, projectTitles, dueBefore)
 
-    return NextResponse.json(todos)
+    return NextResponse.json(tasks)
   } catch (error) {
-    console.error("Error fetching todos:", error)
-    return NextResponse.json({ error: "Failed to fetch todos" }, { status: 500 })
+    console.error("Error fetching tasks:", error)
+    return NextResponse.json({ error: "Failed to fetch tasks" }, { status: 500 })
   }
 }
 
-// POST - Créer un nouveau todo
+// POST - Créer un nouveau task
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -66,16 +66,16 @@ export async function POST(request: NextRequest) {
 
     const dueDateAtMidnight = new Date(dueDate)
 
-    const todoId = await createTodo(title, Number(importance), dueDateAtMidnight, Number(duration), projectTitle != "" ? projectTitle : undefined)
+    const taskId = await createTask(title, Number(importance), dueDateAtMidnight, Number(duration), projectTitle != "" ? projectTitle : undefined)
 
-    return NextResponse.json({ id: todoId }, { status: 201 })
+    return NextResponse.json({ id: taskId }, { status: 201 })
   } catch (error) {
-    console.error("Error creating todo:", error)
-    return NextResponse.json({ error: "Failed to create todo" }, { status: 500 })
+    console.error("Error creating task:", error)
+    return NextResponse.json({ error: "Failed to create task" }, { status: 500 })
   }
 }
 
-// PUT - Mettre à jour un todo existant
+// PUT - Mettre à jour un task existant
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
@@ -91,16 +91,16 @@ export async function PUT(request: NextRequest) {
       await createProject(projectTitle)
     }
 
-    const todoId = await updateTodo(Number(id), title, Number(importance), new Date(dueDate), Number(duration), projectTitle)
+    const taskId = await updateTask(Number(id), title, Number(importance), new Date(dueDate), Number(duration), projectTitle)
 
-    return NextResponse.json({ id: todoId })
+    return NextResponse.json({ id: taskId })
   } catch (error) {
-    console.error("Error updating todo:", error)
-    return NextResponse.json({ error: "Failed to update todo" }, { status: 500 })
+    console.error("Error updating task:", error)
+    return NextResponse.json({ error: "Failed to update task" }, { status: 500 })
   }
 }
 
-// PATCH - Marquer un todo comme terminé/non terminé
+// PATCH - Marquer un task comme terminé/non terminé
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json()
@@ -111,39 +111,39 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    let todoId
+    let taskId
     if (completed === true) {
-      todoId = await markTodoAsDone(Number(id))
+      taskId = await markTaskAsDone(Number(id))
     } else if (completed === false) {
-      todoId = await markTodoAsUndone(Number(id))
+      taskId = await markTaskAsUndone(Number(id))
     } else {
-      // Si completed est un booléen indiquant l'état actuel, on utilise toggleTodo
-      todoId = await toggleTodo(Number(id), completed)
+      // Si completed est un booléen indiquant l'état actuel, on utilise toggleTask
+      taskId = await toggleTask(Number(id), completed)
     }
 
-    return NextResponse.json({ id: todoId })
+    return NextResponse.json({ id: taskId })
   } catch (error) {
-    console.error("Error toggling todo completion:", error)
-    return NextResponse.json({ error: "Failed to update todo status" }, { status: 500 })
+    console.error("Error toggling task completion:", error)
+    return NextResponse.json({ error: "Failed to update task status" }, { status: 500 })
   }
 }
 
-// DELETE - Supprimer un todo
+// DELETE - Supprimer un task
 export async function DELETE(request: NextRequest) {
   try {
     const url = new URL(request.url)
     const idParam = url.searchParams.get("id")
 
     if (!idParam) {
-      return NextResponse.json({ error: "Missing todo ID" }, { status: 400 })
+      return NextResponse.json({ error: "Missing task ID" }, { status: 400 })
     }
 
     const id = Number(idParam)
-    const todoId = await deleteTodoById(id)
+    const taskId = await deleteTaskById(id)
 
-    return NextResponse.json({ id: todoId })
+    return NextResponse.json({ id: taskId })
   } catch (error) {
-    console.error("Error deleting todo:", error)
-    return NextResponse.json({ error: "Failed to delete todo" }, { status: 500 })
+    console.error("Error deleting task:", error)
+    return NextResponse.json({ error: "Failed to delete task" }, { status: 500 })
   }
 }

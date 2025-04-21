@@ -1,4 +1,4 @@
-import { TodosCard } from "@/components/big/todos/todosCard"
+import { TasksCard } from "@/components/big/tasks/tasks-card"
 import Calendar from "@/components/big/calendar/calendar"
 
 export default function DashboardPage() {
@@ -7,7 +7,7 @@ export default function DashboardPage() {
             <h1 className="text-3xl text-center p-2 md:hidden">
                 Dashboard
             </h1>
-            <TodosCard className="w-full xl:w-1/3 order-2 md:order-none" limit={5} />
+            <TasksCard className="w-full xl:w-1/3 order-2 md:order-none" limit={5} />
             <Calendar className="order-1 md:order-none"/>
         </div>
     )

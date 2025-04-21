@@ -30,8 +30,8 @@ export const project = pgTable('project', {
     deleted_at: timestamp('deleted_at')
 });
 
-// Table Todo
-export const todo = pgTable('todo', {
+// Table Task
+export const task = pgTable('task', {
     id: serial('id').primaryKey(),
     title: varchar('title', { length: 255 }).notNull(),
     importance: integer('importance')
@@ -53,14 +53,14 @@ export const todo = pgTable('todo', {
     deleted_at: timestamp('deleted_at')
 });
 
-export const todoAfter = pgTable('todo_after', {
+export const taskToDoAfter = pgTable('task_to_do_after', {
     id: serial('id').primaryKey(),
-    todo_id: integer('todo_id')
+    task_id: integer('task_id')
         .notNull()
-        .references(() => todo.id),
-    after_id: integer('after_id')
+        .references(() => task.id),
+    after_task_id: integer('after_task_id')
         .notNull()
-        .references(() => todo.id),
+        .references(() => task.id),
     created_at: timestamp('created_at').notNull().defaultNow(),
     updated_at: timestamp('updated_at').notNull().defaultNow(),
     deleted_at: timestamp('deleted_at')
@@ -137,19 +137,19 @@ export const serie = pgTable('serie', {
 
 // Relations
 export const projectRelations = relations(project, ({ many }) => ({
-    todos: many(todo)
+    tasks: many(task)
 }));
 
-export const todoRelations = relations(todo, ({ one, many }) => ({
+export const taskRelations = relations(task, ({ one, many }) => ({
     project: one(project, {
-        fields: [todo.project_title],
+        fields: [task.project_title],
         references: [project.title]
     }),
-    todoAfter: many(todoAfter)
+    taskAfter: many(taskToDoAfter)
 }));
 
-export const todoAfterRelations = relations(todoAfter, ({ many }) => ({
-    todos: many(todo)
+export const taskToDoAfterRelations = relations(taskToDoAfter, ({ many }) => ({
+    tasks: many(task)
 }));
 
 export const seanceRelations = relations(seance, ({ many }) => ({
@@ -194,10 +194,10 @@ export const exerciceRelations = relations(exercice, ({ many }) => ({
     series: many(serie)
 }));
 
-export type Todo = typeof todo.$inferSelect;
-export type NewTodo = typeof todo.$inferInsert;
-export type TodoAfter = typeof todoAfter.$inferSelect;
-export type NewTodoAfter = typeof todoAfter.$inferInsert;
+export type Task = typeof task.$inferSelect;
+export type NewTask = typeof task.$inferInsert;
+export type TaskToDoAfter = typeof taskToDoAfter.$inferSelect;
+export type NewTaskToDoAfter = typeof taskToDoAfter.$inferInsert;
 export type Meteo = typeof meteo.$inferSelect;
 export type NewMeteo = typeof meteo.$inferInsert;
 export type Project = typeof project.$inferSelect;

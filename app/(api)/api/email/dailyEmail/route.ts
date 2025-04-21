@@ -1,5 +1,5 @@
 import {
-    getUncompletedAndDueInTheNextThreeDaysOrLessTodos
+    getUncompletedAndDueInTheNextThreeDaysOrLessTasks
 } from "@/lib/db/queries"
 import {
     type NextRequest,
@@ -11,10 +11,10 @@ import {
 
 export async function GET(request: NextRequest) {
     try {
-        const todos = await getUncompletedAndDueInTheNextThreeDaysOrLessTodos(true);
+        const tasks = await getUncompletedAndDueInTheNextThreeDaysOrLessTasks(true);
 
-        // Sort todos by due date in ascending order
-        const sortedTodos = todos.sort((a, b) => new Date(a.due).getTime() - new Date(b.due).getTime());
+        // Sort tasks by due date in ascending order
+        const sortedTasks = tasks.sort((a, b) => new Date(a.due).getTime() - new Date(b.due).getTime());
 
         // Helper function to calculate relative days
         const getRelativeDay = (dueDate: Date): string => {
@@ -24,24 +24,24 @@ export async function GET(request: NextRequest) {
             return rtf.format(diffInDays, "day");
         };
 
-        // Group todos by relative days
-        const groupedByDays = sortedTodos.reduce((acc: Record<string, any[]>, todo) => {
-            const relativeDay = getRelativeDay(new Date(todo.due));
+        // Group tasks by relative days
+        const groupedByDays = sortedTasks.reduce((acc: Record<string, any[]>, task) => {
+            const relativeDay = getRelativeDay(new Date(task.due));
             if (!acc[relativeDay]) {
                 acc[relativeDay] = [];
             }
-            acc[relativeDay].push(todo);
+            acc[relativeDay].push(task);
             return acc;
         }, {});
 
-        // Group todos by projects within each relative day
-        const groupedByProjects = Object.entries(groupedByDays).reduce((acc: Record<string, any>, [day, todos]) => {
-            acc[day] = (todos as any[]).reduce((projectAcc: Record<string, any[]>, todo) => {
-                const project = todo.project_title || "No Project";
+        // Group tasks by projects within each relative day
+        const groupedByProjects = Object.entries(groupedByDays).reduce((acc: Record<string, any>, [day, tasks]) => {
+            acc[day] = (tasks as any[]).reduce((projectAcc: Record<string, any[]>, task) => {
+                const project = task.project_title || "No Project";
                 if (!projectAcc[project]) {
                     projectAcc[project] = [];
                 }
-                projectAcc[project].push(todo);
+                projectAcc[project].push(task);
                 return projectAcc;
             }, {});
             return acc;
@@ -118,15 +118,15 @@ export async function GET(request: NextRequest) {
             </head>
             <body>
             <main>
-            <h1>Your Daily Todo List</h1>
+            <h1>Your Daily Task List</h1>
         `;
 
         for (const [day, projects] of Object.entries(groupedByProjects)) {
             emailContent += `<h2>Due ${day}</h2>`;
-            for (const [project, todos] of Object.entries(projects)) {
+            for (const [project, tasks] of Object.entries(projects)) {
                 emailContent += `<h3>${project}</h3><ul>`;
-                (todos as any[]).forEach((todo) => {
-                    emailContent += `<li>${todo.title}</li>`;
+                (tasks as any[]).forEach((task) => {
+                    emailContent += `<li>${task.title}</li>`;
                 });
                 emailContent += `</ul>`;
             }
@@ -139,7 +139,7 @@ export async function GET(request: NextRequest) {
         `;
 
         const today = new Date();
-        const formattedSubject = `${today.toLocaleDateString("en-GB", { weekday: 'long', day: '2-digit', month: 'long' })} - Your Daily Todo List`;
+        const formattedSubject = `${today.toLocaleDateString("en-GB", { weekday: 'long', day: '2-digit', month: 'long' })} - Your Daily Task List`;
         const result = sendEmail("max@maximeduhamel.com", formattedSubject, emailContent);
 
         if (!result) {
@@ -156,9 +156,9 @@ export async function GET(request: NextRequest) {
             status: 200
         });
     } catch (error) {
-        console.error("Error fetching todos:", error);
+        console.error("Error fetching tasks:", error);
         return NextResponse.json({
-            error: "Failed to fetch todos"
+            error: "Failed to fetch tasks"
         }, {
             status: 500
         });

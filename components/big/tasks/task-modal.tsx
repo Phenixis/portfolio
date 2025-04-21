@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import type { Todo, Project, Importance, Duration } from "@/lib/db/schema"
+import type { Task, Project, Importance, Duration } from "@/lib/db/schema"
 import { PlusIcon, PenIcon, Minus, Plus, ChevronDown } from "lucide-react"
 import { useRef, useState, useEffect } from "react"
 import { useSWRConfig } from "swr"
@@ -35,30 +35,30 @@ import {
 } from "@/components/ui/collapsible"
 
 
-export default function TodoModal({
+export default function TaskModal({
 	className,
-	todo,
+	task,
 	currentLimit,
 	currentDueBefore,
 	currentProjects,
 }: {
 	className?: string
-	todo?: Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration },
+	task?: Task & { project: Project | null; importanceDetails: Importance; durationDetails: Duration },
 	currentLimit?: number
 	currentDueBefore?: Date
 	currentProjects?: string[]
 }) {
-	const mode = todo ? "edit" : "create"
+	const mode = task ? "edit" : "create"
 	const [open, setOpen] = useState(false)
 	const [dueDate, setDueDate] = useState<Date>(() => {
-		const initialDate = todo ? new Date(todo.due) : new Date()
+		const initialDate = task ? new Date(task.due) : new Date()
 		initialDate.setHours(0, 0, 0, 0)
 		return initialDate
 	})
 	const [showCalendar, setShowCalendar] = useState(false)
 	const calendarRef = useRef<HTMLDivElement>(null)
-	const [project, setProject] = useState<string>(todo?.project_title || (currentProjects && currentProjects.length === 1 ? currentProjects[0] : ""))
-	const [inputValue, setInputValue] = useState<string>(todo?.project_title || (currentProjects && currentProjects.length === 1 ? currentProjects[0] : ""))
+	const [project, setProject] = useState<string>(task?.project_title || (currentProjects && currentProjects.length === 1 ? currentProjects[0] : ""))
+	const [inputValue, setInputValue] = useState<string>(task?.project_title || (currentProjects && currentProjects.length === 1 ? currentProjects[0] : ""))
 	const { projects, isLoading, isError } = useSearchProject({ query: project, limit: 5 })
 	const { importanceData, durationData } = useImportanceAndDuration()
 	const { mutate } = useSWRConfig()
@@ -69,8 +69,8 @@ export default function TodoModal({
 	// Use refs to access field values
 	const closeDialogRef = useRef<() => void>(() => { })
 	const titleRef = useRef<HTMLInputElement>(null)
-	const importanceRef = useRef<string>(todo?.importance?.toString() || "0")
-	const durationRef = useRef<string>(todo?.duration?.toString() || "0")
+	const importanceRef = useRef<string>(task?.importance?.toString() || "0")
+	const durationRef = useRef<string>(task?.duration?.toString() || "0")
 	const durationTriggerRef = useRef<HTMLButtonElement>(null)
 
 	// Track if a submission is in progress (to prevent duplicates)
@@ -111,7 +111,7 @@ export default function TodoModal({
 			const title = titleRef.current?.value || ""
 			const importance = Number.parseInt(importanceRef.current || "0")
 			const duration = Number.parseInt(durationRef.current || "0")
-			const id = todo?.id
+			const id = task?.id
 
 			if (!title.trim()) {
 				isSubmittingRef.current = false
@@ -129,10 +129,10 @@ export default function TodoModal({
 				score,
 				due: dueDate,
 				project_title: project,
-				created_at: mode === "create" ? new Date() : todo?.created_at,
+				created_at: mode === "create" ? new Date() : task?.created_at,
 				updated_at: new Date(),
-				deleted_at: todo?.deleted_at || null,
-				completed_at: todo?.completed_at || null,
+				deleted_at: task?.deleted_at || null,
+				completed_at: task?.completed_at || null,
 				project: {
 					title: project,
 					completed: false,
@@ -147,12 +147,12 @@ export default function TodoModal({
 					level: duration,
 					name: durationData?.find((item) => item.level === duration)?.name || "",
 				},
-			} as Todo & { project: Project | null; importanceDetails: Importance; durationDetails: Duration }
+			} as Task & { project: Project | null; importanceDetails: Importance; durationDetails: Duration }
 
 			setOpen(false)
 
 			mutate(
-				(key) => typeof key === "string" && key.startsWith("/api/todo"),
+				(key) => typeof key === "string" && key.startsWith("/api/task"),
 				async (currentData) => {
 					if (!Array.isArray(currentData)) return currentData
 
@@ -176,7 +176,7 @@ export default function TodoModal({
 				{ revalidate: false },
 			)
 
-			fetch("/api/todo", {
+			fetch("/api/task", {
 				method: mode === "edit" ? "PUT" : "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -197,11 +197,11 @@ export default function TodoModal({
 					return response.json()
 				})
 				.then(() => {
-					mutate((key) => typeof key === "string" && key.startsWith("/api/todo"))
+					mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
 				})
 				.catch((error) => {
 					console.error("Erreur lors de l'opération:", error)
-					mutate((key) => typeof key === "string" && key.startsWith("/api/todo"))
+					mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
 				})
 
 			setDueDate(new Date())
@@ -218,7 +218,7 @@ export default function TodoModal({
 	useEffect(() => {
 		const handleKeyPress = (event: KeyboardEvent) => {
 			if (event.ctrlKey && event.key === "Enter" && open) {
-				const form = document.getElementById("todo-form") as HTMLFormElement
+				const form = document.getElementById("task-form") as HTMLFormElement
 				if (form) {
 					form.requestSubmit()
 				}
@@ -241,7 +241,7 @@ export default function TodoModal({
 			setDueDate(date)
 			setShowCalendar(false)
 			setFormChanged(
-				(mode === "edit" && todo && date.getDate() !== new Date(todo.due).getDate()) || date.getDate() !== new Date().getDate()
+				(mode === "edit" && task && date.getDate() !== new Date(task.due).getDate()) || date.getDate() !== new Date().getDate()
 			)
 		}
 	}
@@ -296,7 +296,7 @@ export default function TodoModal({
 						<Button
 							variant="outline"
 							size="sm"
-							tooltip="Create a new todo"
+							tooltip="Create a new task"
 							className="h-10 px-2 flex items-center border-none"
 						>
 							<PlusIcon className="min-w-[24px] max-w-[24px] min-h-[24px]" />
@@ -305,9 +305,9 @@ export default function TodoModal({
 				</DialogTrigger>
 				<DialogContent className="max-w-2xl">
 					<DialogHeader>
-						<DialogTitle>{mode === "edit" ? "Edit Todo" : "Create Todo"}</DialogTitle>
+						<DialogTitle>{mode === "edit" ? "Edit Task" : "Create Task"}</DialogTitle>
 					</DialogHeader>
-					<form id="todo-form" onSubmit={handleSubmit} className="space-y-4">
+					<form id="task-form" onSubmit={handleSubmit} className="space-y-4">
 						<div>
 							<Label htmlFor="title">Title</Label>
 							<Input
@@ -315,10 +315,10 @@ export default function TodoModal({
 								type="text"
 								id="title"
 								name="title"
-								defaultValue={todo?.title || ""}
+								defaultValue={task?.title || ""}
 								autoFocus
 								onChange={() => setFormChanged(
-									(titleRef.current?.value !== todo?.title && mode === "edit") || titleRef.current?.value !== ""
+									(titleRef.current?.value !== task?.title && mode === "edit") || titleRef.current?.value !== ""
 								)}
 							/>
 						</div>
@@ -327,11 +327,11 @@ export default function TodoModal({
 								<Label htmlFor="importance">Importance</Label>
 								<Select
 									name="importance"
-									defaultValue={todo?.importance?.toString() || "0"}
+									defaultValue={task?.importance?.toString() || "0"}
 									onValueChange={(value) => {
 										importanceRef.current = value
 										setFormChanged(
-											(value !== todo?.importance?.toString() && mode === "edit") || value !== "0"
+											(value !== task?.importance?.toString() && mode === "edit") || value !== "0"
 										)
 									}}
 								>
@@ -366,7 +366,7 @@ export default function TodoModal({
 											if (newDate >= today) {
 												setDueDate(newDate)
 												setFormChanged(
-													(mode === "edit" && todo && newDate.getDate() !== new Date(todo.due).getDate()) || newDate.getDate() !== new Date().getDate()
+													(mode === "edit" && task && newDate.getDate() !== new Date(task.due).getDate()) || newDate.getDate() !== new Date().getDate()
 												)
 											}
 										}}
@@ -387,7 +387,7 @@ export default function TodoModal({
 										onClick={() => {
 											setDueDate(new Date(dueDate.getTime() + 24 * 60 * 60 * 1000))
 											setFormChanged(
-												(mode === "edit" && todo && new Date(dueDate.getTime() + 24 * 60 * 60 * 1000).getDate() !== new Date(todo.due).getDate()) || new Date(dueDate.getTime() + 24 * 60 * 60 * 1000).getDate() !== new Date().getDate()
+												(mode === "edit" && task && new Date(dueDate.getTime() + 24 * 60 * 60 * 1000).getDate() !== new Date(task.due).getDate()) || new Date(dueDate.getTime() + 24 * 60 * 60 * 1000).getDate() !== new Date().getDate()
 											)
 										}}
 									>
@@ -417,11 +417,11 @@ export default function TodoModal({
 								<Label htmlFor="duration">Duration</Label>
 								<Select
 									name="duration"
-									defaultValue={todo?.duration?.toString()}
+									defaultValue={task?.duration?.toString()}
 									onValueChange={(value) => {
 										durationRef.current = value
 										setFormChanged(
-											(value !== todo?.duration?.toString() && mode === "edit") || value !== "0"
+											(value !== task?.duration?.toString() && mode === "edit") || value !== "0"
 										)
 									}}
 								>
@@ -456,7 +456,7 @@ export default function TodoModal({
 										setInputValue(e.target.value)
 										handleProjectChange(e.target.value)
 										setFormChanged(
-											(e.target.value !== todo?.project_title && mode === "edit") || e.target.value !== ""
+											(e.target.value !== task?.project_title && mode === "edit") || e.target.value !== ""
 										)
 									}}
 								/>
@@ -512,7 +512,7 @@ export default function TodoModal({
 												setInputValue(e.target.value)
 												handleProjectChange(e.target.value)
 												setFormChanged(
-													(e.target.value !== todo?.project_title && mode === "edit") || e.target.value !== ""
+													(e.target.value !== task?.project_title && mode === "edit") || e.target.value !== ""
 												)
 											}}
 										/>
