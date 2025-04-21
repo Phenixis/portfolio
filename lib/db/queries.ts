@@ -245,7 +245,6 @@ export async function getTasks(
 			const afterTaskId = row.tasksToDoAfter.after_task_id;
 			if (groupedTasks[taskId].tasksToDoAfter && !groupedTasks[taskId].tasksToDoAfter.some(t => t.id === afterTaskId)) {
 				const fullTask = await getTaskById(afterTaskId);
-				console.log(fullTask)
 				if (fullTask && fullTask.recursive === false) {
 					groupedTasks[taskId].tasksToDoAfter.push(fullTask);
 				}
