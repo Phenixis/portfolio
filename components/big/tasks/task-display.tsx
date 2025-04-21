@@ -86,26 +86,41 @@ export default function TaskDisplay({
 		try {
 			// Optimistic UI update - update the task's dependencies in all lists
 			mutate(
-				(key) => typeof key === "string" && key.startsWith("/api/task"),
-				async (currentData) => {
+				(key: unknown) => typeof key === "string" && key.startsWith("/api/task"),
+				async (currentData: unknown): Promise<unknown> => {
 					// Find the task and update its dependencies
 					if (Array.isArray(currentData)) {
-						return currentData.map((item) => {
-							if (item.id === task.id) {
-								return {
-									...item,
-									tasksToDoBefore: item.tasksToDoBefore?.filter((dep: any) => (dep.task_id !== task.id && dep.after_task_id !== id) && (dep.task_id !== id && dep.after_task_id !== task.id)),
-									tasksToDoAfter: item.tasksToDoAfter?.filter((dep: any) => (dep.task_id !== task.id && dep.after_task_id !== id) && (dep.task_id !== id && dep.after_task_id !== task.id)),
-								}
-							} else if (item.id === id) {
-								return {
-									...item,
-									tasksToDoBefore: item.tasksToDoBefore?.filter((dep: any) => (dep.task_id !== task.id && dep.after_task_id !== id) || (dep.task_id !== id && dep.after_task_id !== task.id)),
-									tasksToDoAfter: item.tasksToDoAfter?.filter((dep: any) => (dep.task_id !== task.id && dep.after_task_id !== id) || (dep.task_id !== id && dep.after_task_id !== task.id)),
+						const filteredData = currentData.map((item: TaskWithRelations | TaskWithNonRecursiveRelations) => {
+							if (item.id === task.id || item.id === id) {
+								if (item.recursive) {
+									return {
+										...item,
+										tasksToDoBefore: item.tasksToDoBefore?.filter(
+											(task) => task.id !== id && task.id !== task.id
+										),
+										tasksToDoAfter: item.tasksToDoAfter?.filter(
+											(task) => task.id !== id && task.id !== task.id
+										),
+									}
+								} else {
+									return {
+										...item,
+										tasksToDoBefore: item.tasksToDoBefore?.filter(
+											(dep) => 
+												(dep.task_id !== task.id && dep.after_task_id !== id) &&
+												(dep.task_id !== id && dep.after_task_id !== task.id)
+										),
+										tasksToDoAfter: item.tasksToDoAfter?.filter(
+											(dep) =>
+												(dep.task_id !== task.id && dep.after_task_id !== id) &&
+												(dep.task_id !== id && dep.after_task_id !== task.id),
+										),
+									}
 								}
 							}
 							return item
 						})
+						return filteredData
 					}
 					return currentData
 				},
@@ -277,7 +292,7 @@ export default function TaskDisplay({
 										<div className="flex flex-col space-y-1">
 											<p className="text-sm text-muted-foreground">Task{task.tasksToDoBefore.length > 1 && 's'} that ha{task.tasksToDoBefore.length > 1 ? 've' : 's'} to be done after:</p>
 											{task.tasksToDoBefore.map((beforeTask) => (
-												<TaskDisplay key={beforeTask.id} task={beforeTask} orderedBy={orderedBy} currentLimit={currentLimit} currentDueBefore={currentDueBefore} currentProjects={currentProjects} className="ml-6" otherId={task.id}  />
+												<TaskDisplay key={beforeTask.id} task={beforeTask} orderedBy={orderedBy} currentLimit={currentLimit} currentDueBefore={currentDueBefore} currentProjects={currentProjects} className="ml-6" otherId={task.id} />
 											))}
 										</div>
 									)
