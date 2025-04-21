@@ -10,6 +10,7 @@ const TaskModal = dynamic(() => import("@/components/big/tasks/task-modal"), { s
 import { ChevronsDownUp, ChevronsUpDown, TrashIcon } from "lucide-react"
 import { useSWRConfig } from "swr"
 import { cn } from "@/lib/utils"
+import Tooltip from "@/components/big/tooltip"
 
 export default function TaskDisplay({
 	task,
@@ -55,7 +56,7 @@ export default function TaskDisplay({
 					if (Array.isArray(currentData)) {
 						return currentData
 							.filter((item: TaskWithRelations | TaskWithNonRecursiveRelations) => item.id !== task.id)
-							.sort((a: TaskWithRelations | TaskWithNonRecursiveRelations, b: TaskWithRelations | TaskWithNonRecursiveRelations) => 
+							.sort((a: TaskWithRelations | TaskWithNonRecursiveRelations, b: TaskWithRelations | TaskWithNonRecursiveRelations) =>
 								b.score - a.score || a.title.localeCompare(b.title)
 							)
 							.slice(0, currentLimit || Number.MAX_SAFE_INTEGER)
@@ -108,7 +109,7 @@ export default function TaskDisplay({
 									return {
 										...item,
 										tasksToDoBefore: item.tasksToDoBefore?.filter(
-											(dep) => 
+											(dep) =>
 												(dep.task_id !== task.id && dep.after_task_id !== id) &&
 												(dep.task_id !== id && dep.after_task_id !== task.id)
 										),
@@ -266,23 +267,29 @@ export default function TaskDisplay({
 						>
 							{task.recursive ? (
 								isCollapsibleOpen ? (
-									<ChevronsDownUp
-										className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-black dark:text-white cursor-pointer duration-300"
-										onClick={() => setIsCollapsibleOpen(!isCollapsibleOpen)}
-									/>
+									<Tooltip tooltip="Collapse">
+										<ChevronsDownUp
+											className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-black dark:text-white cursor-pointer duration-300"
+											onClick={() => setIsCollapsibleOpen(!isCollapsibleOpen)}
+										/>
+									</Tooltip>
 								) : (
-									<ChevronsUpDown
-										className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-black dark:text-white cursor-pointer duration-300"
-										onClick={() => setIsCollapsibleOpen(!isCollapsibleOpen)}
-									/>
+									<Tooltip tooltip="Expand">
+										<ChevronsUpDown
+											className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-black dark:text-white cursor-pointer duration-300"
+											onClick={() => setIsCollapsibleOpen(!isCollapsibleOpen)}
+										/>
+									</Tooltip>
 								)
 							) : (
-								<TrashIcon
-									className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-destructive cursor-pointer lg:hover:text-destructive/80 duration-300"
-									onClick={() => {
-										deleteDependency(otherId || -1)
-									}}
-								/>
+								<Tooltip tooltip="Remove dependency between the tasks">
+									<TrashIcon
+										className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-destructive cursor-pointer lg:hover:text-destructive/80 duration-300"
+										onClick={() => {
+											deleteDependency(otherId || -1)
+										}}
+									/>
+								</Tooltip>
 							)}
 						</div>
 					</div>
@@ -322,18 +329,20 @@ export default function TaskDisplay({
 											</p>
 										)}
 										{task.due && (
-											<p className="text-sm text-muted-foreground">
-												Due:{" "}
-												<span className="text-black dark:text-white">
-													{(() => {
-														const daysDifference = Math.ceil(
-															(new Date(task.due).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-														)
-														const formatter = new Intl.RelativeTimeFormat(navigator.language || "fr-FR", { numeric: "auto" })
-														return formatter.format(daysDifference, "day")
-													})()}
-												</span>
-											</p>
+											<Tooltip tooltip={`${new Date(task.due).toLocaleDateString()}`} cursorPointer={false}>
+												<p className="text-sm text-muted-foreground">
+													Due:{" "}
+													<span className="text-black dark:text-white">
+														{(() => {
+															const daysDifference = Math.ceil(
+																(new Date(task.due).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+															)
+															const formatter = new Intl.RelativeTimeFormat(navigator.language || "fr-FR", { numeric: "auto" })
+															return formatter.format(daysDifference, "day")
+														})()}
+													</span>
+												</p>
+											</Tooltip>
 										)}
 										{task.duration !== undefined && (
 											<p className="text-sm text-muted-foreground">
@@ -349,12 +358,16 @@ export default function TaskDisplay({
 												: "w-fit xl:w-0 xl:max-w-0 xl:opacity-0",
 										)}
 									>
-										<TaskModal className="duration-300" task={task} currentDueBefore={currentDueBefore} currentLimit={currentLimit} currentProjects={currentProjects} />
+										<Tooltip tooltip="Edit task">
+											<TaskModal className="duration-300" task={task} currentDueBefore={currentDueBefore} currentLimit={currentLimit} currentProjects={currentProjects} />
+										</Tooltip>
 
-										<TrashIcon
-											className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-destructive cursor-pointer lg:hover:text-destructive/80 duration-300"
-											onClick={deleteTask}
-										/>
+										<Tooltip tooltip="Delete task">
+											<TrashIcon
+												className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-destructive cursor-pointer lg:hover:text-destructive/80 duration-300"
+												onClick={deleteTask}
+											/>
+										</Tooltip>
 									</div>
 								</div>
 							</div>

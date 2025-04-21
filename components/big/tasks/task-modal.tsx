@@ -532,7 +532,7 @@ export default function TaskModal({
 							<CollapsibleContent className="space-y-4">
 								<div className="flex space-x-4">
 									<div className="w-full">
-										<Label htmlFor="task">To Do After</Label>
+										<Label htmlFor="task">Has to be done after:</Label>
 										<Input
 											type="text"
 											id="task"
