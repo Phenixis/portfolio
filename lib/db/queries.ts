@@ -16,6 +16,10 @@ import { db } from "./drizzle"
 import * as Schema from "./schema"
 import { revalidatePath } from "next/cache"
 import { calculateUrgency } from "@/lib/utils"
+import { alias } from "drizzle-orm/pg-core"
+
+const taskToDoAfterAlias = alias(Schema.taskToDoAfter, 'taskToDoAfter');
+const taskToDoBeforeAlias = alias(Schema.taskToDoAfter, 'taskToDoBefore');
 
 // # TASK
 
@@ -43,7 +47,7 @@ export async function createTask(title: string, importance: number, dueDate: Dat
 }
 
 // ## Read
-export async function getTaskById(id: number) {
+export async function getTaskById(id: number, recursive: boolean = false) {
 	const dbresult = await db
 		.select({
 			id: Schema.task.id,
@@ -74,22 +78,85 @@ export async function getTaskById(id: number) {
 				level: Schema.duration.level,
 				name: Schema.duration.name,
 			},
+			tasksToDoAfter: {
+				id: taskToDoAfterAlias.id,
+				task_id: taskToDoAfterAlias.task_id,
+				after_task_id: taskToDoAfterAlias.after_task_id,
+				created_at: taskToDoAfterAlias.created_at,
+				updated_at: taskToDoAfterAlias.updated_at,
+				deleted_at: taskToDoAfterAlias.deleted_at,
+			},
+			tasksToDoBefore: {
+				id: taskToDoBeforeAlias.id,
+				task_id: taskToDoBeforeAlias.task_id,
+				after_task_id: taskToDoBeforeAlias.after_task_id,
+				created_at: taskToDoBeforeAlias.created_at,
+				updated_at: taskToDoBeforeAlias.updated_at,
+				deleted_at: taskToDoBeforeAlias.deleted_at,
+			},
 		})
 		.from(Schema.task)
-		.where(eq(Schema.task.id, id))
 		.leftJoin(Schema.project, eq(Schema.task.project_title, Schema.project.title))
 		.leftJoin(Schema.importance, eq(Schema.task.importance, Schema.importance.level))
-		.leftJoin(Schema.duration, eq(Schema.task.duration, Schema.duration.level)) as (Schema.Task & { project: Schema.Project | null; importanceDetails: Schema.Importance; durationDetails: Schema.Duration })[]
+		.leftJoin(Schema.duration, eq(Schema.task.duration, Schema.duration.level))
+		.leftJoin(taskToDoAfterAlias, eq(Schema.task.id, taskToDoAfterAlias.task_id)) // tasks to do after this task
+		.leftJoin(taskToDoBeforeAlias, eq(Schema.task.id, taskToDoBeforeAlias.after_task_id)) // tasks to do before this task
+		.where(and(
+			eq(Schema.task.id, id),
+			isNull(taskToDoAfterAlias.deleted_at),
+			isNull(taskToDoBeforeAlias.deleted_at),
+		))
 
 	if (!dbresult) {
 		throw new Error("Task not found")
 	}
+	
+	if (recursive) {
+		const result : any = {
+			...dbresult[0],
+			tasksToDoAfter: [],
+			tasksToDoBefore: [],
+			importanceDetails: dbresult[0].importanceDetails!,
+			durationDetails: dbresult[0].durationDetails!,
+			recursive: true,	
+		}
 
-	return dbresult[0];
+		for (const row of dbresult) {
+			const taskId = row.id;
+
+			if (row.tasksToDoAfter?.after_task_id) {
+				const afterTaskId = row.tasksToDoAfter.after_task_id;
+				if (dbresult[taskId].tasksToDoAfter && !(dbresult[taskId].tasksToDoAfter.id === afterTaskId)) {
+					const fullTask = await getTaskById(afterTaskId);
+					if (fullTask) result.tasksToDoAfter.push(fullTask);
+				}
+			}
+
+			if (row.tasksToDoBefore?.task_id) {
+				const beforeTaskId = row.tasksToDoBefore.task_id;
+				if (dbresult[taskId].tasksToDoBefore && !(dbresult[taskId].tasksToDoBefore.id === beforeTaskId)) {
+					const fullTask = await getTaskById(beforeTaskId);
+					if (fullTask) result.tasksToDoBefore.push(fullTask);
+				}
+			}
+		}
+
+		return result as Schema.TaskWithRelations;
+	} else {
+		return {...dbresult[0], recursive: false} as Schema.TaskWithNonRecursiveRelations;
+	}
+
 }
 
-export async function getTasks(orderBy: keyof Schema.Task = "score", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[], dueBefore?: Date) {
-	return await db.select({
+export async function getTasks(
+	orderBy: keyof Schema.Task = "score",
+	orderingDirection?: "asc" | "desc",
+	limit = 50,
+	projectTitles?: string[],
+	dueBefore?: Date,
+	completed?: boolean
+) {
+	const rows = await db.select({
 		id: Schema.task.id,
 		title: Schema.task.title,
 		importance: Schema.task.importance,
@@ -118,124 +185,94 @@ export async function getTasks(orderBy: keyof Schema.Task = "score", orderingDir
 			level: Schema.duration.level,
 			name: Schema.duration.name,
 		},
+		tasksToDoAfter: {
+			id: taskToDoAfterAlias.id,
+			task_id: taskToDoAfterAlias.task_id,
+			after_task_id: taskToDoAfterAlias.after_task_id,
+			created_at: taskToDoAfterAlias.created_at,
+			updated_at: taskToDoAfterAlias.updated_at,
+			deleted_at: taskToDoAfterAlias.deleted_at,
+		},
+		tasksToDoBefore: {
+			id: taskToDoBeforeAlias.id,
+			task_id: taskToDoBeforeAlias.task_id,
+			after_task_id: taskToDoBeforeAlias.after_task_id,
+			created_at: taskToDoBeforeAlias.created_at,
+			updated_at: taskToDoBeforeAlias.updated_at,
+			deleted_at: taskToDoBeforeAlias.deleted_at,
+		},
 	})
 		.from(Schema.task)
 		.leftJoin(Schema.project, eq(Schema.task.project_title, Schema.project.title))
 		.leftJoin(Schema.importance, eq(Schema.task.importance, Schema.importance.level))
 		.leftJoin(Schema.duration, eq(Schema.task.duration, Schema.duration.level))
+		.leftJoin(taskToDoAfterAlias, eq(Schema.task.id, taskToDoAfterAlias.task_id)) // tasks to do after this task
+		.leftJoin(taskToDoBeforeAlias, eq(Schema.task.id, taskToDoBeforeAlias.after_task_id)) // tasks to do before this task
 		.where(and(
 			isNull(Schema.task.deleted_at),
+			isNull(taskToDoAfterAlias.deleted_at),
+			isNull(taskToDoBeforeAlias.deleted_at),
 			projectTitles ? or(
 				inArray(Schema.task.project_title, projectTitles),
 				sql`${isNull(Schema.task.project_title)} AND ${projectTitles.includes("No project")}`
 			) : sql`1 = 1`,
-			dueBefore ? lte(Schema.task.due, dueBefore) : sql`1 = 1`
+			dueBefore ? lte(Schema.task.due, dueBefore) : sql`1 = 1`,
+			completed !== undefined ? (completed ? isNotNull(Schema.task.completed_at) : isNull(Schema.task.completed_at)) : sql`1 = 1`
 		))
 		.orderBy(
 			orderingDirection === "asc" ? asc(Schema.task[orderBy]) : desc(Schema.task[orderBy])
 		)
-		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as (Schema.Task & { project: Schema.Project | null; importanceDetails: Schema.Importance; durationDetails: Schema.Duration })[];
+		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit)
+
+	const groupedTasks: Record<string, Schema.TaskWithRelations> = {};
+
+	for (const row of rows) {
+		const taskId = row.id;
+
+		if (!groupedTasks[taskId]) {
+			groupedTasks[taskId] = {
+				...row,
+				tasksToDoAfter: [],
+				tasksToDoBefore: [],
+				importanceDetails: row.importanceDetails!,
+				durationDetails: row.durationDetails!,
+				recursive: true,
+			};
+		}
+
+		// For after tasks
+		if (row.tasksToDoAfter?.after_task_id) {
+			const afterTaskId = row.tasksToDoAfter.after_task_id;
+			if (groupedTasks[taskId].tasksToDoAfter && !groupedTasks[taskId].tasksToDoAfter.some(t => t.id === afterTaskId)) {
+				const fullTask = await getTaskById(afterTaskId);
+				console.log(fullTask)
+				if (fullTask && fullTask.recursive === false) {
+					groupedTasks[taskId].tasksToDoAfter.push(fullTask);
+				}
+			}
+		}
+
+		// For before tasks
+		if (row.tasksToDoBefore?.task_id) {
+			const beforeTaskId = row.tasksToDoBefore.task_id;
+			if (groupedTasks[taskId].tasksToDoBefore && !groupedTasks[taskId].tasksToDoBefore.some(t => t.id === beforeTaskId)) {
+				const fullTask = await getTaskById(beforeTaskId);
+				if (fullTask && fullTask.recursive === false) groupedTasks[taskId].tasksToDoBefore.push(fullTask);
+			}
+		}
+	}
+
+	const result = Object.values(groupedTasks);
+
+	return result as Schema.TaskWithRelations[]
 }
 
 export async function getCompletedTasks(orderBy: keyof Schema.Task = "completed_at", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[], dueBefore?: Date) {
-	return await db.select({
-		id: Schema.task.id,
-		title: Schema.task.title,
-		importance: Schema.task.importance,
-		urgency: Schema.task.urgency,
-		duration: Schema.task.duration,
-		due: Schema.task.due,
-		score: Schema.task.score,
-		completed_at: Schema.task.completed_at,
-		created_at: Schema.task.created_at,
-		updated_at: Schema.task.updated_at,
-		deleted_at: Schema.task.deleted_at,
-		project_title: Schema.task.project_title,
-		project: {
-			title: Schema.project.title,
-			description: Schema.project.description,
-			completed: Schema.project.completed,
-			created_at: Schema.project.created_at,
-			updated_at: Schema.project.updated_at,
-			deleted_at: Schema.project.deleted_at,
-		},
-		importanceDetails: {
-			level: Schema.importance.level,
-			name: Schema.importance.name,
-		},
-		durationDetails: {
-			level: Schema.duration.level,
-			name: Schema.duration.name,
-		},
-	})
-		.from(Schema.task)
-		.leftJoin(Schema.project, eq(Schema.task.project_title, Schema.project.title))
-		.leftJoin(Schema.importance, eq(Schema.task.importance, Schema.importance.level))
-		.leftJoin(Schema.duration, eq(Schema.task.duration, Schema.duration.level))
-		.where(and(
-			isNotNull(Schema.task.completed_at),
-			isNull(Schema.task.deleted_at),
-			projectTitles ? or(
-				inArray(Schema.task.project_title, projectTitles),
-				sql`${isNull(Schema.task.project_title)} AND ${projectTitles.includes("No project")}`
-			) : sql`1 = 1`,
-			dueBefore ? lte(Schema.task.due, dueBefore) : sql`1 = 1`
-		))
-		.orderBy(
-			orderingDirection === "asc" ? asc(Schema.task[orderBy]) : desc(Schema.task[orderBy])
-		)
-		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as (Schema.Task & { project: Schema.Project | null; importanceDetails: Schema.Importance; durationDetails: Schema.Duration })[];
+	return getTasks(orderBy, orderingDirection, limit, projectTitles, dueBefore, true);
 }
 
 export async function getUncompletedTasks(orderBy: keyof Schema.Task = "score", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[], dueBefore?: Date) {
-	return await db.select({
-		id: Schema.task.id,
-		title: Schema.task.title,
-		importance: Schema.task.importance,
-		urgency: Schema.task.urgency,
-		duration: Schema.task.duration,
-		due: Schema.task.due,
-		score: Schema.task.score,
-		completed_at: Schema.task.completed_at,
-		created_at: Schema.task.created_at,
-		updated_at: Schema.task.updated_at,
-		deleted_at: Schema.task.deleted_at,
-		project_title: Schema.task.project_title,
-		project: {
-			title: Schema.project.title,
-			description: Schema.project.description,
-			completed: Schema.project.completed,
-			created_at: Schema.project.created_at,
-			updated_at: Schema.project.updated_at,
-			deleted_at: Schema.project.deleted_at,
-		},
-		importanceDetails: {
-			level: Schema.importance.level,
-			name: Schema.importance.name,
-		},
-		durationDetails: {
-			level: Schema.duration.level,
-			name: Schema.duration.name,
-		},
-	})
-		.from(Schema.task)
-		.leftJoin(Schema.project, eq(Schema.task.project_title, Schema.project.title))
-		.leftJoin(Schema.importance, eq(Schema.task.importance, Schema.importance.level))
-		.leftJoin(Schema.duration, eq(Schema.task.duration, Schema.duration.level))
-		.where(and(
-			isNull(Schema.task.completed_at),
-			isNull(Schema.task.deleted_at),
-			projectTitles ? or(
-				inArray(Schema.task.project_title, projectTitles),
-				sql`${isNull(Schema.task.project_title)} AND ${projectTitles.includes("No project")}`
-			) : sql`1 = 1`,
-			dueBefore ? lte(Schema.task.due, dueBefore) : sql`1 = 1`
-		))
-		.orderBy(
-			orderingDirection === "asc" ? asc(Schema.task[orderBy]) : desc(Schema.task[orderBy]),
-			asc(Schema.task.title)
-		)
-		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as (Schema.Task & { project: Schema.Project | null; importanceDetails: Schema.Importance; durationDetails: Schema.Duration })[];
+	return getTasks(orderBy, orderingDirection, limit, projectTitles, dueBefore, false);
 }
 
 export async function searchTasksByTitle(title: string, limit = 50) {
@@ -421,7 +458,7 @@ export async function deleteTaskById(id: number) {
 	// Revalidate all pages that might show todos
 	revalidatePath("/", 'layout')
 
-	if (result) {
+	if (result && result.length > 0) {
 		return result[0].id
 	}
 
@@ -523,7 +560,7 @@ export async function deleteMeteoByDay(day: string) {
 	// Revalidate all pages that might show meteo
 	revalidatePath("/", 'layout')
 
-	if (result) {
+	if (result && result.length > 0) {
 		return result[0].day
 	}
 
@@ -716,7 +753,7 @@ export async function deleteProject(title: string) {
 	// Revalidate all pages that might show projects
 	revalidatePath("/", 'layout')
 
-	if (result) {
+	if (result && result.length > 0) {
 		return result[0].title
 	}
 
@@ -803,7 +840,7 @@ export async function deleteExerciceById(id: number) {
 	// Revalidate all pages that might show exercices
 	revalidatePath("/", "layout")
 
-	if (result) {
+	if (result && result.length > 0) {
 		return result[0].id
 	}
 
@@ -890,7 +927,7 @@ export async function deleteSeanceById(id: number) {
 	// Revalidate all pages that might show seances
 	revalidatePath("/", "layout")
 
-	if (result) {
+	if (result && result.length > 0) {
 		return result[0].id
 	}
 
@@ -1016,7 +1053,7 @@ export async function deleteSeanceExerciceById(id: number) {
 	// Revalidate all pages that might show seance exercices
 	revalidatePath("/", "layout")
 
-	if (result) {
+	if (result && result.length > 0) {
 		return result[0].id
 	}
 
@@ -1141,7 +1178,7 @@ export async function deleteWorkoutById(id: number) {
 	// Revalidate all pages that might show workouts
 	revalidatePath("/", "layout")
 
-	if (result) {
+	if (result && result.length > 0) {
 		return result[0].id
 	}
 
@@ -1301,7 +1338,7 @@ export async function deleteSerieById(id: number) {
 	// Revalidate all pages that might show series
 	revalidatePath("/", "layout")
 
-	if (result) {
+	if (result && result.length > 0) {
 		return result[0].id
 	}
 
@@ -1400,11 +1437,11 @@ export async function updateTaskToDoAfter(
 export async function deleteTaskToDoAfterById(id: number) {
 	const result = await db
 		.update(Schema.taskToDoAfter)
-		.set({ deleted_at: sql`CURRENT_TIMESTAMP` })
+		.set({ deleted_at: sql`CURRENT_TIMESTAMP`, updated_at: sql`CURRENT_TIMESTAMP` })
 		.where(eq(Schema.taskToDoAfter.id, id))
 		.returning({ id: Schema.taskToDoAfter.id })
 
-	if (result) {
+	if (result && result.length > 0) {
 		return result[0].id
 	}
 
@@ -1414,11 +1451,11 @@ export async function deleteTaskToDoAfterById(id: number) {
 export async function deleteTaskToDoAfterByTodoId(task_id: number) {
 	const result = await db
 		.update(Schema.taskToDoAfter)
-		.set({ deleted_at: sql`CURRENT_TIMESTAMP` })
+		.set({ deleted_at: sql`CURRENT_TIMESTAMP`, updated_at: sql`CURRENT_TIMESTAMP` })
 		.where(eq(Schema.taskToDoAfter.task_id, task_id))
 		.returning({ id: Schema.taskToDoAfter.id })
 
-	if (result) {
+	if (result && result.length > 0) {
 		return result[0].id
 	}
 
@@ -1428,11 +1465,11 @@ export async function deleteTaskToDoAfterByTodoId(task_id: number) {
 export async function deleteTaskToDoAfterByAfterId(after_task_id: number) {
 	const result = await db
 		.update(Schema.taskToDoAfter)
-		.set({ deleted_at: sql`CURRENT_TIMESTAMP` })
+		.set({ deleted_at: sql`CURRENT_TIMESTAMP`, updated_at: sql`CURRENT_TIMESTAMP` })
 		.where(eq(Schema.taskToDoAfter.after_task_id, after_task_id))
 		.returning({ id: Schema.taskToDoAfter.id })
 
-	if (result) {
+	if (result && result.length > 0) {
 		return result[0].id
 	}
 

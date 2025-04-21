@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useOptimistic, startTransition, useRef } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import type { Task, TaskWithRelations } from "@/lib/db/schema"
+import type { Task, TaskWithRelations, TaskWithNonRecursiveRelations } from "@/lib/db/schema"
 import dynamic from "next/dynamic"
 const TaskModal = dynamic(() => import("@/components/big/tasks/task-modal"), { ssr: false })
 import { ChevronsDownUp, ChevronsUpDown, TrashIcon } from "lucide-react"
@@ -19,7 +19,7 @@ export default function TaskDisplay({
 	currentDueBefore,
 	currentProjects,
 }: {
-	task?: TaskWithRelations
+	task?: TaskWithRelations | TaskWithNonRecursiveRelations
 	orderedBy?: keyof Task
 	className?: string
 	currentLimit?: number
@@ -188,68 +188,103 @@ export default function TaskDisplay({
 								{task.title}
 							</p>
 						</div>
-						<div
-							className={cn(
-								"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center",
-								isHovering
-									? "w-fit xl:w-full xl:max-w-[16px] xl:opacity-100 ml-1"
-									: "w-fit xl:w-0 xl:max-w-0 xl:opacity-0",
+						{
+							task.recursive && (
+								<div
+									className={cn(
+										"overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center",
+										isHovering
+											? "w-fit xl:w-full xl:max-w-[16px] xl:opacity-100 ml-1"
+											: "w-fit xl:w-0 xl:max-w-0 xl:opacity-0",
+									)}
+								>
+									{isCollapsibleOpen ? (
+										<ChevronsDownUp
+											className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-black dark:text-white cursor-pointer duration-300"
+											onClick={() => setIsCollapsibleOpen(!isCollapsibleOpen)}
+										/>
+									) : (
+										<ChevronsUpDown
+											className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-black dark:text-white cursor-pointer duration-300"
+											onClick={() => setIsCollapsibleOpen(!isCollapsibleOpen)}
+										/>
+									)}
+								</div>
 							)}
-						>
-							{isCollapsibleOpen ? (
-								<ChevronsDownUp
-									className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-black dark:text-white cursor-pointer duration-300"
-									onClick={() => setIsCollapsibleOpen(!isCollapsibleOpen)}
-								/>
-							) : (
-								<ChevronsUpDown
-									className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-black dark:text-white cursor-pointer duration-300"
-									onClick={() => setIsCollapsibleOpen(!isCollapsibleOpen)}
-								/>
-							)}
-						</div>
 					</div>
-					<div className={`flex space-x-4 justify-between ${!isCollapsibleOpen && "hidden"}`}>
-						<div className="space-y-1">
-							{task.project_title && (
-								<p className="text-sm text-muted-foreground">
-									Project: <span className="text-black dark:text-white">{task.project_title}</span>
-								</p>
-							)}
-							{task.importance && (
-								<p className="text-sm text-muted-foreground">
-									Importance: <span className="text-black dark:text-white">{task.importanceDetails.name}</span>
-								</p>
-							)}
-							{task.due && (
-								<p className="text-sm text-muted-foreground">
-									Due:{" "}
-									<span className="text-black dark:text-white">
-										{(() => {
-											const daysDifference = Math.ceil(
-												(new Date(task.due).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-											)
-											const formatter = new Intl.RelativeTimeFormat(navigator.language || "fr-FR", { numeric: "auto" })
-											return formatter.format(daysDifference, "day")
-										})()}
-									</span>
-								</p>
-							)}
-							{task.duration !== undefined && (
-								<p className="text-sm text-muted-foreground">
-									Duration: <span className="text-black dark:text-white">{task.durationDetails.name}</span>
-								</p>
-							)}
-						</div>
-						<div className="flex flex-col justify-between">
-							<TaskModal className="duration-300" task={task} currentDueBefore={currentDueBefore} currentLimit={currentLimit} currentProjects={currentProjects} />
+					{
+						task.recursive && (
+							<div className={`flex flex-col space-y-1 ${!isCollapsibleOpen && "hidden"}`}>
+								{
+									task.tasksToDoBefore && task.tasksToDoBefore.length > 0 && (
+										<div className="flex flex-col space-y-1">
+											<p className="text-sm text-muted-foreground">Tasks to do before:</p>
+											{task.tasksToDoBefore.map((beforeTask) => (
+												<TaskDisplay key={beforeTask.id} task={beforeTask} orderedBy={orderedBy} currentLimit={currentLimit} currentDueBefore={currentDueBefore} currentProjects={currentProjects} className="ml-6" />
+											))}
+										</div>
+									)
+								}
+								{
+									task.tasksToDoAfter && task.tasksToDoAfter.length > 0 && (
+										<div className="flex flex-col space-y-1">
+											<p className="text-sm text-muted-foreground">Tasks to do after:</p>
+											{task.tasksToDoAfter.map((afterTask) => (
+												<TaskDisplay key={afterTask.id} task={afterTask} orderedBy={orderedBy} currentLimit={currentLimit} currentDueBefore={currentDueBefore} currentProjects={currentProjects} className="ml-6" />
+											))}
+										</div>
+									)
+								}
+								<div className={`flex space-x-4 justify-between`}>
+									<div className="space-y-1">
+										{task.project_title && (
+											<p className="text-sm text-muted-foreground">
+												Project: <span className="text-black dark:text-white">{task.project_title}</span>
+											</p>
+										)}
+										{task.importance && (
+											<p className="text-sm text-muted-foreground">
+												Importance: <span className="text-black dark:text-white">{task.importanceDetails.name}</span>
+											</p>
+										)}
+										{task.due && (
+											<p className="text-sm text-muted-foreground">
+												Due:{" "}
+												<span className="text-black dark:text-white">
+													{(() => {
+														const daysDifference = Math.ceil(
+															(new Date(task.due).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+														)
+														const formatter = new Intl.RelativeTimeFormat(navigator.language || "fr-FR", { numeric: "auto" })
+														return formatter.format(daysDifference, "day")
+													})()}
+												</span>
+											</p>
+										)}
+										{task.duration !== undefined && (
+											<p className="text-sm text-muted-foreground">
+												Duration: <span className="text-black dark:text-white">{task.durationDetails.name}</span>
+											</p>
+										)}
+									</div>
+									<div
+										className={cn(
+											"overflow-hidden transition-all duration-300 ease-in-out flex flex-col items-center justify-between",
+											isHovering
+												? "w-fit xl:w-full xl:max-w-[16px] xl:opacity-100 ml-1"
+												: "w-fit xl:w-0 xl:max-w-0 xl:opacity-0",
+										)}
+									>
+										<TaskModal className="duration-300" task={task} currentDueBefore={currentDueBefore} currentLimit={currentLimit} currentProjects={currentProjects} />
 
-							<TrashIcon
-								className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-destructive cursor-pointer lg:hover:text-destructive/80 duration-300"
-								onClick={deleteTask}
-							/>
-						</div>
-					</div>
+										<TrashIcon
+											className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-destructive cursor-pointer lg:hover:text-destructive/80 duration-300"
+											onClick={deleteTask}
+										/>
+									</div>
+								</div>
+							</div>
+						)}
 				</>
 			) : (
 				<div className="flex space-x-2 items-center w-full">

@@ -196,7 +196,8 @@ export const exerciceRelations = relations(exercice, ({ many }) => ({
 
 export type Task = typeof task.$inferSelect;
 export type NewTask = typeof task.$inferInsert;
-export type TaskWithRelations = Task & { project: Project | null; importanceDetails: Importance; durationDetails: Duration };
+export type TaskWithNonRecursiveRelations = Task & { project: Project | null; importanceDetails: Importance; durationDetails: Duration; tasksToDoAfter: TaskToDoAfter[] | null, tasksToDoBefore: TaskToDoAfter[] | null, recursive: false };
+export type TaskWithRelations = Task & { project: Project | null; importanceDetails: Importance; durationDetails: Duration; tasksToDoAfter: TaskWithNonRecursiveRelations[] | null, tasksToDoBefore: TaskWithNonRecursiveRelations[] | null, recursive: true };
 export type TaskToDoAfter = typeof taskToDoAfter.$inferSelect;
 export type NewTaskToDoAfter = typeof taskToDoAfter.$inferInsert;
 export type Meteo = typeof meteo.$inferSelect;
