@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import type { Todo, Project, Importance, Duration } from "@/lib/db/schema"
-import { PlusIcon, PenIcon, Minus, Plus } from "lucide-react"
+import { PlusIcon, PenIcon, Minus, Plus, ChevronDown } from "lucide-react"
 import { useRef, useState, useEffect } from "react"
 import { useSWRConfig } from "swr"
 import { Calendar } from "@/components/ui/calendar"
@@ -28,6 +28,12 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+
 
 export default function TodoModal({
 	className,
@@ -58,9 +64,10 @@ export default function TodoModal({
 	const { mutate } = useSWRConfig()
 	const [formChanged, setFormChanged] = useState(false)
 	const [showConfirmDialog, setShowConfirmDialog] = useState(false)
-	const closeDialogRef = useRef<() => void>(() => { })
+	const [showAdvancedOptions, setShowAdvancedOptions] = useState(false)
 
 	// Use refs to access field values
+	const closeDialogRef = useRef<() => void>(() => { })
 	const titleRef = useRef<HTMLInputElement>(null)
 	const importanceRef = useRef<string>(todo?.importance?.toString() || "0")
 	const durationRef = useRef<string>(todo?.duration?.toString() || "0")
@@ -234,7 +241,7 @@ export default function TodoModal({
 			setDueDate(date)
 			setShowCalendar(false)
 			setFormChanged(
-				(mode === "edit" && todo && date.getDate() !== new Date(todo.due).getDate()) || date.getDate() !== new Date().getDate() 
+				(mode === "edit" && todo && date.getDate() !== new Date(todo.due).getDate()) || date.getDate() !== new Date().getDate()
 			)
 		}
 	}
@@ -359,7 +366,7 @@ export default function TodoModal({
 											if (newDate >= today) {
 												setDueDate(newDate)
 												setFormChanged(
-													(mode === "edit" && todo && newDate.getDate() !== new Date(todo.due).getDate()) || newDate.getDate() !== new Date().getDate() 
+													(mode === "edit" && todo && newDate.getDate() !== new Date(todo.due).getDate()) || newDate.getDate() !== new Date().getDate()
 												)
 											}
 										}}
@@ -487,6 +494,64 @@ export default function TodoModal({
 								)}
 							</div>
 						</div>
+						<Collapsible className="w-full" open={showAdvancedOptions} onOpenChange={setShowAdvancedOptions}>
+							<CollapsibleTrigger className="flex text-sm font-medium text-muted-foreground">
+								Advanced Options
+								<ChevronDown className={`ml-2 h-4 w-4 duration-300 ${showAdvancedOptions && "rotate-180"}`} />
+							</CollapsibleTrigger>
+							<CollapsibleContent className="space-y-4">
+								<div className="flex space-x-4">
+									<div className="w-full">
+										<Label htmlFor="project">Task Depends On</Label>
+										<Input
+											type="text"
+											id="project"
+											name="project"
+											value={inputValue}
+											onChange={(e) => {
+												setInputValue(e.target.value)
+												handleProjectChange(e.target.value)
+												setFormChanged(
+													(e.target.value !== todo?.project_title && mode === "edit") || e.target.value !== ""
+												)
+											}}
+										/>
+										{project && !(projects && projects.length == 1 && projects[0].title == project) && (
+											<div className="mt-1 overflow-y-auto rounded-md border border-border bg-popover shadow-md">
+												{isLoading ? (
+													<div className="p-2 text-sm text-muted-foreground">Loading projects...</div>
+												) : isError ? (
+													<div className="p-2 text-sm text-destructive">Error loading projects</div>
+												) : projects && projects.length > 0 ? (
+													<ul className="py-1">
+														{projects.map((proj, index) => (
+															<li
+																key={index}
+																className="cursor-pointer px-3 py-2 text-sm lg:hover:bg-accent"
+																onClick={() => {
+																	const selectedProject = proj.title
+																	setInputValue(selectedProject)
+																	setProject(selectedProject)
+																	setTimeout(() => {
+																		if (durationTriggerRef.current) {
+																			durationTriggerRef.current.focus()
+																		}
+																	}, 0)
+																}}
+															>
+																{proj.title}
+															</li>
+														))}
+													</ul>
+												) : (
+													<div className="p-2 text-sm text-muted-foreground">No projects found</div>
+												)}
+											</div>
+										)}
+									</div>
+								</div>
+							</CollapsibleContent>
+						</Collapsible>
 						<DialogFooter>
 							<Button type="submit">{mode === "edit" ? "Save" : "Create"}</Button>
 						</DialogFooter>
