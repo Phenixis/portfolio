@@ -224,6 +224,9 @@ export default function TaskModal({
 			})
 			setProjectInputValue("")
 			setProject("")
+			setToDoAfter(-1)
+			setToDoAfterInputValue("")
+			setToDoAfterDebounceValue("")
 			setFormChanged(false)
 		} catch (error) {
 			console.error("Erreur lors de la soumission:", error)
