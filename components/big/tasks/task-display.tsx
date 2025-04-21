@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useOptimistic, startTransition, useRef } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import type { Task, Project, Importance, Duration } from "@/lib/db/schema"
+import type { Task, TaskWithRelations } from "@/lib/db/schema"
 import dynamic from "next/dynamic"
 const TaskModal = dynamic(() => import("@/components/big/tasks/task-modal"), { ssr: false })
 import { ChevronsDownUp, ChevronsUpDown, TrashIcon } from "lucide-react"
@@ -19,7 +19,7 @@ export default function TaskDisplay({
 	currentDueBefore,
 	currentProjects,
 }: {
-	task?: Task & { project: Project | null; importanceDetails: Importance; durationDetails: Duration }
+	task?: TaskWithRelations
 	orderedBy?: keyof Task
 	className?: string
 	currentLimit?: number

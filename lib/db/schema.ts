@@ -196,6 +196,7 @@ export const exerciceRelations = relations(exercice, ({ many }) => ({
 
 export type Task = typeof task.$inferSelect;
 export type NewTask = typeof task.$inferInsert;
+export type TaskWithRelations = Task & { project: Project | null; importanceDetails: Importance; durationDetails: Duration };
 export type TaskToDoAfter = typeof taskToDoAfter.$inferSelect;
 export type NewTaskToDoAfter = typeof taskToDoAfter.$inferInsert;
 export type Meteo = typeof meteo.$inferSelect;

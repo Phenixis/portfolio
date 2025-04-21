@@ -5,7 +5,7 @@ import dynamic from "next/dynamic"
 const TaskModal = dynamic(() => import("@/components/big/tasks/task-modal"), { ssr: false })
 import { cn } from "@/lib/utils"
 import Link from "next/link"
-import type { Task, Project, Importance, Duration } from "@/lib/db/schema"
+import type { Task, Project, Importance, Duration, TaskWithRelations } from "@/lib/db/schema"
 import { useState, useCallback, useTransition, useMemo, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Filter, Square, SquareMinus, FolderTree, Calendar } from "lucide-react"
@@ -203,7 +203,7 @@ export function TasksCard({
 				string,
 				{
 					name: string
-					tasks: (Task & { project: Project | null; importanceDetails: Importance; durationDetails: Duration })[]
+					tasks: TaskWithRelations[]
 				}
 			>,
 		)
@@ -397,7 +397,7 @@ export function TasksCard({
 							.slice(0, limit)
 							.map(
 								(
-									task: Task & { project: Project | null; importanceDetails: Importance; durationDetails: Duration },
+									task: TaskWithRelations
 								) => (
 									<TaskDisplay key={task.id} task={task} orderedBy={orderBy} className="mt-1" currentLimit={limit} currentDueBefore={dueBeforeDate} currentProjects={selectedProjects} />
 								),

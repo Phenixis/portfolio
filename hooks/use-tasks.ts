@@ -1,6 +1,6 @@
 "use client"
 
-import type { Task, Project, Duration, Importance } from "@/lib/db/schema"
+import type { Task, TaskWithRelations } from "@/lib/db/schema"
 import { useFilteredData } from "./use-filtered-data"
 
 export function useTasks({
@@ -35,7 +35,7 @@ export function useTasks({
 
   return {
     tasks:
-      (data as (Task & { project: Project | null; importanceDetails: Importance; durationDetails: Duration })[]) || [],
+      (data as TaskWithRelations[]) || [],
     isLoading,
     isError,
     mutate,

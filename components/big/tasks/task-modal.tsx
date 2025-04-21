@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import type { Task, Project, Importance, Duration } from "@/lib/db/schema"
+import type { Project, TaskWithRelations } from "@/lib/db/schema"
 import { PlusIcon, PenIcon, Minus, Plus, ChevronDown } from "lucide-react"
 import { useRef, useState, useEffect } from "react"
 import { useSWRConfig } from "swr"
@@ -44,7 +44,7 @@ export default function TaskModal({
 	currentProjects,
 }: {
 	className?: string
-	task?: Task & { project: Project | null; importanceDetails: Importance; durationDetails: Duration },
+	task?: TaskWithRelations,
 	currentLimit?: number
 	currentDueBefore?: Date
 	currentProjects?: string[]
@@ -154,8 +154,8 @@ export default function TaskModal({
 				durationDetails: {
 					level: duration,
 					name: durationData?.find((item) => item.level === duration)?.name || "",
-				},
-			} as Task & { project: Project | null; importanceDetails: Importance; durationDetails: Duration }
+				}, 
+			} as TaskWithRelations // TODO: add the after task and before task
 
 			setOpen(false)
 
@@ -178,6 +178,7 @@ export default function TaskModal({
 						}
 						return true
 					})
+
 					const sortedData = filteredData.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
 					return currentLimit ? sortedData.slice(0, currentLimit) : sortedData
 				},
@@ -196,6 +197,7 @@ export default function TaskModal({
 					dueDate: dueDate.toISOString(),
 					duration,
 					projectTitle: project,
+					toDoAfterId: toDoAfter,
 				}),
 			})
 				.then((response) => {
@@ -260,7 +262,8 @@ export default function TaskModal({
 
 	const handleToDoAfterChange = useDebouncedCallback((value: string) => {
 		setToDoAfterDebounceValue(value)
-	}, 200)7
+	}, 200)
+	
 	// Handle dialog close attempt
 	const handleCloseAttempt = () => {
 		if (formChanged) {
