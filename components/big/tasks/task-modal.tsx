@@ -63,10 +63,13 @@ export default function TaskModal({
 	const [projectProjectInputValue, setProjectInputValue] = useState<string>(task?.project_title || (currentProjects && currentProjects.length === 1 ? currentProjects[0] : ""))
 	const { projects, isLoading, isError } = useSearchProject({ query: project, limit: 5 })
 
-	const [toDoAfter, setToDoAfter] = useState<number>(-1)
-	const [toDoAfterInputValue, setToDoAfterInputValue] = useState<string>("")
-	const [toDoAfterDebounceValue, setToDoAfterDebounceValue] = useState<string>("")
-	const { tasks, isLoading: isLoadingTasks, isError: isErrorTasks } = useSearchTasks({ query: toDoAfterDebounceValue, limit: 5 })
+	const [toDoAfter, setToDoAfter] = useState<number>(task && task.tasksToDoAfter && task.tasksToDoAfter.length > 0 ? task.tasksToDoAfter[0].id : -1)
+	const [toDoAfterInputValue, setToDoAfterInputValue] = useState<string>(task && task.tasksToDoAfter && task.tasksToDoAfter.length > 0 ? task.tasksToDoAfter[0].title : "")
+	const [toDoAfterDebounceValue, setToDoAfterDebounceValue] = useState<string>(task && task.tasksToDoAfter && task.tasksToDoAfter.length > 0 ? task.tasksToDoAfter[0].title : "")
+	const { tasks, isLoading: isLoadingTasks, isError: isErrorTasks } = useSearchTasks({ query: toDoAfterDebounceValue, limit: 5, excludeIds: task ? [
+		task.id,
+		task.tasksToDoBefore ? task.tasksToDoBefore.map((task) => task.id) : -1,
+	].flat() : [] })
 
 	const { importanceData, durationData } = useImportanceAndDuration()
 	const { mutate } = useSWRConfig()
@@ -540,13 +543,14 @@ export default function TaskModal({
 													<div className="p-2 text-sm text-destructive">Error loading tasks</div>
 												) : tasks && tasks.length > 0 ? (
 													<ul className="py-1">
-														{tasks.map((task, index) => (
+														{tasks.map((currentTask, index) => (
 															<li
 																key={index}
 																className="cursor-pointer px-3 py-2 text-sm lg:hover:bg-accent"
 																onClick={() => {
-																	setToDoAfterInputValue(task.title)
-																	setToDoAfter(task.id)
+																	setToDoAfterInputValue(currentTask.title)
+																	setToDoAfterDebounceValue(currentTask.title)
+																	setToDoAfter(currentTask.id)
 																	setTimeout(() => {
 																		if (durationTriggerRef.current) {
 																			durationTriggerRef.current.focus()
@@ -554,7 +558,7 @@ export default function TaskModal({
 																	}, 0)
 																}}
 															>
-																{task.title}
+																{currentTask.title}
 															</li>
 														))}
 													</ul>
