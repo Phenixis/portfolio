@@ -235,7 +235,8 @@ export async function getTasks(
 		// For after tasks
 		if (row.tasksToDoAfter?.after_task_id) {
 			const afterTaskId = row.tasksToDoAfter.after_task_id;
-			if (groupedTasks[taskId].tasksToDoAfter && groupedTasks[taskId].deleted_at === null && !groupedTasks[taskId].tasksToDoAfter.some(t => t.id === afterTaskId)) {
+			if (groupedTasks[taskId].tasksToDoAfter && row.tasksToDoAfter.deleted_at === null && !groupedTasks[taskId].tasksToDoAfter.some(t => t.id === afterTaskId && t.deleted_at === null)) {
+				
 				const fullTask = await getTaskById(afterTaskId);
 				if (fullTask && fullTask.recursive === false) {
 					groupedTasks[taskId].tasksToDoAfter.push(fullTask);
@@ -246,7 +247,7 @@ export async function getTasks(
 		// For before tasks
 		if (row.tasksToDoBefore?.task_id) {
 			const beforeTaskId = row.tasksToDoBefore.task_id;
-			if (groupedTasks[taskId].tasksToDoBefore && groupedTasks[taskId].deleted_at === null && !groupedTasks[taskId].tasksToDoBefore.some(t => t.id === beforeTaskId)) {
+			if (groupedTasks[taskId].tasksToDoBefore && row.tasksToDoBefore.deleted_at === null && !groupedTasks[taskId].tasksToDoBefore.some(t => t.id === beforeTaskId)) {
 				const fullTask = await getTaskById(beforeTaskId);
 				if (fullTask && fullTask.recursive === false) groupedTasks[taskId].tasksToDoBefore.push(fullTask);
 			}
