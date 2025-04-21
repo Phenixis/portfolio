@@ -403,6 +403,11 @@ export default function TaskDisplay({
 							)}
 							<div className={`flex space-x-4 justify-between`}>
 								<div className="space-y-1">
+									<Tooltip tooltip={`(Urgency * Importance) - Duration = Score<br/>(${task.urgency} * ${task.importance}) - ${task.duration} = ${task.score}`}>
+										<p className="text-sm text-muted-foreground">
+											Score: <span className="text-black dark:text-white">{task.score}</span>
+										</p>
+									</Tooltip>
 									{task.project_title && (
 										<p className="text-sm text-muted-foreground">
 											Project: <span className="text-black dark:text-white">{task.project_title}</span>
@@ -478,7 +483,7 @@ export default function TaskDisplay({
 					<DialogHeader>
 						<DialogTitle>Delete Task</DialogTitle>
 						<DialogDescription>
-							Are you sure you want to delete this task?<br/><br/>You will be able to find it back in your Trash (Settings &gt; Trash &gt; Tasks).
+							Are you sure you want to delete this task?<br /><br />You will be able to find it back in your Trash (Settings &gt; Trash &gt; Tasks).
 						</DialogDescription>
 					</DialogHeader>
 					<DialogFooter className="flex justify-between sm:justify-between">
@@ -498,7 +503,7 @@ export default function TaskDisplay({
 					<DialogHeader>
 						<DialogTitle>Remove Dependency</DialogTitle>
 						<DialogDescription>
-							Are you sure you want to remove this dependency?<br/><br/>This action cannot be undone.
+							Are you sure you want to remove this dependency?<br /><br />This action cannot be undone.
 						</DialogDescription>
 					</DialogHeader>
 					<DialogFooter className="flex justify-between sm:justify-between">
@@ -523,7 +528,7 @@ export default function TaskDisplay({
 					<DialogHeader>
 						<DialogTitle>Mark Task as Complete</DialogTitle>
 						<DialogDescription>
-							This task has tasks that should be done before that haven't been completed yet.<br/><br/>Are you sure you want to mark it as
+							This task has tasks that should be done before that haven't been completed yet.<br /><br />Are you sure you want to mark it as
 							complete?
 						</DialogDescription>
 					</DialogHeader>
