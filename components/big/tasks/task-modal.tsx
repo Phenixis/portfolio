@@ -58,12 +58,16 @@ export default function TaskModal({
 	})
 	const [showCalendar, setShowCalendar] = useState(false)
 	const calendarRef = useRef<HTMLDivElement>(null)
+
 	const [project, setProject] = useState<string>(task?.project_title || (currentProjects && currentProjects.length === 1 ? currentProjects[0] : ""))
 	const [projectProjectInputValue, setProjectInputValue] = useState<string>(task?.project_title || (currentProjects && currentProjects.length === 1 ? currentProjects[0] : ""))
+	const { projects, isLoading, isError } = useSearchProject({ query: project, limit: 5 })
+
 	const [toDoAfter, setToDoAfter] = useState<number>(-1)
 	const [toDoAfterInputValue, setToDoAfterInputValue] = useState<string>("")
-	const { projects, isLoading, isError } = useSearchProject({ query: projectProjectInputValue, limit: 5 })
-	const { tasks, isLoading: isLoadingTasks, isError: isErrorTasks } = useSearchTasks({ query: toDoAfterInputValue, limit: 5 })
+	const [toDoAfterDebounceValue, setToDoAfterDebounceValue] = useState<string>("")
+	const { tasks, isLoading: isLoadingTasks, isError: isErrorTasks } = useSearchTasks({ query: toDoAfterDebounceValue, limit: 5 })
+
 	const { importanceData, durationData } = useImportanceAndDuration()
 	const { mutate } = useSWRConfig()
 	const [formChanged, setFormChanged] = useState(false)
@@ -250,6 +254,13 @@ export default function TaskModal({
 		}
 	}
 
+	const handleProjectChange = useDebouncedCallback((value: string) => {
+		setProject(value)
+	}, 200)
+
+	const handleToDoAfterChange = useDebouncedCallback((value: string) => {
+		setToDoAfterDebounceValue(value)
+	}, 200)7
 	// Handle dialog close attempt
 	const handleCloseAttempt = () => {
 		if (formChanged) {
@@ -454,6 +465,7 @@ export default function TaskModal({
 									value={projectProjectInputValue}
 									onChange={(e) => {
 										setProjectInputValue(e.target.value)
+										handleProjectChange(e.target.value)
 										setFormChanged(
 											(e.target.value !== task?.project_title && mode === "edit") || e.target.value !== ""
 										)
@@ -509,7 +521,7 @@ export default function TaskModal({
 											value={toDoAfterInputValue}
 											onChange={(e) => {
 												setToDoAfterInputValue(e.target.value)
-												// handleToDoAfterChange(e.target.value)
+												handleToDoAfterChange(e.target.value)
 												setFormChanged(
 													(mode === "edit" && task && e.target.value !== task.project_title) || e.target.value !== ""
 												)
