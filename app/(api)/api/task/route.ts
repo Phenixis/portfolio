@@ -126,8 +126,15 @@ export async function PUT(request: NextRequest) {
 				)
 				
 				// Create new relation if there isn't already one, toDoAfterId is provided and not -1
-				if (filteredRelations.length === 0 && toDoAfterId && toDoAfterId !== "-1") {
+				if (filteredRelations.length === 0 && toDoAfterId) {
 					await createTaskToDoAfter(Number(id), Number(toDoAfterId))
+				} else {
+					filteredRelations.map(async (relation) => {
+						const task = await getTaskById(relation.after_task_id)
+						if (task) {
+							await updateTask(task.id, task.title, task.importance, (new Date(task.due) < new Date(dueDate) ? new Date(dueDate) : new Date(task.due)), task.duration, task.project_title || undefined)
+						}
+					})
 				}
 			}
 		}
