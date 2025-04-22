@@ -104,15 +104,15 @@ export async function getTaskById(id: number, recursive: boolean = false) {
 		.where(and(
 			eq(Schema.task.id, id),
 		))
-	
+
 	if (recursive) {
-		const result : any = {
+		const result: any = {
 			...dbresult[0],
 			tasksToDoAfter: [],
 			tasksToDoBefore: [],
 			importanceDetails: dbresult[0].importanceDetails!,
 			durationDetails: dbresult[0].durationDetails!,
-			recursive: true,	
+			recursive: true,
 		}
 
 		for (const row of dbresult) {
@@ -137,7 +137,7 @@ export async function getTaskById(id: number, recursive: boolean = false) {
 
 		return result as Schema.TaskWithRelations;
 	} else {
-		return dbresult[0] ? {...dbresult[0], recursive: false} as Schema.TaskWithNonRecursiveRelations : null;
+		return dbresult[0] ? { ...dbresult[0], recursive: false } as Schema.TaskWithNonRecursiveRelations : null;
 	}
 
 }
@@ -148,79 +148,113 @@ export async function getTasks(
 	limit = 50,
 	projectTitles?: string[],
 	dueBefore?: Date,
-	completed?: boolean
+	completed?: boolean,
 ) {
-	const rows = await db.select({
-		id: Schema.task.id,
-		title: Schema.task.title,
-		importance: Schema.task.importance,
-		urgency: Schema.task.urgency,
-		duration: Schema.task.duration,
-		due: Schema.task.due,
-		score: Schema.task.score,
-		completed_at: Schema.task.completed_at,
-		created_at: Schema.task.created_at,
-		updated_at: Schema.task.updated_at,
-		deleted_at: Schema.task.deleted_at,
-		project_title: Schema.task.project_title,
-		project: {
-			title: Schema.project.title,
-			description: Schema.project.description,
-			completed: Schema.project.completed,
-			created_at: Schema.project.created_at,
-			updated_at: Schema.project.updated_at,
-			deleted_at: Schema.project.deleted_at,
-		},
-		importanceDetails: {
-			level: Schema.importance.level,
-			name: Schema.importance.name,
-		},
-		durationDetails: {
-			level: Schema.duration.level,
-			name: Schema.duration.name,
-		},
-		tasksToDoAfter: {
-			id: taskToDoAfterAlias.id,
-			task_id: taskToDoAfterAlias.task_id,
-			after_task_id: taskToDoAfterAlias.after_task_id,
-			created_at: taskToDoAfterAlias.created_at,
-			updated_at: taskToDoAfterAlias.updated_at,
-			deleted_at: taskToDoAfterAlias.deleted_at,
-		},
-		tasksToDoBefore: {
-			id: taskToDoBeforeAlias.id,
-			task_id: taskToDoBeforeAlias.task_id,
-			after_task_id: taskToDoBeforeAlias.after_task_id,
-			created_at: taskToDoBeforeAlias.created_at,
-			updated_at: taskToDoBeforeAlias.updated_at,
-			deleted_at: taskToDoBeforeAlias.deleted_at,
-		},
-	})
+	// Step 1: First query to get distinct tasks with limit applied
+	const distinctTasks = await db
+		.select({
+			id: Schema.task.id,
+			title: Schema.task.title,
+			importance: Schema.task.importance,
+			urgency: Schema.task.urgency,
+			duration: Schema.task.duration,
+			due: Schema.task.due,
+			score: Schema.task.score,
+			completed_at: Schema.task.completed_at,
+			created_at: Schema.task.created_at,
+			updated_at: Schema.task.updated_at,
+			deleted_at: Schema.task.deleted_at,
+			project_title: Schema.task.project_title,
+		})
+		.from(Schema.task)
+		.where(
+			and(
+				isNull(Schema.task.deleted_at),
+				projectTitles
+					? or(
+						inArray(Schema.task.project_title, projectTitles),
+						sql`${isNull(Schema.task.project_title)} AND ${projectTitles.includes("No project")}`,
+					)
+					: sql`1 = 1`,
+				dueBefore ? lte(Schema.task.due, dueBefore) : sql`1 = 1`,
+				completed !== undefined
+					? completed
+						? isNotNull(Schema.task.completed_at)
+						: isNull(Schema.task.completed_at)
+					: sql`1 = 1`,
+			),
+		)
+		.orderBy(
+			orderingDirection === "asc" ? asc(Schema.task[orderBy]) : desc(Schema.task[orderBy]),
+			orderingDirection === "asc" ? asc(Schema.task.title) : desc(Schema.task.title),
+		)
+		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit)
+
+	if (distinctTasks.length === 0) return []
+
+	// Get the IDs of the distinct tasks
+	const taskIds = distinctTasks.map((task) => task.id)
+
+	// Step 2: Now fetch all related data for these specific tasks
+	const rows = await db
+		.select({
+			id: Schema.task.id,
+			title: Schema.task.title,
+			importance: Schema.task.importance,
+			urgency: Schema.task.urgency,
+			duration: Schema.task.duration,
+			due: Schema.task.due,
+			score: Schema.task.score,
+			completed_at: Schema.task.completed_at,
+			created_at: Schema.task.created_at,
+			updated_at: Schema.task.updated_at,
+			deleted_at: Schema.task.deleted_at,
+			project_title: Schema.task.project_title,
+			project: {
+				title: Schema.project.title,
+				description: Schema.project.description,
+				completed: Schema.project.completed,
+				created_at: Schema.project.created_at,
+				updated_at: Schema.project.updated_at,
+				deleted_at: Schema.project.deleted_at,
+			},
+			importanceDetails: {
+				level: Schema.importance.level,
+				name: Schema.importance.name,
+			},
+			durationDetails: {
+				level: Schema.duration.level,
+				name: Schema.duration.name,
+			},
+			tasksToDoAfter: {
+				id: taskToDoAfterAlias.id,
+				task_id: taskToDoAfterAlias.task_id,
+				after_task_id: taskToDoAfterAlias.after_task_id,
+				created_at: taskToDoAfterAlias.created_at,
+				updated_at: taskToDoAfterAlias.updated_at,
+				deleted_at: taskToDoAfterAlias.deleted_at,
+			},
+			tasksToDoBefore: {
+				id: taskToDoBeforeAlias.id,
+				task_id: taskToDoBeforeAlias.task_id,
+				after_task_id: taskToDoBeforeAlias.after_task_id,
+				created_at: taskToDoBeforeAlias.created_at,
+				updated_at: taskToDoBeforeAlias.updated_at,
+				deleted_at: taskToDoBeforeAlias.deleted_at,
+			},
+		})
 		.from(Schema.task)
 		.leftJoin(Schema.project, eq(Schema.task.project_title, Schema.project.title))
 		.leftJoin(Schema.importance, eq(Schema.task.importance, Schema.importance.level))
 		.leftJoin(Schema.duration, eq(Schema.task.duration, Schema.duration.level))
-		.leftJoin(taskToDoAfterAlias, eq(Schema.task.id, taskToDoAfterAlias.task_id)) // tasks to do after this task
-		.leftJoin(taskToDoBeforeAlias, eq(Schema.task.id, taskToDoBeforeAlias.after_task_id)) // tasks to do before this task
-		.where(and(
-			isNull(Schema.task.deleted_at),
-			projectTitles ? or(
-				inArray(Schema.task.project_title, projectTitles),
-				sql`${isNull(Schema.task.project_title)} AND ${projectTitles.includes("No project")}`
-			) : sql`1 = 1`,
-			dueBefore ? lte(Schema.task.due, dueBefore) : sql`1 = 1`,
-			completed !== undefined ? (completed ? isNotNull(Schema.task.completed_at) : isNull(Schema.task.completed_at)) : sql`1 = 1`
-		))
-		.orderBy(
-			orderingDirection === "asc" ? asc(Schema.task[orderBy]) : desc(Schema.task[orderBy]),
-			orderingDirection === "asc" ? asc(Schema.task.title) : desc(Schema.task.title)
-		)
-		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit)
+		.leftJoin(taskToDoAfterAlias, eq(Schema.task.id, taskToDoAfterAlias.task_id))
+		.leftJoin(taskToDoBeforeAlias, eq(Schema.task.id, taskToDoBeforeAlias.after_task_id))
+		.where(inArray(Schema.task.id, taskIds))
 
-	const groupedTasks: Record<string, Schema.TaskWithRelations> = {};
+	const groupedTasks: Record<string, Schema.TaskWithRelations> = {}
 
 	for (const row of rows) {
-		const taskId = row.id;
+		const taskId = row.id
 
 		if (!groupedTasks[taskId]) {
 			groupedTasks[taskId] = {
@@ -230,41 +264,45 @@ export async function getTasks(
 				importanceDetails: row.importanceDetails!,
 				durationDetails: row.durationDetails!,
 				recursive: true,
-			};
+			}
 		}
 
 		// For after tasks
 		if (row.tasksToDoAfter?.after_task_id) {
-			const afterTaskId = row.tasksToDoAfter.after_task_id;
-			if (groupedTasks[taskId].tasksToDoAfter && row.tasksToDoAfter.deleted_at === null && !groupedTasks[taskId].tasksToDoAfter.some(t => t.id === afterTaskId && t.deleted_at === null)) {
-				
-				const fullTask = await getTaskById(afterTaskId);
+			const afterTaskId = row.tasksToDoAfter.after_task_id
+			if (
+				groupedTasks[taskId].tasksToDoAfter &&
+				row.tasksToDoAfter.deleted_at === null &&
+				!groupedTasks[taskId].tasksToDoAfter.some((t) => t.id === afterTaskId && t.deleted_at === null)
+			) {
+				const fullTask = await getTaskById(afterTaskId)
 				if (fullTask && fullTask.recursive === false) {
-					groupedTasks[taskId].tasksToDoAfter.push(fullTask);
+					groupedTasks[taskId].tasksToDoAfter.push(fullTask)
 				}
 			}
 		}
 
 		// For before tasks
 		if (row.tasksToDoBefore?.task_id) {
-			const beforeTaskId = row.tasksToDoBefore.task_id;
-			if (groupedTasks[taskId].tasksToDoBefore && row.tasksToDoBefore.deleted_at === null && !groupedTasks[taskId].tasksToDoBefore.some(t => t.id === beforeTaskId)) {
-				const fullTask = await getTaskById(beforeTaskId);
-				if (fullTask && fullTask.recursive === false) groupedTasks[taskId].tasksToDoBefore.push(fullTask);
+			const beforeTaskId = row.tasksToDoBefore.task_id
+			if (
+				groupedTasks[taskId].tasksToDoBefore &&
+				row.tasksToDoBefore.deleted_at === null &&
+				!groupedTasks[taskId].tasksToDoBefore.some((t) => t.id === beforeTaskId)
+			) {
+				const fullTask = await getTaskById(beforeTaskId)
+				if (fullTask && fullTask.recursive === false) {
+					groupedTasks[taskId].tasksToDoBefore.push(fullTask)
+				}
 			}
 		}
 	}
 
-	const result = Object.values(groupedTasks).sort((a, b) => {
-		if ((a[orderBy] ?? 0) < (b[orderBy] ?? 0)) return orderingDirection === "asc" ? -1 : 1;
-		if ((a[orderBy] ?? 0) > (b[orderBy] ?? 0)) return orderingDirection === "asc" ? 1 : -1;
-		if (a.title < b.title) return -1;
-		if (a.title > b.title) return 1;
-		return 0;
-	});	
+	// Preserve the original ordering from distinctTasks
+	const result = taskIds.map((id) => groupedTasks[id]).filter(Boolean)
 
 	return result as Schema.TaskWithRelations[]
-}
+}9
 
 export async function getCompletedTasks(orderBy: keyof Schema.Task = "completed_at", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[], dueBefore?: Date) {
 	return getTasks(orderBy, orderingDirection, limit, projectTitles, dueBefore, true);
