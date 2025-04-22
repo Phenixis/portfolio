@@ -38,7 +38,6 @@ export default function TaskDisplay({
 	currentProjects?: string[]
 	otherId?: number
 }) {
-	console.log("Completion date:", task && task.completed_at)
 	const [isToggled, setIsToggled] = useState(task ? task.completed_at !== null : false)
 	const [isDeleting, setIsDeleting] = useState(false)
 	const [isHovering, setIsHovering] = useState(false)

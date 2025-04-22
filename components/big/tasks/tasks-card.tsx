@@ -38,7 +38,14 @@ function generateTitle(
 	title += "Tasks"
 
 	if (groupedByProject && projectTitles && projectTitles.length > 0) {
-		title += ` in ${projectTitles.join(", ")}`
+		if (projectTitles.length === 1) {
+			title += ` in ${projectTitles[0]}`
+		} else if (projectTitles.length === 2) {
+			title += ` in ${projectTitles[0]} and ${projectTitles[1]}`
+		} else {
+			const lastProject = projectTitles[projectTitles.length - 1]
+			title += ` in ${projectTitles.slice(0, projectTitles.length - 1).join(", ")}, and ${lastProject}`
+		}
 	}
 
 	if (dueBeforeDate) {
