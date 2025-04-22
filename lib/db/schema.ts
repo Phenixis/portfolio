@@ -53,6 +53,8 @@ export const task = pgTable('task', {
     deleted_at: timestamp('deleted_at')
 });
 
+// This table is used to manage the tasks that need to be done after a specific task
+// So, after_task_id has to be done before task_id
 export const taskToDoAfter = pgTable('task_to_do_after', {
     id: serial('id').primaryKey(),
     task_id: integer('task_id')
