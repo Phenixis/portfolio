@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import type { Project, TaskToDoAfter, TaskWithNonRecursiveRelations, TaskWithRelations } from "@/lib/db/schema"
-import { PlusIcon, PenIcon, Minus, Plus, ChevronDown } from "lucide-react"
+import { PlusIcon, PenIcon, Minus, Plus, ChevronDown, CircleHelp } from "lucide-react"
 import { useRef, useState, useEffect } from "react"
 import { useSWRConfig } from "swr"
 import { Calendar } from "@/components/ui/calendar"
@@ -34,6 +34,7 @@ import {
 	CollapsibleContent,
 	CollapsibleTrigger,
 } from "@/components/ui/collapsible"
+import Tooltip from "../tooltip"
 
 
 export default function TaskModal({
@@ -66,10 +67,12 @@ export default function TaskModal({
 	const [toDoAfter, setToDoAfter] = useState<number>(task && task.tasksToDoAfter && task.tasksToDoAfter.length > 0 && task.tasksToDoAfter[0].deleted_at === null ? task.tasksToDoAfter[0].id : -1)
 	const [toDoAfterInputValue, setToDoAfterInputValue] = useState<string>(task && task.tasksToDoAfter && task.tasksToDoAfter.length > 0 && task.tasksToDoAfter[0].deleted_at === null ? task.tasksToDoAfter[0].title : "")
 	const [toDoAfterDebounceValue, setToDoAfterDebounceValue] = useState<string>(task && task.tasksToDoAfter && task.tasksToDoAfter.length > 0 && task.tasksToDoAfter[0].deleted_at === null ? task.tasksToDoAfter[0].title : "")
-	const { tasks, isLoading: isLoadingTasks, isError: isErrorTasks } = useSearchTasks({ query: toDoAfterDebounceValue, limit: 5, excludeIds: task ? [
-		task.id,
-		task.tasksToDoBefore ? task.tasksToDoBefore.map((task) => task.id) : -1,
-	].flat() : [] })
+	const { tasks, isLoading: isLoadingTasks, isError: isErrorTasks } = useSearchTasks({
+		query: toDoAfterDebounceValue, limit: 5, excludeIds: task ? [
+			task.id,
+			task.tasksToDoBefore ? task.tasksToDoBefore.map((task) => task.id) : -1,
+		].flat() : []
+	})
 
 	const { importanceData, durationData } = useImportanceAndDuration()
 	const { mutate } = useSWRConfig()
@@ -300,7 +303,7 @@ export default function TaskModal({
 	const handleToDoAfterChange = useDebouncedCallback((value: string) => {
 		setToDoAfterDebounceValue(value)
 	}, 200)
-	
+
 	// Handle dialog close attempt
 	const handleCloseAttempt = () => {
 		if (formChanged) {
@@ -318,7 +321,16 @@ export default function TaskModal({
 	const handleConfirmDiscard = () => {
 		// Close confirmation dialog
 		setShowConfirmDialog(false)
-		// Reset form state
+		setDueDate(() => {
+			const initialDate = task ? new Date(task.due) : new Date()
+			initialDate.setHours(0, 0, 0, 0)
+			return initialDate
+		})
+		setProjectInputValue("")
+		setProject("")
+		setToDoAfter(-1)
+		setToDoAfterInputValue("")
+		setToDoAfterDebounceValue("")
 		setFormChanged(false)
 		// Execute the stored close function
 		setTimeout(() => {
@@ -555,7 +567,12 @@ export default function TaskModal({
 							<CollapsibleContent className="space-y-4">
 								<div className="flex space-x-4">
 									<div className="w-full">
-										<Label htmlFor="task">Has to be done after:</Label>
+										<Label htmlFor="task" className="flex items-center space-x-2 pb-1">
+											Has to be done after:
+											<Tooltip tooltip={`Select a task that needs to be done before this task.<br/>For example, if you are ${mode === 'edit' ? "editing" : "creating"} a Task B that needs to be done after a Task A, enter the title of the Task A here.`}>
+												<CircleHelp className="ml-1 size-4 text-muted-foreground" />
+											</Tooltip>
+										</Label>
 										<Input
 											type="text"
 											id="task"
