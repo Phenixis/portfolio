@@ -389,7 +389,7 @@ export async function getUncompletedAndDueInTheNextThreeDaysOrLessTasks(withProj
 }
 
 // ## Update
-export async function updateTask(id: number, title: string, importance: number, dueDate: Date, duration: number, projectTitle: string) {
+export async function updateTask(id: number, title: string, importance: number, dueDate: Date, duration: number, projectTitle?: string) {
 	const urgency = calculateUrgency(dueDate)
 
 	const result = await db
