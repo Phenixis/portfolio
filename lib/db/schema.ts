@@ -68,6 +68,7 @@ export const taskToDoAfter = pgTable('task_to_do_after', {
     deleted_at: timestamp('deleted_at')
 });
 
+
 // Table Meteo
 export const meteo = pgTable('meteo', {
     day: varchar('day', { length: 10 }).primaryKey(),
@@ -80,6 +81,9 @@ export const meteo = pgTable('meteo', {
     updated_at: timestamp('updated_at').notNull().defaultNow(),
     deleted_at: timestamp('deleted_at')
 });
+
+
+// Workouts
 
 // Table Exercice
 export const exercice = pgTable('exercice', {
@@ -123,10 +127,19 @@ export const workout = pgTable('workout', {
     deleted_at: timestamp('deleted_at'),
 });
 
+// Table Series_Group (Groupe de séries pour super-set, etc.)
+export const seriesGroup = pgTable('series_group', {
+    id: serial('id').primaryKey(),
+    workout_id: integer('workout_id').references(() => workout.id).notNull(),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow(),
+    deleted_at: timestamp('deleted_at'),
+});
+
 // Table Série (Séries des exercices du workout)
 export const serie = pgTable('serie', {
     id: serial('id').primaryKey(),
-    workout_id: integer('workout_id').references(() => workout.id).notNull(),
+    series_group_id: integer('series_group_id').references(() => seriesGroup.id).notNull(),
     exercice_id: integer('exercice_id').references(() => exercice.id).notNull(),
     poids: integer('poids'),
     reps: integer('reps'),
@@ -169,22 +182,31 @@ export const seanceExerciceRelations = relations(seanceExercice, ({ one }) => ({
     })
 }));
 
-export const workoutRelations = relations(workout, ({ one }) => ({
+export const workoutRelations = relations(workout, ({ one, many }) => ({
     seance: one(seance, {
         fields: [workout.seance_id],
         references: [seance.id]
     }),
+    seriesGroup: many(seriesGroup),
+}));
+
+export const seriesGroupRelations = relations(seriesGroup, ({ one, many }) => ({
+    workout: one(workout, {
+        fields: [seriesGroup.workout_id],
+        references: [workout.id]
+    }),
+    series: many(serie)
 }));
 
 export const serieRelations = relations(serie, ({ one }) => ({
-    workout: one(workout, {
-        fields: [serie.workout_id],
-        references: [workout.id]
-    }),
     exercice: one(exercice, {
         fields: [serie.exercice_id],
         references: [exercice.id]
-    })
+    }),
+    seriesGroup: one(seriesGroup, {
+        fields: [serie.series_group_id],
+        references: [seriesGroup.id]
+    }),
 }));
 
 export const workoutExerciceRelations = relations(workout, ({ many }) => ({
@@ -214,6 +236,8 @@ export type SeanceExercice = typeof seanceExercice.$inferSelect;
 export type NewSeanceExercice = typeof seanceExercice.$inferInsert;
 export type Workout = typeof workout.$inferSelect;
 export type NewWorkout = typeof workout.$inferInsert;
+export type SeriesGroup = typeof seriesGroup.$inferSelect;
+export type NewSeriesGroup = typeof seriesGroup.$inferInsert;
 export type Serie = typeof serie.$inferSelect;
 export type NewSerie = typeof serie.$inferInsert;
 export type Importance = typeof importance.$inferSelect;
