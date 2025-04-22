@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import type { Project, TaskWithRelations } from "@/lib/db/schema"
+import type { Project, TaskToDoAfter, TaskWithNonRecursiveRelations, TaskWithRelations } from "@/lib/db/schema"
 import { PlusIcon, PenIcon, Minus, Plus, ChevronDown } from "lucide-react"
 import { useRef, useState, useEffect } from "react"
 import { useSWRConfig } from "swr"
@@ -63,9 +63,9 @@ export default function TaskModal({
 	const [projectProjectInputValue, setProjectInputValue] = useState<string>(task?.project_title || (currentProjects && currentProjects.length === 1 ? currentProjects[0] : ""))
 	const { projects, isLoading, isError } = useSearchProject({ query: project, limit: 5 })
 
-	const [toDoAfter, setToDoAfter] = useState<number>(task && task.tasksToDoAfter && task.tasksToDoAfter.length > 0 ? task.tasksToDoAfter[0].id : -1)
-	const [toDoAfterInputValue, setToDoAfterInputValue] = useState<string>(task && task.tasksToDoAfter && task.tasksToDoAfter.length > 0 ? task.tasksToDoAfter[0].title : "")
-	const [toDoAfterDebounceValue, setToDoAfterDebounceValue] = useState<string>(task && task.tasksToDoAfter && task.tasksToDoAfter.length > 0 ? task.tasksToDoAfter[0].title : "")
+	const [toDoAfter, setToDoAfter] = useState<number>(task && task.tasksToDoAfter && task.tasksToDoAfter.length > 0 && task.tasksToDoAfter[0].deleted_at === null ? task.tasksToDoAfter[0].id : -1)
+	const [toDoAfterInputValue, setToDoAfterInputValue] = useState<string>(task && task.tasksToDoAfter && task.tasksToDoAfter.length > 0 && task.tasksToDoAfter[0].deleted_at === null ? task.tasksToDoAfter[0].title : "")
+	const [toDoAfterDebounceValue, setToDoAfterDebounceValue] = useState<string>(task && task.tasksToDoAfter && task.tasksToDoAfter.length > 0 && task.tasksToDoAfter[0].deleted_at === null ? task.tasksToDoAfter[0].title : "")
 	const { tasks, isLoading: isLoadingTasks, isError: isErrorTasks } = useSearchTasks({ query: toDoAfterDebounceValue, limit: 5, excludeIds: task ? [
 		task.id,
 		task.tasksToDoBefore ? task.tasksToDoBefore.map((task) => task.id) : -1,
@@ -157,8 +157,13 @@ export default function TaskModal({
 				durationDetails: {
 					level: duration,
 					name: durationData?.find((item) => item.level === duration)?.name || "",
-				}, 
-			} as TaskWithRelations // TODO: add the after task and before task
+				},
+				tasksToDoAfter: tasks?.filter((task) => task.id === toDoAfter).map((task) => ({
+					...task
+				})) || [],
+				tasksToDoBefore: task?.tasksToDoBefore || [],
+				recursive: true,
+			} as TaskWithRelations
 
 			setOpen(false)
 
@@ -169,7 +174,25 @@ export default function TaskModal({
 
 					let updatedData: TaskWithRelations[]
 					if (mode === "edit") {
-						updatedData = currentData.map((item: TaskWithRelations) => (item.id === id ? todoData : item))
+						updatedData = currentData.map((item: TaskWithRelations) => (item.id === id ? todoData : item.id === toDoAfter ? {
+							...item,
+							tasksToDoBefore: [
+								...(item.tasksToDoBefore ?? []),
+								{
+									...todoData,
+									tasksToDoAfter: todoData.tasksToDoAfter?.map((task) => ({
+										id: -1,
+										task_id: task.id,
+										after_task_id: item.id,
+										created_at: new Date(),
+										updated_at: new Date(),
+										deleted_at: null,
+									})),
+									recursive: false,
+								} as TaskWithNonRecursiveRelations,
+							],
+						} : item
+						))
 					} else {
 						updatedData = [todoData, ...currentData]
 					}
