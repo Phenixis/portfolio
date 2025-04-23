@@ -35,23 +35,22 @@ import {
 	CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import Tooltip from "../tooltip"
-
+import { useSearchParams } from "next/navigation"
 
 export default function TaskModal({
 	className,
 	task,
-	currentLimit,
-	currentDueBefore,
-	currentProjects,
 }: {
 	className?: string
-	task?: TaskWithRelations,
-	currentLimit?: number
-	currentDueBefore?: Date
-	currentProjects?: string[]
+	task?: TaskWithRelations
 }) {
+	const searchParams = useSearchParams()
+
+	// State management for the dialog
 	const mode = task ? "edit" : "create"
 	const [open, setOpen] = useState(false)
+
+	// State management for form fields
 	const [dueDate, setDueDate] = useState<Date>(() => {
 		const initialDate = task ? new Date(task.due) : new Date()
 		initialDate.setHours(0, 0, 0, 0)
@@ -60,9 +59,10 @@ export default function TaskModal({
 	const [showCalendar, setShowCalendar] = useState(false)
 	const calendarRef = useRef<HTMLDivElement>(null)
 
-	const [project, setProject] = useState<string>(task?.project_title || (currentProjects && currentProjects.length === 1 ? currentProjects[0] : ""))
-	const [projectProjectInputValue, setProjectInputValue] = useState<string>(task?.project_title || (currentProjects && currentProjects.length === 1 ? currentProjects[0] : ""))
+	const [project, setProject] = useState<string>(task && task.project_title ? task.project_title : "")
+	const [projectInputValue, setProjectInputValue] = useState<string>(task && task.project_title ? task.project_title : "")
 	const { projects, isLoading, isError } = useSearchProject({ query: project, limit: 5 })
+	const [showProjectSuggestions, setShowProjectSuggestions] = useState(false)
 
 	const [toDoAfter, setToDoAfter] = useState<number>(task && task.tasksToDoAfter && task.tasksToDoAfter.length > 0 && task.tasksToDoAfter[0].deleted_at === null ? task.tasksToDoAfter[0].id : -1)
 	const [toDoAfterInputValue, setToDoAfterInputValue] = useState<string>(task && task.tasksToDoAfter && task.tasksToDoAfter.length > 0 && task.tasksToDoAfter[0].deleted_at === null ? task.tasksToDoAfter[0].title : "")
@@ -89,6 +89,40 @@ export default function TaskModal({
 
 	// Track if a submission is in progress (to prevent duplicates)
 	const isSubmittingRef = useRef(false)
+
+	const resetForm = () => {
+		setDueDate(() => {
+			const initialDate = task ? new Date(task.due) : new Date()
+			initialDate.setHours(0, 0, 0, 0)
+			return initialDate
+		})
+		setProject("")
+		setProjectInputValue("")
+		setToDoAfter(-1)
+		setToDoAfterInputValue("")
+		setToDoAfterDebounceValue("")
+		setFormChanged(false)
+		setShowAdvancedOptions(false)
+	}
+
+	useEffect(() => {
+		if (open) {
+			if (project === "" && projectInputValue === "") {
+				if (task && task.project_title) {
+					setProject(task.project_title)
+					setProjectInputValue(task.project_title)
+				} else {
+					const projectFromSearchParams = searchParams.get("projects") ? searchParams.get("projects")?.split(",") : []
+					setProject(projectFromSearchParams && projectFromSearchParams.length === 1 ? projectFromSearchParams[0] : "")
+					setProjectInputValue(
+						projectFromSearchParams && projectFromSearchParams.length === 1 ? projectFromSearchParams[0] : ""
+					)
+				}
+			}
+		} else {
+			resetForm()
+		}
+	}, [open])
 
 	// Close calendar when clicking outside
 	useEffect(() => {
@@ -201,18 +235,39 @@ export default function TaskModal({
 					}
 
 					const filteredData: TaskWithRelations[] = updatedData.filter((item: TaskWithRelations) => {
-						if (currentDueBefore && item.due > currentDueBefore) return false
-						if (currentProjects && currentProjects.length > 0) {
-							return currentProjects.some((project: string) => item.project_title === project)
+						const dueBeforeFromSearchParams = searchParams.get("dueBefore")
+						const projectsFromSearchParams = searchParams.get("projects") ? searchParams.get("projects")?.split(",") : []
+						const completedFromSearchParams = searchParams.get("completed")
+						if (completedFromSearchParams && completedFromSearchParams === "false") {
+							if (item.completed_at) return false
+						}
+						if (dueBeforeFromSearchParams && item.due > new Date(dueBeforeFromSearchParams)) return false
+						if (projectsFromSearchParams && projectsFromSearchParams.length > 0) {
+							return projectsFromSearchParams.some((project: string) => item.project_title === project)
 						}
 						return true
 					})
 
+					const orderByFromSearchParams = searchParams.get("orderBy") as keyof TaskWithRelations
+					const orderingDirectionFromSearchParams = searchParams.get("orderingDirection") === "asc" ? 1 : -1
 					const sortedData: TaskWithRelations[] = filteredData.sort(
-						(a: TaskWithRelations, b: TaskWithRelations) =>
-							b.score - a.score || a.title.localeCompare(b.title)
+						(a: TaskWithRelations, b: TaskWithRelations) => {
+							if (orderByFromSearchParams) {
+								const aValue = a[orderByFromSearchParams]
+								const bValue = b[orderByFromSearchParams]
+
+								if (typeof aValue === "string" && typeof bValue === "string") {
+									return orderingDirectionFromSearchParams * aValue.localeCompare(bValue)
+								} else if (typeof aValue === "number" && typeof bValue === "number") {
+									return orderingDirectionFromSearchParams * (aValue - bValue)
+								}
+							}
+							// Default fallback sorting by score and title
+							return orderingDirectionFromSearchParams * (b.score - a.score || a.title.localeCompare(b.title))
+						}
 					)
-					return currentLimit ? sortedData.slice(0, currentLimit) : sortedData
+					const limitFromSearchParams = searchParams.get("limit")
+					return limitFromSearchParams ? sortedData.slice(0, parseInt(limitFromSearchParams)) : sortedData
 				},
 				{ revalidate: false },
 			)
@@ -246,17 +301,7 @@ export default function TaskModal({
 					mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
 				})
 
-			setDueDate(() => {
-				const initialDate = task ? new Date(task.due) : new Date()
-				initialDate.setHours(0, 0, 0, 0)
-				return initialDate
-			})
-			setProjectInputValue("")
-			setProject("")
-			setToDoAfter(-1)
-			setToDoAfterInputValue("")
-			setToDoAfterDebounceValue("")
-			setFormChanged(false)
+			resetForm();
 		} catch (error) {
 			console.error("Erreur lors de la soumission:", error)
 			isSubmittingRef.current = false
@@ -321,17 +366,6 @@ export default function TaskModal({
 	const handleConfirmDiscard = () => {
 		// Close confirmation dialog
 		setShowConfirmDialog(false)
-		setDueDate(() => {
-			const initialDate = task ? new Date(task.due) : new Date()
-			initialDate.setHours(0, 0, 0, 0)
-			return initialDate
-		})
-		setProjectInputValue("")
-		setProject("")
-		setToDoAfter(-1)
-		setToDoAfterInputValue("")
-		setToDoAfterDebounceValue("")
-		setFormChanged(false)
 		// Execute the stored close function
 		setTimeout(() => {
 			closeDialogRef.current()
@@ -516,7 +550,16 @@ export default function TaskModal({
 									type="text"
 									id="project"
 									name="project"
-									value={projectProjectInputValue}
+									value={projectInputValue}
+									onFocus={() => setShowProjectSuggestions(true)}
+									onBlur={(e) => {
+										// Delay hiding to allow click on suggestions
+										setTimeout(() => {
+											if (!e.relatedTarget || !e.relatedTarget.closest(".project-suggestions")) {
+												setShowProjectSuggestions(false)
+											}
+										}, 100)
+									}}
 									onChange={(e) => {
 										setProjectInputValue(e.target.value)
 										handleProjectChange(e.target.value)
@@ -525,22 +568,27 @@ export default function TaskModal({
 										)
 									}}
 								/>
-								{projectProjectInputValue && !(projects && projects.length == 1 && projects[0].title == project) && (
-									<div className="mt-1 overflow-y-auto rounded-md border border-border bg-popover shadow-md">
+								{showProjectSuggestions && projectInputValue && (
+									<div
+										className="mt-1 overflow-y-auto rounded-md border border-border bg-popover shadow-md project-suggestions"
+										tabIndex={-1}
+									>
 										{isLoading ? (
 											<div className="p-2 text-sm text-muted-foreground">Loading projects...</div>
 										) : isError ? (
 											<div className="p-2 text-sm text-destructive">Error loading projects</div>
 										) : projects && projects.length > 0 ? (
-											<ul className="py-1">
+											<ul className="">
 												{projects.map((proj, index) => (
 													<li
 														key={index}
-														className="cursor-pointer px-3 py-2 text-sm lg:hover:bg-accent"
+														className={`cursor-pointer px-3 py-2 text-sm lg:hover:bg-accent ${projectInputValue === proj.title ? "bg-primary/10" : ""}`}
+														onMouseDown={(e) => e.preventDefault()} // Prevent blur on click
 														onClick={() => {
 															const selectedProject = proj.title
 															setProjectInputValue(selectedProject)
 															setProject(selectedProject)
+															setShowProjectSuggestions(false)
 															setTimeout(() => {
 																if (durationTriggerRef.current) {
 																	durationTriggerRef.current.focus()
@@ -560,7 +608,7 @@ export default function TaskModal({
 							</div>
 						</div>
 						<Collapsible className="w-full" open={showAdvancedOptions} onOpenChange={setShowAdvancedOptions}>
-							<CollapsibleTrigger className="flex text-sm font-medium text-muted-foreground">
+							<CollapsibleTrigger className="flex text-sm font-medium text-muted-foreground mb-4">
 								Advanced Options
 								<ChevronDown className={`ml-2 h-4 w-4 duration-300 ${showAdvancedOptions && "rotate-180"}`} />
 							</CollapsibleTrigger>
