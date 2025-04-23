@@ -797,6 +797,8 @@ export async function deleteProject(title: string) {
 	return null
 }
 
+/*
+
 //=============================================================================
 // # Exercice
 //=============================================================================
@@ -1523,3 +1525,4 @@ export async function deleteTaskToDoAfterByAfterId(after_task_id: number) {
 	return null
 }
 
+*/
