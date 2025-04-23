@@ -299,7 +299,7 @@ export async function getTasks(
 	}
 
 	// Preserve the original ordering from distinctTasks
-	const result = taskIds.map((id) => groupedTasks[id]).filter(Boolean)
+	const result = taskIds.map((id) => groupedTasks[id]).filter(Boolean).sort((a, b) => new Date(b.due).getTime() - new Date(a.due).getTime() || a.localeCompare(b.title))
 
 	return result as Schema.TaskWithRelations[]
 }9
