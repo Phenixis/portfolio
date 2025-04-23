@@ -238,7 +238,7 @@ export function TasksCard({
 						>
 							<Filter className="h-4 w-4" />
 						</Button>
-						<TaskModal currentLimit={limit} currentDueBefore={dueBeforeDate} currentProjects={selectedProjects} />
+						<TaskModal />
 					</div>
 				</div>
 				<div className={`${!isFilterOpen && "hidden"} flex flex-col gap-2`}>
@@ -372,7 +372,7 @@ export function TasksCard({
 					// Show tasks, grouped or ungrouped based on the groupByProject state
 					groupByProject ? (
 						// Grouped by project
-						Object.entries(groupedTodos).map(([projectId, { name, tasks }]) => (
+						Object.entries(groupedTodos).sort(([, a], [, b]) => a.name.localeCompare(b.name)).map(([projectId, { name, tasks }]) => (
 							<div key={projectId} className="mb-4">
 								<h3 className="font-medium text-sm p-2 rounded-md">{name}</h3>
 								<div className="pl-2">
