@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
 	try {
 		const body = await request.json()
-		const { id, title, importance, dueDate, duration, projectTitle, toDoAfterId } = body
+		let { id, title, importance, dueDate, duration, projectTitle, toDoAfterId } = body
 
 		// Validation
 		if (!id || !title || importance === undefined || dueDate === undefined || duration === undefined) {
@@ -112,10 +112,14 @@ export async function PUT(request: NextRequest) {
 		if (toDoAfterId !== undefined) {
 			// Check if the referenced task exists
 			if (toDoAfterId !== -1) {
-				const toDoAfter = toDoAfterId && await getTaskById(Number(toDoAfterId))
+				const toDoAfter = await getTaskById(Number(toDoAfterId))
 				if (!toDoAfter) {
 					console.log("Invalid toDoAfterId:", toDoAfterId)
 					return NextResponse.json({ error: "Invalid toDoAfterId" }, { status: 400 })
+				}
+				if (new Date(toDoAfter.due) > new Date(dueDate)) {
+					console.log(`task to do after's due date(${(new Date(toDoAfter.due)).toLocaleDateString()}) is after the task's due date(${(new Date(dueDate)).toLocaleDateString()})`)
+					dueDate = toDoAfter.due
 				}
 				
 				// Get existing toDoAfter relations for this task
