@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import type { Task, TaskWithRelations, TaskWithNonRecursiveRelations } from "@/lib/db/schema"
 import dynamic from "next/dynamic"
 const TaskModal = dynamic(() => import("@/components/big/tasks/task-modal"), { ssr: false })
-import { ChevronsDownUp, ChevronsUpDown, TrashIcon } from "lucide-react"
+import { ChevronsDownUp, ChevronsUpDown, TrashIcon, Unlink } from "lucide-react"
 import { useSWRConfig } from "swr"
 import { cn } from "@/lib/utils"
 import Tooltip from "@/components/big/tooltip"
@@ -349,7 +349,7 @@ export default function TaskDisplay({
 								)
 							) : (
 								<Tooltip tooltip="Remove dependency between the tasks">
-									<TrashIcon
+									<Unlink
 										className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] text-destructive cursor-pointer lg:hover:text-destructive/80 duration-300"
 										onClick={() => {
 											deleteDependency(otherId || -1)
@@ -454,9 +454,6 @@ export default function TaskDisplay({
 										<TaskModal
 											className="duration-300"
 											task={task}
-											currentDueBefore={currentDueBefore}
-											currentLimit={currentLimit}
-											currentProjects={currentProjects}
 										/>
 									</Tooltip>
 
