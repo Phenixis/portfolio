@@ -797,7 +797,7 @@ export async function deleteProject(title: string) {
 	return null
 }
 
-/*
+
 
 //=============================================================================
 // # Exercice
@@ -1231,7 +1231,7 @@ export async function deleteWorkoutById(id: number) {
 // ## Create
 
 export async function createSerie(
-	workoutIdOrSerie: number | Schema.NewSerie,
+	seriesGroupIdOrSerie: number | Schema.NewSerie,
 	exercice_id?: number,
 	poids?: number,
 	reps?: number,
@@ -1240,9 +1240,9 @@ export async function createSerie(
 ) {
 	let newSerie: Schema.NewSerie
 
-	if (typeof workoutIdOrSerie === "number") {
+	if (typeof seriesGroupIdOrSerie === "number") {
 		newSerie = {
-			workout_id: workoutIdOrSerie,
+			series_group_id: seriesGroupIdOrSerie,
 			exercice_id: exercice_id!,
 			poids: poids,
 			reps: reps,
@@ -1250,7 +1250,7 @@ export async function createSerie(
 			serie_position: serie_position!,
 		}
 	} else {
-		newSerie = workoutIdOrSerie
+		newSerie = seriesGroupIdOrSerie
 	}
 
 	const result = await db.insert(Schema.serie).values(newSerie).returning({ id: Schema.serie.id })
@@ -1267,32 +1267,15 @@ export async function getSerieById(id: number) {
 	return (await db.select().from(Schema.serie).where(eq(Schema.serie.id, id))) as Schema.Serie[]
 }
 
-export async function getSeriesByWorkoutId(workout_id: number) {
-	return (await db
-		.select()
-		.from(Schema.serie)
-		.where(and(eq(Schema.serie.workout_id, workout_id), isNull(Schema.serie.deleted_at)))
-		.orderBy(asc(Schema.serie.exercice_position), asc(Schema.serie.serie_position))) as Schema.Serie[]
-}
 
 export async function getSeriesByExerciceId(exercice_id: number) {
-	return (await db
-		.select({
-			id: Schema.serie.id,
-			workout_id: Schema.serie.workout_id,
-			exercice_id: Schema.serie.exercice_id,
-			poids: Schema.serie.poids,
-			reps: Schema.serie.reps,
-			exercice_position: Schema.serie.exercice_position,
-			serie_position: Schema.serie.serie_position,
-			created_at: Schema.serie.created_at,
-			updated_at: Schema.serie.updated_at,
-			deleted_at: Schema.serie.deleted_at
-		})
-		.from(Schema.serie)
-		.where(and(eq(Schema.serie.exercice_id, exercice_id), isNull(Schema.serie.deleted_at)))
-		.orderBy(desc(Schema.workout.date), asc(Schema.serie.exercice_position), asc(Schema.serie.serie_position))
-		.innerJoin(Schema.workout, eq(Schema.serie.workout_id, Schema.workout.id))) as Schema.Serie[]
+	return (
+		await db
+			.select()
+			.from(Schema.serie)
+			.where(and(eq(Schema.serie.exercice_id, exercice_id), isNull(Schema.serie.deleted_at)))
+			.orderBy(asc(Schema.serie.exercice_position), asc(Schema.serie.serie_position))
+	)
 }
 
 export async function getSeries() {
@@ -1300,30 +1283,23 @@ export async function getSeries() {
 }
 
 export async function getSeriesByExerciceIds(exercice_ids: number[]) {
-	return (await db
-		.select({
-			id: Schema.serie.id,
-			workout_id: Schema.serie.workout_id,
-			exercice_id: Schema.serie.exercice_id,
-			poids: Schema.serie.poids,
-			reps: Schema.serie.reps,
-			exercice_position: Schema.serie.exercice_position,
-			serie_position: Schema.serie.serie_position,
-			created_at: Schema.serie.created_at,
-			updated_at: Schema.serie.updated_at,
-			deleted_at: Schema.serie.deleted_at
-		})
-		.from(Schema.serie)
-		.where(and(inArray(Schema.serie.exercice_id, exercice_ids), isNull(Schema.serie.deleted_at)))
-		.orderBy(desc(Schema.workout.date), asc(Schema.serie.exercice_position), asc(Schema.serie.serie_position))
-		.innerJoin(Schema.workout, eq(Schema.serie.workout_id, Schema.workout.id))) as Schema.Serie[]
+	return (
+		await db
+			.select()
+			.from(Schema.serie)
+			.where(and(
+				inArray(Schema.serie.exercice_id, exercice_ids),
+				isNull(Schema.serie.deleted_at)
+			))
+			.orderBy(asc(Schema.serie.exercice_position), asc(Schema.serie.serie_position))
+	)
 }
 
 // ## Update
 
 export async function updateSerie(
 	idOrSerie: number | Schema.NewSerie,
-	workout_id?: number,
+	series_group_id?: number,
 	exercice_id?: number,
 	poids?: number,
 	reps?: number,
@@ -1334,7 +1310,7 @@ export async function updateSerie(
 
 	if (typeof idOrSerie === "number") {
 		updatedSerie = {
-			workout_id: workout_id,
+			series_group_id: series_group_id,
 			exercice_id: exercice_id,
 			poids: poids,
 			reps: reps,
@@ -1524,5 +1500,3 @@ export async function deleteTaskToDoAfterByAfterId(after_task_id: number) {
 
 	return null
 }
-
-*/
