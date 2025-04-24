@@ -70,14 +70,14 @@ export function TasksCard({
 	orderingDirection?: "asc" | "desc"
 	withProject?: boolean
 }) {
+	// -------------------- Imports & Hooks --------------------
 	const router = useRouter()
 	const searchParams = useSearchParams()
-
-	// Use isPending to prevent multiple clicks during transitions
 	const [isPending, startTransition] = useTransition()
 
-	// State for filter controls
+	// -------------------- State --------------------
 	const [isFilterOpen, setIsFilterOpen] = useState(false)
+
 	const [completed, setCompleted] = useState<boolean | undefined>(
 		searchParams.has("completed")
 			? searchParams.get("completed") === "true"
@@ -85,23 +85,40 @@ export function TasksCard({
 				: searchParams.get("completed") === "false"
 					? false
 					: undefined
-			: initialCompleted,
+			: initialCompleted
 	)
+
 	const [limit, setLimit] = useState<number | undefined>(
-		searchParams.has("limit") ? Number.parseInt(searchParams.get("limit") || "") || initialLimit : initialLimit,
+		searchParams.has("limit")
+			? Number.parseInt(searchParams.get("limit") || "") || initialLimit
+			: initialLimit
 	)
+
 	const [orderBy, setOrderBy] = useState<keyof Task | undefined>(
-		(searchParams.get("orderBy") as keyof Task) || initialOrderBy,
+		(searchParams.get("orderBy") as keyof Task) || initialOrderBy
 	)
+
 	const [orderingDirection, setOrderingDirection] = useState<"asc" | "desc" | undefined>(
-		(searchParams.get("orderingDirection") as "asc" | "desc") || initialOrderingDirection,
+		(searchParams.get("orderingDirection") as "asc" | "desc") || initialOrderingDirection
 	)
+
 	const [selectedProjects, setSelectedProjects] = useState<string[]>(
-		searchParams.has("projects") ? searchParams.get("projects")?.split(",") || [] : [],
+		searchParams.has("projects")
+			? searchParams.get("projects")?.split(",") || []
+			: []
 	)
+
 	const [dueBeforeDate, setDueBeforeDate] = useState<Date | undefined>(
-		searchParams.has("dueBefore") ? new Date(searchParams.get("dueBefore") || "") : undefined,
+		searchParams.has("dueBefore")
+			? new Date(searchParams.get("dueBefore") || "")
+			: undefined
 	)
+
+	const [groupByProject, setGroupByProject] = useState(
+		searchParams.get("groupByProject") === "true"
+	)
+
+	// -------------------- Data Fetching --------------------
 	const { projects, isLoading: projectsLoading, mutate: mutateProject } = useProjects({
 		completed: false,
 		taskCompleted: completed,
@@ -109,60 +126,6 @@ export function TasksCard({
 		taskDeleted: false,
 	})
 
-	// Add a new state variable for grouping by project after the other state variables
-	const [groupByProject, setGroupByProject] = useState(searchParams.get("groupByProject") === "true")
-
-	useEffect(() => {
-		mutateProject()
-		selectedProjects.forEach((projectTitle) => {
-			if (!projects?.some((project) => project.title === projectTitle)) {
-				setSelectedProjects((prev) => prev.filter((title) => title !== projectTitle))
-			}
-		})
-	}, [completed, dueBeforeDate])
-
-	// Function to update URL parameters
-	const updateUrlParams = useCallback(() => {
-		const params = new URLSearchParams()
-
-		if (completed !== undefined) {
-			params.set("completed", completed.toString())
-		}
-
-		if (limit) {
-			params.set("limit", limit.toString())
-		}
-
-		if (orderBy) {
-			params.set("orderBy", orderBy as string)
-		}
-
-		if (orderingDirection) {
-			params.set("orderingDirection", orderingDirection)
-		}
-
-		if (selectedProjects.length > 0) {
-			params.set("projects", selectedProjects.join(","))
-		}
-
-		if (dueBeforeDate) {
-			params.set("dueBefore", dueBeforeDate.toISOString())
-		}
-
-		if (groupByProject) {
-			params.set("groupByProject", "true")
-		}
-
-		// Update the URL without refreshing the page
-		router.push(`?${params.toString()}`, { scroll: false })
-	}, [completed, limit, orderBy, orderingDirection, selectedProjects, dueBeforeDate, groupByProject, router])
-
-	// Update URL when filters change
-	useEffect(() => {
-		updateUrlParams()
-	}, [completed, limit, orderBy, orderingDirection, selectedProjects, dueBeforeDate, groupByProject, updateUrlParams])
-
-	// Use our custom hook to fetch tasks
 	const { tasks, isLoading } = useTasks({
 		completed,
 		orderBy,
@@ -173,23 +136,49 @@ export function TasksCard({
 		dueBefore: dueBeforeDate,
 	})
 
-	// Memoize the cycleCompletedFilter function to prevent unnecessary re-renders
+	// -------------------- Effects --------------------
+	useEffect(() => {
+		mutateProject()
+		selectedProjects.forEach((projectTitle) => {
+			if (!projects?.some((project) => project.title === projectTitle)) {
+				setSelectedProjects((prev) => prev.filter((title) => title !== projectTitle))
+			}
+		})
+	}, [completed, dueBeforeDate])
+
+	useEffect(() => {
+		updateUrlParams()
+	}, [completed, limit, orderBy, orderingDirection, selectedProjects, dueBeforeDate, groupByProject])
+
+	// -------------------- Callbacks --------------------
+	const updateUrlParams = useCallback(() => {
+		const params = new URLSearchParams()
+
+		if (completed !== undefined) params.set("completed", completed.toString())
+		if (limit) params.set("limit", limit.toString())
+		if (orderBy) params.set("orderBy", orderBy as string)
+		if (orderingDirection) params.set("orderingDirection", orderingDirection)
+		if (selectedProjects.length > 0) params.set("projects", selectedProjects.join(","))
+		if (dueBeforeDate) params.set("dueBefore", dueBeforeDate.toISOString())
+		if (groupByProject) params.set("groupByProject", "true")
+
+		router.push(`?${params.toString()}`, { scroll: false })
+	}, [completed, limit, orderBy, orderingDirection, selectedProjects, dueBeforeDate, groupByProject, router])
+
 	const cycleCompletedFilter = useCallback(() => {
 		startTransition(() => {
-			if (completed === true) {
-				setCompleted(undefined) // First click: show uncompleted
-			} else if (completed === false) {
-				setCompleted(true) // Second click: show completed
-			} else {
-				setCompleted(false) // Third click: show all
-			}
+			if (completed === true) setCompleted(undefined)
+			else if (completed === false) setCompleted(true)
+			else setCompleted(false)
 		})
 	}, [completed])
 
 	const toggleProject = useCallback((projectTitle: string) => {
 		startTransition(() => {
 			setSelectedProjects((prev) =>
-				prev.includes(projectTitle) ? prev.filter((id) => id !== projectTitle) : [...prev, projectTitle],
+				prev.includes(projectTitle)
+					? prev.filter((id) => id !== projectTitle)
+					: [...prev, projectTitle]
 			)
 		})
 	}, [])
@@ -200,6 +189,7 @@ export function TasksCard({
 		})
 	}, [])
 
+	// -------------------- Derived Data --------------------
 	const groupedTodos = useMemo(() => {
 		if (!tasks) return {}
 
@@ -209,22 +199,13 @@ export function TasksCard({
 				const projectName = projects?.find((p) => p.title === task.project_title)?.title || "No Project"
 
 				if (!acc[projectId]) {
-					acc[projectId] = {
-						name: projectName,
-						tasks: [],
-					}
+					acc[projectId] = { name: projectName, tasks: [] }
 				}
 
 				acc[projectId].tasks.push(task)
 				return acc
 			},
-			{} as Record<
-				string,
-				{
-					name: string
-					tasks: TaskWithRelations[]
-				}
-			>,
+			{} as Record<string, { name: string; tasks: TaskWithRelations[] }>
 		)
 	}, [tasks, projects])
 
