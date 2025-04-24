@@ -8,7 +8,7 @@ import Link from "next/link"
 import type { Task, TaskWithRelations } from "@/lib/db/schema"
 import { useState, useCallback, useTransition, useMemo, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Filter, Square, SquareMinus, FolderTree, Calendar } from "lucide-react"
+import { Filter, Square, SquareMinus, FolderTree, Calendar, CircleHelp } from "lucide-react"
 import TaskDisplay from "./task-display"
 import { useTasks } from "@/hooks/use-tasks"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -17,6 +17,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { format } from "date-fns"
 import { useRouter, useSearchParams } from "next/navigation"
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 function generateTitle(
 	completed?: boolean,
@@ -25,6 +30,7 @@ function generateTitle(
 	limit?: number,
 	groupedByProject?: boolean,
 	projectTitles?: string[],
+	excludedProjectTitles?: string[],
 	dueBeforeDate?: Date,
 ) {
 	let title = limit ? `The top ${limit} ` : "All "
@@ -37,14 +43,25 @@ function generateTitle(
 
 	title += "Tasks"
 
-	if (groupedByProject && projectTitles && projectTitles.length > 0) {
-		if (projectTitles.length === 1) {
-			title += ` in ${projectTitles[0]}`
-		} else if (projectTitles.length === 2) {
-			title += ` in ${projectTitles[0]} and ${projectTitles[1]}`
-		} else {
-			const lastProject = projectTitles[projectTitles.length - 1]
-			title += ` in ${projectTitles.slice(0, projectTitles.length - 1).join(", ")}, and ${lastProject}`
+	if (groupedByProject) {
+		if (projectTitles && projectTitles.length > 0) {
+			if (projectTitles.length === 1) {
+				title += ` in ${projectTitles[0]}`
+			} else if (projectTitles.length === 2) {
+				title += ` in ${projectTitles[0]} and ${projectTitles[1]}`
+			} else {
+				const lastProject = projectTitles[projectTitles.length - 1]
+				title += ` in ${projectTitles.slice(0, projectTitles.length - 1).join(", ")}, and ${lastProject}`
+			}
+		} else if (excludedProjectTitles && excludedProjectTitles.length > 0) {
+			if (excludedProjectTitles.length === 1) {
+				title += ` except in ${excludedProjectTitles[0]}`
+			} else if (excludedProjectTitles.length === 2) {
+				title += ` except in ${excludedProjectTitles[0]} and ${excludedProjectTitles[1]}`
+			} else {
+				const lastProject = excludedProjectTitles[excludedProjectTitles.length - 1]
+				title += ` except in ${excludedProjectTitles.slice(0, excludedProjectTitles.length - 1).join(", ")}, and ${lastProject}`
+			}
 		}
 	}
 
@@ -108,6 +125,12 @@ export function TasksCard({
 			: []
 	)
 
+	const [removedProjects, setRemovedProjects] = useState<string[]>(
+		searchParams.has("removedProjects")
+			? searchParams.get("removedProjects")?.split(",") || []
+			: []
+	)
+
 	const [dueBeforeDate, setDueBeforeDate] = useState<Date | undefined>(
 		searchParams.has("dueBefore")
 			? new Date(searchParams.get("dueBefore") || "")
@@ -133,17 +156,28 @@ export function TasksCard({
 		orderingDirection,
 		withProject,
 		projectTitles: groupByProject && selectedProjects.length > 0 ? selectedProjects : undefined,
+		excludedProjectTitles: groupByProject && removedProjects.length > 0 ? removedProjects : undefined,
 		dueBefore: dueBeforeDate,
 	})
 
 	// -------------------- Effects --------------------
 	useEffect(() => {
 		mutateProject()
+
+		// Update selected projects based on the current projects
 		selectedProjects.forEach((projectTitle) => {
 			if (!projects?.some((project) => project.title === projectTitle)) {
 				setSelectedProjects((prev) => prev.filter((title) => title !== projectTitle))
 			}
 		})
+
+		// Update removed projects based on the current projects
+		removedProjects.forEach((projectTitle) => {
+			if (projects?.some((project) => project.title === projectTitle)) {
+				setRemovedProjects((prev) => prev.filter((title) => title !== projectTitle))
+			}
+		})
+
 	}, [completed, dueBeforeDate])
 
 	useEffect(() => {
@@ -159,11 +193,12 @@ export function TasksCard({
 		if (orderBy) params.set("orderBy", orderBy as string)
 		if (orderingDirection) params.set("orderingDirection", orderingDirection)
 		if (selectedProjects.length > 0) params.set("projects", selectedProjects.join(","))
+		if (removedProjects.length > 0) params.set("removedProjects", removedProjects.join(","))
 		if (dueBeforeDate) params.set("dueBefore", dueBeforeDate.toISOString())
 		if (groupByProject) params.set("groupByProject", "true")
 
 		router.push(`?${params.toString()}`, { scroll: false })
-	}, [completed, limit, orderBy, orderingDirection, selectedProjects, dueBeforeDate, groupByProject, router])
+	}, [completed, limit, orderBy, orderingDirection, selectedProjects, removedProjects, dueBeforeDate, groupByProject, router])
 
 	const cycleCompletedFilter = useCallback(() => {
 		startTransition(() => {
@@ -173,15 +208,33 @@ export function TasksCard({
 		})
 	}, [completed])
 
+	/**
+ * Toggles a project through three states:
+ * 1. Include only this project
+ * 2. Exclude this project
+ * 3. Reset to neutral state
+ * 
+ * @param projectTitle - The title of the project to toggle
+ */
 	const toggleProject = useCallback((projectTitle: string) => {
 		startTransition(() => {
-			setSelectedProjects((prev) =>
-				prev.includes(projectTitle)
-					? prev.filter((id) => id !== projectTitle)
-					: [...prev, projectTitle]
-			)
-		})
-	}, [])
+			if (selectedProjects.includes(projectTitle)) {
+				// State 1 -> 2: From "only this project" to "exclude this project"
+				setSelectedProjects(prev => prev.filter(title => title !== projectTitle));
+				setRemovedProjects(prev => [...prev, projectTitle]);
+			} else if (removedProjects.includes(projectTitle)) {
+				// State 2 -> 3: From "exclude this project" to neutral state
+				setRemovedProjects(prev => prev.filter(title => title !== projectTitle));
+			} else {
+				// State 3 -> 1: From neutral to "only this project"
+				// If this is the first project being selected, clear excluded projects
+				if (selectedProjects.length === 0) {
+					setRemovedProjects([]);
+				}
+				setSelectedProjects(prev => [...prev, projectTitle]);
+			}
+		});
+	}, [selectedProjects, removedProjects])
 
 	const clearDueBeforeFilter = useCallback(() => {
 		startTransition(() => {
@@ -215,11 +268,9 @@ export function TasksCard({
 		>
 			<CardHeader className="flex flex-col sticky top-0 bg-background z-10">
 				<div className="flex flex-row items-center justify-between w-full gap-2">
-					<Link href={`/my/tasks`}>
-						<CardTitle>
-							{generateTitle(completed, orderBy, orderingDirection, limit, groupByProject, selectedProjects, dueBeforeDate)}
-						</CardTitle>
-					</Link>
+					<CardTitle>
+						{generateTitle(completed, orderBy, orderingDirection, limit, groupByProject, selectedProjects, removedProjects, dueBeforeDate)}
+					</CardTitle>
 					<div className="flex gap-2 xl:opacity-0 duration-300 xl:group-hover/TodoCard:opacity-100">
 						<Button
 							variant={isFilterOpen ? "default" : "outline"}
@@ -331,26 +382,85 @@ export function TasksCard({
 					</div>
 					<div className="flex items-center justify-between w-full">
 						{groupByProject && (
-							<div className="w-full flex flex-col space-x-2">
-								<div className="w-full mt-2 border rounded-md p-2 grid grid-cols-2 gap-2">
-									{projectsLoading ? (
-										<div className="w-full text-sm text-center text-muted-foreground col-span-2">Loading projects...</div>
-									) : projects?.length > 0 ? (
-										projects.map((project) => (
-											<div key={project.title} className="flex items-center space-x-2">
-												<Checkbox
-													id={`project-${project.title}`}
-													checked={selectedProjects.includes(project.title)}
-													onCheckedChange={() => toggleProject(project.title)}
-												/>
-												<label htmlFor={`project-${project.title}`} className="text-sm cursor-pointer">
-													{project.title}
-												</label>
-											</div>
-										))
-									) : (
-										<div className="w-full text-sm text-center text-muted-foreground col-span-2">No projects found</div>
-									)}
+							<div className="w-full flex flex-col space-y-2">
+								{/* Legend code */}
+								<div className="w-full mt-2 border rounded-md p-2">
+									<div className="flex justify-between items-center mb-2">
+										<h4 className="text-sm font-medium">
+											Project Filters
+											<Tooltip>
+												<TooltipTrigger className="ml-1">
+													<CircleHelp className="ml-1 size-4 text-muted-foreground" />
+												</TooltipTrigger>
+												<TooltipContent>
+													<div className="text-xs text-muted-foreground mb-1 px-2">
+														<span className="font-medium">Filter legend:</span>
+														<div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
+															<span className="flex items-center">
+																<Checkbox checked={true} disabled className="mr-1 h-3 w-3" />
+																Only show this project
+															</span>
+															<span className="flex items-center">
+																<Checkbox checked={false} disabled className="mr-1 h-3 w-3" />
+																<span className="line-through text-muted-foreground">
+																	<span className="text-red-500">(excluded)</span> Exclude this project
+																</span>
+															</span>
+															<span className="flex items-center">
+																<Checkbox checked={false} disabled className="mr-1 h-3 w-3" />
+																Show all projects
+															</span>
+														</div>
+													</div>
+												</TooltipContent>
+											</Tooltip>
+										</h4>
+										{/* Reset button */}
+										{(selectedProjects.length > 0 || removedProjects.length > 0) && (
+											<Button
+												variant="ghost"
+												size="sm"
+												onClick={() => {
+													startTransition(() => {
+														setSelectedProjects([]);
+														setRemovedProjects([]);
+													});
+												}}
+												className="h-6 text-xs px-2"
+											>
+												Reset filters
+											</Button>
+										)}
+									</div>
+									<div className="grid grid-cols-2 gap-2">
+										{projectsLoading ? (
+											<div className="w-full text-sm text-center text-muted-foreground col-span-2">Loading projects...</div>
+										) : projects?.length > 0 ? (
+											projects.map((project) => (
+												<div key={project.title} className="flex items-center space-x-2">
+													{/* Use different visual states for the three toggle states */}
+													<Checkbox
+														id={`project-${project.title}`}
+														// Show checked only when project is selected
+														checked={selectedProjects.includes(project.title)}
+														onCheckedChange={() => toggleProject(project.title)}
+													/>
+													<label
+														htmlFor={`project-${project.title}`}
+														className={cn(
+															"text-sm cursor-pointer flex items-center",
+															// Apply visual styling for excluded projects
+															removedProjects.includes(project.title) && "line-through text-muted-foreground"
+														)}
+													>
+														{project.title}
+													</label>
+												</div>
+											))
+										) : (
+											<div className="w-full text-sm text-center text-muted-foreground col-span-2">No projects found</div>
+										)}
+									</div>
 								</div>
 							</div>
 						)}

@@ -10,7 +10,8 @@ import {
 	and,
 	or,
 	lte,
-	inArray
+	inArray,
+	not
 } from "drizzle-orm"
 import { db } from "./drizzle"
 import * as Schema from "./schema"
@@ -147,9 +148,11 @@ export async function getTasks(
 	orderingDirection?: "asc" | "desc",
 	limit = 50,
 	projectTitles?: string[],
+	excludedProjectTitles?: string[],
 	dueBefore?: Date,
 	completed?: boolean,
 ) {
+	console.log(excludedProjectTitles)
 	// Step 1: First query to get distinct tasks with limit applied
 	const distinctTasks = await db
 		.select({
@@ -170,10 +173,28 @@ export async function getTasks(
 		.where(
 			and(
 				isNull(Schema.task.deleted_at),
+				// Include specific projects if provided
 				projectTitles
 					? or(
 						inArray(Schema.task.project_title, projectTitles),
 						sql`${isNull(Schema.task.project_title)} AND ${projectTitles.includes("No project")}`,
+					)
+					: sql`1 = 1`,
+				// Exclude specific projects if provided
+				excludedProjectTitles && excludedProjectTitles.length > 0
+					? and(
+						// For tasks with project titles
+						or(
+							isNull(Schema.task.project_title),
+							not(inArray(
+								Schema.task.project_title, 
+								excludedProjectTitles.filter(p => p !== "No project")
+							))
+						),
+						// For tasks with null project title ("No project")
+						excludedProjectTitles.includes("No project") 
+							? isNotNull(Schema.task.project_title) 
+							: sql`1 = 1`
 					)
 					: sql`1 = 1`,
 				dueBefore ? lte(Schema.task.due, dueBefore) : sql`1 = 1`,
@@ -302,14 +323,14 @@ export async function getTasks(
 	const result = taskIds.map((id) => groupedTasks[id]).filter(Boolean).sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
 
 	return result as Schema.TaskWithRelations[]
-}9
-
-export async function getCompletedTasks(orderBy: keyof Schema.Task = "completed_at", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[], dueBefore?: Date) {
-	return getTasks(orderBy, orderingDirection, limit, projectTitles, dueBefore, true);
 }
 
-export async function getUncompletedTasks(orderBy: keyof Schema.Task = "score", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[], dueBefore?: Date) {
-	return getTasks(orderBy, orderingDirection, limit, projectTitles, dueBefore, false);
+export async function getCompletedTasks(orderBy: keyof Schema.Task = "completed_at", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[], excludedProjectTitles?: string[], dueBefore?: Date) {
+	return getTasks(orderBy, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore, true);
+}
+
+export async function getUncompletedTasks(orderBy: keyof Schema.Task = "score", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[], excludedProjectTitles?: string[], dueBefore?: Date) {
+	return getTasks(orderBy, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore, false);
 }
 
 export async function searchTasksByTitle(title: string, limit = 50) {

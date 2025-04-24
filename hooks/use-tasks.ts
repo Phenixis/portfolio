@@ -10,6 +10,7 @@ export function useTasks({
   orderingDirection,
   withProject,
   projectTitles,
+  excludedProjectTitles,
   dueBefore,
 }: {
   completed?: boolean
@@ -18,6 +19,7 @@ export function useTasks({
   orderingDirection?: "asc" | "desc"
   withProject?: boolean
   projectTitles?: string[]
+  excludedProjectTitles?: string[]
   dueBefore?: Date
 }) {
   const { data, isLoading, isError, mutate } = useFilteredData<Task[]>({
@@ -29,6 +31,7 @@ export function useTasks({
       orderingDirection,
       withProject: withProject ? "true" : "false",
       projectTitles: projectTitles?.join(","),
+      excludedProjectTitles: excludedProjectTitles?.join(","),
       dueBefore: dueBefore ? dueBefore.toISOString() : undefined,
     },
   })

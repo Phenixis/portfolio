@@ -31,6 +31,9 @@ export async function GET(request: NextRequest) {
 	const projectTitles = searchParams.get("projectTitles")
 		? searchParams.get("projectTitles")?.split(",")
 		: undefined
+	const excludedProjectTitles = searchParams.get("excludedProjectTitles")
+		? searchParams.get("excludedProjectTitles")?.split(",")
+		: undefined
 	const dueBefore = searchParams.get("dueBefore")
 		? new Date(searchParams.get("dueBefore") as string)
 		: undefined
@@ -43,10 +46,10 @@ export async function GET(request: NextRequest) {
 	try {
 		const tasks =
 			completed === true
-				? await getCompletedTasks(orderBy || undefined, orderingDirection, limit, projectTitles, dueBefore)
+				? await getCompletedTasks(orderBy || undefined, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore)
 				: completed === false
-					? await getUncompletedTasks(orderBy || undefined, orderingDirection, limit, projectTitles, dueBefore)
-					: await getTasks(orderBy || undefined, orderingDirection, limit, projectTitles, dueBefore)
+					? await getUncompletedTasks(orderBy || undefined, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore)
+					: await getTasks(orderBy || undefined, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore)
 
 		return NextResponse.json(tasks)
 	} catch (error) {
