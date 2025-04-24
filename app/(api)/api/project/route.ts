@@ -17,12 +17,15 @@ export async function GET(request: NextRequest) {
     const limitParam = searchParams.get('limit');
     const limit = limitParam ? Number.parseInt(limitParam) : undefined;
     const completed = searchParams.get('completed');
+    const taskCompleted = searchParams.get('taskCompleted') == "true";
+    const taskDueDate = searchParams.get('taskDueDate') ? new Date(searchParams.get('taskDueDate') as string) : undefined;
+    const taskDeleted = searchParams.get('taskDeleted') == "true";
 
     const projects = projectTitle ?
-    await getProject(projectTitle) :
-    completed == "true" ? await getCompletedProjects(limit) :
-    completed == "false" ? await getUncompletedProjects(limit) :
-    await getProjects(limit);
+        await getProject(projectTitle) :
+        completed == "true" ? await getCompletedProjects(limit, taskCompleted, taskDueDate, taskDeleted) :
+            completed == "false" ? await getUncompletedProjects(limit, taskCompleted, taskDueDate, taskDeleted) :
+                await getProjects(limit);
 
     return NextResponse.json(projects);
 }

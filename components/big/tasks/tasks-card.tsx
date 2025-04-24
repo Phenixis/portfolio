@@ -102,12 +102,24 @@ export function TasksCard({
 	const [dueBeforeDate, setDueBeforeDate] = useState<Date | undefined>(
 		searchParams.has("dueBefore") ? new Date(searchParams.get("dueBefore") || "") : undefined,
 	)
-	const { projects } = useProjects({
+	const { projects, isLoading: projectsLoading, mutate: mutateProject } = useProjects({
 		completed: false,
+		taskCompleted: completed,
+		taskDueDate: dueBeforeDate,
+		taskDeleted: false,
 	})
 
 	// Add a new state variable for grouping by project after the other state variables
 	const [groupByProject, setGroupByProject] = useState(searchParams.get("groupByProject") === "true")
+
+	useEffect(() => {
+		mutateProject()
+		selectedProjects.forEach((projectTitle) => {
+			if (!projects?.some((project) => project.title === projectTitle)) {
+				setSelectedProjects((prev) => prev.filter((title) => title !== projectTitle))
+			}
+		})
+	}, [completed, dueBeforeDate])
 
 	// Function to update URL parameters
 	const updateUrlParams = useCallback(() => {
@@ -340,7 +352,9 @@ export function TasksCard({
 						{groupByProject && (
 							<div className="w-full flex flex-col space-x-2">
 								<div className="w-full mt-2 border rounded-md p-2 grid grid-cols-2 gap-2">
-									{projects?.length > 0 ? (
+									{projectsLoading ? (
+										<div className="w-full text-sm text-center text-muted-foreground col-span-2">Loading projects...</div>
+									) : projects?.length > 0 ? (
 										projects.map((project) => (
 											<div key={project.title} className="flex items-center space-x-2">
 												<Checkbox

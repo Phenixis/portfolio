@@ -650,67 +650,66 @@ export async function getProject(title: string) {
 	return dbresult[0];
 }
 
-export async function getProjects(limit = 50) {
+export async function getProjects(limit = 50, completed?: boolean, taskDeleted?: boolean, taskDueDate?: Date, taskCompleted: boolean = false) {
 	const dbresult = await db
-		.select()
+		.select({
+			title: Schema.project.title,
+			description: Schema.project.description,
+			completed: Schema.project.completed,
+			created_at: Schema.project.created_at,
+			updated_at: Schema.project.updated_at,
+			deleted_at: Schema.project.deleted_at,
+		})
 		.from(Schema.project)
-		.where(isNull(Schema.project.deleted_at))
+		.leftJoin(Schema.task, eq(Schema.project.title, Schema.task.project_title))
+		.where(and(
+			isNull(Schema.project.deleted_at),
+			completed !== undefined ? eq(Schema.project.completed, completed) : sql`1 = 1`,
+			taskDeleted !== undefined ? (taskDeleted ? isNotNull(Schema.task.deleted_at) : isNull(Schema.task.deleted_at)) : sql`1 = 1`,
+			taskCompleted !== undefined ? (taskCompleted ? isNotNull(Schema.task.completed_at) : isNull(Schema.task.completed_at)) : sql`1 = 1`,
+			taskDueDate ? lte(Schema.task.due, taskDueDate) : sql`1 = 1`,
+		))
+		.groupBy(Schema.project.title)
 		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.Project[]
 
-	dbresult.push(
-		{
-			title: "No project",
-			description: null,
-			completed: false,
-			created_at: new Date(0),
-			updated_at: new Date(0),
-			deleted_at: null,
-		}
-	)
+	const tasksWithoutProject = await db
+		.select()
+		.from(Schema.task)
+		.where(
+			and(
+				isNull(Schema.task.project_title),
+				isNull(Schema.task.deleted_at),
+				taskDueDate ? lte(Schema.task.due, taskDueDate) : sql`1 = 1`,
+				taskCompleted !== undefined
+					? taskCompleted
+						? isNotNull(Schema.task.completed_at)
+						: isNull(Schema.task.completed_at)
+					: sql`1 = 1`,
+			)
+		);
+
+	if (tasksWithoutProject.length > 0) {
+		dbresult.push(
+			{
+				title: "No project",
+				description: null,
+				completed: false,
+				created_at: new Date(0),
+				updated_at: new Date(0),
+				deleted_at: null,
+			}
+		);
+	}
 
 	return dbresult;
 }
 
-export async function getCompletedProjects(limit = 50) {
-	const dbresult = await db
-		.select()
-		.from(Schema.project)
-		.where(and(eq(Schema.project.completed, true), isNull(Schema.project.deleted_at)))
-		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.Project[]
-
-	dbresult.push(
-		{
-			title: "No project",
-			description: null,
-			completed: true,
-			created_at: new Date(0),
-			updated_at: new Date(0),
-			deleted_at: null,
-		}
-	)
-
-	return dbresult;
+export async function getCompletedProjects(limit = 50, taskDeleted?: boolean, taskDueDate?: Date, taskCompleted: boolean = false) {
+	return getProjects(limit, true, taskDeleted, taskDueDate, taskCompleted);
 }
 
-export async function getUncompletedProjects(limit = 50) {
-	const dbresult = await db
-		.select()
-		.from(Schema.project)
-		.where(and(eq(Schema.project.completed, false), isNull(Schema.project.deleted_at)))
-		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.Project[]
-
-	dbresult.push(
-		{
-			title: "No project",
-			description: null,
-			completed: false,
-			created_at: new Date(0),
-			updated_at: new Date(0),
-			deleted_at: null,
-		}
-	)
-
-	return dbresult;
+export async function getUncompletedProjects(limit = 50, taskDeleted?: boolean, taskDueDate?: Date, taskCompleted: boolean = false) {
+	return getProjects(limit, false, taskDeleted, taskDueDate, taskCompleted);
 }
 
 // ## Update
