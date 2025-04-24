@@ -152,7 +152,6 @@ export async function getTasks(
 	dueBefore?: Date,
 	completed?: boolean,
 ) {
-	console.log(excludedProjectTitles)
 	// Step 1: First query to get distinct tasks with limit applied
 	const distinctTasks = await db
 		.select({
