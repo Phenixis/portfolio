@@ -1,6 +1,7 @@
 import {
     pgTable,
     serial,
+    char,
     varchar,
     text,
     timestamp,
@@ -11,9 +12,9 @@ import {
 import { relations } from 'drizzle-orm';
 
 export const user = pgTable('user', {
-    id: integer('id').primaryKey().notNull(),
+    id: char('id', { length: 8 }).primaryKey().notNull(),
     email: varchar('email', { length: 255 }).notNull(),
-    password: integer('password').notNull(),
+    password: varchar('password', { length: 255 }).notNull(),
     first_name: varchar('first_name', { length: 255 }).notNull(),
     last_name: varchar('last_name', { length: 255 }).notNull(),
     api_key: varchar('api_key', { length: 255 }).notNull(),

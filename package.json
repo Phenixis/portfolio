@@ -27,6 +27,7 @@
     "@vercel/speed-insights": "^1.1.0",
     "autoprefixer": "^10.4.21",
     "axios": "^1.8.4",
+    "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -60,6 +61,7 @@
     }
   },
   "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
     "drizzle-kit": "^0.27.2",
     "typescript": "5.8.3"
   }
