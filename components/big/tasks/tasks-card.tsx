@@ -519,7 +519,7 @@ export function TasksCard({
 					)
 				) : (
 					// Show empty state
-					<div className="text-center py-4">No tasks found</div>
+					<div className="text-center py-4">Amazing! You have no tasks to do.</div>
 				)}
 			</CardContent>
 		</Card>
