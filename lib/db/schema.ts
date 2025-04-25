@@ -10,6 +10,18 @@ import {
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
+export const user = pgTable('user', {
+    id: integer('id').primaryKey().notNull(),
+    email: varchar('email', { length: 255 }).notNull(),
+    password: integer('password').notNull(),
+    first_name: varchar('first_name', { length: 255 }).notNull(),
+    last_name: varchar('last_name', { length: 255 }).notNull(),
+    api_key: varchar('api_key', { length: 255 }).notNull(),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow(),
+    deleted_at: timestamp('deleted_at')
+});
+
 export const importance = pgTable('importance', {
     level: integer("level").primaryKey(),
     name: varchar("name", { length: 50 }).notNull(),
