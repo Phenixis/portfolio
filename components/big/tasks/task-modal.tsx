@@ -616,7 +616,7 @@ export default function TaskModal({
 								<div className="flex space-x-4">
 									<div className="w-full">
 										<Label htmlFor="task" className="flex items-center space-x-2 pb-1">
-											Has to be done after:
+											To do before:
 											<Tooltip tooltip={`Select a task that needs to be done before this task.<br/>For example, if you are ${mode === 'edit' ? "editing" : "creating"} a Task B that needs to be done after a Task A, enter the title of the Task A here.`}>
 												<CircleHelp className="ml-1 size-4 text-muted-foreground" />
 											</Tooltip>
