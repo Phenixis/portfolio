@@ -389,27 +389,33 @@ export function TasksCard({
 										<h4 className="text-sm font-medium">
 											Project Filters
 											<Tooltip>
-												<TooltipTrigger className="ml-1">
+												<TooltipTrigger className="ml-1 hidden lg:inline-block">
 													<CircleHelp className="ml-1 size-4 text-muted-foreground" />
 												</TooltipTrigger>
 												<TooltipContent>
-													<div className="text-xs text-muted-foreground mb-1 px-2">
-														<span className="font-medium">Filter legend:</span>
-														<div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
-															<span className="flex items-center">
-																<Checkbox checked={true} disabled className="mr-1 h-3 w-3" />
-																Only show this project
-															</span>
-															<span className="flex items-center">
-																<Checkbox checked={false} disabled className="mr-1 h-3 w-3" />
-																<span className="line-through text-muted-foreground">
-																	<span className="text-red-500">(excluded)</span> Exclude this project
-																</span>
-															</span>
-															<span className="flex items-center">
-																<Checkbox checked={false} disabled className="mr-1 h-3 w-3" />
-																Show all projects
-															</span>
+													<div className="text-xs text-muted-foreground p-2 max-w-[300px]">
+														<div className="space-y-3">
+															<div className="flex items-center gap-2">
+																<div className="flex items-center gap-2 w-full max-w-1/2">
+																	<Checkbox checked={true} disabled className="size-4" />
+																	<span className="font-medium">Include Project</span>
+																</div>
+																<div className="text-muted-foreground inline-block w-full max-w-1/2">Show only tasks from this project</div>
+															</div>
+															<div className="flex items-center gap-2">
+																<div className="flex items-center gap-2 w-full max-w-1/2">
+																	<Checkbox checked={false} disabled className="size-4" />
+																	<span className="font-medium line-through text-muted-foreground">Exclude Project</span>
+																</div>
+																<div className="text-muted-foreground inline-block w-full max-w-1/2">Hide tasks from this project</div>
+															</div>
+															<div className="flex justify-between items-center gap-2">
+																<div className="flex items-center gap-2 w-full max-w-1/2">
+																	<Checkbox checked={false} disabled className="size-4" />
+																	<span className="font-medium">Neutral</span>
+																</div>
+																<div className="text-muted-foreground inline-block w-full max-w-1/2">Show all tasks</div	>
+															</div>
 														</div>
 													</div>
 												</TooltipContent>
