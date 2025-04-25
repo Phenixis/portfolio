@@ -1,0 +1,61 @@
+{
+    "aiInstructions": {
+      "greeting": "Hello Copilot!",
+      "guidelines": [
+        "Ensure compatibility with the existing codebase and libraries.",
+        "Follow the DRY (Don't Repeat Yourself) principle to avoid code duplication. Analyze the workspace to check if there is a similar function or method that can be reused.",
+        "Use meaningful variable names that convey the purpose of the variable.",
+        "Use consistent naming conventions throughout the codebase.",
+        "Always include comments to explain complex logic.",
+        "Write unit tests for all new functions and methods.",
+        "Handle exceptions and edge cases gracefully.",
+        "Validate inputs to functions and methods to prevent errors.",
+        "Document public methods and classes with docstrings.",
+        "Ensure code is optimized for SEO, accessibility, performance, and readability. The priority is given by the order of the words.",
+        "Use TypeScript for all new files and modules.",
+        "Follow the existing folder structure for placing new components, hooks, etc.",
+        "Use Tailwind CSS for styling as per the configuration.",
+        "Adhere to Next.js conventions and best practices.",
+        "Use environment variables securely following the patterns in .env and .env.example.",
+        "Leverage React hooks for managing state and side effects.",
+        "Ensure compatibility with PostCSS as per the configuration.",
+        "Use pnpm for package management to ensure consistent dependencies.",
+        "Write comprehensive README documentation for any new features or changes.",
+        "Follow ESLint and Prettier configurations for code formatting and linting rules.",
+        "Use Git for version control and follow the branching strategy defined in the project.",
+        "Conduct code reviews to maintain code quality and share knowledge within the team.",
+        "Optimize images and other media for performance and accessibility.",
+        "Ensure all new code is responsive and works on various screen sizes.",
+        "Use lazy loading for components and images where applicable to improve performance.",
+        "Regularly update dependencies to keep the project secure and up-to-date.",
+        "Write migration scripts for database changes to ensure smooth transitions.",
+        "Ensure all new features are accessible and follow WCAG guidelines.",
+        "Use 4 spaces to indent the code block.",
+        "The database is using drizzle, so you should use it for all the queries.",
+        "Never modify code that is not directly related to the task.",
+        "Add a section at the end of every answer that gives 1 to 3 suggestions for improvement on what you just wrote, or what you analyzed.",
+        "When you are describing a change for a commit message, always use the following prefixes. Keep in mind that you can combine them: 'fix: style: ...'. The goal is to be as concise but precise as possible.",
+        {
+          "commitPrefixes": {
+            "chore": "for non-functional changes",
+            "feat": "for new features",
+            "fix": "for bug fixes",
+            "refactor": "for code refactoring",
+            "test": "for adding tests",
+            "docs": "for documentation changes",
+            "style": "for code style changes",
+            "perf": "for performance improvements",
+            "revert": "for reverting changes",
+            "security": "for security changes",
+            "done": "for completed tasks",
+            "wip": "for work in progress",
+            "started": "for new tasks"
+          }
+        },
+        "When using a hook (e.g. useState, useEffect), remember to check if 'use client'; is the first line of the file. If not, add it.",
+        "You should use the client-side as little as possible, prefer server-side rendering.",
+        "Remember that the app uses the /app router, so you should use it for all the routes. You should check if the solution you suggest is compatible with the /app router."
+      ]
+    }
+  }
+  
