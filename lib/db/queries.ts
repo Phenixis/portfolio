@@ -16,7 +16,7 @@ import {
 import { db } from "./drizzle"
 import * as Schema from "./schema"
 import { revalidatePath } from "next/cache"
-import { calculateUrgency } from "@/lib/utils"
+import { calculateUrgency } from "@/lib/utils/task"
 import { alias } from "drizzle-orm/pg-core"
 
 const taskToDoAfterAlias = alias(Schema.taskToDoAfter, 'taskToDoAfter');
