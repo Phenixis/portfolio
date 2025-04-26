@@ -1,6 +1,10 @@
 // A simple fetcher function for SWR
-export const fetcher = async (url: string) => {
-  const res = await fetch(url)
+export const fetcher = async (url: string, api_key: string) => {
+  const res = await fetch(url, {
+    headers: {
+      "Authorization": `Bearer ${api_key}`
+    }
+  })
 
   // If the status code is not in the range 200-299,
   // we still try to parse and throw it.

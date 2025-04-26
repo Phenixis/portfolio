@@ -8,8 +8,12 @@ import {
     type NextRequest,
     NextResponse
 } from "next/server"
+import { verifyRequest } from "@/lib/auth/api"
 
 export async function GET(request: NextRequest) {
+    const verification = await verifyRequest(request)
+    if ('error' in verification) return verification.error
+
     const searchParams = request.nextUrl.searchParams
     const query = searchParams.get("query")
 
@@ -25,7 +29,7 @@ export async function GET(request: NextRequest) {
     const limit = limitParam ? Number.parseInt(limitParam) : undefined
 
     try {
-        const projects = await searchProjects(query, limit)
+        const projects = await searchProjects(verification.userId, query, limit)
         return NextResponse.json(projects)
     } catch (error) {
         console.error("Error fetching projects:", error)

@@ -20,9 +20,13 @@ import {
 } from "@/lib/db/queries"
 import type { Task } from "@/lib/db/schema"
 import { type NextRequest, NextResponse } from "next/server"
+import { verifyRequest } from "@/lib/auth/api"
 
 // GET - Récupérer les tasks
 export async function GET(request: NextRequest) {
+	const verification = await verifyRequest(request)
+	if ('error' in verification) return verification.error
+
 	const searchParams = request.nextUrl.searchParams
 	const completedParam = searchParams.get("completed")
 	const orderBy = searchParams.get("orderBy") as keyof Task | null
@@ -46,10 +50,10 @@ export async function GET(request: NextRequest) {
 	try {
 		const tasks =
 			completed === true
-				? await getCompletedTasks(orderBy || undefined, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore)
+				? await getCompletedTasks(verification.userId, orderBy || undefined, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore)
 				: completed === false
-					? await getUncompletedTasks(orderBy || undefined, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore)
-					: await getTasks(orderBy || undefined, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore)
+					? await getUncompletedTasks(verification.userId, orderBy || undefined, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore)
+					: await getTasks(verification.userId, orderBy || undefined, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore, completed)
 
 		return NextResponse.json(tasks)
 	} catch (error) {
@@ -60,6 +64,9 @@ export async function GET(request: NextRequest) {
 
 // POST - Créer un nouveau task
 export async function POST(request: NextRequest) {
+	const verification = await verifyRequest(request)
+	if ('error' in verification) return verification.error
+
 	try {
 		const body = await request.json()
 		const { title, importance, dueDate, duration, projectTitle, toDoAfterId } = body
@@ -69,9 +76,9 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
 		}
 
-		const project = projectTitle && await getProject(projectTitle)
+		const project = projectTitle && await getProject(verification.userId, projectTitle)
 		if (!project && projectTitle != "") {
-			await createProject(projectTitle)
+			await createProject(verification.userId, projectTitle)
 		}
 
 		const toDoAfter = toDoAfterId && await getTaskById(Number(toDoAfterId))
@@ -81,7 +88,7 @@ export async function POST(request: NextRequest) {
 
 		const dueDateAtMidnight = new Date(dueDate)
 
-		const taskId = await createTask(title, Number(importance), dueDateAtMidnight, Number(duration), projectTitle != "" ? projectTitle : undefined)
+		const taskId = await createTask(title, Number(importance), dueDateAtMidnight, Number(duration), projectTitle != "" ? projectTitle : undefined, verification.userId)
 
 		if (toDoAfterId && toDoAfterId != "-1") {
 			await createTaskToDoAfter(taskId, Number(toDoAfterId))
@@ -96,19 +103,21 @@ export async function POST(request: NextRequest) {
 
 // PUT - Mettre à jour un task existant
 export async function PUT(request: NextRequest) {
+	const verification = await verifyRequest(request)
+	if ('error' in verification) return verification.error
+
 	try {
 		const body = await request.json()
 		let { id, title, importance, dueDate, duration, projectTitle, toDoAfterId } = body
 
 		// Validation
 		if (!id || !title || importance === undefined || dueDate === undefined || duration === undefined) {
-			console.log("Missing required fields:", { id, title, importance, dueDate, duration })
 			return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
 		}
 
-		const project = projectTitle && await getProject(projectTitle)
+		const project = projectTitle && await getProject(verification.userId, projectTitle)
 		if (!project && projectTitle) {
-			await createProject(projectTitle)
+			await createProject(verification.userId, projectTitle)
 		}
 
 		// Validate toDoAfterId if provided
@@ -117,11 +126,9 @@ export async function PUT(request: NextRequest) {
 			if (toDoAfterId !== -1) {
 				const toDoAfter = await getTaskById(Number(toDoAfterId))
 				if (!toDoAfter) {
-					console.log("Invalid toDoAfterId:", toDoAfterId)
 					return NextResponse.json({ error: "Invalid toDoAfterId" }, { status: 400 })
 				}
 				if (new Date(toDoAfter.due) > new Date(dueDate)) {
-					console.log(`task to do after's due date(${(new Date(toDoAfter.due)).toLocaleDateString()}) is after the task's due date(${(new Date(dueDate)).toLocaleDateString()})`)
 					dueDate = toDoAfter.due
 				}
 				
@@ -139,14 +146,14 @@ export async function PUT(request: NextRequest) {
 					filteredRelations.map(async (relation) => {
 						const task = await getTaskById(relation.after_task_id)
 						if (task) {
-							await updateTask(task.id, task.title, task.importance, (new Date(task.due) < new Date(dueDate) ? new Date(dueDate) : new Date(task.due)), task.duration, task.project_title || undefined)
+							await updateTask(verification.userId, task.id, task.title, task.importance, (new Date(task.due) < new Date(dueDate) ? new Date(dueDate) : new Date(task.due)), task.duration, task.project_title || undefined)
 						}
 					})
 				}
 			}
 		}
 
-		const taskId = await updateTask(Number(id), title, Number(importance), new Date(dueDate), Number(duration), projectTitle)
+		const taskId = await updateTask(verification.userId, Number(id), title, Number(importance), new Date(dueDate), Number(duration), projectTitle)
 
 		return NextResponse.json({ id: taskId })
 	} catch (error) {
@@ -157,6 +164,9 @@ export async function PUT(request: NextRequest) {
 
 // PATCH - Marquer un task comme terminé/non terminé
 export async function PATCH(request: NextRequest) {
+	const verification = await verifyRequest(request)
+	if ('error' in verification) return verification.error
+
 	try {
 		const body = await request.json()
 		const { id, completed } = body
@@ -168,12 +178,12 @@ export async function PATCH(request: NextRequest) {
 
 		let taskId
 		if (completed === true) {
-			taskId = await markTaskAsDone(Number(id))
+			taskId = await markTaskAsDone(verification.userId, Number(id))
 		} else if (completed === false) {
-			taskId = await markTaskAsUndone(Number(id))
+			taskId = await markTaskAsUndone(verification.userId, Number(id))
 		} else {
 			// Si completed est un booléen indiquant l'état actuel, on utilise toggleTask
-			taskId = await toggleTask(Number(id), completed)
+			taskId = await toggleTask(verification.userId, Number(id), completed)
 		}
 
 		const task = await getTaskById(Number(taskId))
@@ -214,6 +224,9 @@ export async function PATCH(request: NextRequest) {
 
 // DELETE - Supprimer un task
 export async function DELETE(request: NextRequest) {
+	const verification = await verifyRequest(request)
+	if ('error' in verification) return verification.error
+
 	try {
 		const url = new URL(request.url)
 		const idParam = url.searchParams.get("id")
@@ -230,7 +243,7 @@ export async function DELETE(request: NextRequest) {
 		// 2. Where other tasks depend on this task
 		await deleteTaskToDoAfterByAfterId(id)
 
-		const taskId = await deleteTaskById(id)
+		const taskId = await deleteTaskById(verification.userId, id)
 
 		return NextResponse.json({ id: taskId })
 	} catch (error) {

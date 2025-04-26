@@ -5,8 +5,12 @@ import {
     type NextRequest,
     NextResponse
 } from "next/server"
+import { verifyRequest } from "@/lib/auth/api"
 
 export async function GET(request: NextRequest) {
+    const verification = await verifyRequest(request)
+    if ('error' in verification) return verification.error
+
     const searchParams = request.nextUrl.searchParams
     const query = searchParams.get("query")
     const excludeIdsParam = searchParams.get("excludeIds")
@@ -28,7 +32,7 @@ export async function GET(request: NextRequest) {
     const limit = limitParam ? Number.parseInt(limitParam) : undefined
 
     try {
-        const tasks = await searchTasksByTitle(query, limit)
+        const tasks = await searchTasksByTitle(verification.userId, query, limit)
 
         // Filter out tasks with excluded IDs
         const filteredTasks = tasks.filter((task) => !excludeIds.includes(task.id))

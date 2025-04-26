@@ -35,6 +35,8 @@ export const duration = pgTable('duration', {
 
 // Table Project
 export const project = pgTable('project', {
+    user_id: char('user_id', { length: 8}).default("00000000").notNull()
+        .references(() => user.id),
     title: varchar('title', { length: 255 }).primaryKey(),
     description: text('description'),
     completed: boolean('completed').notNull().default(false),
@@ -45,6 +47,8 @@ export const project = pgTable('project', {
 
 // Table Task
 export const task = pgTable('task', {
+    user_id: char('user_id', { length: 8}).default("00000000").notNull()
+        .references(() => user.id),
     id: serial('id').primaryKey(),
     title: varchar('title', { length: 255 }).notNull(),
     importance: integer('importance')
@@ -63,7 +67,7 @@ export const task = pgTable('task', {
     completed_at: timestamp('completed_at'),
     created_at: timestamp('created_at').notNull().defaultNow(),
     updated_at: timestamp('updated_at').notNull().defaultNow(),
-    deleted_at: timestamp('deleted_at')
+    deleted_at: timestamp('deleted_at'),
 });
 
 // This table is used to manage the tasks that need to be done after a specific task
@@ -84,6 +88,8 @@ export const taskToDoAfter = pgTable('task_to_do_after', {
 
 // Table Meteo
 export const meteo = pgTable('meteo', {
+    user_id: char('user_id', { length: 8}).default("00000000").notNull()
+        .references(() => user.id),
     day: varchar('day', { length: 10 }).primaryKey(),
     latitude: varchar('latitude', { length: 10}).default("-1").notNull(),
     longitude: varchar('longitude', { length: 10}).default("-1").notNull(),
@@ -100,6 +106,8 @@ export const meteo = pgTable('meteo', {
 
 // Table Exercice
 export const exercice = pgTable('exercice', {
+    user_id: char('user_id', { length: 8}).default("00000000").notNull()
+        .references(() => user.id),
     id: serial('id').primaryKey(),
     name: varchar('name', { length: 255 }).notNull(),
     created_at: timestamp('created_at').notNull().defaultNow(),
@@ -109,6 +117,8 @@ export const exercice = pgTable('exercice', {
 
 // Table Séance (Modèle de Workout)
 export const seance = pgTable('seance', {
+    user_id: char('user_id', { length: 8}).default("00000000").notNull()
+        .references(() => user.id),
     id: serial('id').primaryKey(),
     name: varchar('name', { length: 255 }).notNull(),
     created_at: timestamp('created_at').notNull().defaultNow(),
@@ -130,6 +140,8 @@ export const seanceExercice = pgTable('seance_exercice', {
 
 // Table Workout (Séance Réelle)
 export const workout = pgTable('workout', {
+    user_id: char('user_id', { length: 8}).default("00000000").notNull()
+        .references(() => user.id),
     id: serial('id').primaryKey(),
     date: timestamp('date').notNull().defaultNow(),
     note: integer('note'),
@@ -151,6 +163,8 @@ export const seriesGroup = pgTable('series_group', {
 
 // Table Série (Séries des exercices du workout)
 export const serie = pgTable('serie', {
+    user_id: char('user_id', { length: 8}).default("00000000").notNull()
+        .references(() => user.id),
     id: serial('id').primaryKey(),
     series_group_id: integer('series_group_id').references(() => seriesGroup.id).notNull(),
     exercice_id: integer('exercice_id').references(() => exercice.id).notNull(),
@@ -164,8 +178,12 @@ export const serie = pgTable('serie', {
 });
 
 // Relations
-export const projectRelations = relations(project, ({ many }) => ({
-    tasks: many(task)
+export const projectRelations = relations(project, ({ one, many }) => ({
+    tasks: many(task),
+    user: one(user, {
+        fields: [project.user_id],
+        references: [user.id]
+    })
 }));
 
 export const taskRelations = relations(task, ({ one, many }) => ({
@@ -173,15 +191,24 @@ export const taskRelations = relations(task, ({ one, many }) => ({
         fields: [task.project_title],
         references: [project.title]
     }),
-    taskAfter: many(taskToDoAfter)
+    taskAfter: many(taskToDoAfter),
+    taskBefore: many(taskToDoAfter),
+    user: one(user, {
+        fields: [task.user_id],
+        references: [user.id]
+    })
 }));
 
 export const taskToDoAfterRelations = relations(taskToDoAfter, ({ many }) => ({
     tasks: many(task)
 }));
 
-export const seanceRelations = relations(seance, ({ many }) => ({
-    exercices: many(seanceExercice)
+export const seanceRelations = relations(seance, ({ one, many }) => ({
+    exercices: many(seanceExercice),
+    user: one(user, {
+        fields: [seance.user_id],
+        references: [user.id]
+    })
 }));
 
 export const seanceExerciceRelations = relations(seanceExercice, ({ one }) => ({
@@ -220,15 +247,23 @@ export const serieRelations = relations(serie, ({ one }) => ({
         fields: [serie.series_group_id],
         references: [seriesGroup.id]
     }),
+    user: one(user, {
+        fields: [serie.user_id],
+        references: [user.id]
+    })
 }));
 
 export const workoutExerciceRelations = relations(workout, ({ many }) => ({
     exercices: many(serie)
 }));
 
-export const exerciceRelations = relations(exercice, ({ many }) => ({
+export const exerciceRelations = relations(exercice, ({ one, many }) => ({
     seanceExercices: many(seanceExercice),
-    series: many(serie)
+    series: many(serie),
+    user: one(user, {
+        fields: [exercice.user_id],
+        references: [user.id]
+    })
 }));
 
 

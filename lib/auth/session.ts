@@ -29,8 +29,31 @@ export async function verifyToken(input: string) {
 	}
 }
 
+export async function getClientSession() {
+	const cookieStore = await cookies()
+	const credentialsSession = cookieStore.get("session")?.value
+
+	if (!credentialsSession) {
+		return null
+	}
+
+	try {
+		// Verify the token
+		const parsed = await verifyToken(credentialsSession)
+
+		if (!parsed) {
+			return null
+		}
+
+		return parsed
+	} catch (error) {
+		// Handle invalid or expired token
+		return null
+	}
+}
+
 // For server components and server actions
-export async function getSession() {
+export async function getServerSession() {
 	const cookieStore = await cookies()
 	const credentialsSession = cookieStore.get("session")?.value
 
@@ -48,7 +71,6 @@ export async function getSession() {
 
 		// Extend the session expiration by reusing setSession
 		await setSession(parsed)
-
 		return parsed
 	} catch (error) {
 		// Handle invalid or expired token
@@ -75,8 +97,9 @@ export async function setSession(session?: SessionData) {
 		expires: expiresInOneDay.toISOString(),
 		userId: "" // Default empty string if no userId provided
 	}
-	const encryptedSession = await signToken(sessionData)
-		; (await cookies()).set({
+	const encryptedSession = await signToken(sessionData);
+	
+	(await cookies()).set({
 			name: "session",
 			value: encryptedSession,
 			expires: expiresInOneDay,
@@ -94,7 +117,7 @@ export async function removeSession() {
 }
 
 export async function getUser() {
-	const session = await getSession()
+	const session = await getServerSession()
 	if (!session) {
 		return null
 	}

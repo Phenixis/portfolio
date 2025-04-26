@@ -33,7 +33,6 @@ export default function Login() {
         formData.append("redirectTo", redirectTo)
         formData.append("identifier", identifier)
         formData.append("password", password)
-        console.log(formData)
         return verifyCredentials(prevState, formData)
     }, { error: "" })
 

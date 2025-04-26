@@ -4,8 +4,12 @@ import {
     type Meteo
 } from "@/lib/db/schema";
 import dotenv from 'dotenv';
+import { verifyRequest } from "@/lib/auth/api";
 
 export async function GET(request: NextRequest) {
+    const verification = await verifyRequest(request)
+    if ('error' in verification) return verification.error
+
     dotenv.config();
     const searchParams = request.nextUrl.searchParams;
     const day = searchParams.get("day");
@@ -14,7 +18,7 @@ export async function GET(request: NextRequest) {
         throw new Error("Missing day parameter");
     }
 
-    const savedMeteo = await getMeteoByDay(day);
+    const savedMeteo = await getMeteoByDay(verification.userId, day);
 
     const oneHourAgo = new Date(Date.now() - 3600 * 1000);
 
@@ -38,12 +42,13 @@ export async function GET(request: NextRequest) {
         const data = await result.json();
 
         if (savedMeteo.length === 0) {
-            await createMeteo(day, parseInt(data.daily[0].feels_like.day as string), data.daily[0].summary, data.daily[0].weather[0].icon, lat, lon);
+            await createMeteo(verification.userId, day, parseInt(data.daily[0].feels_like.day as string), data.daily[0].summary, data.daily[0].weather[0].icon, lat, lon);
         } else {
-            await updateMeteo(day, parseInt(data.daily[0].feels_like.day as string), data.daily[0].summary, data.daily[0].weather[0].icon, lat, lon);
+            await updateMeteo(verification.userId, day, parseInt(data.daily[0].feels_like.day as string), data.daily[0].summary, data.daily[0].weather[0].icon, lat, lon);
         }
 
         return NextResponse.json({
+            user_id: verification.userId,
             day: day,
             temperature: data.daily[0].feels_like.day,
             summary: data.daily[0].summary,

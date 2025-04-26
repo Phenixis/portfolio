@@ -1,0 +1,1 @@
+ALTER TABLE "task" ADD COLUMN "user_id" varchar(255) NOT NULL DEFAULT ''; 

@@ -1,8 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server"
 import type * as Schema from "@/lib/db/schema"
 import { createWorkout, updateWorkout, getAllWorkouts } from "@/lib/db/queries"
+import { verifyRequest } from "@/lib/auth/api"
 
 export async function GET(request: NextRequest) {
+  const verification = await verifyRequest(request)
+  if ('error' in verification) return verification.error
+
   try {
     const searchParams = request.nextUrl.searchParams
     const orderBy = (searchParams.get("orderBy") as keyof Schema.Workout) || "date"
@@ -11,7 +15,7 @@ export async function GET(request: NextRequest) {
     const withSeance = searchParams.get("withSeance") === "true"
 
     // This is a placeholder - you'll need to implement a function to get workouts with their seances
-    const workouts = await getAllWorkouts()
+    const workouts = await getAllWorkouts(verification.userId)
 
     return NextResponse.json(workouts)
   } catch (error) {
@@ -21,10 +25,13 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const verification = await verifyRequest(request)
+  if ('error' in verification) return verification.error
+
   try {
     const { date, note, seance_id } = await request.json()
 
-    const workoutId = await createWorkout(new Date(date), seance_id)
+    const workoutId = await createWorkout(verification.userId, new Date(date), seance_id)
 
     return NextResponse.json({ id: workoutId })
   } catch (error) {
@@ -34,10 +41,13 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  const verification = await verifyRequest(request)
+  if ('error' in verification) return verification.error
+
   try {
     const { id, date, note, seance_id } = await request.json()
 
-    const workoutId = await updateWorkout(id, note, seance_id)
+    const workoutId = await updateWorkout(verification.userId, id, note, seance_id)
 
     return NextResponse.json({ id: workoutId })
   } catch (error) {

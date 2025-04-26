@@ -10,9 +10,22 @@ export type ActionState = {
 
 const protectedRoutes = ["/my"]
 const unaccessibleWhenLoggedIn = ["/login"]
+const apiRoutes = ["/api"]
 
 export async function middleware(request: NextRequest) {
 	const { pathname } = request.nextUrl
+
+	// Handle API routes
+	if (apiRoutes.some(route => pathname.startsWith(route))) {
+		const apiKey = request.headers.get('Authorization')?.replace('Bearer ', '')
+		
+		if (!apiKey) {
+			return NextResponse.json({ error: 'Missing API key' }, { status: 401 })
+		}
+
+		// Let the API route handle the actual verification
+		return NextResponse.next()
+	}
 
 	// Get the session cookie directly from the request
 	const sessionCookie = request.cookies.get("session")?.value
@@ -41,6 +54,7 @@ export async function middleware(request: NextRequest) {
 		const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000)
 		const sessionData = {
 			expires: expiresInOneDay.toISOString(),
+			userId: session.userId,
 		}
 
 		// Sign a new token
@@ -64,5 +78,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-	matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+	matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 }

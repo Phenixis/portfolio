@@ -9,9 +9,13 @@ import {
 } from "@/lib/db/queries"
 import type { TaskToDoAfter } from "@/lib/db/schema"
 import { type NextRequest, NextResponse } from "next/server"
+import { verifyRequest } from "@/lib/auth/api"
 
 // DELETE - Supprimer un taskToDoAfter
 export async function DELETE(request: NextRequest) {
+    const verification = await verifyRequest(request)
+    if ('error' in verification) return verification.error
+
     const url = new URL(request.url)
     const id1Param = url.searchParams.get("id1")
     const id2Param = url.searchParams.get("id2")

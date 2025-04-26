@@ -1,5 +1,5 @@
 import {
-    getUncompletedAndDueInTheNextThreeDaysOrLessTasks
+    getUncompletedAndDueInTheNextThreeDaysOrLessTasks,
 } from "@/lib/db/queries"
 import {
     type NextRequest,
@@ -8,47 +8,62 @@ import {
 import {
     sendEmail
 } from "@/components/utils/send_email"
+import { verifyRequest } from "@/lib/auth/api"
+import { getUser, getAllUsers } from "@/lib/db/queries/user"
 
 export async function GET(request: NextRequest) {
-    try {
-        const tasks = await getUncompletedAndDueInTheNextThreeDaysOrLessTasks(true);
+    const verification = await verifyRequest(request)
+    if ('error' in verification) return verification.error
+    if (verification.userId !== "cron") {
+        return NextResponse.json({
+            error: "Unauthorized"
+        }, {
+            status: 401
+        })
+    }
 
-        // Sort tasks by due date in ascending order
-        const sortedTasks = tasks.sort((a, b) => new Date(a.due).getTime() - new Date(b.due).getTime());
+    const users = await getAllUsers()
 
-        // Helper function to calculate relative days
-        const getRelativeDay = (dueDate: Date): string => {
-            const today = new Date();
-            const diffInDays = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-            const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
-            return rtf.format(diffInDays, "day");
-        };
+    for (const user of users) {
+        try {
+            const tasks = await getUncompletedAndDueInTheNextThreeDaysOrLessTasks(user.id);
 
-        // Group tasks by relative days
-        const groupedByDays = sortedTasks.reduce((acc: Record<string, any[]>, task) => {
-            const relativeDay = getRelativeDay(new Date(task.due));
-            if (!acc[relativeDay]) {
-                acc[relativeDay] = [];
-            }
-            acc[relativeDay].push(task);
-            return acc;
-        }, {});
+            // Sort tasks by due date in ascending order
+            const sortedTasks = tasks.sort((a, b) => new Date(a.due).getTime() - new Date(b.due).getTime());
 
-        // Group tasks by projects within each relative day
-        const groupedByProjects = Object.entries(groupedByDays).reduce((acc: Record<string, any>, [day, tasks]) => {
-            acc[day] = (tasks as any[]).reduce((projectAcc: Record<string, any[]>, task) => {
-                const project = task.project_title || "No Project";
-                if (!projectAcc[project]) {
-                    projectAcc[project] = [];
+            // Helper function to calculate relative days
+            const getRelativeDay = (dueDate: Date): string => {
+                const today = new Date();
+                const diffInDays = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+                return rtf.format(diffInDays, "day");
+            };
+
+            // Group tasks by relative days
+            const groupedByDays = sortedTasks.reduce((acc: Record<string, any[]>, task) => {
+                const relativeDay = getRelativeDay(new Date(task.due));
+                if (!acc[relativeDay]) {
+                    acc[relativeDay] = [];
                 }
-                projectAcc[project].push(task);
-                return projectAcc;
+                acc[relativeDay].push(task);
+                return acc;
             }, {});
-            return acc;
-        }, {});
 
-        // Generate email content
-        let emailContent = `
+            // Group tasks by projects within each relative day
+            const groupedByProjects = Object.entries(groupedByDays).reduce((acc: Record<string, any>, [day, tasks]) => {
+                acc[day] = (tasks as any[]).reduce((projectAcc: Record<string, any[]>, task) => {
+                    const project = task.project_title || "No Project";
+                    if (!projectAcc[project]) {
+                        projectAcc[project] = [];
+                    }
+                    projectAcc[project].push(task);
+                    return projectAcc;
+                }, {});
+                return acc;
+            }, {});
+
+            // Generate email content
+            let emailContent = `
             <html>
             <head>
             <style>
@@ -111,9 +126,9 @@ export async function GET(request: NextRequest) {
                     padding-left: 15px;
                 }
                 li {
-                    font-size: 0.875rem;
+                        font-size: 0.875rem;
+                    }
                 }
-            }
             </style>
             </head>
             <body>
@@ -121,46 +136,47 @@ export async function GET(request: NextRequest) {
             <h1>Your Daily Task List</h1>
         `;
 
-        for (const [day, projects] of Object.entries(groupedByProjects)) {
-            emailContent += `<h2>Due ${day}</h2>`;
-            for (const [project, tasks] of Object.entries(projects)) {
-                emailContent += `<h3>${project}</h3><ul>`;
-                (tasks as any[]).forEach((task) => {
-                    emailContent += `<li>${task.title}</li>`;
-                });
-                emailContent += `</ul>`;
+            for (const [day, projects] of Object.entries(groupedByProjects)) {
+                emailContent += `<h2>Due ${day}</h2>`;
+                for (const [project, tasks] of Object.entries(projects)) {
+                    emailContent += `<h3>${project}</h3><ul>`;
+                    (tasks as any[]).forEach((task) => {
+                        emailContent += `<li>${task.title}</li>`;
+                    });
+                    emailContent += `</ul>`;
+                }
             }
-        }
 
-        emailContent += `
+            emailContent += `
             </main>
             </body>
             </html>
         `;
 
-        const today = new Date();
-        const formattedSubject = `${today.toLocaleDateString("en-GB", { weekday: 'long', day: '2-digit', month: 'long' })} - Your Daily Task List`;
-        const result = sendEmail("max@maximeduhamel.com", formattedSubject, emailContent);
+            const today = new Date();
+            const formattedSubject = `${today.toLocaleDateString("en-GB", { weekday: 'long', day: '2-digit', month: 'long' })} - Your Daily Task List`;
+            const result = sendEmail(user.email, formattedSubject, emailContent);
 
-        if (!result) {
+            if (!result) {
+                return NextResponse.json({
+                    error: "Failed to send email"
+                }, {
+                    status: 500
+                });
+            }
+
             return NextResponse.json({
-                error: "Failed to send email"
+                message: "Email sent successfully"
+            }, {
+                status: 200
+            });
+        } catch (error) {
+            console.error("Error fetching tasks:", error);
+            return NextResponse.json({
+                error: "Failed to fetch tasks"
             }, {
                 status: 500
             });
         }
-
-        return NextResponse.json({
-            message: "Email sent successfully"
-        }, {
-            status: 200
-        });
-    } catch (error) {
-        console.error("Error fetching tasks:", error);
-        return NextResponse.json({
-            error: "Failed to fetch tasks"
-        }, {
-            status: 500
-        });
     }
 }

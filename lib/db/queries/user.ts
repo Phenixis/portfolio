@@ -1,17 +1,17 @@
 "use server"
 
 import {
-	desc,
-	asc,
-	eq,
-	isNull,
-	isNotNull,
-	sql,
-	and,
-	or,
-	lte,
-	inArray,
-	not
+    desc,
+    asc,
+    eq,
+    isNull,
+    isNotNull,
+    sql,
+    and,
+    or,
+    lte,
+    inArray,
+    not
 } from "drizzle-orm"
 import { db } from "../drizzle"
 import * as Schema from "../schema"
@@ -20,7 +20,7 @@ import { calculateUrgency } from "@/lib/utils/task"
 import { alias } from "drizzle-orm/pg-core"
 import { hashPassword } from "@/lib/utils/password"
 import { user } from "../schema"
-
+import { getClientSession } from "@/lib/auth/session"
 /**
  * Generates a unique 8-digit number ID for users
  * @returns A promise that resolves to a unique 8-digit number
@@ -104,7 +104,7 @@ export async function createUser(
     const hashedPassword = await hashPassword(password)
     const apiKey = await generateUniqueApiKey()
     const id = await generateUniqueUserId()
-    
+
     const insertedUser = await db.insert(Schema.user).values({
         email: email,
         first_name: first_name,
@@ -121,12 +121,45 @@ export async function createUser(
     return { user: insertedUser[0], password: password }
 }
 
-export async function getUser(id: string) {
-    const user = await db.select().from(Schema.user).where(eq(Schema.user.id, id))
+export async function getUser(id?: string) {
+    if (!id) {
+        const session = await getClientSession();
 
-    if (!user || user.length === 0) {
-        throw new Error("User not found")
+        if (!session) {
+            return null;
+        }
+
+        if (new Date(session.expires) < new Date()) {
+            return null;
+        }
+
+        const user = await db
+            .select()
+            .from(Schema.user)
+            .where(and(
+                (session.userId ? eq(Schema.user.id, session.userId) : eq(Schema.user.email, session.userId)),
+                isNull(Schema.user.deleted_at))
+            )
+            .limit(1);
+
+        if (user.length === 0) {
+            return null;
+        }
+
+        return user[0];
+    } else {
+        const user = await db.select().from(Schema.user).where(eq(Schema.user.id, id))
+
+        if (!user || user.length === 0) {
+            throw new Error("User not found")
+        }
+
+        return user[0]
     }
+}
 
-    return user[0]
+export async function getAllUsers() {
+    const users = await db.select().from(Schema.user)
+
+    return users
 }

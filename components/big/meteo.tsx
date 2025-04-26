@@ -12,12 +12,13 @@ import {
     TooltipContent
 } from "@/components/ui/tooltip";
 import Image from 'next/image'
-
+import { useUser } from '@/hooks/use-user';
 export default function Meteo({
     className,
 }: {
     className?: string
 }) {
+    const user = useUser().user;
     const now = new Date();
     const date = now.getHours() >= 19
         ? new Date(now.setDate(now.getDate() + 1)).toLocaleDateString('fr-FR', { year: 'numeric', month: '2-digit', day: '2-digit' })
@@ -26,7 +27,11 @@ export default function Meteo({
     const [error, setError] = useState<string | null>(null);
     const fetchWeather = async (latitude: number, longitude: number) => {
         try {
-            const response = await fetch(`/api/weather?day=${date}&lat=${latitude}&lon=${longitude}`);
+            const response = await fetch(`/api/weather?day=${date}&lat=${latitude}&lon=${longitude}`, {
+                headers: {
+                    "Authorization": `Bearer ${user?.api_key}`
+                }
+            });
 
             const data = await response.json() as Meteo;
 

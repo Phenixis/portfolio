@@ -2,6 +2,7 @@
 
 import { fetcher } from "@/lib/fetcher"
 import useSWR from "swr"
+import { useUser } from "./use-user"
 
 export function useFilteredData<T>({
   endpoint,
@@ -12,6 +13,8 @@ export function useFilteredData<T>({
   params?: Record<string, string | number | boolean | undefined>
   skipFetch?: boolean
 }) {
+  const { user } = useUser()
+
   // Convert params to URLSearchParams
   const searchParams = new URLSearchParams()
   if (params) {
@@ -26,7 +29,7 @@ export function useFilteredData<T>({
   const swrKey = skipFetch ? null : `${endpoint}?${searchParams.toString()}`
 
   // Fetch data using SWR
-  const { data, error, isLoading, mutate } = useSWR(swrKey, fetcher, {
+  const { data, error, isLoading, mutate } = useSWR(swrKey, (url) => fetcher(url, user?.api_key || ''), {
     revalidateOnFocus: false,
     dedupingInterval: 5000,
     revalidateIfStale: false,

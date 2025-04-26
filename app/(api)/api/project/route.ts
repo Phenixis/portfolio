@@ -9,9 +9,13 @@ import {
 } from '@/lib/db/queries';
 import type { Project } from '@/lib/db/schema';
 import { type NextRequest, NextResponse } from 'next/server';
+import { verifyRequest } from '@/lib/auth/api';
 
 // GET - Récupérer les projets
 export async function GET(request: NextRequest) {
+    const verification = await verifyRequest(request)
+    if ('error' in verification) return verification.error
+
     const searchParams = request.nextUrl.searchParams;
     const projectTitle = searchParams.get('projectTitle');
     const limitParam = searchParams.get('limit');
@@ -22,16 +26,19 @@ export async function GET(request: NextRequest) {
     const taskDeleted = searchParams.get('taskDeleted') == "true";
 
     const projects = projectTitle ?
-        await getProject(projectTitle) :
-        completed == "true" ? await getCompletedProjects(limit, taskCompleted, taskDueDate, taskDeleted) :
-            completed == "false" ? await getUncompletedProjects(limit, taskCompleted, taskDueDate, taskDeleted) :
-                await getProjects(limit);
+        await getProject(verification.userId, projectTitle) :
+        completed == "true" ? await getCompletedProjects(verification.userId, limit, taskCompleted, taskDueDate, taskDeleted) :
+            completed == "false" ? await getUncompletedProjects(verification.userId, limit, taskCompleted, taskDueDate, taskDeleted) :
+                await getProjects(verification.userId, limit);
 
     return NextResponse.json(projects);
 }
 
 // POST - Créer un nouveau projet
 export async function POST(request: NextRequest) {
+    const verification = await verifyRequest(request)
+    if ('error' in verification) return verification.error
+
     try {
         const body = await request.json();
         const { title, description } = body;
@@ -41,7 +48,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        const projectId = await createProject(title, description);
+        const projectId = await createProject(verification.userId, title, description);
 
         return NextResponse.json({ id: projectId }, { status: 201 });
     } catch (error) {

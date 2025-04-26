@@ -25,7 +25,7 @@ const taskToDoBeforeAlias = alias(Schema.taskToDoAfter, 'taskToDoBefore');
 // # TASK
 
 // ## Create
-export async function createTask(title: string, importance: number, dueDate: Date, duration: number, project?: string) {
+export async function createTask(title: string, importance: number, dueDate: Date, duration: number, project?: string, userId?: string) {
 	const urgency = calculateUrgency(dueDate)
 
 	const result = await db
@@ -38,6 +38,7 @@ export async function createTask(title: string, importance: number, dueDate: Dat
 			score: importance * urgency - duration,
 			due: dueDate,
 			project_title: project,
+			user_id: userId,
 		} as Schema.NewTask)
 		.returning({ id: Schema.task.id })
 
@@ -63,6 +64,7 @@ export async function getTaskById(id: number, recursive: boolean = false) {
 			created_at: Schema.task.created_at,
 			updated_at: Schema.task.updated_at,
 			deleted_at: Schema.task.deleted_at,
+			user_id: Schema.task.user_id,
 			project: {
 				title: Schema.project.title,
 				description: Schema.project.description,
@@ -70,6 +72,7 @@ export async function getTaskById(id: number, recursive: boolean = false) {
 				created_at: Schema.project.created_at,
 				updated_at: Schema.project.updated_at,
 				deleted_at: Schema.project.deleted_at,
+				user_id: Schema.project.user_id,
 			},
 			importanceDetails: {
 				level: Schema.importance.level,
@@ -144,6 +147,7 @@ export async function getTaskById(id: number, recursive: boolean = false) {
 }
 
 export async function getTasks(
+	userId: string,
 	orderBy: keyof Schema.Task = "score",
 	orderingDirection?: "asc" | "desc",
 	limit = 50,
@@ -167,11 +171,14 @@ export async function getTasks(
 			updated_at: Schema.task.updated_at,
 			deleted_at: Schema.task.deleted_at,
 			project_title: Schema.task.project_title,
+			user_id: Schema.task.user_id,
 		})
 		.from(Schema.task)
 		.where(
 			and(
 				isNull(Schema.task.deleted_at),
+				// Filter by user ID if provided
+				eq(Schema.task.user_id, userId),
 				// Include specific projects if provided
 				projectTitles
 					? or(
@@ -230,6 +237,7 @@ export async function getTasks(
 			updated_at: Schema.task.updated_at,
 			deleted_at: Schema.task.deleted_at,
 			project_title: Schema.task.project_title,
+			user_id: Schema.task.user_id,
 			project: {
 				title: Schema.project.title,
 				description: Schema.project.description,
@@ -237,6 +245,7 @@ export async function getTasks(
 				created_at: Schema.project.created_at,
 				updated_at: Schema.project.updated_at,
 				deleted_at: Schema.project.deleted_at,
+				user_id: Schema.project.user_id,
 			},
 			importanceDetails: {
 				level: Schema.importance.level,
@@ -324,92 +333,37 @@ export async function getTasks(
 	return result as Schema.TaskWithRelations[]
 }
 
-export async function getCompletedTasks(orderBy: keyof Schema.Task = "completed_at", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[], excludedProjectTitles?: string[], dueBefore?: Date) {
-	return getTasks(orderBy, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore, true);
+export async function getCompletedTasks(userId: string, orderBy: keyof Schema.Task = "completed_at", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[], excludedProjectTitles?: string[], dueBefore?: Date) {
+	return getTasks(userId, orderBy, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore, true);
 }
 
-export async function getUncompletedTasks(orderBy: keyof Schema.Task = "score", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[], excludedProjectTitles?: string[], dueBefore?: Date) {
-	return getTasks(orderBy, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore, false);
+export async function getUncompletedTasks(userId: string, orderBy: keyof Schema.Task = "score", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[], excludedProjectTitles?: string[], dueBefore?: Date) {
+	return getTasks(userId, orderBy, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore, false);
 }
 
-export async function searchTasksByTitle(title: string, limit = 50) {
+export async function searchTasksByTitle(userId: string, title: string, limit = 50) {
 	return await db
 		.select()
 		.from(Schema.task)
 		.where(and(
-			sql`${Schema.task.title} LIKE ${`%${title}%`}`,
+			sql`LOWER(${Schema.task.title}) LIKE LOWER(${`%${title}%`})`,
+			eq(Schema.task.user_id, userId),
 			isNull(Schema.task.deleted_at),
 			isNull(Schema.task.completed_at),
 		))
 		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.Task[]
 }
 
-export async function getUncompletedAndDueInTheNextThreeDaysOrLessTasks(withProject: boolean = false, orderBy: keyof Schema.Task = "score", orderingDirection?: "asc" | "desc", limit = 50) {
+export async function getUncompletedAndDueInTheNextThreeDaysOrLessTasks(userId: string, orderBy: keyof Schema.Task = "score", orderingDirection?: "asc" | "desc", limit = 50) {
 	const today = new Date()
 	const threeDaysFromNow = new Date(today)
 	threeDaysFromNow.setDate(today.getDate() + 3)
 
-	if (withProject) {
-		return await db.select({
-			id: Schema.task.id,
-			title: Schema.task.title,
-			importance: Schema.task.importance,
-			urgency: Schema.task.urgency,
-			duration: Schema.task.duration,
-			due: Schema.task.due,
-			score: Schema.task.score,
-			completed_at: Schema.task.completed_at,
-			created_at: Schema.task.created_at,
-			updated_at: Schema.task.updated_at,
-			deleted_at: Schema.task.deleted_at,
-			project_title: Schema.task.project_title,
-			project: {
-				title: Schema.project.title,
-				description: Schema.project.description,
-				completed: Schema.project.completed,
-				created_at: Schema.project.created_at,
-				updated_at: Schema.project.updated_at,
-				deleted_at: Schema.project.deleted_at,
-			},
-			importanceDetails: {
-				level: Schema.importance.level,
-				name: Schema.importance.name,
-			},
-			durationDetails: {
-				level: Schema.duration.level,
-				name: Schema.duration.name,
-			},
-		})
-			.from(Schema.task)
-			.leftJoin(Schema.project, eq(Schema.task.project_title, Schema.project.title))
-			.leftJoin(Schema.importance, eq(Schema.task.importance, Schema.importance.level))
-			.leftJoin(Schema.duration, eq(Schema.task.duration, Schema.duration.level))
-			.where(and(
-				isNull(Schema.task.completed_at),
-				isNull(Schema.task.deleted_at),
-				lte(Schema.task.due, threeDaysFromNow),
-			))
-			.orderBy(
-				orderingDirection === "asc" ? asc(Schema.task[orderBy]) : desc(Schema.task[orderBy])
-			)
-			.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as (Schema.Task & { project: Schema.Project | null; importanceDetails: Schema.Importance; durationDetails: Schema.Duration })[];
-	} else {
-		return await db.select()
-			.from(Schema.task)
-			.where(and(
-				isNull(Schema.task.completed_at),
-				isNull(Schema.task.deleted_at),
-				lte(Schema.task.due, threeDaysFromNow),
-			))
-			.orderBy(
-				orderingDirection === "asc" ? asc(Schema.task[orderBy]) : desc(Schema.task[orderBy])
-			)
-			.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.Task[];
-	}
+	return getTasks(userId, orderBy, orderingDirection, limit, undefined, undefined, threeDaysFromNow, false);
 }
 
 // ## Update
-export async function updateTask(id: number, title: string, importance: number, dueDate: Date, duration: number, projectTitle?: string) {
+export async function updateTask(userId: string, id: number, title: string, importance: number, dueDate: Date, duration: number, projectTitle?: string) {
 	const urgency = calculateUrgency(dueDate)
 
 	const result = await db
@@ -424,7 +378,10 @@ export async function updateTask(id: number, title: string, importance: number, 
 			project_title: projectTitle,
 			updated_at: sql`CURRENT_TIMESTAMP`,
 		})
-		.where(eq(Schema.task.id, id))
+		.where(and(
+			eq(Schema.task.id, id),
+			eq(Schema.task.user_id, userId),
+		))
 		.returning({ id: Schema.task.id })
 
 	// Revalidate all pages that might show todos
@@ -437,7 +394,7 @@ export async function updateTask(id: number, title: string, importance: number, 
 	return result[0].id
 }
 
-export async function updateTaskUrgency(id: number) {
+export async function updateTaskUrgency(userId: string, id: number) {
 	const todoData = await getTaskById(id)
 	if (!todoData) {
 		return null
@@ -452,7 +409,10 @@ export async function updateTaskUrgency(id: number) {
 			score: todoData.importance * urgency - todoData.duration,
 			updated_at: sql`CURRENT_TIMESTAMP`,
 		})
-		.where(eq(Schema.task.id, id))
+		.where(and(
+			eq(Schema.task.id, id),
+			eq(Schema.task.user_id, userId),
+		))
 		.returning({ id: Schema.task.id })
 
 	// Revalidate all pages that might show todos
@@ -465,14 +425,17 @@ export async function updateTaskUrgency(id: number) {
 	return result[0].id
 }
 
-export async function markTaskAsDone(id: number) {
+export async function markTaskAsDone(userId: string, id: number) {
 	const result = await db
 		.update(Schema.task)
 		.set({
 			completed_at: sql`CURRENT_TIMESTAMP`,
 			updated_at: sql`CURRENT_TIMESTAMP`,
 		})
-		.where(eq(Schema.task.id, id))
+		.where(and(
+			eq(Schema.task.id, id),
+			eq(Schema.task.user_id, userId),
+		))
 		.returning({ id: Schema.task.id })
 
 	// Revalidate all pages that might show todos
@@ -485,14 +448,17 @@ export async function markTaskAsDone(id: number) {
 	return result[0].id
 }
 
-export async function markTaskAsUndone(id: number) {
+export async function markTaskAsUndone(userId: string, id: number) {
 	const result = await db
 		.update(Schema.task)
 		.set({
 			completed_at: null,
 			updated_at: sql`CURRENT_TIMESTAMP`,
 		})
-		.where(eq(Schema.task.id, id))
+		.where(and(
+			eq(Schema.task.id, id),
+			eq(Schema.task.user_id, userId),
+		))
 		.returning({ id: Schema.task.id })
 
 	// Revalidate all pages that might show todos
@@ -501,15 +467,18 @@ export async function markTaskAsUndone(id: number) {
 	return result[0].id
 }
 
-export async function toggleTask(id: number, currentState: boolean) {
-	return currentState ? await markTaskAsUndone(id) : await markTaskAsDone(id);
+export async function toggleTask(userId: string, id: number, currentState: boolean) {
+	return currentState ? await markTaskAsUndone(userId, id) : await markTaskAsDone(userId, id);
 }
 
 // ## Delete
-export async function deleteTaskById(id: number) {
+export async function deleteTaskById(userId: string, id: number) {
 	const result = await db.update(Schema.task)
 		.set({ deleted_at: sql`CURRENT_TIMESTAMP`, updated_at: sql`CURRENT_TIMESTAMP` })
-		.where(eq(Schema.task.id, id))
+		.where(and(
+			eq(Schema.task.id, id),
+			eq(Schema.task.user_id, userId),
+		))
 		.returning({ id: Schema.task.id })
 
 	// Revalidate all pages that might show todos
@@ -526,7 +495,7 @@ export async function deleteTaskById(id: number) {
 
 // ## Create
 
-export async function createMeteo(dayOrMeteo: string | Schema.NewMeteo, temperature?: number, summary?: string, icon?: string, latitude?: string, longitude?: string) {
+export async function createMeteo(userId: string, dayOrMeteo: string | Schema.NewMeteo, temperature?: number, summary?: string, icon?: string, latitude?: string, longitude?: string) {
 	let newMeteo: Schema.NewMeteo;
 
 	if (typeof dayOrMeteo === "string") {
@@ -544,7 +513,10 @@ export async function createMeteo(dayOrMeteo: string | Schema.NewMeteo, temperat
 
 	const result = await db
 		.insert(Schema.meteo)
-		.values(newMeteo)
+		.values({
+			...newMeteo,
+			user_id: userId,
+		})
 		.returning({ day: Schema.meteo.day });
 
 	// Revalidate all pages that might show meteo
@@ -555,22 +527,26 @@ export async function createMeteo(dayOrMeteo: string | Schema.NewMeteo, temperat
 
 // ## Read
 
-export async function getMeteoByDay(day: string) {
+export async function getMeteoByDay(userId: string, day: string) {
 	return await db
 		.select()
 		.from(Schema.meteo)
-		.where(eq(Schema.meteo.day, day)) as Schema.Meteo[]
+		.where(and(
+			eq(Schema.meteo.day, day),
+			eq(Schema.meteo.user_id, userId),
+		)) as Schema.Meteo[]
 }
 
-export async function getMeteo() {
+export async function getMeteo(userId: string) {
 	return await db
 		.select()
-		.from(Schema.meteo) as Schema.Meteo[]
+		.from(Schema.meteo)
+		.where(eq(Schema.meteo.user_id, userId)) as Schema.Meteo[]
 };
 
 // ## Update
 
-export async function updateMeteo(dayOrMeteo: string | Schema.NewMeteo, temperature?: number, summary?: string, icon?: string, latitude?: string, longitude?: string) {
+export async function updateMeteo(userId: string, dayOrMeteo: string | Schema.NewMeteo, temperature?: number, summary?: string, icon?: string, latitude?: string, longitude?: string) {
 	let updatedMeteo: Partial<Schema.NewMeteo>;
 
 	if (typeof dayOrMeteo === "string") {
@@ -593,7 +569,10 @@ export async function updateMeteo(dayOrMeteo: string | Schema.NewMeteo, temperat
 	const result = await db
 		.update(Schema.meteo)
 		.set(updatedMeteo)
-		.where(eq(Schema.meteo.day, typeof dayOrMeteo === "string" ? dayOrMeteo : dayOrMeteo.day))
+		.where(and(
+			eq(Schema.meteo.day, typeof dayOrMeteo === "string" ? dayOrMeteo : dayOrMeteo.day),
+			eq(Schema.meteo.user_id, userId),
+		))
 		.returning({ day: Schema.meteo.day });
 
 	// Revalidate all pages that might show meteo
@@ -608,10 +587,13 @@ export async function updateMeteo(dayOrMeteo: string | Schema.NewMeteo, temperat
 
 // ## Delete
 
-export async function deleteMeteoByDay(day: string) {
+export async function deleteMeteoByDay(userId: string, day: string) {
 	const result = await db.update(Schema.meteo)
 		.set({ deleted_at: sql`CURRENT_TIMESTAMP` })
-		.where(eq(Schema.meteo.day, day))
+		.where(and(
+			eq(Schema.meteo.day, day),
+			eq(Schema.meteo.user_id, userId),
+		))
 		.returning({ day: Schema.meteo.day })
 
 	// Revalidate all pages that might show meteo
@@ -628,12 +610,13 @@ export async function deleteMeteoByDay(day: string) {
 
 // ## Create
 
-export async function createProject(title: string, description?: string) {
+export async function createProject(userId: string, title: string, description?: string) {
 	const result = await db
 		.insert(Schema.project)
 		.values({
 			title: title,
 			description: description,
+			user_id: userId,
 		} as Schema.NewProject)
 		.returning({ id: Schema.project.title })
 
@@ -645,23 +628,28 @@ export async function createProject(title: string, description?: string) {
 
 // ## Read
 
-export async function searchProjects(title: string, limit = 50) {
+export async function searchProjects(userId: string, title: string, limit = 50) {
 	return await db
 		.select()
 		.from(Schema.project)
 		.where(and(
-			sql`${Schema.project.title} LIKE ${`%${title}%`}`,
-			isNull(Schema.project.deleted_at)
+			sql`LOWER(${Schema.project.title}) LIKE LOWER(${`%${title}%`})`,
+			isNull(Schema.project.deleted_at),
+			eq(Schema.project.user_id, userId),
 		))
 		.orderBy(asc(Schema.project.title))
 		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.Project[]
 }
 
-export async function getProject(title: string) {
+export async function getProject(userId: string, title: string) {
 	const dbresult = await db
 		.select()
 		.from(Schema.project)
-		.where(and(eq(Schema.project.title, title), isNull(Schema.project.deleted_at))) as Schema.Project[]
+		.where(and(
+			eq(Schema.project.title, title),
+			isNull(Schema.project.deleted_at),
+			eq(Schema.project.user_id, userId),
+		)) as Schema.Project[]
 
 	if (!dbresult) {
 		throw new Error("Project not found")
@@ -670,7 +658,7 @@ export async function getProject(title: string) {
 	return dbresult[0];
 }
 
-export async function getProjects(limit = 50, completed?: boolean, taskDeleted?: boolean, taskDueDate?: Date, taskCompleted: boolean = false) {
+export async function getProjects(userId: string, limit = 50, completed?: boolean, taskDeleted?: boolean, taskDueDate?: Date, taskCompleted: boolean = false) {
 	const dbresult = await db
 		.select({
 			title: Schema.project.title,
@@ -684,6 +672,7 @@ export async function getProjects(limit = 50, completed?: boolean, taskDeleted?:
 		.leftJoin(Schema.task, eq(Schema.project.title, Schema.task.project_title))
 		.where(and(
 			isNull(Schema.project.deleted_at),
+			eq(Schema.project.user_id, userId),
 			completed !== undefined ? eq(Schema.project.completed, completed) : sql`1 = 1`,
 			taskDeleted !== undefined ? (taskDeleted ? isNotNull(Schema.task.deleted_at) : isNull(Schema.task.deleted_at)) : sql`1 = 1`,
 			taskCompleted !== undefined ? (taskCompleted ? isNotNull(Schema.task.completed_at) : isNull(Schema.task.completed_at)) : sql`1 = 1`,
@@ -717,6 +706,7 @@ export async function getProjects(limit = 50, completed?: boolean, taskDeleted?:
 				created_at: new Date(0),
 				updated_at: new Date(0),
 				deleted_at: null,
+				user_id: userId,
 			}
 		);
 	}
@@ -724,17 +714,17 @@ export async function getProjects(limit = 50, completed?: boolean, taskDeleted?:
 	return dbresult;
 }
 
-export async function getCompletedProjects(limit = 50, taskDeleted?: boolean, taskDueDate?: Date, taskCompleted: boolean = false) {
-	return getProjects(limit, true, taskDeleted, taskDueDate, taskCompleted);
+export async function getCompletedProjects(userId: string, limit = 50, taskDeleted?: boolean, taskDueDate?: Date, taskCompleted: boolean = false) {
+	return getProjects(userId, limit, true, taskDeleted, taskDueDate, taskCompleted);
 }
 
-export async function getUncompletedProjects(limit = 50, taskDeleted?: boolean, taskDueDate?: Date, taskCompleted: boolean = false) {
-	return getProjects(limit, false, taskDeleted, taskDueDate, taskCompleted);
+export async function getUncompletedProjects(userId: string, limit = 50, taskDeleted?: boolean, taskDueDate?: Date, taskCompleted: boolean = false) {
+	return getProjects(userId, limit, false, taskDeleted, taskDueDate, taskCompleted);
 }
 
 // ## Update
 
-export async function updateProject(title: string, new_title?: string, description?: string) {
+export async function updateProject(userId: string, title: string, new_title?: string, description?: string) {
 	const result = await db
 		.update(Schema.project)
 		.set({
@@ -742,7 +732,10 @@ export async function updateProject(title: string, new_title?: string, descripti
 			description: description,
 			updated_at: sql`CURRENT_TIMESTAMP`,
 		})
-		.where(eq(Schema.project.title, title))
+		.where(and(
+			eq(Schema.project.title, title),
+			eq(Schema.project.user_id, userId),
+		))
 		.returning({ title: Schema.project.title })
 
 	// Revalidate all pages that might show projects
@@ -755,14 +748,17 @@ export async function updateProject(title: string, new_title?: string, descripti
 	return result[0].title
 }
 
-export async function completeProject(title: string) {
+export async function completeProject(userId: string, title: string) {
 	const result = await db
 		.update(Schema.project)
 		.set({
 			completed: true,
 			updated_at: sql`CURRENT_TIMESTAMP`,
 		})
-		.where(eq(Schema.project.title, title))
+		.where(and(
+			eq(Schema.project.title, title),
+			eq(Schema.project.user_id, userId),
+		))
 		.returning({ title: Schema.project.title })
 
 	// Revalidate all pages that might show projects
@@ -775,14 +771,17 @@ export async function completeProject(title: string) {
 	return result[0].title
 }
 
-export async function uncompleteProject(title: string) {
+export async function uncompleteProject(userId: string, title: string) {
 	const result = await db
 		.update(Schema.project)
 		.set({
 			completed: false,
 			updated_at: sql`CURRENT_TIMESTAMP`,
 		})
-		.where(eq(Schema.project.title, title))
+		.where(and(
+			eq(Schema.project.title, title),
+			eq(Schema.project.user_id, userId),
+		))
 		.returning({ title: Schema.project.title })
 
 	// Revalidate all pages that might show projects
@@ -797,13 +796,16 @@ export async function uncompleteProject(title: string) {
 
 // ## Delete
 
-export async function deleteProject(title: string) {
+export async function deleteProject(userId: string, title: string) {
 	const result = await db.update(Schema.project)
 		.set({
 			deleted_at: sql`CURRENT_TIMESTAMP`,
 			updated_at: sql`CURRENT_TIMESTAMP`
 		})
-		.where(eq(Schema.project.title, title))
+		.where(and(
+			eq(Schema.project.title, title),
+			eq(Schema.project.user_id, userId),
+		))
 		.returning({ title: Schema.project.title })
 
 	// Revalidate all pages that might show projects
@@ -824,12 +826,13 @@ export async function deleteProject(title: string) {
 
 // ## Create
 
-export async function createExercice(nameOrExercice: string | Schema.NewExercice, name?: string) {
+export async function createExercice(userId: string, nameOrExercice: string | Schema.NewExercice, name?: string) {
 	let newExercice: Schema.NewExercice
 
 	if (typeof nameOrExercice === "string") {
 		newExercice = {
 			name: nameOrExercice,
+			user_id: userId,
 		}
 	} else {
 		newExercice = nameOrExercice
@@ -845,17 +848,23 @@ export async function createExercice(nameOrExercice: string | Schema.NewExercice
 
 // ## Read
 
-export async function getExerciceById(id: number) {
-	return (await db.select().from(Schema.exercice).where(eq(Schema.exercice.id, id))) as Schema.Exercice[]
+export async function getExerciceById(userId: string, id: number) {
+	return (await db.select().from(Schema.exercice).where(and(
+		eq(Schema.exercice.id, id),
+		eq(Schema.exercice.user_id, userId),
+	))) as Schema.Exercice[]
 }
 
-export async function getExercices() {
-	return (await db.select().from(Schema.exercice).where(isNull(Schema.exercice.deleted_at))) as Schema.Exercice[]
+export async function getExercices(userId: string) {
+	return (await db.select().from(Schema.exercice).where(and(
+		isNull(Schema.exercice.deleted_at),
+		eq(Schema.exercice.user_id, userId),
+	))) as Schema.Exercice[]
 }
 
 // ## Update
 
-export async function updateExercice(idOrExercice: number | Schema.NewExercice, name?: string) {
+export async function updateExercice(userId: string, idOrExercice: number | Schema.NewExercice, name?: string) {
 	let updatedExercice: Partial<Schema.NewExercice>
 
 	if (typeof idOrExercice === "number") {
@@ -873,7 +882,10 @@ export async function updateExercice(idOrExercice: number | Schema.NewExercice, 
 	const result = await db
 		.update(Schema.exercice)
 		.set(updatedExercice)
-		.where(eq(Schema.exercice.id, typeof idOrExercice === "number" ? idOrExercice : idOrExercice.id!))
+		.where(and(
+			eq(Schema.exercice.id, typeof idOrExercice === "number" ? idOrExercice : idOrExercice.id!),
+			eq(Schema.exercice.user_id, userId),
+		))
 		.returning({ id: Schema.exercice.id })
 
 	// Revalidate all pages that might show exercices
@@ -888,11 +900,14 @@ export async function updateExercice(idOrExercice: number | Schema.NewExercice, 
 
 // ## Delete
 
-export async function deleteExerciceById(id: number) {
+export async function deleteExerciceById(userId: string, id: number) {
 	const result = await db
 		.update(Schema.exercice)
 		.set({ deleted_at: sql`CURRENT_TIMESTAMP` })
-		.where(eq(Schema.exercice.id, id))
+		.where(and(
+			eq(Schema.exercice.id, id),
+			eq(Schema.exercice.user_id, userId),
+		))
 		.returning({ id: Schema.exercice.id })
 
 	// Revalidate all pages that might show exercices
@@ -911,12 +926,13 @@ export async function deleteExerciceById(id: number) {
 
 // ## Create
 
-export async function createSeance(nameOrSeance: string | Schema.NewSeance, name?: string) {
+export async function createSeance(userId: string, nameOrSeance: string | Schema.NewSeance, name?: string) {
 	let newSeance: Schema.NewSeance
 
 	if (typeof nameOrSeance === "string") {
 		newSeance = {
 			name: nameOrSeance,
+			user_id: userId,
 		}
 	} else {
 		newSeance = nameOrSeance
@@ -932,17 +948,23 @@ export async function createSeance(nameOrSeance: string | Schema.NewSeance, name
 
 // ## Read
 
-export async function getSeanceById(id: number) {
-	return (await db.select().from(Schema.seance).where(eq(Schema.seance.id, id))) as Schema.Seance[]
+export async function getSeanceById(userId: string, id: number) {
+	return (await db.select().from(Schema.seance).where(and(
+		eq(Schema.seance.id, id),
+		eq(Schema.seance.user_id, userId),
+	))) as Schema.Seance[]
 }
 
-export async function getSeances() {
-	return (await db.select().from(Schema.seance).where(isNull(Schema.seance.deleted_at))) as Schema.Seance[]
+export async function getSeances(userId: string) {
+	return (await db.select().from(Schema.seance).where(and(
+		isNull(Schema.seance.deleted_at),
+		eq(Schema.seance.user_id, userId),
+	))) as Schema.Seance[]
 }
 
 // ## Update
 
-export async function updateSeance(idOrSeance: number | Schema.NewSeance, name?: string) {
+export async function updateSeance(userId: string, idOrSeance: number | Schema.NewSeance, name?: string) {
 	let updatedSeance: Partial<Schema.NewSeance>
 
 	if (typeof idOrSeance === "number") {
@@ -960,7 +982,10 @@ export async function updateSeance(idOrSeance: number | Schema.NewSeance, name?:
 	const result = await db
 		.update(Schema.seance)
 		.set(updatedSeance)
-		.where(eq(Schema.seance.id, typeof idOrSeance === "number" ? idOrSeance : idOrSeance.id!))
+		.where(and(
+			eq(Schema.seance.id, typeof idOrSeance === "number" ? idOrSeance : idOrSeance.id!),
+			eq(Schema.seance.user_id, userId),
+		))
 		.returning({ id: Schema.seance.id })
 
 	// Revalidate all pages that might show seances
@@ -975,11 +1000,14 @@ export async function updateSeance(idOrSeance: number | Schema.NewSeance, name?:
 
 // ## Delete
 
-export async function deleteSeanceById(id: number) {
+export async function deleteSeanceById(userId: string, id: number) {
 	const result = await db
 		.update(Schema.seance)
 		.set({ deleted_at: sql`CURRENT_TIMESTAMP` })
-		.where(eq(Schema.seance.id, id))
+		.where(and(
+			eq(Schema.seance.id, id),
+			eq(Schema.seance.user_id, userId),
+		))
 		.returning({ id: Schema.seance.id })
 
 	// Revalidate all pages that might show seances
@@ -1125,6 +1153,7 @@ export async function deleteSeanceExerciceById(id: number) {
 // ## Create
 
 export async function createWorkout(
+	userId: string,
 	dateOrWorkout: Date | Schema.NewWorkout,
 	note?: number,
 	comment?: string,
@@ -1138,6 +1167,7 @@ export async function createWorkout(
 			note: note,
 			comment: comment,
 			seance_id: seance_id,
+			user_id: userId,
 		}
 	} else {
 		newWorkout = dateOrWorkout
@@ -1153,38 +1183,52 @@ export async function createWorkout(
 
 // ## Read
 
-export async function getWorkoutById(id: number) {
-	return (await db.select().from(Schema.workout).where(eq(Schema.workout.id, id))) as Schema.Workout[]
+export async function getWorkoutById(userId: string, id: number) {
+	return (await db.select().from(Schema.workout).where(and(
+		eq(Schema.workout.id, id),
+		eq(Schema.workout.user_id, userId),
+	))) as Schema.Workout[]
 }
 
-export async function getAllWorkouts() {
+export async function getAllWorkouts(userId: string) {
 	return (await db
 		.select()
 		.from(Schema.workout)
-		.where(isNull(Schema.workout.deleted_at))
+		.where(and(
+			isNull(Schema.workout.deleted_at),
+			eq(Schema.workout.user_id, userId),
+		))
 		.orderBy(desc(Schema.workout.date))) as Schema.Workout[]
 }
 
-export async function getRecentWorkouts(limit = 5) {
+export async function getRecentWorkouts(userId: string, limit = 5) {
 	return (await db
 		.select()
 		.from(Schema.workout)
-		.where(isNull(Schema.workout.deleted_at))
+		.where(and(
+			isNull(Schema.workout.deleted_at),
+			eq(Schema.workout.user_id, userId),
+		))
 		.orderBy(desc(Schema.workout.date))
 		.limit(limit)) as Schema.Workout[]
 }
 
-export async function getWorkoutsBySeanceId(seance_id: number) {
+export async function getWorkoutsBySeanceId(userId: string, seance_id: number) {
 	return (await db
 		.select()
 		.from(Schema.workout)
-		.where(and(eq(Schema.workout.seance_id, seance_id), isNull(Schema.workout.deleted_at)))
+		.where(and(
+			eq(Schema.workout.seance_id, seance_id),
+			eq(Schema.workout.user_id, userId),
+			isNull(Schema.workout.deleted_at),
+		))
 		.orderBy(desc(Schema.workout.date))) as Schema.Workout[]
 }
 
 // ## Update
 
 export async function updateWorkout(
+	userId: string,
 	idOrWorkout: number | Schema.NewWorkout,
 	date?: Date,
 	note?: number,
@@ -1200,6 +1244,7 @@ export async function updateWorkout(
 			comment: comment,
 			seance_id: seance_id,
 			updated_at: new Date(),
+			user_id: userId,
 		}
 	} else {
 		updatedWorkout = {
@@ -1226,11 +1271,14 @@ export async function updateWorkout(
 
 // ## Delete
 
-export async function deleteWorkoutById(id: number) {
+export async function deleteWorkoutById(userId: string, id: number) {
 	const result = await db
 		.update(Schema.workout)
 		.set({ deleted_at: sql`CURRENT_TIMESTAMP` })
-		.where(eq(Schema.workout.id, id))
+		.where(and(
+			eq(Schema.workout.id, id),
+			eq(Schema.workout.user_id, userId),
+		))
 		.returning({ id: Schema.workout.id })
 
 	// Revalidate all pages that might show workouts
@@ -1250,6 +1298,7 @@ export async function deleteWorkoutById(id: number) {
 // ## Create
 
 export async function createSerie(
+	userId: string,
 	seriesGroupIdOrSerie: number | Schema.NewSerie,
 	exercice_id?: number,
 	poids?: number,
@@ -1267,6 +1316,7 @@ export async function createSerie(
 			reps: reps,
 			exercice_position: exercice_position!,
 			serie_position: serie_position!,
+			user_id: userId,
 		}
 	} else {
 		newSerie = seriesGroupIdOrSerie
@@ -1282,26 +1332,36 @@ export async function createSerie(
 
 // ## Read
 
-export async function getSerieById(id: number) {
-	return (await db.select().from(Schema.serie).where(eq(Schema.serie.id, id))) as Schema.Serie[]
+export async function getSerieById(userId: string, id: number) {
+	return (await db.select().from(Schema.serie).where(and(
+		eq(Schema.serie.id, id),
+		eq(Schema.serie.user_id, userId),
+	))) as Schema.Serie[]
 }
 
 
-export async function getSeriesByExerciceId(exercice_id: number) {
+export async function getSeriesByExerciceId(userId: string, exercice_id: number) {
 	return (
 		await db
 			.select()
 			.from(Schema.serie)
-			.where(and(eq(Schema.serie.exercice_id, exercice_id), isNull(Schema.serie.deleted_at)))
+			.where(and(
+				eq(Schema.serie.exercice_id, exercice_id),
+				eq(Schema.serie.user_id, userId),
+				isNull(Schema.serie.deleted_at),
+			))
 			.orderBy(asc(Schema.serie.exercice_position), asc(Schema.serie.serie_position))
 	)
 }
 
-export async function getSeries() {
-	return (await db.select().from(Schema.serie).where(isNull(Schema.serie.deleted_at))) as Schema.Serie[]
+export async function getSeries(userId: string) {
+	return (await db.select().from(Schema.serie).where(and(
+		isNull(Schema.serie.deleted_at),
+		eq(Schema.serie.user_id, userId),
+	))) as Schema.Serie[]
 }
 
-export async function getSeriesByExerciceIds(exercice_ids: number[]) {
+export async function getSeriesByExerciceIds(userId: string, exercice_ids: number[]) {
 	return (
 		await db
 			.select()
@@ -1317,6 +1377,7 @@ export async function getSeriesByExerciceIds(exercice_ids: number[]) {
 // ## Update
 
 export async function updateSerie(
+	userId: string,
 	idOrSerie: number | Schema.NewSerie,
 	series_group_id?: number,
 	exercice_id?: number,
@@ -1336,6 +1397,7 @@ export async function updateSerie(
 			exercice_position: exercice_position,
 			serie_position: serie_position,
 			updated_at: new Date(),
+			user_id: userId,
 		}
 	} else {
 		updatedSerie = {
@@ -1362,11 +1424,14 @@ export async function updateSerie(
 
 // ## Delete
 
-export async function deleteSerieById(id: number) {
+export async function deleteSerieById(userId: string, id: number) {
 	const result = await db
 		.update(Schema.serie)
 		.set({ deleted_at: sql`CURRENT_TIMESTAMP` })
-		.where(eq(Schema.serie.id, id))
+		.where(and(
+			eq(Schema.serie.id, id),
+			eq(Schema.serie.user_id, userId),
+		))
 		.returning({ id: Schema.serie.id })
 
 	// Revalidate all pages that might show series
