@@ -1,4 +1,5 @@
 import Header from "@/components/big/header"
+import { UserProvider } from "@/hooks/use-user"
 
 export default function BackOfficeLayout({
     children,
@@ -6,11 +7,13 @@ export default function BackOfficeLayout({
     children: React.ReactNode
 }) {
     return (
-        <main className="relative w-full h-full">
-            <Header />
-            <div className="w-full h-full p-4">
-                {children}
-            </div>
-        </main>
+        <UserProvider>
+            <main className="relative w-full h-full">
+                <Header />
+                <div className="w-full h-full p-4">
+                    {children}
+                </div>
+            </main>
+        </UserProvider>
     )
 }
