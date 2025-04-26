@@ -67,18 +67,30 @@ export async function logout() {
  * @param password Plain text password
  * @returns The user if credentials are valid, null otherwise
  */
-export async function verifyCredentials(id: string, password: string) {
+export async function verifyCredentials(prevState: ActionState, formData: FormData) {
+    const id = formData.get("identifier")
+    const password = formData.get("password")
+    
+    if (!id || !password || typeof id !== "string" || typeof password !== "string") {
+        return { error: "Missing required fields" }
+    }
+
     const userInfos = await db.select().from(user).where(eq(user.id, id))
 
     if (!userInfos || userInfos.length === 0) {
-        return null
+        return { error: "User not found" }
     }
 
     const isValid = await verifyPassword(password, userInfos[0].password)
 
     if (!isValid) {
-        return null
+        return { error: "Invalid credentials" }
     }
 
-    return userInfos
+    const userData = userInfos[0]
+
+    await setSession()
+
+    const redirectTo = formData.get("redirectTo");
+    return { success: true, redirectTo: redirectTo ? redirectTo.toString() : '/my' };
 } 
