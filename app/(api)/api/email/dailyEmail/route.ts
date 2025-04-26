@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
             h1 {
                 font-size: 1.5rem;
                 font-weight: bold;
-                color: #3b82f6;
+                color: #000000;
                 margin-bottom: 16px;
                 text-align: center;
             }
