@@ -18,7 +18,7 @@ import * as Schema from "../schema"
 import { revalidatePath } from "next/cache"
 import { calculateUrgency } from "@/lib/utils/task"
 import { alias } from "drizzle-orm/pg-core"
-import { hashPassword, verifyPassword } from "@/lib/utils/password"
+import { hashPassword } from "@/lib/utils/password"
 
 import { user } from "../schema"
 /**
@@ -51,7 +51,7 @@ export async function generateUniqueUserId(): Promise<string> {
  * Generates a random 8-digit number for a user's password
  * @returns A random 8-digit number
  */
-export function generateUserPassword(): string {
+export async function generateUserPassword(): Promise<string> {
     // Generate a random 8-digit number
     let password = (Math.floor(10000000 + Math.random() * 90000000)).toString()
 
@@ -93,33 +93,30 @@ export async function createUser(
     email: string,
     first_name: string,
     last_name: string,
-) {;
-
-    if (!email || !first_name || !last_name) {
-        throw new Error("Missing required fields")
-    }
-
+) {
     const existingUser = await db.select().from(Schema.user).where(eq(Schema.user.email, email))
 
     if (existingUser && existingUser.length > 0) {
         throw new Error("User already exists")
     }
 
-    const password = generateUserPassword()
+    const password = await generateUserPassword()
     const hashedPassword = await hashPassword(password)
     const apiKey = await generateUniqueApiKey()
     const id = await generateUniqueUserId()
     
-    const insertedId = await db.insert(Schema.user).values({
+    const insertedUser = await db.insert(Schema.user).values({
         email: email,
         first_name: first_name,
         last_name: last_name,
         password: hashedPassword,
         api_key: apiKey,
         id: id
-    }).returning({
-        id: Schema.user.id,
-    })
+    }).returning()
 
-    return insertedId[0].id
+    if (!insertedUser || insertedUser.length === 0) {
+        throw new Error("Failed to create user")
+    }
+
+    return { user: insertedUser[0], password: password }
 }
