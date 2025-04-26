@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/collapsible"
 import Tooltip from "../tooltip"
 import { useSearchParams } from "next/navigation"
+import { useUser } from "@/hooks/use-user"
 
 export default function TaskModal({
 	className,
@@ -44,6 +45,7 @@ export default function TaskModal({
 	className?: string
 	task?: TaskWithRelations
 }) {
+	const user = useUser().user;
 	const searchParams = useSearchParams()
 
 	// State management for the dialog
@@ -276,6 +278,7 @@ export default function TaskModal({
 				method: mode === "edit" ? "PUT" : "POST",
 				headers: {
 					"Content-Type": "application/json",
+					"Authorization": `Bearer ${user?.api_key}`
 				},
 				body: JSON.stringify({
 					id: mode === "edit" ? id : undefined,

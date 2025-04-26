@@ -20,7 +20,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-
+import { useUser } from "@/hooks/use-user"
 export default function TaskDisplay({
 	task,
 	orderedBy,
@@ -38,6 +38,7 @@ export default function TaskDisplay({
 	currentProjects?: string[]
 	otherId?: number
 }) {
+	const user = useUser().user;
 	const [isToggled, setIsToggled] = useState(task ? task.completed_at !== null : false)
 	const [isDeleting, setIsDeleting] = useState(false)
 	const [isHovering, setIsHovering] = useState(false)
@@ -108,7 +109,7 @@ export default function TaskDisplay({
 			// Actual API call
 			await fetch("/api/task", {
 				method: "PATCH",
-				headers: { "Content-Type": "application/json" },
+				headers: { "Content-Type": "application/json", "Authorization": `Bearer ${user?.api_key}` },
 				body: JSON.stringify({ id: task.id, completed: !isToggled }),
 			})
 
@@ -171,6 +172,7 @@ export default function TaskDisplay({
 			// Actual deletion
 			await fetch(`/api/task?id=${task.id}`, {
 				method: "DELETE",
+				headers: { "Content-Type": "application/json", "Authorization": `Bearer ${user?.api_key}` },
 			})
 
 			// Revalidate after successful deletion
@@ -255,6 +257,7 @@ export default function TaskDisplay({
 			// Actual deletion
 			await fetch(`/api/task/dependency?id1=${task.id}&id2=${idToDelete}`, {
 				method: "DELETE",
+				headers: { "Content-Type": "application/json", "Authorization": `Bearer ${user?.api_key}` },
 			})
 
 			// Revalidate after successful deletion
