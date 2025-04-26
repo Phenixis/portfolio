@@ -231,6 +231,9 @@ export const exerciceRelations = relations(exercice, ({ many }) => ({
     series: many(serie)
 }));
 
+
+export type User = typeof user.$inferSelect;    
+export type NewUser = typeof user.$inferInsert;
 export type Task = typeof task.$inferSelect;
 export type NewTask = typeof task.$inferInsert;
 export type TaskWithNonRecursiveRelations = Task & { project: Project | null; importanceDetails: Importance; durationDetails: Duration; tasksToDoAfter: TaskToDoAfter[] | null, tasksToDoBefore: TaskToDoAfter[] | null, recursive: false };
