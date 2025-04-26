@@ -19,8 +19,8 @@ import { revalidatePath } from "next/cache"
 import { calculateUrgency } from "@/lib/utils/task"
 import { alias } from "drizzle-orm/pg-core"
 import { hashPassword } from "@/lib/utils/password"
-
 import { user } from "../schema"
+
 /**
  * Generates a unique 8-digit number ID for users
  * @returns A promise that resolves to a unique 8-digit number
@@ -119,4 +119,14 @@ export async function createUser(
     }
 
     return { user: insertedUser[0], password: password }
+}
+
+export async function getUser(id: string) {
+    const user = await db.select().from(Schema.user).where(eq(Schema.user.id, id))
+
+    if (!user || user.length === 0) {
+        throw new Error("User not found")
+    }
+
+    return user[0]
 }
