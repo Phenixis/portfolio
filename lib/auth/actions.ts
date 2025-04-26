@@ -21,7 +21,7 @@ export async function signUp(prevState: ActionState, formData: FormData) {
     }
 
     let user: { user: User, password: string }
-    
+
     try {
         user = await createUser(email, firstName, lastName)
     } catch (error: any) {
@@ -40,17 +40,17 @@ export async function signUp(prevState: ActionState, formData: FormData) {
 export async function login(prevState: ActionState, formData: FormData) {
     const trial = formData.get("password");
     const password = process.env.PIN;
-    
+
     if (password === undefined) {
         return { error: "PIN is not set, you can't connect." };
     }
-    
+
     if (trial !== password) {
         return { error: "Invalid PIN." };
     }
-    
+
     await setSession();
-    
+
     const redirectTo = formData.get("redirectTo");
     return { success: true, redirectTo: redirectTo ? redirectTo.toString() : '/my' };
 }
@@ -70,7 +70,7 @@ export async function logout() {
 export async function verifyCredentials(prevState: ActionState, formData: FormData) {
     const id = formData.get("identifier")
     const password = formData.get("password")
-    
+
     if (!id || !password || typeof id !== "string" || typeof password !== "string") {
         return { error: "Missing required fields" }
     }
@@ -89,7 +89,10 @@ export async function verifyCredentials(prevState: ActionState, formData: FormDa
 
     const userData = userInfos[0]
 
-    await setSession()
+    await setSession({
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        userId: userData.id
+    })
 
     const redirectTo = formData.get("redirectTo");
     return { success: true, redirectTo: redirectTo ? redirectTo.toString() : '/my' };
