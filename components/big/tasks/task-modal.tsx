@@ -11,7 +11,7 @@ import { PlusIcon, PenIcon, Minus, Plus, ChevronDown, CircleHelp } from "lucide-
 import { useRef, useState, useEffect } from "react"
 import { useSWRConfig } from "swr"
 import { Calendar } from "@/components/ui/calendar"
-import { calculateUrgency } from "@/lib/utils"
+import { calculateUrgency } from "@/lib/utils/task"
 import { format } from "date-fns"
 import { useDebouncedCallback } from "use-debounce"
 import { useSearchProject } from "@/hooks/use-search-project"
