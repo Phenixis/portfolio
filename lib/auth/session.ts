@@ -65,12 +65,14 @@ export async function getServerSession() {
 		// Verify the token
 		const parsed = await verifyToken(credentialsSession)
 
-		if (!parsed) {
+		if (!parsed || !parsed.userId) {
+			await removeSession()
 			return null
 		}
 
 		// Extend the session expiration by reusing setSession
 		await setSession(parsed)
+
 		return parsed
 	} catch (error) {
 		// Handle invalid or expired token
