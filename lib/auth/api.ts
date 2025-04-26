@@ -8,7 +8,7 @@ export async function verifyApiKey(apiKey: string | null) {
         return { isValid: false, error: 'Missing API key' }
     }
 
-    if (apiKey === process.env.CRON_API_KEY) {
+    if (apiKey === process.env.CRON_SECRET) {
         return { isValid: true, userId: "cron" }
     }
 
