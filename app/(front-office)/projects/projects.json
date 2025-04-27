@@ -5,6 +5,12 @@
         "color": "purple",
         "state": "Running"
     },
+    "GetAccountable": {
+        "name": "GetAccountable",
+        "description": "Find Your Accountability Partner. Crush Your Goals.",
+        "color": "blue",
+        "state": "Running"
+    },
     "Boilerplate.md": {
         "name": "Boilerplate.md",
         "description": "The best open-source boilerplate for NextJS.",
