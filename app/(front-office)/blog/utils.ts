@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import projects from '../projects/projects.json'
 
 type Metadata = {
   title: string
@@ -50,7 +51,11 @@ function getMDXData(dir: string) {
 }
 
 export function getBlogPosts() {
-  return getMDXData(path.join(process.cwd(), 'app', '(front-office)', 'blog', 'posts'))
+  const posts = getMDXData(path.join(process.cwd(), 'app', '(front-office)', 'blog', 'posts'))
+
+  return posts.filter((post) => {
+    return !projects[post.metadata.title as keyof typeof projects]
+  })
 }
 
 export function formatDate(date: string, includeRelative = false) {
