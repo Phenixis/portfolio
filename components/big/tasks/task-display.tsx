@@ -288,7 +288,7 @@ export default function TaskDisplay({
 		<div
 			ref={containerRef}
 			className={cn(
-				`flex flex-col group/task p-1 duration-300 text-xs xl:text-base ${daysBeforeDue < 0 ? "bg-red-500/10 dark:bg-red-500/15 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/10 dark:bg-orange-500/15 lg:hover:bg-orange-500/25" : "lg:hover:bg-primary/10"} space-y-2 ${isDeleting ? "opacity-50" : ""}`,
+				`flex flex-col group/task p-1 duration-300 text-xs xl:text-sm ${daysBeforeDue < 0 ? "bg-red-500/10 dark:bg-red-500/15 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/10 dark:bg-orange-500/15 lg:hover:bg-orange-500/25" : "lg:hover:bg-primary/10"} space-y-2 ${isDeleting ? "opacity-50" : ""}`,
 				className,
 			)}
 			onMouseEnter={handleMouseEnter}
@@ -320,7 +320,7 @@ export default function TaskDisplay({
 								</div>
 							</div>
 							<p
-								className={`w-full text-base hyphens-auto ${optimisticState ? "line-through text-muted-foreground" : ""}`}
+								className={`w-full hyphens-auto ${optimisticState ? "line-through text-muted-foreground" : ""}`}
 								lang="en"
 							>
 								{task.title}
