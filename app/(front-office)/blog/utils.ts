@@ -50,11 +50,11 @@ function getMDXData(dir: string) {
   })
 }
 
-export function getBlogPosts() {
+export function getBlogPosts(withProjects: boolean = false) {
   const posts = getMDXData(path.join(process.cwd(), 'app', '(front-office)', 'blog', 'posts'))
 
   return posts.filter((post) => {
-    return !projects[post.metadata.title as keyof typeof projects]
+    return withProjects || !projects[post.metadata.title as keyof typeof projects]
   })
 }
 

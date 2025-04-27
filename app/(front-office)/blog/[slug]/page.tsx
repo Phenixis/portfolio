@@ -4,7 +4,7 @@ import { formatDate, getBlogPosts } from '@/app/(front-office)/blog/utils'
 import { baseUrl } from 'app/sitemap'
 
 export async function generateStaticParams() {
-	let posts = getBlogPosts()
+	let posts = getBlogPosts(true)
 
 	return posts.map((post) => ({
 		slug: post.slug,
@@ -13,7 +13,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata(props: { params: any }) {
 	const params = await props.params;
-	let post = getBlogPosts().find((post) => post.slug === params.slug)
+	let post = getBlogPosts(true).find((post) => post.slug === params.slug)
 	if (!post) {
 		return
 	}
@@ -54,7 +54,7 @@ export async function generateMetadata(props: { params: any }) {
 
 export default async function Blog(props: { params: any }) {
 	const params = await props.params;
-	let post = getBlogPosts().find((post) => post.slug === params.slug)
+	let post = getBlogPosts(true).find((post) => post.slug === params.slug)
 
 	if (!post) {
 		notFound()

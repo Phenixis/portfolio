@@ -37,7 +37,7 @@ export default function Page() {
 					</li>
 				</ul>
 			</div>
-			<BlogPosts />
+			<BlogPosts limit={0} />
 		</section>
 	)
 }
