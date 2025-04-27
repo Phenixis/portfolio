@@ -11,7 +11,7 @@ export default function BackOfficeLayout({
         <UserProvider userPromise={userPromise}>
             <main className="relative w-full h-full">
                 <Header />
-                <div className="w-full h-full p-4">
+                <div className="w-full h-full">
                     {children}
                 </div>
             </main>
