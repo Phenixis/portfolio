@@ -209,17 +209,17 @@ export function TasksCard({
 	}, [completed])
 
 	/**
- * Toggles a project through three states:
- * 1. Include only this project
- * 2. Exclude this project
- * 3. Reset to neutral state
- * 
- * @param projectTitle - The title of the project to toggle
- */
+	 * Toggles a project through three states:
+	 * 1. Include only this project
+	 * 2. Exclude this project
+	 * 3. Reset to neutral state
+	 * 
+	 * @param projectTitle - The title of the project to toggle
+	 */
 	const toggleProject = useCallback((projectTitle: string) => {
 		startTransition(() => {
 			if (selectedProjects.includes(projectTitle)) {
-				// State 1 -> 2: From "only this project" to "exclude this project"
+				// State 1 -> 2: From "only this project" to "exclude this project" 
 				setSelectedProjects(prev => prev.filter(title => title !== projectTitle));
 				setRemovedProjects(prev => [...prev, projectTitle]);
 			} else if (removedProjects.includes(projectTitle)) {
@@ -229,7 +229,7 @@ export function TasksCard({
 				// State 3 -> 1: From neutral to "only this project"
 				// If this is the first project being selected, clear excluded projects
 				if (selectedProjects.length === 0) {
-					setRemovedProjects([]);
+					setRemovedProjects(prev => prev.filter(title => title !== projectTitle));
 				}
 				setSelectedProjects(prev => [...prev, projectTitle]);
 			}
