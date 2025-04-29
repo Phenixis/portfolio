@@ -35,7 +35,7 @@ export const duration = pgTable('duration', {
 
 // Table Project
 export const project = pgTable('project', {
-    user_id: char('user_id', { length: 8}).default("00000000").notNull()
+    user_id: char('user_id', { length: 8 }).default("00000000").notNull()
         .references(() => user.id),
     title: varchar('title', { length: 255 }).primaryKey(),
     description: text('description'),
@@ -47,7 +47,7 @@ export const project = pgTable('project', {
 
 // Table Task
 export const task = pgTable('task', {
-    user_id: char('user_id', { length: 8}).default("00000000").notNull()
+    user_id: char('user_id', { length: 8 }).default("00000000").notNull()
         .references(() => user.id),
     id: serial('id').primaryKey(),
     title: varchar('title', { length: 255 }).notNull(),
@@ -88,11 +88,11 @@ export const taskToDoAfter = pgTable('task_to_do_after', {
 
 // Table Meteo
 export const meteo = pgTable('meteo', {
-    user_id: char('user_id', { length: 8}).default("00000000").notNull()
+    user_id: char('user_id', { length: 8 }).default("00000000").notNull()
         .references(() => user.id),
     day: varchar('day', { length: 10 }).primaryKey(),
-    latitude: varchar('latitude', { length: 10}).default("-1").notNull(),
-    longitude: varchar('longitude', { length: 10}).default("-1").notNull(),
+    latitude: varchar('latitude', { length: 10 }).default("-1").notNull(),
+    longitude: varchar('longitude', { length: 10 }).default("-1").notNull(),
     temperature: integer('temperature').notNull(),
     summary: varchar('summary', { length: 255 }).notNull(),
     icon: varchar('icon', { length: 255 }).notNull(),
@@ -106,7 +106,7 @@ export const meteo = pgTable('meteo', {
 
 // Table Exercice
 export const exercice = pgTable('exercice', {
-    user_id: char('user_id', { length: 8}).default("00000000").notNull()
+    user_id: char('user_id', { length: 8 }).default("00000000").notNull()
         .references(() => user.id),
     id: serial('id').primaryKey(),
     name: varchar('name', { length: 255 }).notNull(),
@@ -117,7 +117,7 @@ export const exercice = pgTable('exercice', {
 
 // Table Séance (Modèle de Workout)
 export const seance = pgTable('seance', {
-    user_id: char('user_id', { length: 8}).default("00000000").notNull()
+    user_id: char('user_id', { length: 8 }).default("00000000").notNull()
         .references(() => user.id),
     id: serial('id').primaryKey(),
     name: varchar('name', { length: 255 }).notNull(),
@@ -140,7 +140,7 @@ export const seanceExercice = pgTable('seance_exercice', {
 
 // Table Workout (Séance Réelle)
 export const workout = pgTable('workout', {
-    user_id: char('user_id', { length: 8}).default("00000000").notNull()
+    user_id: char('user_id', { length: 8 }).default("00000000").notNull()
         .references(() => user.id),
     id: serial('id').primaryKey(),
     date: timestamp('date').notNull().defaultNow(),
@@ -163,7 +163,7 @@ export const seriesGroup = pgTable('series_group', {
 
 // Table Série (Séries des exercices du workout)
 export const serie = pgTable('serie', {
-    user_id: char('user_id', { length: 8}).default("00000000").notNull()
+    user_id: char('user_id', { length: 8 }).default("00000000").notNull()
         .references(() => user.id),
     id: serial('id').primaryKey(),
     series_group_id: integer('series_group_id').references(() => seriesGroup.id).notNull(),
@@ -267,7 +267,7 @@ export const exerciceRelations = relations(exercice, ({ one, many }) => ({
 }));
 
 
-export type User = typeof user.$inferSelect;    
+export type User = typeof user.$inferSelect;
 export type NewUser = typeof user.$inferInsert;
 export type Task = typeof task.$inferSelect;
 export type NewTask = typeof task.$inferInsert;
