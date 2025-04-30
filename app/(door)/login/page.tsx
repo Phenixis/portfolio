@@ -22,6 +22,7 @@ import {
 import {
     REGEXP_ONLY_DIGITS
 } from "input-otp"
+import Link from "next/link"
 
 export default function Login() {
     const [redirectTo, setRedirectTo] = useState("/my")
@@ -143,6 +144,7 @@ export default function Login() {
                     >Login</Button>
                 </CardFooter>
             </Card>
+            <Link href="/sign-up" className="text-sm text-gray-300 lg:text-gray-500 lg:hover:text-gray-300 underline lg:no-underline lg:hover:underline">Don't have an account?</Link>
         </form>
     )
 }
