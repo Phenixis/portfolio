@@ -13,7 +13,6 @@ export function useTasks({
   projectTitles,
   excludedProjectTitles,
   dueBefore,
-  api_key, // NEW
 }: {
   completed?: boolean
   orderBy?: keyof Task
@@ -23,7 +22,6 @@ export function useTasks({
   projectTitles?: string[]
   excludedProjectTitles?: string[]
   dueBefore?: Date
-  api_key?: string // NEW
 }) {
   const { data, isLoading, isError, mutate } = useFilteredData<Task[]>({
     endpoint: "/api/task",
@@ -37,7 +35,6 @@ export function useTasks({
       excludedProjectTitles: excludedProjectTitles?.join(","),
       dueBefore: dueBefore ? dueBefore.toISOString() : undefined,
     },
-    api_key, // inject here
   })
 
   return {

@@ -9,15 +9,21 @@ export function useFilteredData<T>({
   endpoint,
   params,
   skipFetch = false,
-  api_key, // NEW: allow injecting api_key manually
 }: {
   endpoint: string
   params?: Record<string, string | number | boolean | undefined>
   skipFetch?: boolean
-  api_key?: string
 }) {
   const { user } = useUser()
-  const resolvedKey = api_key ?? user?.api_key ?? ""
+  if (!user) {
+    return {
+      data: [],
+      isLoading: false,
+      isError: { error: "User not found" },
+    }
+  }
+
+  const resolvedKey = user.api_key
 
   const searchParams = new URLSearchParams()
   if (params) {
@@ -28,17 +34,16 @@ export function useFilteredData<T>({
     })
   }
 
-  const swrKey = skipFetch ? null : [`${endpoint}?${searchParams.toString()}`, resolvedKey]
+  // Create the SWR key
+  const swrKey = skipFetch ? null : `${endpoint}?${searchParams.toString()}`
 
-  const { data, error, isLoading, mutate } = useSWR(
-    swrKey,
-    ([url, token]) => fetcher(url, token),
-    {
-      revalidateOnFocus: false,
-      dedupingInterval: 5000,
-      revalidateIfStale: false,
-    }
-  )
+  // Fetch data using SWR
+  const { data, error, isLoading, mutate } = useSWR(swrKey, (url) => fetcher(url, resolvedKey), {
+    revalidateOnFocus: false,
+    dedupingInterval: 5000,
+    revalidateIfStale: false,
+  })
+
 
   return {
     data: skipFetch ? ([] as unknown as T) : data,
