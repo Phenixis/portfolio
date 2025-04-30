@@ -153,7 +153,7 @@ export async function PUT(request: NextRequest) {
 			}
 		}
 
-		const taskId = await updateTask(verification.userId, Number(id), title, Number(importance), new Date(dueDate), Number(duration), projectTitle)
+		const taskId = await updateTask(verification.userId, Number(id), title, Number(importance), new Date(dueDate), Number(duration), projectTitle !== "" ? projectTitle : undefined)
 
 		return NextResponse.json({ id: taskId })
 	} catch (error) {
