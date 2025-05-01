@@ -3,81 +3,55 @@
 import DarkModeToggle from "@/components/big/dark-mode-toggle"
 import Meteo from "@/components/big/meteo"
 import { Button } from "@/components/ui/button"
-import { logout } from "@/lib/auth/actions"
 import DateDisplay from "@/components/big/date"
 import Time from "@/components/big/time"
 import { useScrollDirection } from "@/hooks/use-scroll-direction"
 import { cn } from "@/lib/utils"
-import { useState, useEffect } from "react"
-import { DoorOpen, LogOut } from "lucide-react"
+import { useState } from "react"
+import { Menu, User, Home } from "lucide-react"
+import Link from "next/link"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { usePathname } from "next/navigation"
 
-export default function Header({ }: {}) {
+export default function Header({
+
+}: {
+
+    }) {
     const { isVisible } = useScrollDirection()
     const [isHovering, setIsHovering] = useState(false)
-    const [showLogout, setShowLogout] = useState(false)
-
-    // Handle delayed appearance of logout button
-    useEffect(() => {
-        let timeoutId: NodeJS.Timeout
-
-        if (isHovering) {
-            // Set timeout to show logout after 500ms
-            timeoutId = setTimeout(() => {
-                setShowLogout(true)
-            }, 1200)
-        } else {
-            // Hide logout immediately
-            setShowLogout(false)
-        }
-
-        // Cleanup timeout on component unmount or when isHovering changes
-        return () => {
-            clearTimeout(timeoutId)
-        }
-    }, [isHovering])
-
-	useEffect(() => {
-		if (window.innerWidth < 1024) {
-			setIsHovering(true)
-		}
-	}, [])
-
-    // Updated handlers to check screen width
-    function handleMouseEnter() {
-        if (window.innerWidth >= 1024) {
-            setIsHovering(true)
-        }
-    }
-
-    function handleMouseLeave() {
-        if (window.innerWidth >= 1024) {
-            setIsHovering(false)
-        }
-    }
+    const [isOpen, setIsOpen] = useState(false)
+    const pathname = usePathname()
 
     return (
         <header
             className={cn(
-                "fixed z-50 bottom-4 has-[:hover]:lg:bottom-6 flex items-center justify-center w-full transition-all duration-300 pointer-events-none", // Added pointer-events-none
+                `fixed z-50 bottom-4 ${(isHovering || isOpen) && 'lg:bottom-6'} flex items-center justify-center w-full transition-all duration-300 pointer-events-none`, // Added pointer-events-none
                 isVisible ? "translate-y-0 opacity-100" : "translate-y-24 opacity-0",
             )}
         >
-            <div className="relative w-fit max-w-[90%] p-1 xl:p-2 px-2 xl:px-4 bg-gray-50 dark:bg-gray-900 rounded-full flex items-center justify-between border border-gray-200 dark:border-gray-800 transition-all duration-300 group/Header pointer-events-auto" // Added pointer-events-auto
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
+            <div className="relative w-fit max-w-[90%] p-1 xl:p-2 px-2 xl:px-4 bg-gray-50 dark:bg-gray-900 rounded-full flex items-center justify-between border border-gray-200 dark:border-gray-800 transition-all duration-300 group/Header pointer-events-auto"
+                onMouseEnter={() => setIsHovering(true)}
+                onMouseLeave={() => setIsHovering(false)}
             >
                 {/* DarkModeToggle with smooth animation */}
                 <div
-                    className={cn(
-                        "overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center",
-                        isHovering ? "w-fit max-w-[24px] opacity-100 mr-2 xl:mr-4" : "w-0 max-w-0 opacity-0",
-                    )}
+                    className={
+                        `overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center w-fit max-w-[24px] mr-2 lg:w-0 lg:max-w-0 lg:opacity-0 lg:m-0 ${isHovering || isOpen ? 'lg:w-fit lg:max-w-[24px] lg:opacity-100 lg:mr-2 xl:mr-4' : ''}`
+                    }
                 >
                     <DarkModeToggle className="transition-transform duration-300" />
                 </div>
 
                 {/* Center content */}
-                <div className="flex items-center justify-center gap-1 xl:gap-2 group/Time duration-300 h-6 lg:group-hover/Header:h-12">
+                <div className={`flex items-center justify-center gap-1 xl:gap-2 group/Time duration-300 h-6 ${isHovering || isOpen ? 'lg:h-12' : ''}`}>
                     <Meteo />
                     <div>
                         <Time
@@ -89,18 +63,40 @@ export default function Header({ }: {}) {
                     </div>
                 </div>
 
-                {/* Logout form with JavaScript-controlled delay */}
                 <div
-                    className={cn(
-                        "overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center",
-                        showLogout ? "w-fit max-w-[40px] opacity-100 ml-2 xl:ml-4" : "w-0 max-w-0 opacity-0",
-                    )}
+                    className={
+                        `overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center w-fit max-w-[40px] ml-2 lg:w-0 lg:max-w-0 lg:opacity-0 lg:m-0 ${isHovering || isOpen ? 'lg:w-fit lg:max-w-[40px] lg:opacity-100 lg:ml-2 xl:ml-4' : ''}`
+                    }
                 >
-                    <form action={logout}>
-                        <Button type="submit" variant="outline" size="icon" className="whitespace-nowrap transition-transform duration-300">
-                            <LogOut size={24} />
-                        </Button>
-                    </form>
+                    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+                        <DropdownMenuTrigger asChild>
+                            <Button type="submit" variant="outline" size="icon" className="whitespace-nowrap transition-transform duration-300">
+                                <Menu size={24} />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            {
+                                pathname !== "/my/settings" && (
+                                    <DropdownMenuItem>
+                                        <Link href="/my/settings" className="flex items-center">
+                                            <User size={24} className="mr-1" />
+                                            Settings
+                                        </Link>
+                                    </DropdownMenuItem>
+                                )
+                            }
+                            {
+                                pathname !== "/my" && (
+                                    <DropdownMenuItem>
+                                        <Link href="/my" className="flex items-center">
+                                            <Home size={24} className="mr-1" />
+                                            Dashboard
+                                        </Link>
+                                    </DropdownMenuItem>
+                                )
+                            }
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
         </header>
