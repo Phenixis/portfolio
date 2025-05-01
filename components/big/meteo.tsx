@@ -81,7 +81,7 @@ export default function Meteo({
 
     return (
         <Tooltip>
-            <TooltipTrigger className={cn("text-center text-xs xl:text-sm flex flex-col justify-center items-center", className)}>
+            <TooltipTrigger className={cn("text-center text-xs xl:text-sm flex flex-col justify-center items-center cursor-default", className)}>
                 <Image
                     src={`https://openweathermap.org/img/wn/${meteo.icon}@2x.png`}
                     className="size-10 xl:transform duration-300 xl:translate-y-3 xl:group-hover/Time:-translate-y-0"
