@@ -15,16 +15,10 @@ export function useFilteredData<T>({
   skipFetch?: boolean
 }) {
   const { user } = useUser()
-  if (!user) {
-    return {
-      data: [],
-      isLoading: false,
-      isError: { error: "User not found" },
-    }
-  }
 
-  const resolvedKey = user.api_key
+  const resolvedKey = user?.api_key || ""
 
+  
   const searchParams = new URLSearchParams()
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
