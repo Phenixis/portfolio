@@ -23,6 +23,7 @@ import {
     REGEXP_ONLY_DIGITS
 } from "input-otp"
 import Link from "next/link"
+import { toast } from "sonner"
 
 export default function Login() {
     const [redirectTo, setRedirectTo] = useState("/my")
@@ -30,11 +31,17 @@ export default function Login() {
     const [password, setPassword] = useState("")
     const [hiddenPassword, setHiddenPassword] = useState("")
     const formRef = useRef<HTMLFormElement>(null)
-    const [state, formAction, pending] = useActionState<ActionState, FormData>((prevState, formData) => {
+    const [state, formAction, pending] = useActionState<ActionState, FormData>(async (prevState, formData) => {
         formData.append("redirectTo", redirectTo)
         formData.append("identifier", identifier)
         formData.append("password", password)
-        return verifyCredentials(prevState, formData)
+        const result = await verifyCredentials(prevState, formData)
+        if (result.error) {
+            toast.error(result.error)
+        } else if (result.success) {
+            toast.success("Login successful")
+        }
+        return result
     }, { error: "" })
 
     useEffect(() => {

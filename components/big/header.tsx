@@ -8,7 +8,7 @@ import Time from "@/components/big/time"
 import { useScrollDirection } from "@/hooks/use-scroll-direction"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
-import { Menu, User, Home } from "lucide-react"
+import { Menu, User, Home, LogOut } from "lucide-react"
 import Link from "next/link"
 import {
     DropdownMenu,
@@ -19,6 +19,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { usePathname } from "next/navigation"
+import { logout } from "@/lib/auth/actions"
+import { toast } from "sonner"
 
 export default function Header({
 
@@ -29,7 +31,7 @@ export default function Header({
     const [isHovering, setIsHovering] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
     const pathname = usePathname()
-
+    
     return (
         <header
             className={cn(
@@ -95,6 +97,15 @@ export default function Header({
                                     </DropdownMenuItem>
                                 )
                             }
+                            <DropdownMenuItem>
+                                <div className="flex items-center" onClick={() => {
+                                    logout()
+                                    toast.success("Logged out")
+                                }}>
+                                    <LogOut size={24} className="mr-1" />
+                                    Log out
+                                </div>
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

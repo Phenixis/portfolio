@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/tooltip"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from '@vercel/analytics/next';
+import { Toaster } from "@/components/ui/sonner"
 
 const domine = Domine({
     subsets: ['latin'],
@@ -76,6 +77,7 @@ export default function RootLayout({
                 </TooltipProvider>
                 <SpeedInsights />
                 <Analytics />
+                <Toaster />
             </body>
         </html>
     )

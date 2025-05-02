@@ -1,7 +1,6 @@
 import Header from "@/components/big/header"
 import { UserProvider } from "@/hooks/use-user"
 import { getUser } from "@/lib/db/queries/user"
-import { Toaster } from "@/components/ui/sonner"
 
 export default function BackOfficeLayout({
     children,
@@ -16,7 +15,6 @@ export default function BackOfficeLayout({
                 <div className="w-full h-full">
                     {children}
                 </div>
-                <Toaster />
             </main>
         </UserProvider>
     )
