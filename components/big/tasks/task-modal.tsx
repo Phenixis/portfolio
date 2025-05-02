@@ -37,6 +37,7 @@ import {
 import Tooltip from "../tooltip"
 import { useSearchParams } from "next/navigation"
 import { useUser } from "@/hooks/use-user"
+import { toast } from "sonner"
 
 export default function TaskModal({
 	className,
@@ -305,6 +306,7 @@ export default function TaskModal({
 				})
 
 			resetForm();
+			toast.success("Task created successfully")
 		} catch (error) {
 			console.error("Erreur lors de la soumission:", error)
 			isSubmittingRef.current = false

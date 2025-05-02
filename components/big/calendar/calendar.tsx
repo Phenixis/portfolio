@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils"
 
@@ -13,6 +13,12 @@ export default function Calendar({
     const [date, setDate] = useState<Date | undefined>(
         new Date()
     );
+
+    useEffect(() => {
+        if (!date) {
+            setDate(new Date())
+        }
+    }, [date])
 
     return (
         <div className={cn("flex flex-row lg:flex-col justify-start items-start lg:items-center border border-gray-100 dark:border-gray-800 lg:h-screen", className)}>

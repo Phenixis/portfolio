@@ -21,6 +21,8 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useUser } from "@/hooks/use-user"
+import { toast } from "sonner"
+
 export default function TaskDisplay({
 	task,
 	orderedBy,
@@ -75,15 +77,17 @@ export default function TaskDisplay({
 	async function performToggle() {
 		if (!task) return
 
+		const newIsToggled = !isToggled
+
 		// Close the dialog if it was open
 		setIsToggleDialogOpen(false)
 
 		// Immediately update local state
-		setIsToggled(!isToggled)
+		setIsToggled(newIsToggled)
 
 		// Also update optimistic state for consistent UI
 		startTransition(() => {
-			toggleOptimistic(!isToggled)
+			toggleOptimistic(newIsToggled)
 		})
 
 		try {
@@ -97,7 +101,7 @@ export default function TaskDisplay({
 						if (item.id === task.id) {
 							return {
 								...item,
-								completed_at: !isToggled ? new Date().toISOString() : null,
+								completed_at: newIsToggled ? new Date().toISOString() : null,
 							}
 						}
 						return item
@@ -105,6 +109,7 @@ export default function TaskDisplay({
 				},
 				{ revalidate: false },
 			)
+			toast.success(`"${task.title}" ${newIsToggled ? "completed" : "uncompleted"}`)
 
 			// Actual API call
 			await fetch("/api/task", {
@@ -118,6 +123,7 @@ export default function TaskDisplay({
 			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
 		} catch (error) {
 			console.error("Error toggling task:", error)
+			toast.error("Error toggling task. See console for more details.")
 
 			// Revert both states on error
 			setIsToggled(isToggled)
@@ -168,6 +174,7 @@ export default function TaskDisplay({
 				},
 				{ revalidate: false }, // Don't revalidate immediately
 			)
+			toast.success(`"${task.title}" deleted successfully`)
 
 			// Actual deletion
 			await fetch(`/api/task?id=${task.id}`, {
@@ -179,6 +186,7 @@ export default function TaskDisplay({
 			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
 		} catch (error) {
 			console.error("Error deleting task:", error)
+			toast.error("Error deleting task. See console for more details.")
 
 			// Revalidate to restore the correct state
 			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
@@ -253,6 +261,7 @@ export default function TaskDisplay({
 				},
 				{ revalidate: false }, // Don't revalidate immediately
 			)
+			toast.success("Dependency removed successfully")
 
 			// Actual deletion
 			await fetch(`/api/task/dependency?id1=${task.id}&id2=${idToDelete}`, {
@@ -264,7 +273,7 @@ export default function TaskDisplay({
 			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
 		} catch (error) {
 			console.error("Error deleting dependency:", error)
-
+			toast.error("Error deleting dependency. See console for more details.")
 			// Revalidate to restore the correct state
 			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
 		} finally {
