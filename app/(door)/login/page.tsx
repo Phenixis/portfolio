@@ -130,7 +130,7 @@ export default function Login() {
                         </InputOTPGroup>
                     </InputOTP>
                 </CardContent>
-                <CardFooter className={`${pending ? "flex justify-between" : "flex justify-end"}`}>
+                <CardFooter className={`${pending || state?.error ? "flex justify-between" : "flex justify-end"}`}>
                     {
                         pending ? (
                             <Loader className="animate-spin size-4" />
