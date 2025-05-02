@@ -66,7 +66,7 @@ export default function RootLayout({
                 <link rel="apple-touch-icon" href="/favicon.png" />
             </head>
             <body className={cx(
-                'antialiased text-black bg-white dark:text-white dark:bg-black h-screen min-h-screen w-screen min-w-screen max-w-screen',
+                'antialiased text-black bg-white dark:text-white dark:bg-black h-screen min-h-screen w-screen min-w-screen max-w-screen overflow-x-hidden',
                 domine.className,
                 geistMono.className,
                 ubuntuSansMono.className,
