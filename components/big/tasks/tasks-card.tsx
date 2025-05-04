@@ -142,7 +142,7 @@ export function TasksCard({
 	)
 
 	// -------------------- Data Fetching --------------------
-	const { projects, isLoading: projectsLoading, mutate: mutateProject } = useProjects({
+	const { projects, isLoading: projectsLoading } = useProjects({
 		completed: false,
 		taskCompleted: completed,
 		taskDueDate: dueBeforeDate,
@@ -161,24 +161,21 @@ export function TasksCard({
 	})
 
 	// -------------------- Effects --------------------
+
 	useEffect(() => {
-		mutateProject((key: string) => typeof key === "string" && key.startsWith("/api/project"))
+		// Only update if we have actual project data
+		if (projects && projects.length > 0) {
+			// Update selected projects based on the current projects
+			setSelectedProjects((prev) =>
+				prev.filter((title) => projects.some((project) => project.title === title))
+			);
 
-		// Update selected projects based on the current projects
-		selectedProjects.forEach((projectTitle) => {
-			if (!projects?.some((project) => project.title === projectTitle)) {
-				setSelectedProjects((prev) => prev.filter((title) => title !== projectTitle))
-			}
-		})
-
-		// Update removed projects based on the current projects
-		removedProjects.forEach((projectTitle) => {
-			if (projects?.some((project) => project.title === projectTitle)) {
-				setRemovedProjects((prev) => prev.filter((title) => title !== projectTitle))
-			}
-		})
-
-	}, [completed, dueBeforeDate])
+			// Update removed projects based on the current projects
+			setRemovedProjects((prev) =>
+				prev.filter((title) => !projects.some((project) => project.title === title))
+			);
+		}
+	}, [completed, dueBeforeDate, projects]);
 
 	useEffect(() => {
 		updateUrlParams()
