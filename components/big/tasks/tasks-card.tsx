@@ -164,6 +164,8 @@ export function TasksCard({
 	useEffect(() => {
 		mutateProject()
 
+		while (projectsLoading) {}
+
 		// Update selected projects based on the current projects
 		selectedProjects.forEach((projectTitle) => {
 			if (!projects?.some((project) => project.title === projectTitle)) {
