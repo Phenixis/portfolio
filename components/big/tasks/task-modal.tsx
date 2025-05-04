@@ -411,7 +411,7 @@ export default function TaskModal({
 					</DialogHeader>
 					<form id="task-form" onSubmit={handleSubmit} className="space-y-4">
 						<div>
-							<Label htmlFor="title">Title</Label>
+							<Label htmlFor="title" required>Title</Label>
 							<Input
 								ref={titleRef}
 								type="text"
@@ -426,7 +426,7 @@ export default function TaskModal({
 						</div>
 						<div className="flex flex-col justify-between lg:flex-row lg:space-x-4">
 							<div>
-								<Label htmlFor="importance">Importance</Label>
+								<Label htmlFor="importance" required>Importance</Label>
 								<Select
 									name="importance"
 									defaultValue={task?.importance?.toString() || "0"}
@@ -456,7 +456,7 @@ export default function TaskModal({
 								</Select>
 							</div>
 							<div className="relative">
-								<Label htmlFor="dueDate">Due date</Label>
+								<Label htmlFor="dueDate" required>Due date</Label>
 								<div className="flex gap-1">
 									<Button
 										type="button"
@@ -518,7 +518,7 @@ export default function TaskModal({
 								)}
 							</div>
 							<div>
-								<Label htmlFor="duration">Duration</Label>
+								<Label htmlFor="duration" required>Duration</Label>
 								<Select
 									name="duration"
 									defaultValue={task?.duration?.toString() || "0"}
@@ -621,7 +621,7 @@ export default function TaskModal({
 								<div className="flex space-x-4">
 									<div className="w-full">
 										<Label htmlFor="task" className="flex items-center space-x-2 pb-1">
-											To do before:
+											To do before
 											<Tooltip tooltip={`Select a task that needs to be done before this task.<br/>For example, if you are ${mode === 'edit' ? "editing" : "creating"} a Task B that needs to be done after a Task A, enter the title of the Task A here.`}>
 												<CircleHelp className="ml-1 size-4 text-muted-foreground" />
 											</Tooltip>
