@@ -162,9 +162,7 @@ export function TasksCard({
 
 	// -------------------- Effects --------------------
 	useEffect(() => {
-		mutateProject()
-
-		while (projectsLoading) {}
+		mutateProject((key: string) => typeof key === "string" && key.startsWith("/api/project"))
 
 		// Update selected projects based on the current projects
 		selectedProjects.forEach((projectTitle) => {
