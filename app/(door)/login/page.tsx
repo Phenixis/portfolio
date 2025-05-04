@@ -88,7 +88,7 @@ export default function Login() {
                 </CardHeader>
                 <CardContent>
                     <input type="text" name="redirectTo" className="hidden" value={redirectTo} readOnly />
-                    <Label>Enter your identifier</Label>
+                    <Label required>Enter your identifier</Label>
                     <InputOTP
                         maxLength={8}
                         value={identifier}
@@ -106,7 +106,7 @@ export default function Login() {
                             <InputOTPSlot index={7} />
                         </InputOTPGroup>
                     </InputOTP>
-                    <Label>Enter your password</Label>
+                    <Label required>Enter your password</Label>
                     <InputOTP
                         type="password"
                         maxLength={8}

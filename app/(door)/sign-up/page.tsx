@@ -67,7 +67,7 @@ export default function Login() {
                 <CardContent className="w-full">
                     <div className="flex space-x-4">
                         <div>
-                            <Label>First Name</Label>
+                            <Label required>First Name</Label>
                             <Input
                                 type="text"
                                 name="first_name"
@@ -77,7 +77,7 @@ export default function Login() {
                             />
                         </div>
                         <div>
-                            <Label>Last Name</Label>
+                            <Label required>Last Name</Label>
                             <Input
                                 type="text"
                                 name="last_name"
@@ -87,7 +87,7 @@ export default function Login() {
                             />
                         </div>
                     </div>
-                    <Label>Email</Label>
+                    <Label required>Email</Label>
                     <Input
                         type="text"
                         name="email"
