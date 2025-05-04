@@ -97,15 +97,7 @@ export default function TaskDisplay({
 				async (currentData: unknown): Promise<unknown> => {
 					if (!Array.isArray(currentData)) return currentData
 
-					return currentData.map((item: Task) => {
-						if (item.id === task.id) {
-							return {
-								...item,
-								completed_at: newIsToggled ? new Date().toISOString() : null,
-							}
-						}
-						return item
-					})
+					return currentData.filter((item: Task) => item.id !== task.id)
 				},
 				{ revalidate: false },
 			)
