@@ -177,6 +177,15 @@ export const serie = pgTable('serie', {
     deleted_at: timestamp('deleted_at'),
 });
 
+export const clipboard = pgTable('clipboard', {
+    id: serial('id').primaryKey(),
+    content: text('content').notNull(),
+    password: varchar('password', { length: 255 }), // if password is set, the clipboard is encrypted
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow(),
+    deleted_at: timestamp('deleted_at'),
+});
+
 // Relations
 export const projectRelations = relations(project, ({ one, many }) => ({
     tasks: many(task),
