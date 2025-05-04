@@ -521,7 +521,7 @@ export default function TaskModal({
 								<Label htmlFor="duration">Duration</Label>
 								<Select
 									name="duration"
-									defaultValue={task?.duration?.toString()}
+									defaultValue={task?.duration?.toString() || "0"}
 									onValueChange={(value) => {
 										durationRef.current = value
 										setFormChanged(
