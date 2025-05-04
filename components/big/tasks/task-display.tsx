@@ -373,6 +373,25 @@ export default function TaskDisplay({
 					</div>
 					{task.recursive && (
 						<div className={`flex flex-col space-y-1 ${!isCollapsibleOpen && "hidden"}`}>
+						{task.tasksToDoAfter && task.tasksToDoAfter.length > 0 && (
+							<div className="flex flex-col space-y-1">
+								<p className="text-sm text-muted-foreground">
+									To do before:
+								</p>
+								{task.tasksToDoAfter.map((afterTask) => (
+									<TaskDisplay
+										key={afterTask.id}
+										task={afterTask}
+										orderedBy={orderedBy}
+										currentLimit={currentLimit}
+										currentDueBefore={currentDueBefore}
+										currentProjects={currentProjects}
+										className="ml-6"
+										otherId={task.id}
+									/>
+								))}
+							</div>
+						)}
 							{task.tasksToDoBefore && task.tasksToDoBefore.length > 0 && (
 								<div className="flex flex-col space-y-1">
 									<p className="text-sm text-muted-foreground">
@@ -382,25 +401,6 @@ export default function TaskDisplay({
 										<TaskDisplay
 											key={beforeTask.id}
 											task={beforeTask}
-											orderedBy={orderedBy}
-											currentLimit={currentLimit}
-											currentDueBefore={currentDueBefore}
-											currentProjects={currentProjects}
-											className="ml-6"
-											otherId={task.id}
-										/>
-									))}
-								</div>
-							)}
-							{task.tasksToDoAfter && task.tasksToDoAfter.length > 0 && (
-								<div className="flex flex-col space-y-1">
-									<p className="text-sm text-muted-foreground">
-										To do before:
-									</p>
-									{task.tasksToDoAfter.map((afterTask) => (
-										<TaskDisplay
-											key={afterTask.id}
-											task={afterTask}
 											orderedBy={orderedBy}
 											currentLimit={currentLimit}
 											currentDueBefore={currentDueBefore}
