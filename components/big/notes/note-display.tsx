@@ -3,7 +3,7 @@
 import { Note, user } from "@/lib/db/schema"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useState, useEffect } from "react"
-import { ChevronDown, ChevronUp, ClipboardPlus, ClipboardCheck, Trash } from "lucide-react"
+import { ChevronDown, ChevronUp, ClipboardPlus, ClipboardCheck, Trash, Lock } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import NoteModal from "./note-modal"
 import { toast } from "sonner"
@@ -18,7 +18,10 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-
+import { decryptNote } from "@/lib/utils/crypt"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useDebouncedCallback } from "use-debounce"
 
 export default function NoteDisplay({ note }: { note?: Note }) {
     const user = useUser().user
@@ -28,6 +31,26 @@ export default function NoteDisplay({ note }: { note?: Note }) {
     const [isCopied, setIsCopied] = useState(false)
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
+
+    const [decryptedContent, setDecryptedContent] = useState<string | null>(null)
+    const [password, setPassword] = useState("")
+    const [decryptError, setDecryptError] = useState(false)
+
+    const debouncedDecrypt = useDebouncedCallback((pwd: string) => {
+        if (note && note.salt && note.iv && pwd && !decryptedContent) {
+            decryptNote(note.content, pwd, note.salt, note.iv)
+                .then(setDecryptedContent)
+                .catch((e: any) => {
+                    setDecryptError(true)
+                    toast.error("Decryption failed. Wrong password or corrupted data.")
+                    console.log(e)
+                })
+        }
+    }, 200)
+
+    useEffect(() => {
+        debouncedDecrypt(password)
+    }, [password, note])
 
     const handleDelete = (e?: React.MouseEvent) => {
         if (e) e.stopPropagation()
@@ -100,16 +123,46 @@ export default function NoteDisplay({ note }: { note?: Note }) {
                     note && isOpen && (
                         <>
                             <CardContent className="xl:pb-2">
-                                <p>{note.content}</p>
+                                {
+                                    note.salt && note.iv ? (
+                                        !decryptedContent ? (
+                                            <>
+                                                <Label required>Enter the password to decrypt the note</Label>
+                                                <Input
+                                                    type="password"
+                                                    placeholder="Enter password to decrypt"
+                                                    value={password}
+                                                    onChange={(e) => {
+                                                        setPassword(e.target.value)
+                                                        setDecryptError(false)
+                                                    }}
+                                                />
+                                                {decryptError && <p className="text-red-500 text-sm">Incorrect password.</p>}
+                                            </>
+                                        ) : (
+                                            <p>{decryptedContent}</p>
+                                        )
+                                    ) : (
+                                        <p>{note.content}</p>
+                                    )
+                                }
                             </CardContent>
                             <CardFooter className="flex flex-row justify-end space-x-2">
+                                {
+                                    note.salt && note.iv && decryptedContent && (
+                                        <Lock className="w-4 h-4 cursor-pointer" onClick={() => {
+                                            setDecryptedContent(null)
+                                            setPassword("")
+                                        }} />
+                                    )
+                                }
                                 <Trash className="w-4 h-4 cursor-pointer text-red-500" onClick={handleDelete} />
                                 {
                                     isCopied ? (
                                         <ClipboardCheck className="w-4 h-4 cursor-pointer" />
-                                    ) : (
+                                    ) : ((note.salt && note.iv && decryptedContent) || !(note.salt && note.iv)) && (
                                         <ClipboardPlus className="w-4 h-4 cursor-pointer" onClick={() => {
-                                            navigator.clipboard.writeText(note.content)
+                                            navigator.clipboard.writeText(note.salt && note.iv && decryptedContent ? decryptedContent : note.content)
                                             setIsCopied(true)
                                             toast.success("Copied to clipboard")
                                             setTimeout(() => {
@@ -119,7 +172,9 @@ export default function NoteDisplay({ note }: { note?: Note }) {
                                     )
                                 }
                                 {
-                                    <NoteModal note={note} />
+                                    ((note.salt && note.iv && decryptedContent) || !(note.salt && note.iv)) && (
+                                        <NoteModal note={note} password={password} />
+                                    )
                                 }
                             </CardFooter>
                         </>
@@ -138,7 +193,7 @@ export default function NoteDisplay({ note }: { note?: Note }) {
                         <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
                             Cancel
                         </Button>
-                        
+
                         <Button variant="destructive" onClick={handleDelete}>
                             Delete
                         </Button>
