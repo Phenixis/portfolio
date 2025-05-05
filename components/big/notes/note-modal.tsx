@@ -77,7 +77,7 @@ export default function NoteModal({
                         updatedData = [...currentData, noteData]
                     }
 
-                    return updatedData
+                    return updatedData.sort((a, b) => a.title.localeCompare(b.title))
                 },
                 { revalidate: false },
             )

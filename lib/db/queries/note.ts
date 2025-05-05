@@ -24,7 +24,7 @@ export async function getNotes(userId: string, title?: string, projectTitle?: st
             title ? eq(Schema.note.title, title) : undefined,
             projectTitle ? eq(Schema.note.project_title, projectTitle) : undefined
         )
-    ).limit(limit)
+    ).orderBy(desc(Schema.note.title)).limit(limit)
 
     return notes
 }
