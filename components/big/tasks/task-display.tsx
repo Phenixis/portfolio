@@ -365,25 +365,25 @@ export default function TaskDisplay({
 					</div>
 					{task.recursive && (
 						<div className={`flex flex-col space-y-1 ${!isCollapsibleOpen && "hidden"}`}>
-						{task.tasksToDoAfter && task.tasksToDoAfter.length > 0 && (
-							<div className="flex flex-col space-y-1">
-								<p className="text-sm text-muted-foreground">
-									To do before:
-								</p>
-								{task.tasksToDoAfter.map((afterTask) => (
-									<TaskDisplay
-										key={afterTask.id}
-										task={afterTask}
-										orderedBy={orderedBy}
-										currentLimit={currentLimit}
-										currentDueBefore={currentDueBefore}
-										currentProjects={currentProjects}
-										className="ml-6"
-										otherId={task.id}
-									/>
-								))}
-							</div>
-						)}
+							{task.tasksToDoAfter && task.tasksToDoAfter.length > 0 && (
+								<div className="flex flex-col space-y-1">
+									<p className="text-sm text-muted-foreground">
+										To do before:
+									</p>
+									{task.tasksToDoAfter.map((afterTask) => (
+										<TaskDisplay
+											key={afterTask.id}
+											task={afterTask}
+											orderedBy={orderedBy}
+											currentLimit={currentLimit}
+											currentDueBefore={currentDueBefore}
+											currentProjects={currentProjects}
+											className="ml-6"
+											otherId={task.id}
+										/>
+									))}
+								</div>
+							)}
 							{task.tasksToDoBefore && task.tasksToDoBefore.length > 0 && (
 								<div className="flex flex-col space-y-1">
 									<p className="text-sm text-muted-foreground">
@@ -452,12 +452,17 @@ export default function TaskDisplay({
 											: "w-fit xl:w-0 xl:max-w-0 xl:opacity-0",
 									)}
 								>
-									<Tooltip tooltip="Edit task">
-										<TaskModal
-											className="duration-300"
-											task={task}
-										/>
-									</Tooltip>
+									<div onClick={() => {
+										setIsCollapsibleOpen(false)
+										setIsHovering(false)
+									}}>
+										<Tooltip tooltip="Edit task">
+											<TaskModal
+												className="duration-300"
+												task={task}
+											/>
+										</Tooltip>
+									</div>
 
 									<Tooltip tooltip="Delete task">
 										<TrashIcon
@@ -527,22 +532,22 @@ export default function TaskDisplay({
 					<DialogHeader>
 						<DialogTitle>Mark Task as Complete</DialogTitle>
 						<DialogDescription>
-							This task has tasks that should be done before that haven't been completed yet.<br/><br/>{
-							task && task.recursive && task.tasksToDoAfter && task.tasksToDoAfter.length > 0 && (
-								<div className="flex flex-col space-y-1">
-									{task.tasksToDoAfter.map((afterTask) => (
-										<TaskDisplay
-											key={afterTask.id}
-											task={afterTask}
-											orderedBy={orderedBy}
-											currentLimit={currentLimit}
-											currentDueBefore={currentDueBefore}
-											currentProjects={currentProjects}
-											otherId={task.id}
-										/>
-									))}
-								</div>
-							)}<br />Are you sure you want to mark it as
+							This task has tasks that should be done before that haven't been completed yet.<br /><br />{
+								task && task.recursive && task.tasksToDoAfter && task.tasksToDoAfter.length > 0 && (
+									<div className="flex flex-col space-y-1">
+										{task.tasksToDoAfter.map((afterTask) => (
+											<TaskDisplay
+												key={afterTask.id}
+												task={afterTask}
+												orderedBy={orderedBy}
+												currentLimit={currentLimit}
+												currentDueBefore={currentDueBefore}
+												currentProjects={currentProjects}
+												otherId={task.id}
+											/>
+										))}
+									</div>
+								)}<br />Are you sure you want to mark it as
 							complete?
 						</DialogDescription>
 					</DialogHeader>
