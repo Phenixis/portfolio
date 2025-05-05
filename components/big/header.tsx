@@ -91,7 +91,10 @@ export default function Header({
                         <DropdownMenuContent>
                             {
                                 pathname !== "/my" && (
-                                    <DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => {
+                                        setIsOpen(false)
+                                        setIsHovering(false)
+                                    }}>
                                         <Link href="/my" className="flex items-center">
                                             <Home size={24} className="mr-1" />
                                             Dashboard
@@ -101,7 +104,10 @@ export default function Header({
                             }
                             {
                                 pathname !== "/my/settings" && (
-                                    <DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => {
+                                        setIsOpen(false)
+                                        setIsHovering(false)
+                                    }}>
                                         <Link href="/my/settings" className="flex items-center">
                                             <User size={24} className="mr-1" />
                                             Settings
@@ -111,7 +117,10 @@ export default function Header({
                             }
                             {
                                 pathname !== "/my/notes" && (
-                                    <DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => {
+                                        setIsOpen(false)
+                                        setIsHovering(false)
+                                    }}>
                                         <Link href="/my/notes" className="flex items-center">
                                             <NotebookText size={24} className="mr-1" />
                                             Notes
@@ -119,7 +128,10 @@ export default function Header({
                                     </DropdownMenuItem>
                                 )
                             }
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                                setIsOpen(false)
+                                setIsHovering(false)
+                            }}>
                                 <div className="flex items-center" onClick={() => {
                                     logout()
                                     toast.success("Logged out")
