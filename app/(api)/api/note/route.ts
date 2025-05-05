@@ -25,10 +25,10 @@ export async function POST(request: NextRequest) {
     const verification = await verifyRequest(request)
     if ('error' in verification) return verification.error
     
-    const { title, content, project_title } = await request.json()
+    const { title, content, project_title, salt, iv } = await request.json()
 
     try {
-        const note = await createNote(verification.userId, title, content, project_title)
+        const note = await createNote(verification.userId, title, content, project_title, salt, iv)
         return NextResponse.json(note)
     } catch (error) {
         console.error("Error creating note:", error)
@@ -40,10 +40,10 @@ export async function PUT(request: NextRequest) {
     const verification = await verifyRequest(request)
     if ('error' in verification) return verification.error
     
-    const { id, title, content, project_title } = await request.json()
+    const { id, title, content, project_title, salt, iv } = await request.json()
 
     try {
-        const note = await updateNote(verification.userId, id, title, content, project_title)
+        const note = await updateNote(verification.userId, id, title, content, project_title, salt, iv)
         return NextResponse.json(note)
     } catch (error) {
         console.error("Error updating note:", error)
