@@ -143,6 +143,7 @@ export default function NoteModal({
             mutate((key) => typeof key === "string" && key.startsWith("/api/note"))
             isSubmittingRef.current = false
         } catch (error) {
+            toast.error(`Failed to ${mode === "edit" ? "update" : "create"} note. Try again later.`)
             console.error("Erreur lors de la soumission:", error)
             isSubmittingRef.current = false
         }

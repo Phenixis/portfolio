@@ -88,8 +88,7 @@ export default function NoteDisplay({ note }: { note?: Note }) {
             mutate((key) => typeof key === "string" && key.startsWith("/api/note"))
         } catch (error) {
             console.error("Error deleting note:", error)
-            toast.error("Error deleting note. See console for more details.")
-
+            toast.error("Error deleting note. Try again later.")
             mutate((key) => typeof key === "string" && key.startsWith("/api/note"))
         } finally {
             setIsDeleting(false)

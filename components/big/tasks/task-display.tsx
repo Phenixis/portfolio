@@ -115,7 +115,7 @@ export default function TaskDisplay({
 			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
 		} catch (error) {
 			console.error("Error toggling task:", error)
-			toast.error("Error toggling task. See console for more details.")
+			toast.error("Error toggling task. Try again later.")
 
 			// Revert both states on error
 			setIsToggled(isToggled)
@@ -178,7 +178,7 @@ export default function TaskDisplay({
 			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
 		} catch (error) {
 			console.error("Error deleting task:", error)
-			toast.error("Error deleting task. See console for more details.")
+			toast.error("Error deleting task. Try again later.")
 
 			// Revalidate to restore the correct state
 			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
@@ -265,7 +265,7 @@ export default function TaskDisplay({
 			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
 		} catch (error) {
 			console.error("Error deleting dependency:", error)
-			toast.error("Error deleting dependency. See console for more details.")
+			toast.error("Error deleting dependency. Try again later.")
 			// Revalidate to restore the correct state
 			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
 		} finally {
