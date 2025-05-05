@@ -306,7 +306,7 @@ export default function TaskModal({
 				})
 
 			resetForm();
-			toast.success("Task created successfully")
+			toast.success(`Task ${mode === "edit" ? "updated" : "created"} successfully`)
 		} catch (error) {
 			console.error("Erreur lors de la soumission:", error)
 			isSubmittingRef.current = false
