@@ -51,7 +51,9 @@ export async function updateNote(userId: string, id: number, title: string, cont
 }
 
 export async function deleteNote(userId: string, id: number) {
-    const note = await db.delete(Schema.note).where(and(eq(Schema.note.id, id), eq(Schema.note.user_id, userId)))
+    const note = await db.update(Schema.note).set({
+        deleted_at: new Date()
+    }).where(and(eq(Schema.note.id, id), eq(Schema.note.user_id, userId)))
 
     return note
 }
