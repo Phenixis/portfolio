@@ -187,7 +187,8 @@ export const note = pgTable('note', {
         .references(() => project.title),
     title: varchar('title', { length: 255 }).notNull(),
     content: text('content').notNull(),
-    password: varchar('password', { length: 255 }), // if password is set, the note is encrypted, otherwise it is not
+    salt: char('salt', { length: 24 }),
+    iv: char('iv', { length: 16 }),
     created_at: timestamp('created_at').notNull().defaultNow(),
     updated_at: timestamp('updated_at').notNull().defaultNow(),
     deleted_at: timestamp('deleted_at'),
