@@ -79,7 +79,7 @@ export default function NoteDisplay({ note }: { note?: Note }) {
                 <CardHeader className={`flex flex-row justify-between items-center space-y-0 px-2 pt-2 pb-2 md:px-4 md:pt-2 md:pb-2 xl:px-6 xl:pt-2`}>
                     {
                         note ? (
-                            <CardTitle className={`w-full ${note && "cursor-pointer"}`} onClick={() => setIsOpen(note ? !isOpen : false)}>
+                            <CardTitle className={`w-full text-lg xl:text-lg ${note && "cursor-pointer"}`} onClick={() => setIsOpen(note ? !isOpen : false)}>
                                 {note.title}
                             </CardTitle>
                         ) : (
