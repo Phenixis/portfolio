@@ -19,6 +19,7 @@ import * as Schema from "../schema"
 export async function getNotes(userId: string, title?: string, projectTitle?: string, limit: number = 50) {
     const notes = await db.select().from(Schema.note).where(
         and(
+            isNull(Schema.note.deleted_at),
             eq(Schema.note.user_id, userId),
             title ? eq(Schema.note.title, title) : undefined,
             projectTitle ? eq(Schema.note.project_title, projectTitle) : undefined
