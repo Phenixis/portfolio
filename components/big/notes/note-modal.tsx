@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Plus, PenIcon } from "lucide-react"
+import { Plus, PenIcon, ChevronDown } from "lucide-react"
 import { useUser } from "@/hooks/use-user"
 import { Note } from "@/lib/db/schema"
 import { useState, useRef, useEffect } from "react"
@@ -12,36 +12,50 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useSWRConfig } from "swr"
 import { toast } from "sonner"
+import { encryptNote, decryptNote } from "@/lib/utils/crypt"
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+import { useDebouncedCallback } from "use-debounce"
 
 export default function NoteModal({
     className,
     note,
+    password,
 }: {
     className?: string
     note?: Note
+    password?: string
 }) {
     const user = useUser().user;
     const mode = note ? "edit" : "create"
-	const { mutate } = useSWRConfig()
+    const { mutate } = useSWRConfig()
 
     // State
     const [open, setOpen] = useState(false)
     const [formChanged, setFormChanged] = useState(false)
+    const [showAdvancedOptions, setShowAdvancedOptions] = useState(false)
+    const [decryptedContent, setDecryptedContent] = useState<string | null>(null)
+    const [passwordValue, setPasswordValue] = useState<string>(password || "")
 
     // Refs
     const titleRef = useRef<HTMLInputElement>(null)
     const contentRef = useRef<HTMLTextAreaElement>(null)
     const isSubmittingRef = useRef(false)
-    // Handlers
-    const resetForm = () => {
-        titleRef.current!.value = ""
-        contentRef.current!.value = ""
-        setFormChanged(false)
-    }
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    // Handlers
+    // const resetForm = () => {
+    //     titleRef.current!.value = ""
+    //     contentRef.current!.value = ""
+    //     passwordRef.current!.value = ""
+    //     setFormChanged(false)
+    // }
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        
+
         if (isSubmittingRef.current) return
         isSubmittingRef.current = true
 
@@ -53,15 +67,34 @@ export default function NoteModal({
                 isSubmittingRef.current = false
                 return
             }
+            
+            let noteData: Note
 
-            const noteData = {
-                id: mode === "edit" ? note?.id : -1,
-                user_id: user?.id,
-                title,
-                content,
-                created_at: mode === "create" ? new Date() : note?.created_at,
-                updated_at: new Date(),
-            } as Note
+            // 🔐 Encrypt the note content
+            if (passwordValue) {
+                console.log("Encrypting:", content, passwordValue)
+                const encrypted = await encryptNote(content, passwordValue)
+
+                noteData = {
+                    id: mode === "edit" ? note?.id : -1,
+                    user_id: user?.id,
+                    title,
+                    content: encrypted.ciphertext,
+                    salt: encrypted.salt,
+                    iv: encrypted.iv,
+                    created_at: mode === "create" ? new Date() : note?.created_at,
+                    updated_at: new Date(),
+                } as Note
+            } else {
+                noteData = {
+                    id: mode === "edit" ? note?.id : -1,
+                    user_id: user?.id,
+                    title,
+                    content,
+                    created_at: mode === "create" ? new Date() : note?.created_at,
+                    updated_at: new Date(),
+                } as Note
+            }
 
             setOpen(false)
 
@@ -83,8 +116,8 @@ export default function NoteModal({
             )
 
             toast.success("Note saved successfully")
-            
-            fetch("/api/note", {
+
+            await fetch("/api/note", {
                 method: mode === "edit" ? "PUT" : "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -92,41 +125,51 @@ export default function NoteModal({
                 },
                 body: JSON.stringify(noteData),
             })
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error(`Erreur HTTP: ${response.status}`)
-                    }
-                    return response.json()
-                })
-                .then(() => {
-                    mutate((key) => typeof key === "string" && key.startsWith("/api/note"))
-                })
-                .catch((error) => {
-                    console.error("Erreur lors de l'opération:", error)
-                    mutate((key) => typeof key === "string" && key.startsWith("/api/note"))
-                })
-            
-            resetForm()
+
+            mutate((key) => typeof key === "string" && key.startsWith("/api/note"))
+            // resetForm()
             isSubmittingRef.current = false
         } catch (error) {
             console.error("Erreur lors de la soumission:", error)
             isSubmittingRef.current = false
         }
     }
+
     const verifyFormChanged = () => {
         setFormChanged(
-            (mode === "edit" ? 
-                titleRef.current?.value.trim() !== note?.title.trim() : 
+            (mode === "edit" ?
+                titleRef.current?.value.trim() !== note?.title.trim() :
                 titleRef.current?.value.trim() !== "")
             ||
-            (mode === "edit" ? 
+            (mode === "edit" ?
                 contentRef.current?.value.trim() !== note?.content.trim() :
                 contentRef.current?.value.trim() !== "")
         )
     }
 
+    const debouncedDecrypt = useDebouncedCallback((pwd: string) => {
+        if (mode === "edit" && note?.salt && note?.iv && pwd) {
+            // Decrypt content when password is available and note exists
+            decryptNote(note.content, pwd, note.salt, note.iv)
+                .then((decryptedContent) => {
+                    setDecryptedContent(decryptedContent)
+                    if (contentRef.current) {
+                        contentRef.current.value = decryptedContent
+                    }
+                })
+                .catch((err) => {
+                    console.error("Decryption failed", err)
+                    toast.error("Failed to decrypt note content.")
+                })
+        }
+    }, 200)
+
+    // Decrypt content when dialog opens
+    useEffect(() => {
+        debouncedDecrypt(password || "")
+    }, [password])
+
     // Effects
-    
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -166,10 +209,28 @@ export default function NoteModal({
                             ref={contentRef}
                             id="content"
                             name="content"
-                            defaultValue={note?.content || ""}
+                            defaultValue={decryptedContent || note?.content || ""}
                             onChange={() => verifyFormChanged()}
                         />
                     </div>
+                    <Collapsible className="w-full" open={showAdvancedOptions} onOpenChange={setShowAdvancedOptions}>
+                        <CollapsibleTrigger className="flex text-sm font-medium text-muted-foreground mb-4">
+                            Advanced Options
+                            <ChevronDown className={`ml-2 h-4 w-4 duration-300 ${showAdvancedOptions && "rotate-180"}`} />
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="space-y-4">
+                            <div>
+                                <Label htmlFor="password">Password</Label>
+                                <Input
+                                    type="text"
+                                    id="password"
+                                    name="password"
+                                    value={passwordValue}
+                                    onChange={(e) => setPasswordValue(e.target.value)}
+                                />
+                            </div>
+                        </CollapsibleContent>
+                    </Collapsible>
                     <DialogFooter>
                         <Button type="submit" disabled={!formChanged}>
                             {mode === "create" ? "Create" : "Save"}
