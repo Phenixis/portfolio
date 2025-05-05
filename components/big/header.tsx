@@ -8,7 +8,7 @@ import Time from "@/components/big/time"
 import { useScrollDirection } from "@/hooks/use-scroll-direction"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
-import { Menu, User, Home, LogOut } from "lucide-react"
+import { Menu, User, Home, LogOut, NotebookText, Plus } from "lucide-react"
 import Link from "next/link"
 import {
     DropdownMenu,
@@ -21,6 +21,7 @@ import {
 import { usePathname } from "next/navigation"
 import { logout } from "@/lib/auth/actions"
 import { toast } from "sonner"
+import NoteModal from "./notes/note-modal"
 
 export default function Header({
 
@@ -31,7 +32,7 @@ export default function Header({
     const [isHovering, setIsHovering] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
     const pathname = usePathname()
-    
+
     return (
         <header
             className={cn(
@@ -65,6 +66,17 @@ export default function Header({
                     </div>
                 </div>
 
+                {
+                    pathname === "/my/notes" && (
+                        <div onClick={() => {
+                            setIsOpen(false)
+                            setIsHovering(false)
+                        }}>
+                            <NoteModal />
+                        </div>
+                    )
+                }
+
                 <div
                     className={
                         `overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center w-fit max-w-[40px] ml-2 lg:w-0 lg:max-w-0 lg:opacity-0 lg:m-0 ${isHovering || isOpen ? 'lg:w-fit lg:max-w-[40px] lg:opacity-100 lg:ml-2 xl:ml-4' : ''}`
@@ -78,6 +90,16 @@ export default function Header({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
                             {
+                                pathname !== "/my" && (
+                                    <DropdownMenuItem>
+                                        <Link href="/my" className="flex items-center">
+                                            <Home size={24} className="mr-1" />
+                                            Dashboard
+                                        </Link>
+                                    </DropdownMenuItem>
+                                )
+                            }
+                            {
                                 pathname !== "/my/settings" && (
                                     <DropdownMenuItem>
                                         <Link href="/my/settings" className="flex items-center">
@@ -88,11 +110,11 @@ export default function Header({
                                 )
                             }
                             {
-                                pathname !== "/my" && (
+                                pathname !== "/my/notes" && (
                                     <DropdownMenuItem>
-                                        <Link href="/my" className="flex items-center">
-                                            <Home size={24} className="mr-1" />
-                                            Dashboard
+                                        <Link href="/my/notes" className="flex items-center">
+                                            <NotebookText size={24} className="mr-1" />
+                                            Notes
                                         </Link>
                                     </DropdownMenuItem>
                                 )
