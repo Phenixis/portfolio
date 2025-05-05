@@ -2,7 +2,7 @@
 
 import { Note, user } from "@/lib/db/schema"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { ChevronDown, ChevronUp, ClipboardPlus, ClipboardCheck, Trash, Lock } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import NoteModal from "./note-modal"
@@ -21,7 +21,6 @@ import { Button } from "@/components/ui/button"
 import { decryptNote } from "@/lib/utils/crypt"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useDebouncedCallback } from "use-debounce"
 
 export default function NoteDisplay({ note }: { note?: Note }) {
     const user = useUser().user
@@ -36,21 +35,22 @@ export default function NoteDisplay({ note }: { note?: Note }) {
     const [password, setPassword] = useState("")
     const [decryptError, setDecryptError] = useState(false)
 
-    const debouncedDecrypt = useDebouncedCallback((pwd: string) => {
-        if (note && note.salt && note.iv && pwd && !decryptedContent) {
-            decryptNote(note.content, pwd, note.salt, note.iv)
+    const handleDecrypt = () => {
+        if (note && note.salt && note.iv && password && !decryptedContent) {
+            decryptNote(note.content, password, note.salt, note.iv)
                 .then(setDecryptedContent)
                 .catch((e: any) => {
                     setDecryptError(true)
                     toast.error("Decryption failed. Wrong password or corrupted data.")
-                    console.log(e)
                 })
         }
-    }, 200)
+    }
 
-    useEffect(() => {
-        debouncedDecrypt(password)
-    }, [password, note])
+    const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            handleDecrypt()
+        }
+    }
 
     const handleDelete = (e?: React.MouseEvent) => {
         if (e) e.stopPropagation()
@@ -140,6 +140,7 @@ export default function NoteDisplay({ note }: { note?: Note }) {
                                                         setPassword(e.target.value)
                                                         setDecryptError(false)
                                                     }}
+                                                    onKeyDown={handleKeyPress}
                                                 />
                                                 {decryptError && <p className="text-red-500 text-sm">Incorrect password.</p>}
                                             </>
