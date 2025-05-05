@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import dynamic from "next/dynamic"
 const TaskModal = dynamic(() => import("@/components/big/tasks/task-modal"), { ssr: false })
 import { cn } from "@/lib/utils"
-import Link from "next/link"
 import type { Task, TaskWithRelations } from "@/lib/db/schema"
 import { useState, useCallback, useTransition, useMemo, useEffect } from "react"
 import { Button } from "@/components/ui/button"

@@ -42,10 +42,7 @@ export async function GET(request: NextRequest) {
 		? new Date(searchParams.get("dueBefore") as string)
 		: undefined
 	const limit = limitParam ? Number.parseInt(limitParam) : undefined
-	let completed: boolean | undefined = undefined
-
-	if (completedParam === "true") completed = true
-	else if (completedParam === "false") completed = false
+	let completed: boolean | undefined = completedParam === "true" ? true : completedParam === "false" ? false : undefined
 
 	try {
 		const tasks =
