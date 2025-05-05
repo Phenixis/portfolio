@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     const { title, content, project_title, salt, iv } = await request.json()
 
     try {
-        const note = await createNote(verification.userId, title, content, project_title, salt, iv)
+        const note = await createNote(verification.userId, title, content, project_title != "" ? project_title : undefined, salt, iv)
         return NextResponse.json(note)
     } catch (error) {
         console.error("Error creating note:", error)
@@ -43,7 +43,7 @@ export async function PUT(request: NextRequest) {
     const { id, title, content, project_title, salt, iv } = await request.json()
 
     try {
-        const note = await updateNote(verification.userId, id, title, content, project_title, salt, iv)
+        const note = await updateNote(verification.userId, id, title, content, project_title != "" ? project_title : null, salt, iv)
         return NextResponse.json(note)
     } catch (error) {
         console.error("Error updating note:", error)
