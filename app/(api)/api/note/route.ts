@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
     const verification = await verifyRequest(request)
     if ('error' in verification) return verification.error
     
+    const body = await request.json()
     const { title, content, project_title } = await request.json()
 
     try {

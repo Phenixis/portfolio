@@ -56,9 +56,10 @@ export default function NoteDisplay({ note }: { note?: Note }) {
 
             toast.success(`"${note.title}" deleted successfully`)
 
-            fetch(`/api/note?id=${note.id}`, {
+            fetch(`/api/note`, {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json", "Authorization": `Bearer ${user?.api_key}` },
+                body: JSON.stringify({ id: note.id })
             })
 
             mutate((key) => typeof key === "string" && key.startsWith("/api/note"))
@@ -85,12 +86,12 @@ export default function NoteDisplay({ note }: { note?: Note }) {
                             <Skeleton className="h-8 w-full" />
                         )
                     }
-                    <div className={`flex flex-row items-center duration-200 ${isOpen ? "opacity-100" : "opacity-0"} group-hover/Note:opacity-100`}>
+                    <div className={`flex flex-row items-center duration-200 ${isOpen ? "opacity-100" : "opacity-0"} ${note && "group-hover/Note:opacity-100 cursor-pointer"}`}>
                         {
                             note && isOpen ? (
-                                <ChevronUp className={`w-4 h-4 ${note && "cursor-pointer"}`} onClick={() => setIsOpen(note ? !isOpen : false)} />
+                                <ChevronUp className={`w-4 h-4`} onClick={() => setIsOpen(note ? !isOpen : false)} />
                             ) : (
-                                <ChevronDown className={`w-4 h-4 ${note && "cursor-pointer"}`} onClick={() => setIsOpen(note ? !isOpen : false)} />
+                                <ChevronDown className={`w-4 h-4`} onClick={() => setIsOpen(note ? !isOpen : false)} />
                             )
                         }
                     </div>
