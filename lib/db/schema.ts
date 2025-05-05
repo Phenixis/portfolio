@@ -177,10 +177,17 @@ export const serie = pgTable('serie', {
     deleted_at: timestamp('deleted_at'),
 });
 
-export const clipboard = pgTable('clipboard', {
+export const note = pgTable('note', {
     id: serial('id').primaryKey(),
+    user_id: char('user_id', { length: 8 })
+        .default("00000000")
+        .notNull()
+        .references(() => user.id),
+    project_title: varchar('project_title', { length: 255 })
+        .references(() => project.title),
+    title: varchar('title', { length: 255 }).notNull(),
     content: text('content').notNull(),
-    password: varchar('password', { length: 255 }), // if password is set, the clipboard is encrypted
+    password: varchar('password', { length: 255 }), // if password is set, the note is encrypted, otherwise it is not
     created_at: timestamp('created_at').notNull().defaultNow(),
     updated_at: timestamp('updated_at').notNull().defaultNow(),
     deleted_at: timestamp('deleted_at'),
@@ -275,6 +282,16 @@ export const exerciceRelations = relations(exercice, ({ one, many }) => ({
     })
 }));
 
+export const noteRelations = relations(note, ({ one }) => ({
+    user: one(user, {
+        fields: [note.user_id],
+        references: [user.id]
+    }),
+    project: one(project, {
+        fields: [note.project_title],
+        references: [project.title]
+    })
+}));
 
 export type User = typeof user.$inferSelect;
 export type NewUser = typeof user.$inferInsert;
@@ -304,3 +321,5 @@ export type Importance = typeof importance.$inferSelect;
 export type NewImportance = typeof importance.$inferInsert;
 export type Duration = typeof duration.$inferSelect;
 export type NewDuration = typeof duration.$inferInsert;
+export type Note = typeof note.$inferSelect;
+export type NewNote = typeof note.$inferInsert;
