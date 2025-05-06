@@ -9,11 +9,13 @@ export default function SearchProjectsInput({
     setProject,
     defaultValue,
     className,
+    label,
 }:{
     project: string
     setProject: (project: string) => void
     defaultValue: string
     className?: string
+    label?: string
 }) {
     const [projectInputValue, setProjectInputValue] = useState<string>(defaultValue)
     const { projects, isLoading, isError } = useSearchProject({ query: project, limit: 5 })
@@ -23,9 +25,13 @@ export default function SearchProjectsInput({
         setProject(value)
     }, 200)
 
+    useEffect(() => {
+        setProjectInputValue(project)
+    }, [project])
+
     return (
         <div className={cn("w-full", className)}>
-            <Label htmlFor="project">Project</Label>
+            <Label htmlFor="project" className="text-nowrap">{label || "Project"}</Label>
             <Input
                 type="text"
                 id="project"
