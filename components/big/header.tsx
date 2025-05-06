@@ -22,6 +22,7 @@ import { usePathname } from "next/navigation"
 import { logout } from "@/lib/auth/actions"
 import { toast } from "sonner"
 import NoteModal from "./notes/note-modal"
+import { useTransition } from "react"
 
 export default function Header({
 
@@ -32,6 +33,7 @@ export default function Header({
     const [isHovering, setIsHovering] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
     const pathname = usePathname()
+    const [isPending, startTransition] = useTransition()
 
     return (
         <header
@@ -58,20 +60,22 @@ export default function Header({
                     <Meteo />
                     <div>
                         <Time
-                            className={"xl:text-base duration-300 xl:transform xl:group-hover/Time:translate-y-0 xl:translate-y-3"}
+                            className={"xl:text-base duration-300 xl:transform lg:group-hover/Time:translate-y-0 xl:translate-y-3"}
                         />
                         <DateDisplay
-                            className={"text-xs xl:text-sm duration-300 xl:transform xl:group-hover/Time:opacity-100 xl:group-hover/Time:translate-y-0 xl:opacity-0 xl:-translate-y-2"}
+                            className={"text-xs xl:text-sm duration-300 xl:transform lg:group-hover/Time:opacity-100 lg:group-hover/Time:translate-y-0 xl:opacity-0 xl:-translate-y-2"}
                         />
                     </div>
                 </div>
 
                 {
                     pathname === "/my/notes" && (
-                        <div onClick={() => {
-                            setIsOpen(false)
-                            setIsHovering(false)
-                        }}>
+                        <div
+                            className="ml-2 lg:ml-0"
+                            onClick={() => {
+                                setIsOpen(false)
+                                setIsHovering(false)
+                            }}>
                             <NoteModal />
                         </div>
                     )
@@ -133,11 +137,18 @@ export default function Header({
                                 setIsHovering(false)
                             }}>
                                 <div className="flex items-center" onClick={() => {
-                                    logout()
-                                    toast.success("Logged out")
+                                    startTransition(async () => {
+                                        try {
+                                            await logout()
+                                        } catch (error) {
+                                            console.error("Logout failed:", error)
+                                            toast.error("Failed to log out")
+                                        }
+                                        toast.success("Logged out")
+                                    })
                                 }}>
                                     <LogOut size={24} className="mr-1" />
-                                    Log out
+                                    {isPending ? "Logging out..." : "Log out"}
                                 </div>
                             </DropdownMenuItem>
                         </DropdownMenuContent>

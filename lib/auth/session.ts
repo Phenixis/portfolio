@@ -114,6 +114,7 @@ export async function setSession(session?: SessionData) {
 }
 
 export async function removeSession() {
+	"use server"
 	// Await the cookies() function before calling delete()
 	; (await cookies()).delete("session")
 }

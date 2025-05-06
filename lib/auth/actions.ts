@@ -38,7 +38,9 @@ export async function signUp(prevState: ActionState, formData: FormData) {
 }
 
 export async function logout() {
-    removeSession();
+    "use server"
+
+    await removeSession();
 
     redirect('/login');
 }
