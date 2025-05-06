@@ -124,7 +124,7 @@ export default function NoteModal({
                         updatedData = [...currentData, noteData]
                     }
 
-                    return updatedData.sort((a, b) => a.title.localeCompare(b.title))
+                    return updatedData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
                 },
                 { revalidate: false },
             )
