@@ -22,6 +22,30 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip"
 
+// Constants for URL parameters
+const TASK_PARAMS = {
+	COMPLETED: 'task_completed',
+	LIMIT: 'task_limit',
+	ORDER_BY: 'task_orderBy',
+	ORDERING_DIRECTION: 'task_orderingDirection',
+	PROJECTS: 'task_projects',
+	REMOVED_PROJECTS: 'task_removedProjects',
+	DUE_BEFORE: 'task_dueBefore',
+	GROUP_BY_PROJECT: 'task_groupByProject',
+} as const;
+
+// Type for URL parameters
+type TaskUrlParams = {
+	[TASK_PARAMS.COMPLETED]?: string;
+	[TASK_PARAMS.LIMIT]?: string;
+	[TASK_PARAMS.ORDER_BY]?: keyof Task;
+	[TASK_PARAMS.ORDERING_DIRECTION]?: 'asc' | 'desc';
+	[TASK_PARAMS.PROJECTS]?: string;
+	[TASK_PARAMS.REMOVED_PROJECTS]?: string;
+	[TASK_PARAMS.DUE_BEFORE]?: string;
+	[TASK_PARAMS.GROUP_BY_PROJECT]?: string;
+};
+
 function generateTitle(
 	completed?: boolean,
 	orderBy?: keyof Task,
@@ -95,49 +119,49 @@ export function TasksCard({
 	const [isFilterOpen, setIsFilterOpen] = useState(false)
 
 	const [completed, setCompleted] = useState<boolean | undefined>(
-		searchParams.has("completed")
-			? searchParams.get("completed") === "true"
+		searchParams.has(TASK_PARAMS.COMPLETED)
+			? searchParams.get(TASK_PARAMS.COMPLETED) === "true"
 				? true
-				: searchParams.get("completed") === "false"
+				: searchParams.get(TASK_PARAMS.COMPLETED) === "false"
 					? false
 					: undefined
 			: initialCompleted
 	)
 
 	const [limit, setLimit] = useState<number | undefined>(
-		searchParams.has("limit")
-			? Number.parseInt(searchParams.get("limit") || "") || initialLimit
+		searchParams.has(TASK_PARAMS.LIMIT)
+			? Number.parseInt(searchParams.get(TASK_PARAMS.LIMIT) || "") || initialLimit
 			: initialLimit
 	)
 
 	const [orderBy, setOrderBy] = useState<keyof Task | undefined>(
-		(searchParams.get("orderBy") as keyof Task) || initialOrderBy
+		(searchParams.get(TASK_PARAMS.ORDER_BY) as keyof Task) || initialOrderBy
 	)
 
 	const [orderingDirection, setOrderingDirection] = useState<"asc" | "desc" | undefined>(
-		(searchParams.get("orderingDirection") as "asc" | "desc") || initialOrderingDirection
+		(searchParams.get(TASK_PARAMS.ORDERING_DIRECTION) as "asc" | "desc") || initialOrderingDirection
 	)
 
 	const [selectedProjects, setSelectedProjects] = useState<string[]>(
-		searchParams.has("projects")
-			? searchParams.get("projects")?.split(",") || []
+		searchParams.has(TASK_PARAMS.PROJECTS)
+			? searchParams.get(TASK_PARAMS.PROJECTS)?.split(",") || []
 			: []
 	)
 
 	const [removedProjects, setRemovedProjects] = useState<string[]>(
-		searchParams.has("removedProjects")
-			? searchParams.get("removedProjects")?.split(",") || []
+		searchParams.has(TASK_PARAMS.REMOVED_PROJECTS)
+			? searchParams.get(TASK_PARAMS.REMOVED_PROJECTS)?.split(",") || []
 			: []
 	)
 
 	const [dueBeforeDate, setDueBeforeDate] = useState<Date | undefined>(
-		searchParams.has("dueBefore")
-			? new Date(searchParams.get("dueBefore") || "")
+		searchParams.has(TASK_PARAMS.DUE_BEFORE)
+			? new Date(searchParams.get(TASK_PARAMS.DUE_BEFORE) || "")
 			: undefined
 	)
 
 	const [groupByProject, setGroupByProject] = useState(
-		searchParams.get("groupByProject") === "true"
+		searchParams.get(TASK_PARAMS.GROUP_BY_PROJECT) === "true"
 	)
 
 	// -------------------- Data Fetching --------------------
@@ -184,14 +208,14 @@ export function TasksCard({
 	const updateUrlParams = useCallback(() => {
 		const params = new URLSearchParams()
 
-		if (completed !== undefined) params.set("completed", completed.toString())
-		if (limit) params.set("limit", limit.toString())
-		if (orderBy) params.set("orderBy", orderBy as string)
-		if (orderingDirection) params.set("orderingDirection", orderingDirection)
-		if (selectedProjects.length > 0) params.set("projects", selectedProjects.join(","))
-		if (removedProjects.length > 0) params.set("removedProjects", removedProjects.join(","))
-		if (dueBeforeDate) params.set("dueBefore", dueBeforeDate.toISOString())
-		if (groupByProject) params.set("groupByProject", "true")
+		if (completed !== undefined) params.set(TASK_PARAMS.COMPLETED, completed.toString())
+		if (limit) params.set(TASK_PARAMS.LIMIT, limit.toString())
+		if (orderBy) params.set(TASK_PARAMS.ORDER_BY, orderBy as string)
+		if (orderingDirection) params.set(TASK_PARAMS.ORDERING_DIRECTION, orderingDirection)
+		if (selectedProjects.length > 0) params.set(TASK_PARAMS.PROJECTS, selectedProjects.join(","))
+		if (removedProjects.length > 0) params.set(TASK_PARAMS.REMOVED_PROJECTS, removedProjects.join(","))
+		if (dueBeforeDate) params.set(TASK_PARAMS.DUE_BEFORE, dueBeforeDate.toISOString())
+		if (groupByProject) params.set(TASK_PARAMS.GROUP_BY_PROJECT, "true")
 
 		router.push(`?${params.toString()}`, { scroll: false })
 	}, [completed, limit, orderBy, orderingDirection, selectedProjects, removedProjects, dueBeforeDate, groupByProject, router])
@@ -439,16 +463,16 @@ export function TasksCard({
 											<div className="w-full text-sm text-center text-muted-foreground col-span-2">Loading projects...</div>
 										) : projects?.length > 0 ? (
 											projects.map((project) => (
-												<div key={project.title} className="flex items-center space-x-2">
+												<div key={"task_" + project.title} className="flex items-center space-x-2">
 													{/* Use different visual states for the three toggle states */}
 													<Checkbox
-														id={`project-${project.title}`}
+														id={`task_project-${project.title}`}
 														// Show checked only when project is selected
 														checked={selectedProjects.includes(project.title)}
 														onCheckedChange={() => toggleProject(project.title)}
 													/>
 													<label
-														htmlFor={`project-${project.title}`}
+														htmlFor={`task_project-${project.title}`}
 														className={cn(
 															"text-sm cursor-pointer flex items-center",
 															// Apply visual styling for excluded projects
