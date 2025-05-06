@@ -267,7 +267,7 @@ export function TasksCard({
 					<CardTitle>
 						{generateTitle(completed, orderBy, orderingDirection, limit, groupByProject, selectedProjects, removedProjects, dueBeforeDate)}
 					</CardTitle>
-					<div className="flex gap-2 xl:opacity-0 duration-300 xl:group-hover/TodoCard:opacity-100">
+					<div className="flex gap-2 xl:opacity-0 duration-300 lg:group-hover/TodoCard:opacity-100">
 						<Button
 							variant={isFilterOpen ? "default" : "outline"}
 							size="sm"

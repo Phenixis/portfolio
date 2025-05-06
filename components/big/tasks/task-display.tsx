@@ -316,7 +316,7 @@ export default function TaskDisplay({
 									tabIndex={0}
 								>
 									<div
-										className={`absolute inset-0 w-1/2 h-1/2 z-20 m-auto duration-300 ${optimisticState ? "xl:group-hover/Clickable:bg-background" : "xl:group-hover/Clickable:bg-primary"}`}
+										className={`absolute inset-0 w-1/2 h-1/2 z-20 m-auto duration-300 ${optimisticState ? "lg:group-hover/Clickable:bg-background" : "lg:group-hover/Clickable:bg-primary"}`}
 									/>
 								</div>
 							</div>

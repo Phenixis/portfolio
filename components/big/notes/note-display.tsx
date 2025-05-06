@@ -113,7 +113,7 @@ export default function NoteDisplay({ note }: { note?: Note }) {
                             <Skeleton className="h-8 w-full" />
                         )
                     }
-                    <div className={`flex flex-row items-center duration-200 ${isOpen ? "opacity-100" : "opacity-0"} ${note && "group-hover/Note:opacity-100 cursor-pointer"}`}>
+                    <div className={`flex flex-row items-center duration-200 ${isOpen ? "opacity-100" : "lg:opacity-0"} ${note && "lg:group-hover/Note:opacity-100 cursor-pointer"}`}>
                         {
                             note && isOpen ? (
                                 <ChevronUp className={`w-4 h-4`} onClick={() => setIsOpen(note ? !isOpen : false)} />

@@ -225,6 +225,7 @@ export default function NoteModal({
                             ref={contentRef}
                             id="content"
                             name="content"
+                            className="text-xs lg:text-base"
                             defaultValue={decryptedContent || note?.content || ""}
                             onChange={() => verifyFormChanged()}
                         />

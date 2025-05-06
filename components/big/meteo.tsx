@@ -63,7 +63,7 @@ export default function Meteo({
     if (error) {
         return (
             <Tooltip>
-                <TooltipTrigger className="hidden xl:group-hover/Time:block">
+                <TooltipTrigger className="hidden lg:group-hover/Time:block">
                     <CircleAlert className="text-red-500" />
                 </TooltipTrigger>
                 <TooltipContent>
@@ -84,12 +84,12 @@ export default function Meteo({
             <TooltipTrigger className={cn("text-center text-xs xl:text-sm flex flex-col justify-center items-center cursor-default", className)}>
                 <Image
                     src={`https://openweathermap.org/img/wn/${meteo.icon}@2x.png`}
-                    className="size-10 xl:transform duration-300 xl:translate-y-3 xl:group-hover/Time:-translate-y-0"
+                    className="size-10 xl:transform duration-300 xl:translate-y-3 lg:group-hover/Time:-translate-y-0"
                     alt="Weather icon"
                     width={40}
                     height={40}
                 />
-                <p className="duration-300 -translate-y-2 xl:transform xl:-translate-y-4 xl:opacity-0 xl:group-hover/Time:opacity-100 xl:group-hover/Time:-translate-y-2">{meteo.temperature.toFixed(0)}°C</p>
+                <p className="duration-300 -translate-y-2 xl:transform xl:-translate-y-4 xl:opacity-0 lg:group-hover/Time:opacity-100 lg:group-hover/Time:-translate-y-2">{meteo.temperature.toFixed(0)}°C</p>
             </TooltipTrigger>
             <TooltipContent>
                 <p className="text-sm text-center">
