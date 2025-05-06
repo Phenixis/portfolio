@@ -17,6 +17,20 @@ import { db } from "../drizzle"
 import * as Schema from "../schema"
 
 export async function getNotes(userId: string, title?: string, projectTitle?: string, limit: number = 50, page: number = 1) {
+    // Get total count
+    const [{ count }] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(Schema.note)
+        .where(
+            and(
+                isNull(Schema.note.deleted_at),
+                eq(Schema.note.user_id, userId),
+                title ? eq(Schema.note.title, title) : undefined,
+                projectTitle ? eq(Schema.note.project_title, projectTitle) : undefined
+            )
+        )
+
+    // Get paginated notes
     const notes = await db.select().from(Schema.note).where(
         and(
             isNull(Schema.note.deleted_at),
@@ -29,7 +43,13 @@ export async function getNotes(userId: string, title?: string, projectTitle?: st
     .offset((page - 1) * limit)
     .limit(limit)
 
-    return notes
+    return {
+        notes,
+        totalCount: count,
+        totalPages: Math.ceil(count / limit),
+        currentPage: page,
+        limit
+    }
 }
 
 export async function createNote(userId: string, title: string, content: string, projectTitle?: string, salt?: string, iv?: string) {

@@ -14,8 +14,8 @@ export async function GET(request: NextRequest) {
     const page = searchParams.get("page") ? Number.parseInt(searchParams.get("page") as string) : undefined
 
     try {
-        const notes = await getNotes(verification.userId, title, project_title, limit, page)
-        return NextResponse.json(notes)
+        const result = await getNotes(verification.userId, title, project_title, limit, page)
+        return NextResponse.json(result)
     } catch (error) {
         console.error("Error fetching notes:", error)
         return NextResponse.json({ error: "Failed to fetch notes" }, { status: 500 })
