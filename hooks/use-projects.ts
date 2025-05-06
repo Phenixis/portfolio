@@ -2,6 +2,7 @@
 
 import { useFilteredData } from "./use-filtered-data"
 import type { Project } from "@/lib/db/schema"
+import type { Note } from "@/lib/db/schema"
 
 export function useProjects({
   completed,
@@ -10,6 +11,11 @@ export function useProjects({
   taskDeleted,
   projectTitle,
   limit,
+  withNotes,
+  noteLimit,
+  noteOrderBy,
+  noteOrderingDirection,
+  noteProjectTitle,
 }: {
   completed?: boolean
   taskCompleted?: boolean
@@ -17,6 +23,11 @@ export function useProjects({
   taskDeleted?: boolean
   projectTitle?: string
   limit?: number
+  withNotes?: boolean
+  noteLimit?: number
+  noteOrderBy?: keyof Note
+  noteOrderingDirection?: "asc" | "desc"
+  noteProjectTitle?: string
 }) {
   const { data, isLoading, isError, mutate } = useFilteredData<Project[]>({
     endpoint: "/api/project",
@@ -27,6 +38,11 @@ export function useProjects({
       taskDeleted,
       projectTitle,
       limit: limit ? limit + 1 : undefined,
+      withNotes,
+      noteLimit,
+      noteOrderBy,
+      noteOrderingDirection,
+      noteProjectTitle,
     },
   })
 
