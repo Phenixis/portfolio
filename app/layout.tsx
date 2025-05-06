@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     description: 'This is my portfolio.',
     openGraph: {
         title: "Maxime Duhamel's Portfolio",
-        description: "Welcome to Maxime Duhamel's Portfolio.",
+        description: "Welcome to my portfolio.",
         url: baseUrl,
         siteName: "Maxime Duhamel's Portfolio",
         locale: 'en_US',
