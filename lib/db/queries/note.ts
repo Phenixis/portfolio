@@ -20,7 +20,7 @@ export async function getNotes(
     userId: string, 
     title?: string, 
     projectTitle?: string, 
-    limit: number = 50, 
+    limit: number = 25, 
     page: number = 1,
     projectTitles?: string[],
     excludedProjectTitles?: string[]
@@ -33,7 +33,7 @@ export async function getNotes(
             and(
                 isNull(Schema.note.deleted_at),
                 eq(Schema.note.user_id, userId),
-                title ? eq(Schema.note.title, title) : undefined,
+                title ? sql`LOWER(${Schema.note.title}) LIKE LOWER(${title})` : undefined,
                 projectTitle ? eq(Schema.note.project_title, projectTitle) : undefined,
                 projectTitles && projectTitles.length > 0 ? inArray(Schema.note.project_title, projectTitles) : undefined,
                 excludedProjectTitles && excludedProjectTitles.length > 0 ? not(inArray(Schema.note.project_title, excludedProjectTitles)) : undefined

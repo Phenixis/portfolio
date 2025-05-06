@@ -145,10 +145,10 @@ export default function NoteDisplay({ note }: { note?: Note }) {
                                                 {decryptError && <p className="text-red-500 text-sm">Incorrect password.</p>}
                                             </>
                                         ) : (
-                                            <p className="text-sm lg:text-base">{decryptedContent}</p>
+                                            <p className="text-sm lg:text-base break-words">{decryptedContent}</p>
                                         )
                                     ) : (
-                                        <p className="text-sm lg:text-base">{note.content}</p>
+                                        <p className="text-sm lg:text-base break-words">{note.content}</p>
                                     )
                                 }
                             </CardContent>
