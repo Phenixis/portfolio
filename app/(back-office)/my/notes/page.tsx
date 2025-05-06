@@ -14,16 +14,41 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination"
-
+import { Input } from "@/components/ui/input"
+import { useDebouncedCallback } from "use-debounce"
+import { Label } from "@/components/ui/label"
+import SearchProjectsInput from "@/components/big/projects/search-projects-input"
 
 export default function NotesPage() {
     const router = useRouter()
     const searchParams = useSearchParams()
 
-    const [title, setTitle] = useState<string | undefined>(searchParams.get("title") || undefined)
-    const [projectTitle, setProjectTitle] = useState<string | undefined>(searchParams.get("project_title") || undefined)
-    const [limit, setLimit] = useState<number | undefined>(searchParams.get("limit") ? Number.parseInt(searchParams.get("limit") as string) : undefined)
+    const [title, setTitle] = useState<string>(searchParams.get("title") || "")
+    const [titleInputValue, setTitleInputValue] = useState<string>(title)
+    const [projectTitle, setProjectTitle] = useState<string>(searchParams.get("project_title") || "")
+    const [limit, setLimit] = useState<number>(searchParams.get("limit") ? Number.parseInt(searchParams.get("limit") as string) : 25)
     const [page, setPage] = useState<number>(searchParams.get("page") ? Number.parseInt(searchParams.get("page") as string) : 1)
+
+    const debouncedSetTitle = useDebouncedCallback((value: string) => {
+        setTitle(value)
+        if (title !== "") {
+            const params = new URLSearchParams(searchParams.toString())
+            params.set('title', value)
+            router.push(`?${params.toString()}`)
+        } else {
+            const params = new URLSearchParams(searchParams.toString())
+            params.delete('title')
+            router.push(`?${params.toString()}`)
+        }
+    }, 200)
+    
+    useEffect(() => {
+        setTitleInputValue(title)
+    }, [title])
+
+    useEffect(() => {
+        debouncedSetTitle(titleInputValue)
+    }, [titleInputValue])
 
     const { data: notesData, isLoading, isError, mutate } = useNotes({
         title,
@@ -42,17 +67,30 @@ export default function NotesPage() {
     return (
         <div className="flex flex-col gap-4">
             <div className="bg-background border-b">
-                <div className="w-full py-1">
+                <div className="w-full px-2 py-1 flex flex-col lg:flex-row gap-2">
+                    <div className="w-full lg:w-fit">
+                        <Label className="text-nowrap">Search notes by title</Label>
+                        <Input
+                            value={titleInputValue}
+                            onChange={(e) => setTitleInputValue(e.target.value)}
+                        />
+                    </div>
+                    <SearchProjectsInput
+                        project={projectTitle}
+                        setProject={setProjectTitle}
+                        defaultValue={projectTitle}
+                        className="w-full lg:w-fit"
+                    />
                     <Pagination>
                         <PaginationContent>
                             <PaginationItem>
-                                <PaginationPrevious 
+                                <PaginationPrevious
                                     onClick={() => handlePageChange(Math.max(1, page - 1))}
                                     className={page <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                                 />
                             </PaginationItem>
                             <PaginationItem>
-                                <PaginationLink 
+                                <PaginationLink
                                     onClick={() => handlePageChange(1)}
                                     isActive={page === 1}
                                 >
@@ -75,7 +113,7 @@ export default function NotesPage() {
                                         <PaginationEllipsis />
                                     </PaginationItem>
                                     <PaginationItem>
-                                        <PaginationLink 
+                                        <PaginationLink
                                             onClick={() => handlePageChange(notesData?.totalPages || 1)}
                                             isActive={page === (notesData?.totalPages || 1)}
                                         >
@@ -85,7 +123,7 @@ export default function NotesPage() {
                                 </>
                             )}
                             <PaginationItem>
-                                <PaginationNext 
+                                <PaginationNext
                                     onClick={() => handlePageChange(Math.min(notesData?.totalPages || 1, page + 1))}
                                     className={page >= (notesData?.totalPages || 1) ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                                 />
