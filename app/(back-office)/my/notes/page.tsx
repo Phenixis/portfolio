@@ -59,30 +59,30 @@ export default function NotesPage() {
                                     1
                                 </PaginationLink>
                             </PaginationItem>
-                            {page > 2 && (
-                                <PaginationItem>
-                                    <PaginationEllipsis />
-                                </PaginationItem>
+                            {page > 1 && (
+                                <>
+                                    <PaginationItem>
+                                        <PaginationEllipsis />
+                                    </PaginationItem>
+                                    <PaginationItem>
+                                        <PaginationLink isActive>{page}</PaginationLink>
+                                    </PaginationItem>
+                                </>
                             )}
-                            {page > 1 && page < (notesData?.totalPages || 1) && (
-                                <PaginationItem>
-                                    <PaginationLink isActive>{page}</PaginationLink>
-                                </PaginationItem>
-                            )}
-                            {page < (notesData?.totalPages || 1) - 1 && (
-                                <PaginationItem>
-                                    <PaginationEllipsis />
-                                </PaginationItem>
-                            )}
-                            {(notesData?.totalPages || 1) > 1 && (
-                                <PaginationItem>
-                                    <PaginationLink 
-                                        onClick={() => handlePageChange(notesData?.totalPages || 1)}
-                                        isActive={page === (notesData?.totalPages || 1)}
-                                    >
-                                        {notesData?.totalPages || 1}
-                                    </PaginationLink>
-                                </PaginationItem>
+                            {page < (notesData?.totalPages || 1) && (
+                                <>
+                                    <PaginationItem>
+                                        <PaginationEllipsis />
+                                    </PaginationItem>
+                                    <PaginationItem>
+                                        <PaginationLink 
+                                            onClick={() => handlePageChange(notesData?.totalPages || 1)}
+                                            isActive={page === (notesData?.totalPages || 1)}
+                                        >
+                                            {notesData?.totalPages || 1}
+                                        </PaginationLink>
+                                    </PaginationItem>
+                                </>
                             )}
                             <PaginationItem>
                                 <PaginationNext 
