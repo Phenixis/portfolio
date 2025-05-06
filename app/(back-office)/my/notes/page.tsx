@@ -42,7 +42,7 @@ export default function NotesPage() {
     return (
         <div className="flex flex-col gap-4">
             <div className="bg-background border-b">
-                <div className="container py-4">
+                <div className="w-full py-1">
                     <Pagination>
                         <PaginationContent>
                             <PaginationItem>
