@@ -19,7 +19,7 @@ import {
     CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import { useDebouncedCallback } from "use-debounce"
-import { useSearchProject } from "@/hooks/use-search-project"
+import SearchProjectsInput from "@/components/big/projects/search-projects-input"
 
 export default function NoteModal({
     className,
@@ -42,9 +42,6 @@ export default function NoteModal({
     const [passwordValue, setPasswordValue] = useState<string>(password || "")
 
     const [project, setProject] = useState<string>(note && note.project_title ? note.project_title : "")
-    const [projectInputValue, setProjectInputValue] = useState<string>(note && note.project_title ? note.project_title : "")
-    const { projects, isLoading, isError } = useSearchProject({ query: project, limit: 5 })
-    const [showProjectSuggestions, setShowProjectSuggestions] = useState(false)
 
     // Refs
     const titleRef = useRef<HTMLInputElement>(null)
@@ -56,13 +53,8 @@ export default function NoteModal({
         titleRef.current!.value = ""
         contentRef.current!.value = ""
         setProject("")
-        setProjectInputValue("")
         setFormChanged(false)
     }
-
-    const handleProjectChange = useDebouncedCallback((value: string) => {
-        setProject(value)
-    }, 200)
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -229,63 +221,11 @@ export default function NoteModal({
                             onChange={() => verifyFormChanged()}
                         />
                     </div>
-                    <div className="w-full">
-                        <Label htmlFor="project">Project</Label>
-                        <Input
-                            type="text"
-                            id="project"
-                            name="project"
-                            value={projectInputValue}
-                            onFocus={() => setShowProjectSuggestions(true)}
-                            onBlur={(e) => {
-                                // Delay hiding to allow click on suggestions
-                                setTimeout(() => {
-                                    if (!e.relatedTarget || !e.relatedTarget.closest(".project-suggestions")) {
-                                        setShowProjectSuggestions(false)
-                                    }
-                                }, 100)
-                            }}
-                            onChange={(e) => {
-                                setProjectInputValue(e.target.value)
-                                handleProjectChange(e.target.value)
-                                setFormChanged(
-                                    (e.target.value !== note?.project_title && mode === "edit") || e.target.value !== ""
-                                )
-                            }}
-                        />
-                        {showProjectSuggestions && projectInputValue && (
-                            <div
-                                className="mt-1 overflow-y-auto rounded-md border border-border bg-popover shadow-md project-suggestions"
-                                tabIndex={-1}
-                            >
-                                {isLoading ? (
-                                    <div className="p-2 text-sm text-muted-foreground">Loading projects...</div>
-                                ) : isError ? (
-                                    <div className="p-2 text-sm text-destructive">Error loading projects</div>
-                                ) : projects && projects.length > 0 ? (
-                                    <ul className="">
-                                        {projects.map((proj, index) => (
-                                            <li
-                                                key={index}
-                                                className={`cursor-pointer px-3 py-2 text-sm lg:hover:bg-accent ${projectInputValue === proj.title ? "bg-primary/10" : ""}`}
-                                                onMouseDown={(e) => e.preventDefault()} // Prevent blur on click
-                                                onClick={() => {
-                                                    const selectedProject = proj.title
-                                                    setProjectInputValue(selectedProject)
-                                                    setProject(selectedProject)
-                                                    setShowProjectSuggestions(false)
-                                                }}
-                                            >
-                                                {proj.title}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <div className="p-2 text-sm text-muted-foreground">No projects found</div>
-                                )}
-                            </div>
-                        )}
-                    </div>
+                    <SearchProjectsInput
+                        project={project}
+                        setProject={setProject}
+                        defaultValue={note && note.project_title ? note.project_title : ""}
+                    />
                     <Collapsible className="w-full" open={showAdvancedOptions} onOpenChange={setShowAdvancedOptions}>
                         <CollapsibleTrigger className="flex text-sm font-medium text-muted-foreground mb-4">
                             Advanced Options
