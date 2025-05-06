@@ -83,7 +83,6 @@ export default function NoteModal({
 
             // 🔐 Encrypt the note content
             if (passwordValue) {
-                console.log("Encrypting:", content, passwordValue)
                 const encrypted = await encryptNote(content, passwordValue)
 
                 noteData = {

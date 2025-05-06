@@ -41,7 +41,6 @@ export async function getNotes(
         )
 
     // Get paginated notes
-    console.log(projectTitles, excludedProjectTitles)
     const notes = await db.select().from(Schema.note).where(
         and(
             isNull(Schema.note.deleted_at),
@@ -72,8 +71,6 @@ export async function getNotes(
     .orderBy(desc(Schema.note.created_at))
     .offset((page - 1) * limit)
     .limit(limit)
-
-    console.log(notes)
 
     return {
         notes,
