@@ -722,6 +722,64 @@ export async function getUncompletedProjects(userId: string, limit = 50, taskDel
 	return getProjects(userId, limit, false, taskDeleted, taskDueDate, taskCompleted);
 }
 
+export async function getProjectsWithNotes(
+	userId: string, 
+	limit = 50,
+	noteLimit?: number,
+	noteOrderBy?: keyof Schema.Note,
+	noteOrderingDirection?: "asc" | "desc",
+	noteProjectTitle?: string,
+) {
+	// First get projects with notes
+	const projectsWithNotes = await db
+		.select({
+			title: Schema.project.title,
+			description: Schema.project.description,
+			completed: Schema.project.completed,
+			created_at: Schema.project.created_at,
+			updated_at: Schema.project.updated_at,
+			deleted_at: Schema.project.deleted_at,
+			user_id: Schema.project.user_id,
+		})
+		.from(Schema.project)
+		.innerJoin(Schema.note, eq(Schema.project.title, Schema.note.project_title))
+		.where(and(
+			isNull(Schema.project.deleted_at),
+			eq(Schema.project.user_id, userId),
+			isNull(Schema.note.deleted_at),
+			noteProjectTitle && noteProjectTitle !== "No project" ? eq(Schema.note.project_title, noteProjectTitle) : sql`1 = 1`,
+		))
+		.groupBy(Schema.project.title)
+		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.Project[]
+
+	// Check if there are any notes without a project
+	const hasNotesWithoutProject = await db
+		.select({ count: sql<number>`count(*)` })
+		.from(Schema.note)
+		.where(and(
+			isNull(Schema.note.project_title),
+			isNull(Schema.note.deleted_at),
+			eq(Schema.note.user_id, userId),
+		))
+		.then(result => result[0].count > 0)
+
+	// If there are notes without a project and we're not filtering by a specific project
+	// or if we're specifically looking for notes without a project
+	if (hasNotesWithoutProject && (!noteProjectTitle || noteProjectTitle === "No project")) {
+		projectsWithNotes.push({
+			title: "No project",
+			description: null,
+			completed: false,
+			created_at: new Date(0),
+			updated_at: new Date(0),
+			deleted_at: null,
+			user_id: userId,
+		})
+	}
+
+	return projectsWithNotes
+}
+
 // ## Update
 
 export async function updateProject(userId: string, title: string, new_title?: string, description?: string) {
