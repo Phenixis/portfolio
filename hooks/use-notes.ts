@@ -7,12 +7,16 @@ export function useNotes({
     title,
     projectTitle,
     limit,
-    page
+    page,
+    projectTitles,
+    excludedProjectTitles
 }: {
     title?: string
     projectTitle?: string
     limit?: number
     page?: number
+    projectTitles?: string[]
+    excludedProjectTitles?: string[]
 }) {
     const { data, isLoading, isError, mutate } = useFilteredData<Note[]>({
         endpoint: "/api/note",
@@ -20,7 +24,9 @@ export function useNotes({
             title,
             projectTitle,
             limit,
-            page
+            page,
+            projectTitles: projectTitles?.join(","),
+            excludedProjectTitles: excludedProjectTitles?.join(",")
         },
     })
 
