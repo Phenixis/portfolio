@@ -30,7 +30,11 @@ export default function Login() {
     const [identifier, setIdentifier] = useState("")
     const [password, setPassword] = useState("")
     const [hiddenPassword, setHiddenPassword] = useState("")
+
     const formRef = useRef<HTMLFormElement>(null)
+    const identifierRef = useRef<HTMLInputElement>(null)
+    const passwordRef = useRef<HTMLInputElement>(null)
+    
     const [state, formAction, pending] = useActionState<ActionState, FormData>(async (prevState, formData) => {
         formData.append("redirectTo", redirectTo)
         formData.append("identifier", identifier)
@@ -76,6 +80,22 @@ export default function Login() {
         }
     }, [state]);
 
+    useEffect(() => {
+        if (identifier.length === 8) {
+            passwordRef.current?.focus()
+        }
+    }, [identifier])
+
+    useEffect(() => {
+        if (password.length === 8) {
+            startTransition(() => {
+                if (formRef.current) {
+                    formAction(new FormData(formRef.current))
+                }
+            })
+        }
+    }, [password])
+
     return (
         <form
             action={formAction}
@@ -94,6 +114,7 @@ export default function Login() {
                         value={identifier}
                         onChange={(value) => setIdentifier(value)}
                         pattern={REGEXP_ONLY_DIGITS}
+                        ref={identifierRef}
                     >
                         <InputOTPGroup>
                             <InputOTPSlot index={0} />
@@ -111,6 +132,7 @@ export default function Login() {
                         type="password"
                         maxLength={8}
                         value={hiddenPassword}
+                        ref={passwordRef}
                         onChange={(value) => {
                             if (value.length > password.length) {
                                 const realValue = password + value.slice(-1)
