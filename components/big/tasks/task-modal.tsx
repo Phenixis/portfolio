@@ -38,6 +38,7 @@ import Tooltip from "../tooltip"
 import { useSearchParams } from "next/navigation"
 import { useUser } from "@/hooks/use-user"
 import { toast } from "sonner"
+import { TASK_PARAMS } from "./tasks-card"
 
 export default function TaskModal({
 	className,
@@ -115,7 +116,7 @@ export default function TaskModal({
 					setProject(task.project_title)
 					setProjectInputValue(task.project_title)
 				} else {
-					const projectFromSearchParams = searchParams.get("projects") ? searchParams.get("projects")?.split(",") : []
+					const projectFromSearchParams = searchParams.get(TASK_PARAMS.PROJECTS) ? searchParams.get(TASK_PARAMS.PROJECTS)?.split(",") : []
 					setProject(projectFromSearchParams && projectFromSearchParams.length === 1 ? projectFromSearchParams[0] : "")
 					setProjectInputValue(
 						projectFromSearchParams && projectFromSearchParams.length === 1 ? projectFromSearchParams[0] : ""
@@ -238,9 +239,9 @@ export default function TaskModal({
 					}
 
 					const filteredData: TaskWithRelations[] = updatedData.filter((item: TaskWithRelations) => {
-						const dueBeforeFromSearchParams = searchParams.get("dueBefore")
-						const projectsFromSearchParams = searchParams.get("projects") ? searchParams.get("projects")?.split(",") : []
-						const completedFromSearchParams = searchParams.get("completed")
+						const dueBeforeFromSearchParams = searchParams.get(TASK_PARAMS.DUE_BEFORE)
+						const projectsFromSearchParams = searchParams.get(TASK_PARAMS.PROJECTS) ? searchParams.get(TASK_PARAMS.PROJECTS)?.split(",") : []
+						const completedFromSearchParams = searchParams.get(TASK_PARAMS.COMPLETED)
 						if (completedFromSearchParams && completedFromSearchParams === "false") {
 							if (item.completed_at) return false
 						}
@@ -251,8 +252,8 @@ export default function TaskModal({
 						return true
 					})
 
-					const orderByFromSearchParams = searchParams.get("orderBy") as keyof TaskWithRelations
-					const orderingDirectionFromSearchParams = searchParams.get("orderingDirection") === "asc" ? 1 : -1
+					const orderByFromSearchParams = searchParams.get(TASK_PARAMS.ORDER_BY) as keyof TaskWithRelations
+					const orderingDirectionFromSearchParams = searchParams.get(TASK_PARAMS.ORDERING_DIRECTION) === "asc" ? 1 : -1
 					const sortedData: TaskWithRelations[] = filteredData.sort(
 						(a: TaskWithRelations, b: TaskWithRelations) => {
 							if (orderByFromSearchParams) {
@@ -269,7 +270,7 @@ export default function TaskModal({
 							return orderingDirectionFromSearchParams * (b.score - a.score || a.title.localeCompare(b.title))
 						}
 					)
-					const limitFromSearchParams = searchParams.get("limit")
+					const limitFromSearchParams = searchParams.get(TASK_PARAMS.LIMIT)
 					return limitFromSearchParams ? sortedData.slice(0, parseInt(limitFromSearchParams)) : sortedData
 				},
 				{ revalidate: false },
