@@ -10,11 +10,13 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const title = searchParams.get("title") || undefined
     const project_title = searchParams.get("project_title") || undefined
+    const projectTitles = searchParams.get("projectTitles")?.split(",") || undefined
+    const excludedProjectTitles = searchParams.get("excludedProjectTitles")?.split(",") || undefined
     const limit = searchParams.get("limit") ? Number.parseInt(searchParams.get("limit") as string) : undefined
     const page = searchParams.get("page") ? Number.parseInt(searchParams.get("page") as string) : undefined
 
     try {
-        const result = await getNotes(verification.userId, title, project_title, limit, page)
+        const result = await getNotes(verification.userId, title, project_title, limit, page, projectTitles, excludedProjectTitles)
         return NextResponse.json(result)
     } catch (error) {
         console.error("Error fetching notes:", error)
