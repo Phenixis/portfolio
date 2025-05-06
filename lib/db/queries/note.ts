@@ -16,7 +16,15 @@ import {
 import { db } from "../drizzle"
 import * as Schema from "../schema"
 
-export async function getNotes(userId: string, title?: string, projectTitle?: string, limit: number = 50, page: number = 1) {
+export async function getNotes(
+    userId: string, 
+    title?: string, 
+    projectTitle?: string, 
+    limit: number = 50, 
+    page: number = 1,
+    projectTitles?: string[],
+    excludedProjectTitles?: string[]
+) {
     // Get total count
     const [{ count }] = await db
         .select({ count: sql<number>`count(*)` })
@@ -26,22 +34,46 @@ export async function getNotes(userId: string, title?: string, projectTitle?: st
                 isNull(Schema.note.deleted_at),
                 eq(Schema.note.user_id, userId),
                 title ? eq(Schema.note.title, title) : undefined,
-                projectTitle ? eq(Schema.note.project_title, projectTitle) : undefined
+                projectTitle ? eq(Schema.note.project_title, projectTitle) : undefined,
+                projectTitles && projectTitles.length > 0 ? inArray(Schema.note.project_title, projectTitles) : undefined,
+                excludedProjectTitles && excludedProjectTitles.length > 0 ? not(inArray(Schema.note.project_title, excludedProjectTitles)) : undefined
             )
         )
 
     // Get paginated notes
+    console.log(projectTitles, excludedProjectTitles)
     const notes = await db.select().from(Schema.note).where(
         and(
             isNull(Schema.note.deleted_at),
             eq(Schema.note.user_id, userId),
             title ? eq(Schema.note.title, title) : undefined,
-            projectTitle ? eq(Schema.note.project_title, projectTitle) : undefined
+            projectTitle ? eq(Schema.note.project_title, projectTitle) : undefined,
+            projectTitles && projectTitles.length > 0 ? (
+                projectTitles.includes("No project") 
+                    ? or(
+                        inArray(Schema.note.project_title, projectTitles.filter(p => p !== "No project")),
+                        isNull(Schema.note.project_title)
+                    )
+                    : inArray(Schema.note.project_title, projectTitles)
+            ) : undefined,
+            excludedProjectTitles && excludedProjectTitles.length > 0 ? (
+                excludedProjectTitles.includes("No project")
+                    ? and(
+                        not(inArray(Schema.note.project_title, excludedProjectTitles.filter(p => p !== "No project"))),
+                        isNotNull(Schema.note.project_title)
+                    )
+                    : or(
+                        not(inArray(Schema.note.project_title, excludedProjectTitles)),
+                        isNull(Schema.note.project_title)
+                    )
+            ) : undefined
         )
     )
     .orderBy(desc(Schema.note.created_at))
     .offset((page - 1) * limit)
     .limit(limit)
+
+    console.log(notes)
 
     return {
         notes,
