@@ -102,10 +102,10 @@ export default function NoteDisplay({ note }: { note?: Note }) {
                     {
                         note ? (
                             <div className="w-full" onClick={() => setIsOpen(note ? !isOpen : false)}>
-                                <CardTitle className={`w-full text-lg xl:text-lg ${note && "cursor-pointer"}`}>
+                                <CardTitle className={`w-full text-base xl:text-lg ${note && "cursor-pointer"}`}>
                                     {note.title}
                                 </CardTitle>
-                                <p className="text-sm text-gray-500">
+                                <p className="text-xs lg:text-sm text-gray-500">
                                     {note.project_title}
                                 </p>
                             </div>
@@ -145,10 +145,10 @@ export default function NoteDisplay({ note }: { note?: Note }) {
                                                 {decryptError && <p className="text-red-500 text-sm">Incorrect password.</p>}
                                             </>
                                         ) : (
-                                            <p>{decryptedContent}</p>
+                                            <p className="text-sm lg:text-base">{decryptedContent}</p>
                                         )
                                     ) : (
-                                        <p>{note.content}</p>
+                                        <p className="text-sm lg:text-base">{note.content}</p>
                                     )
                                 }
                             </CardContent>
