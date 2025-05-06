@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/tooltip"
 
 // Constants for URL parameters
-const TASK_PARAMS = {
+export const TASK_PARAMS = {
 	COMPLETED: 'task_completed',
 	LIMIT: 'task_limit',
 	ORDER_BY: 'task_orderBy',
@@ -35,7 +35,7 @@ const TASK_PARAMS = {
 } as const;
 
 // Type for URL parameters
-type TaskUrlParams = {
+export type TaskUrlParams = {
 	[TASK_PARAMS.COMPLETED]?: string;
 	[TASK_PARAMS.LIMIT]?: string;
 	[TASK_PARAMS.ORDER_BY]?: keyof Task;
