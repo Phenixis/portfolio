@@ -17,10 +17,10 @@ import { db } from "../drizzle"
 import * as Schema from "../schema"
 
 export async function getNotes(
-    userId: string, 
-    title?: string, 
-    projectTitle?: string, 
-    limit: number = 25, 
+    userId: string,
+    title?: string,
+    projectTitle?: string,
+    limit: number = 25,
     page: number = 1,
     projectTitles?: string[],
     excludedProjectTitles?: string[]
@@ -33,8 +33,12 @@ export async function getNotes(
             and(
                 isNull(Schema.note.deleted_at),
                 eq(Schema.note.user_id, userId),
-                title ? sql`LOWER(${Schema.note.title}) LIKE LOWER(${title})` : undefined,
-                projectTitle ? eq(Schema.note.project_title, projectTitle) : undefined,
+                title ? sql`LOWER(${Schema.note.title}) LIKE LOWER(${'%' + title + '%'})` : undefined,
+                projectTitle ? (and(
+                    isNotNull(Schema.note.project_title),
+                    sql`LOWER(${Schema.note.project_title}) LIKE LOWER(${'%' + projectTitle + '%'})`,
+                    )
+                ) : undefined,
                 projectTitles && projectTitles.length > 0 ? inArray(Schema.note.project_title, projectTitles) : undefined,
                 excludedProjectTitles && excludedProjectTitles.length > 0 ? not(inArray(Schema.note.project_title, excludedProjectTitles)) : undefined
             )
@@ -45,10 +49,13 @@ export async function getNotes(
         and(
             isNull(Schema.note.deleted_at),
             eq(Schema.note.user_id, userId),
-            title ? eq(Schema.note.title, title) : undefined,
-            projectTitle ? eq(Schema.note.project_title, projectTitle) : undefined,
+            title ? sql`LOWER(${Schema.note.title}) LIKE LOWER(${'%' + title + '%'})` : undefined,
+            projectTitle ? (and(
+                isNotNull(Schema.note.project_title),
+                sql`LOWER(${Schema.note.project_title}) LIKE LOWER(${'%' + projectTitle + '%'})`
+            )) : undefined,
             projectTitles && projectTitles.length > 0 ? (
-                projectTitles.includes("No project") 
+                projectTitles.includes("No project")
                     ? or(
                         inArray(Schema.note.project_title, projectTitles.filter(p => p !== "No project")),
                         isNull(Schema.note.project_title)
@@ -68,9 +75,9 @@ export async function getNotes(
             ) : undefined
         )
     )
-    .orderBy(desc(Schema.note.created_at))
-    .offset((page - 1) * limit)
-    .limit(limit)
+        .orderBy(desc(Schema.note.created_at))
+        .offset((page - 1) * limit)
+        .limit(limit)
 
     return {
         notes,
