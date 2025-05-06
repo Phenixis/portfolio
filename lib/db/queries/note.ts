@@ -16,7 +16,7 @@ import {
 import { db } from "../drizzle"
 import * as Schema from "../schema"
 
-export async function getNotes(userId: string, title?: string, projectTitle?: string, limit: number = 50) {
+export async function getNotes(userId: string, title?: string, projectTitle?: string, limit: number = 50, page: number = 1) {
     const notes = await db.select().from(Schema.note).where(
         and(
             isNull(Schema.note.deleted_at),
@@ -24,7 +24,10 @@ export async function getNotes(userId: string, title?: string, projectTitle?: st
             title ? eq(Schema.note.title, title) : undefined,
             projectTitle ? eq(Schema.note.project_title, projectTitle) : undefined
         )
-    ).orderBy(desc(Schema.note.created_at)).limit(limit)
+    )
+    .orderBy(desc(Schema.note.created_at))
+    .offset((page - 1) * limit)
+    .limit(limit)
 
     return notes
 }

@@ -13,12 +13,13 @@ export default function NotesPage() {
     const [title, setTitle] = useState<string | undefined>(searchParams.get("title") || undefined)
     const [projectTitle, setProjectTitle] = useState<string | undefined>(searchParams.get("project_title") || undefined)
     const [limit, setLimit] = useState<number | undefined>(searchParams.get("limit") ? Number.parseInt(searchParams.get("limit") as string) : undefined)
-
+    const [page, setPage] = useState<number>(searchParams.get("page") ? Number.parseInt(searchParams.get("page") as string) : 1)
 
     const { data: notes, isLoading, isError, mutate } = useNotes({
         title,
         projectTitle,
         limit,
+        page
     })
 
 

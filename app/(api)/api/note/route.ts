@@ -11,9 +11,10 @@ export async function GET(request: NextRequest) {
     const title = searchParams.get("title") || undefined
     const project_title = searchParams.get("project_title") || undefined
     const limit = searchParams.get("limit") ? Number.parseInt(searchParams.get("limit") as string) : undefined
+    const page = searchParams.get("page") ? Number.parseInt(searchParams.get("page") as string) : undefined
 
     try {
-        const notes = await getNotes(verification.userId, title, project_title, limit)
+        const notes = await getNotes(verification.userId, title, project_title, limit, page)
         return NextResponse.json(notes)
     } catch (error) {
         console.error("Error fetching notes:", error)
