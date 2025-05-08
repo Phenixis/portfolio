@@ -1,6 +1,6 @@
 import { flag } from "flags/next"
 
-interface Entities {
+export interface DarkModeCookie {
     dark_mode: boolean
     auto_dark_mode: boolean
     startHour: number
@@ -9,7 +9,7 @@ interface Entities {
     endMinute: number
 }
 
-export const darkMode = flag<boolean, Entities>({
+export const darkMode = flag<boolean, DarkModeCookie>({
     key: "dark-mode",
     identify({ headers, cookies }) {
         const now = new Date()
@@ -27,7 +27,7 @@ export const darkMode = flag<boolean, Entities>({
         if (!darkModeCookie) {
             return defaultValue
         }
-        const preferences = JSON.parse(darkModeCookie) as Entities
+        const preferences = JSON.parse(darkModeCookie) as DarkModeCookie
 
         if (!preferences.auto_dark_mode) {
             return preferences
