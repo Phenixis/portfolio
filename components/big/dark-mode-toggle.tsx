@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { DarkModeCookie } from "@/lib/flags"
 import { updateDarkModeCookie, syncDarkModeState } from "@/lib/cookies"
 import { getUser, updateDarkModePreferences, getUserPreferences } from "@/lib/db/queries/user"
+import { usePathname } from "next/navigation"
 
 export default function DarkModeToggle({
     className,
@@ -23,6 +24,7 @@ export default function DarkModeToggle({
     cookie: DarkModeCookie
     className?: string
 }) {
+    const inBackOffice = usePathname().includes("/my")
     const [isDarkMode, setIsDarkMode] = useState(cookie.dark_mode)
     const [showAutoDarkModeDialog, setShowAutoDarkModeDialog] = useState(false)
     const [hasAskedForAutoDarkMode, setHasAskedForAutoDarkMode] = useState(cookie.has_jarvis_asked_dark_mode || false)
@@ -54,7 +56,7 @@ export default function DarkModeToggle({
         }, 1000) // Check every second
 
         // CHECK SI DARK MODE ACTIVÉ EN BD MAIS PAS EN COOKIE (autre appareil)
-        if (showAutoDarkModeDialog === false) {
+        if (showAutoDarkModeDialog === false && inBackOffice) {
             getUser().then(user => {
                 if (user) {
                     getUserPreferences(user.id).then(userPreferences => {
@@ -117,8 +119,6 @@ export default function DarkModeToggle({
         setShowAutoDarkModeDialog(false)
         setHasAskedForAutoDarkMode(true)
         setIsDarkMode(response)
-
-
 
         const newCookie: DarkModeCookie = {
             ...cookie,
