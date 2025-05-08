@@ -1,6 +1,9 @@
+"use server";
+
 import Link from 'next/link'
 import DarkModeToggle from './dark-mode-toggle'
 import Logo from './logo'
+import { cookies } from 'next/headers'
 
 const navItems = {
 	'/': {
@@ -14,7 +17,8 @@ const navItems = {
 	},
 }
 
-export default function Navbar({ actualPath }: { actualPath: string }) {
+export default async function Navbar({ actualPath }: { actualPath: string }) {
+	const darkModeCookie = (await cookies()).get('dark_mode')?.value
 
 	return (
 		<aside className="tracking-tight">
@@ -39,7 +43,7 @@ export default function Navbar({ actualPath }: { actualPath: string }) {
 							)
 						})}
 					</div>
-					<DarkModeToggle />
+					<DarkModeToggle cookie={darkModeCookie} />
 				</nav>
 			</div>
 		</aside>

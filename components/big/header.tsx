@@ -25,10 +25,10 @@ import NoteModal from "./notes/note-modal"
 import { useTransition } from "react"
 
 export default function Header({
-
+    darkModeCookie
 }: {
-
-    }) {
+    darkModeCookie?: string
+}) {
     const { isVisible } = useScrollDirection()
     const [isHovering, setIsHovering] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
@@ -52,7 +52,7 @@ export default function Header({
                         `overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center w-fit max-w-[24px] mr-2 lg:w-0 lg:max-w-0 lg:opacity-0 lg:m-0 ${isHovering || isOpen ? 'lg:w-fit lg:max-w-[24px] lg:opacity-100 lg:mr-2 xl:mr-4' : ''}`
                     }
                 >
-                    <DarkModeToggle className="transition-transform duration-300" />
+                    <DarkModeToggle className="transition-transform duration-300" cookie={darkModeCookie}/>
                 </div>
 
                 {/* Center content */}
