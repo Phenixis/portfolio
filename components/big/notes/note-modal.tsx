@@ -208,6 +208,7 @@ export default function NoteModal({
                             defaultValue={note?.title || ""}
                             autoFocus
                             onChange={() => verifyFormChanged()}
+                            className="text-sm lg:text-base"
                         />
                     </div>
                     <div>
@@ -216,7 +217,7 @@ export default function NoteModal({
                             ref={contentRef}
                             id="content"
                             name="content"
-                            className="text-xs lg:text-base"
+                            className="text-xs lg:text-sm"
                             defaultValue={decryptedContent || note?.content || ""}
                             onChange={() => verifyFormChanged()}
                         />
