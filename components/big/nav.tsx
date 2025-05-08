@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import DarkModeToggle from './dark-mode-toggle'
 import Logo from './logo'
-import { cookies } from 'next/headers'
+import { getDarkModeCookie } from '@/lib/cookies';
 
 const navItems = {
 	'/': {
@@ -18,7 +18,7 @@ const navItems = {
 }
 
 export default async function Navbar({ actualPath }: { actualPath: string }) {
-	const darkModeCookie = (await cookies()).get('dark_mode')?.value
+	const darkModeCookie = await getDarkModeCookie()
 
 	return (
 		<aside className="tracking-tight">

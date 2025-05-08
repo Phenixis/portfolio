@@ -23,11 +23,12 @@ import { logout } from "@/lib/auth/actions"
 import { toast } from "sonner"
 import NoteModal from "./notes/note-modal"
 import { useTransition } from "react"
+import { DarkModeCookie } from "@/lib/flags"
 
 export default function Header({
     darkModeCookie
 }: {
-    darkModeCookie?: string
+    darkModeCookie: DarkModeCookie
 }) {
     const { isVisible } = useScrollDirection()
     const [isHovering, setIsHovering] = useState(false)

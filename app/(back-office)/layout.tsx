@@ -3,7 +3,7 @@
 import Header from "@/components/big/header"
 import { UserProvider } from "@/hooks/use-user"
 import { getUser } from "@/lib/db/queries/user"
-import { cookies } from "next/headers"
+import { getDarkModeCookie } from "@/lib/cookies";
 
 export default async function BackOfficeLayout({
     children,
@@ -11,7 +11,7 @@ export default async function BackOfficeLayout({
     children: React.ReactNode
 }) {
     const userPromise = getUser()
-	const darkModeCookie = (await cookies()).get('dark_mode')?.value
+	const darkModeCookie = await getDarkModeCookie()
 
     return (
         <UserProvider userPromise={userPromise}>
