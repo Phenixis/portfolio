@@ -18,6 +18,7 @@ export const user = pgTable('user', {
     first_name: varchar('first_name', { length: 255 }).notNull(),
     last_name: varchar('last_name', { length: 255 }).notNull(),
     api_key: varchar('api_key', { length: 255 }).notNull(),
+    has_jarvis_asked_dark_mode: boolean('has_jarvis_asked_dark_mode').notNull().default(false),
     dark_mode_activated: boolean('dark_mode_activated').notNull().default(false),
     auto_dark_mode_enabled: boolean('auto_dark_mode_enabled').notNull().default(true),
     dark_mode_start_hour: integer('dark_mode_start_hour').notNull().default(19),

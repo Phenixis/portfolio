@@ -22,6 +22,7 @@ import { hashPassword } from "@/lib/utils/password"
 import { user } from "../schema"
 import { getClientSession } from "@/lib/auth/session"
 import { revalidateTag } from "next/cache"
+import { DarkModeCookie } from "@/lib/flags"
 
 
 /**
@@ -175,12 +176,14 @@ export async function getUserPreferences(id?: string) {
 
         const user = await db
             .select({
-                auto_dark_mode_enabled: Schema.user.auto_dark_mode_enabled,
-                dark_mode_start_hour: Schema.user.dark_mode_start_hour,
-                dark_mode_end_hour: Schema.user.dark_mode_end_hour,
-                dark_mode_start_minute: Schema.user.dark_mode_start_minute,
-                dark_mode_end_minute: Schema.user.dark_mode_end_minute,
-                dark_mode_override: Schema.user.dark_mode_override
+                has_jarvis_asked_dark_mode: Schema.user.has_jarvis_asked_dark_mode,
+                dark_mode: Schema.user.dark_mode_activated,
+                auto_dark_mode: Schema.user.auto_dark_mode_enabled,
+                startHour: Schema.user.dark_mode_start_hour,
+                endHour: Schema.user.dark_mode_end_hour,
+                startMinute: Schema.user.dark_mode_start_minute,
+                endMinute: Schema.user.dark_mode_end_minute,
+                override: Schema.user.dark_mode_override
             })
             .from(Schema.user)
             .where(and(
@@ -193,15 +196,17 @@ export async function getUserPreferences(id?: string) {
             return null;
         }
 
-        return user[0];
+        return user[0] as DarkModeCookie
     } else {
         const user = await db.select({
-            auto_dark_mode_enabled: Schema.user.auto_dark_mode_enabled,
-            dark_mode_start_hour: Schema.user.dark_mode_start_hour,
-            dark_mode_end_hour: Schema.user.dark_mode_end_hour,
-            dark_mode_start_minute: Schema.user.dark_mode_start_minute,
-            dark_mode_end_minute: Schema.user.dark_mode_end_minute,
-            dark_mode_override: Schema.user.dark_mode_override
+            has_jarvis_asked_dark_mode: Schema.user.has_jarvis_asked_dark_mode,
+            dark_mode: Schema.user.dark_mode_activated,
+            auto_dark_mode: Schema.user.auto_dark_mode_enabled,
+            startHour: Schema.user.dark_mode_start_hour,
+            endHour: Schema.user.dark_mode_end_hour,
+            startMinute: Schema.user.dark_mode_start_minute,
+            endMinute: Schema.user.dark_mode_end_minute,
+            override: Schema.user.dark_mode_override
         }).from(Schema.user)
         .where(eq(Schema.user.id, id))
 
@@ -209,7 +214,7 @@ export async function getUserPreferences(id?: string) {
             return null
         }
 
-        return user[0]
+        return user[0] as DarkModeCookie
     }
 }
 
@@ -219,31 +224,25 @@ export async function getAllUsers() {
     return users
 }
 
-interface DarkModePreferences {
-  userId: string
-  darkModeEnabled?: boolean
-  darkModeStartHour?: number
-  darkModeEndHour?: number
-  darkModeOverride?: boolean
-  overrideExpiresAt?: Date | null
-}
-
 export async function updateDarkModePreferences({
   userId,
-  darkModeEnabled,
-  darkModeStartHour,
-  darkModeEndHour,
-  darkModeOverride,
-  overrideExpiresAt,
-}: DarkModePreferences) {
+  darkModeCookie
+}: {
+    userId: string
+    darkModeCookie: DarkModeCookie
+}) {
   try {
     const result = await db
         .update(Schema.user)
         .set({
-            auto_dark_mode_enabled: darkModeEnabled,
-            dark_mode_start_hour: darkModeStartHour,
-            dark_mode_end_hour: darkModeEndHour,
-            dark_mode_override: darkModeOverride
+            has_jarvis_asked_dark_mode: darkModeCookie.has_jarvis_asked_dark_mode,
+            dark_mode_activated: darkModeCookie.dark_mode,
+            auto_dark_mode_enabled: darkModeCookie.auto_dark_mode,
+            dark_mode_start_hour: darkModeCookie.startHour,
+            dark_mode_end_hour: darkModeCookie.endHour,
+            dark_mode_start_minute: darkModeCookie.startMinute,
+            dark_mode_end_minute: darkModeCookie.endMinute,
+            dark_mode_override: darkModeCookie.override
         })
         .where(eq(Schema.user.id, userId))
 

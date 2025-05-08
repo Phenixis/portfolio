@@ -1,0 +1,1 @@
+ALTER TABLE "user" ADD COLUMN "has_jarvis_asked_dark_mode" boolean DEFAULT false NOT NULL;
