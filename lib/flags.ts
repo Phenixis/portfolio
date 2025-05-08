@@ -9,23 +9,24 @@ export interface DarkModeCookie {
     endMinute: number
 }
 
+export const defaultValueCookie = {
+    dark_mode: false,
+    auto_dark_mode: false,
+    startHour: 19, // 7pm
+    startMinute: 0,
+    endHour: 6, // 6am
+    endMinute: 0,
+} as DarkModeCookie
+
 export const darkMode = flag<boolean, DarkModeCookie>({
     key: "dark-mode",
     identify({ headers, cookies }) {
         const now = new Date()
-        const defaultValue = {
-            dark_mode: false,
-            auto_dark_mode: false,
-            startHour: 19, // 7pm
-            startMinute: 0,
-            endHour: 6, // 6am
-            endMinute: 0,
-        }
 
         // Get the current user from the session
         const darkModeCookie = cookies.get("dark_mode")?.value
         if (!darkModeCookie) {
-            return defaultValue
+            return defaultValueCookie
         }
         const preferences = JSON.parse(darkModeCookie) as DarkModeCookie
 
