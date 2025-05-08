@@ -3,7 +3,7 @@ import Logo from '@/components/big/logo'
 
 export const metadata = {
 	title: 'Blog',
-	description: 'Read my blog.',
+	description: 'A blog where I write about my projects, my views and my thoughts.',
 }
 
 export default function Page() {
