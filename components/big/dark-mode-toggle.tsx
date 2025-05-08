@@ -41,20 +41,6 @@ export default function DarkModeToggle({
             })
         }
 
-        // CHECK SI DARK MODE ACTIVÉ EN BD MAIS PAS EN COOKIE (autre appareil)
-        getUser().then(user => {
-            if (user) {
-                getUserPreferences(user.id).then(userPreferences => {
-                    if (userPreferences) {
-                        const shouldDarkModeBeEnabled = userPreferences.dark_mode
-                        if (shouldDarkModeBeEnabled !== isDarkMode) {
-                            setShowSyncWithDBDataDialog(true)
-                        }
-                    }
-                })
-            }
-        })
-
         // CHECK RECURRENT POUR CHANGEMENT D'ÉTAT
         const recurrentCheck = setInterval(async () => {
             const timeToToggle = isTimeToToggleDarkMode()
@@ -66,6 +52,22 @@ export default function DarkModeToggle({
                 }
             }
         }, 1000) // Check every second
+
+        // CHECK SI DARK MODE ACTIVÉ EN BD MAIS PAS EN COOKIE (autre appareil)
+        if (showAutoDarkModeDialog === false) {
+            getUser().then(user => {
+                if (user) {
+                    getUserPreferences(user.id).then(userPreferences => {
+                        if (userPreferences) {
+                            const shouldDarkModeBeEnabled = userPreferences.dark_mode
+                            if (shouldDarkModeBeEnabled !== isDarkMode) {
+                                setShowSyncWithDBDataDialog(true)
+                            }
+                        }
+                    })
+                }
+            })
+        }
 
         return () => {
             clearInterval(recurrentCheck)
@@ -137,7 +139,7 @@ export default function DarkModeToggle({
     const handleSyncWithDBDataDialogResponse = async (response: boolean) => {
         setShowSyncWithDBDataDialog(false)
         setIsDarkMode(response)
-        
+
         const user = await getUser()
         if (!user) {
             throw new Error("User not found but should have been found. Unexpected error.")
@@ -196,8 +198,8 @@ export default function DarkModeToggle({
                     <DialogHeader>
                         <DialogTitle>Hi sir, Jarvis Here</DialogTitle>
                         <DialogDescription>
-                            I noticed you had dark mode activated on another device.<br/>
-                            <br/>
+                            I noticed you had dark mode activated on another device.<br />
+                            <br />
                             Do you want me to turn on dark mode ?
                         </DialogDescription>
                     </DialogHeader>
