@@ -1,0 +1,1 @@
+ALTER TABLE "user" ALTER COLUMN "auto_dark_mode_enabled" SET DEFAULT true;

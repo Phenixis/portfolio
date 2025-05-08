@@ -169,6 +169,13 @@
       "when": 1746733721005,
       "tag": "0023_optimal_sauron",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1746735584199,
+      "tag": "0024_third_makkari",
+      "breakpoints": true
     }
   ]
 }

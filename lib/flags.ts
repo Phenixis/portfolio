@@ -11,7 +11,7 @@ export interface DarkModeCookie {
 
 export const defaultValueCookie = {
     dark_mode: false,
-    auto_dark_mode: false,
+    auto_dark_mode: true,
     startHour: 19, // 7pm
     startMinute: 0,
     endHour: 6, // 6am
