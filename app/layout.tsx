@@ -8,6 +8,7 @@ import {
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from '@vercel/analytics/next';
 import { Toaster } from "@/components/ui/sonner"
+import { darkMode } from "@/lib/flags"
 
 const domine = Domine({
     subsets: ['latin'],
@@ -51,15 +52,16 @@ export const metadata: Metadata = {
 
 const cx = (...classes: string[]) => classes.filter(Boolean).join(' ')
 
-export default function RootLayout({
+export default async function RootLayout({
     children,
 }: {
     children: React.ReactNode
 }) {
+    const isDarkMode = await darkMode()
     return (
         <html
             lang="en"
-            className="dark"
+            className={isDarkMode ? 'dark' : ''}
         >
             <head>
                 <link rel="icon" href="/favicon.png" sizes='any' />
