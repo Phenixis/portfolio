@@ -1,0 +1,1 @@
+ALTER TABLE "user" RENAME COLUMN "dark_mode_enabled" TO "auto_dark_mode_enabled";

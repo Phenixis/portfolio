@@ -21,6 +21,9 @@ import { alias } from "drizzle-orm/pg-core"
 import { hashPassword } from "@/lib/utils/password"
 import { user } from "../schema"
 import { getClientSession } from "@/lib/auth/session"
+import { revalidateTag } from "next/cache"
+
+
 /**
  * Generates a unique 8-digit number ID for users
  * @returns A promise that resolves to a unique 8-digit number
@@ -158,8 +161,101 @@ export async function getUser(id?: string) {
     }
 }
 
+export async function getUserPreferences(id?: string) {
+    if (!id) {
+        const session = await getClientSession();
+
+        if (!session) {
+            return null;
+        }
+
+        if (new Date(session.expires) < new Date()) {
+            return null;
+        }
+
+        const user = await db
+            .select({
+                auto_dark_mode_enabled: Schema.user.auto_dark_mode_enabled,
+                dark_mode_start_hour: Schema.user.dark_mode_start_hour,
+                dark_mode_end_hour: Schema.user.dark_mode_end_hour,
+                dark_mode_start_minute: Schema.user.dark_mode_start_minute,
+                dark_mode_end_minute: Schema.user.dark_mode_end_minute,
+                dark_mode_override: Schema.user.dark_mode_override,
+                override_expires_at: Schema.user.override_expires_at
+            })
+            .from(Schema.user)
+            .where(and(
+                (session.userId ? eq(Schema.user.id, session.userId) : eq(Schema.user.email, session.userId)),
+                isNull(Schema.user.deleted_at))
+            )
+            .limit(1);
+
+        if (user.length === 0) {
+            return null;
+        }
+
+        return user[0];
+    } else {
+        const user = await db.select({
+            auto_dark_mode_enabled: Schema.user.auto_dark_mode_enabled,
+            dark_mode_start_hour: Schema.user.dark_mode_start_hour,
+            dark_mode_end_hour: Schema.user.dark_mode_end_hour,
+            dark_mode_start_minute: Schema.user.dark_mode_start_minute,
+            dark_mode_end_minute: Schema.user.dark_mode_end_minute,
+            dark_mode_override: Schema.user.dark_mode_override,
+            override_expires_at: Schema.user.override_expires_at
+        }).from(Schema.user)
+        .where(eq(Schema.user.id, id))
+
+        if (!user || user.length === 0) {
+            return null
+        }
+
+        return user[0]
+    }
+}
+
 export async function getAllUsers() {
     const users = await db.select().from(Schema.user)
 
     return users
+}
+
+interface DarkModePreferences {
+  userId: string
+  darkModeEnabled?: boolean
+  darkModeStartHour?: number
+  darkModeEndHour?: number
+  darkModeOverride?: boolean
+  overrideExpiresAt?: Date | null
+}
+
+export async function updateDarkModePreferences({
+  userId,
+  darkModeEnabled,
+  darkModeStartHour,
+  darkModeEndHour,
+  darkModeOverride,
+  overrideExpiresAt,
+}: DarkModePreferences) {
+  try {
+    const result = await db
+        .update(Schema.user)
+        .set({
+            auto_dark_mode_enabled: darkModeEnabled,
+            dark_mode_start_hour: darkModeStartHour,
+            dark_mode_end_hour: darkModeEndHour,
+            dark_mode_override: darkModeOverride,
+            override_expires_at: overrideExpiresAt,
+        })
+        .where(eq(Schema.user.id, userId))
+
+    // Revalidate the flags to update the theme
+    revalidateTag("flags")
+
+    return { success: true }
+  } catch (error) {
+    console.error("Failed to update dark mode preferences:", error)
+    return { success: false, error: "Failed to update preferences" }
+  }
 }
