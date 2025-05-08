@@ -1,91 +1,87 @@
-'use client';
+"use client"
 
-import { useState, useEffect } from 'react';
-import { Moon, Sun } from 'lucide-react';
-import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react"
+import { Moon, Sun } from "lucide-react"
+import { cn } from "@/lib/utils"
 import {
     Dialog,
-    DialogTrigger,
     DialogContent,
     DialogHeader,
     DialogFooter,
     DialogTitle,
     DialogDescription,
-} from "@/components/ui/dialog";
+} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { updateDarkModePreferences } from "@/lib/db/queries/user"
+import { DarkModeCookie } from "@/lib/flags"
+import { updateDarkModeCookie, syncDarkModeState } from "@/lib/cookies"
+
+interface DarkModeToggleProps {
+    className?: string
+    userId?: string
+    darkModeEnabled?: boolean
+    darkModeAutomatic?: boolean
+    darkModeStartHour?: number
+    darkModeEndHour?: number
+}
 
 export default function DarkModeToggle({
-    className
+    className,
+    cookie
 }: {
-    className?: string;
+    cookie: DarkModeCookie
+    className?: string
 }) {
-    const [isDarkMode, setIsDarkMode] = useState(true);
-    const [showDialog, setShowDialog] = useState(false);
+    const [isDarkMode, setIsDarkMode] = useState(cookie.dark_mode)
+    const [showDialog, setShowDialog] = useState(false)
+    const [hasAskedForAutoDarkMode, setHasAskedForAutoDarkMode] = useState(false)
 
-    // Load dark mode preference from localStorage on mount
     useEffect(() => {
-        try {
-            const savedPreference = localStorage.getItem('darkMode');
-            const dialogAnswer = localStorage.getItem('dialogAnswer');
+        const actualDarkMode = document.documentElement.classList.contains("dark")
+        
+        if (actualDarkMode !== isDarkMode) {
+            setIsDarkMode(actualDarkMode)
 
-            if (savedPreference === 'false') {
-                const currentHour = new Date().getHours();
-                if (currentHour >= 19 && dialogAnswer === null) {
-                    setIsDarkMode(true);
-                    document.documentElement.classList.add('dark');
-                    setShowDialog(true);
-                } else if (currentHour >= 19 && dialogAnswer === 'true') {
-                    setShowDialog(false);
-                    setIsDarkMode(true);
-                    document.documentElement.classList.add('dark');
-                } else {
-                    setShowDialog(false);
-                    setIsDarkMode(false);
-                    document.documentElement.classList.remove('dark');
-                }
-            } else if (savedPreference === 'true') {
-                setIsDarkMode(true);
-                document.documentElement.classList.add('dark');
-            } else {
-                // Fallback: Check the current time to set dark mode
-                const currentHour = new Date().getHours();
-                if (currentHour >= 19 && dialogAnswer !== 'true') {
-                    setShowDialog(true);
-                }
+            // Sync the cookie with the actual state using the Server Action
+            syncDarkModeState(actualDarkMode, cookie).then(newCookie => {
+                // Optionally update local state if needed
+                console.log("Dark mode cookie synced:", newCookie)
+            })
+        }
+    }, [])
+
+    const toggleDarkMode = async () => {
+        const previousState = isDarkMode
+        const newState = !isDarkMode
+
+        setIsDarkMode((prev) => !prev)
+        document.documentElement.classList.toggle("dark")
+        const now = new Date()
+
+        let newCookie: DarkModeCookie = {
+            ...cookie,
+            dark_mode: !isDarkMode,
+        }
+
+        const isAfterStartTime = now.getHours() > cookie.startHour || (now.getHours() >= cookie.startHour && now.getMinutes() >= cookie.startMinute)
+        const isBeforeEndTime = now.getHours() < cookie.endHour || (now.getHours() === cookie.endHour && now.getMinutes() < cookie.endMinute)
+        const isInAutoDarkModeTime = cookie.startHour > cookie.endHour ? isAfterStartTime || isBeforeEndTime : isAfterStartTime && isBeforeEndTime // if start hour is before end hour, dark mode is enabled between these two times, otherwise dark mode is enabled outside these two times
+        if (isInAutoDarkModeTime) {
+            const isOverridingAutoDarkMode = previousState // if dark mode has been disabled during the auto dark mode time
+
+            newCookie = {
+                ...newCookie,
+                override: isOverridingAutoDarkMode
             }
-        } catch (error) {
-            console.error("Error accessing localStorage:", error);
-        }
-    }, []);
-
-    const toggleDarkMode = () => {
-        const newMode = !isDarkMode;
-        setIsDarkMode(newMode);
-        try {
-            localStorage.setItem('darkMode', newMode.toString());
-        } catch (error) {
-            console.error("Error saving to localStorage:", error);
-        }
-        if (newMode) {
-            document.documentElement.classList.add('dark');
         } else {
-            document.documentElement.classList.remove('dark');
+            newCookie = {
+                ...newCookie,
+                override: false
+            }
         }
-    };
 
-    const handleDialogResponse = (response: boolean) => {
-        setShowDialog(false);
-        localStorage.setItem('dialogAnswer', response.toString());
-        if (response) {
-            setIsDarkMode(true);
-            localStorage.setItem('darkMode', 'true');
-            document.documentElement.classList.add('dark');
-        } else {
-            setIsDarkMode(false);
-            localStorage.setItem('darkMode', 'false');
-            document.documentElement.classList.remove('dark');
-        }
-    };
+        await updateDarkModeCookie(newCookie)
+    }
 
     return (
         <div>
@@ -95,42 +91,30 @@ export default function DarkModeToggle({
                 aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
                 className={cn(
                     "lg:hover:rotate-[46deg] duration-1000 flex align-middle relative transition-all text-neutral-800 lg:hover:text-neutral-500 dark:text-neutral-200 dark:lg:hover:text-neutral-500 cursor-pointer",
-                    className
+                    className,
                 )}
             >
                 {isDarkMode ? <Moon /> : <Sun />}
             </div>
 
-            {showDialog && (
-                <Dialog open={showDialog} onOpenChange={setShowDialog}>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Hi sir, Jarvis Here</DialogTitle>
-                            <DialogDescription>
-                                It's getting late and dark and I don't want to flash you, do you want me to turn on dark mode automatically after 7pm ?
-                            </DialogDescription>
-                        </DialogHeader>
-                        <DialogFooter>
-                            <Button
-                                variant="secondary"
-                                size="default"
-                                onClick={() => handleDialogResponse(false)}
-                                className=''
-                            >
-                                No
-                            </Button>
-                            <Button
-                                variant="default"
-                                size="default"
-                                onClick={() => handleDialogResponse(true)}
-                                className=""
-                            >
-                                Yes
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-            )}
+            {/* <Dialog open={showDialog} onOpenChange={setShowDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Hi sir, Jarvis Here</DialogTitle>
+                        <DialogDescription>
+                            It's getting late, I don't want to flash you, do you want me to turn on dark mode automatically after 7pm and before 6am?
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="secondary" size="default" onClick={() => handleDialogResponse(false)} className="">
+                            No
+                        </Button>
+                        <Button variant="default" size="default" onClick={() => handleDialogResponse(true)} className="">
+                            Yes
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog> */}
         </div>
-    );
+    )
 }
