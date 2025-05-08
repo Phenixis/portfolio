@@ -1,6 +1,7 @@
 import { flag } from "flags/next"
 
 export interface DarkModeCookie {
+    has_jarvis_asked_dark_mode: boolean
     dark_mode: boolean
     auto_dark_mode: boolean
     startHour: number
@@ -11,6 +12,7 @@ export interface DarkModeCookie {
 }
 
 export const defaultValueCookie = {
+    has_jarvis_asked_dark_mode: false,
     dark_mode: false,
     auto_dark_mode: true,
     startHour: 19, // 7pm
