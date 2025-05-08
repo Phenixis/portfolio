@@ -1,0 +1,1 @@
+ALTER TABLE "user" DROP COLUMN IF EXISTS "dark_mode_override";

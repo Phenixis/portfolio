@@ -180,8 +180,7 @@ export async function getUserPreferences(id?: string) {
                 dark_mode_end_hour: Schema.user.dark_mode_end_hour,
                 dark_mode_start_minute: Schema.user.dark_mode_start_minute,
                 dark_mode_end_minute: Schema.user.dark_mode_end_minute,
-                dark_mode_override: Schema.user.dark_mode_override,
-                override_expires_at: Schema.user.override_expires_at
+                dark_mode_override: Schema.user.dark_mode_override
             })
             .from(Schema.user)
             .where(and(
@@ -202,8 +201,7 @@ export async function getUserPreferences(id?: string) {
             dark_mode_end_hour: Schema.user.dark_mode_end_hour,
             dark_mode_start_minute: Schema.user.dark_mode_start_minute,
             dark_mode_end_minute: Schema.user.dark_mode_end_minute,
-            dark_mode_override: Schema.user.dark_mode_override,
-            override_expires_at: Schema.user.override_expires_at
+            dark_mode_override: Schema.user.dark_mode_override
         }).from(Schema.user)
         .where(eq(Schema.user.id, id))
 
@@ -245,8 +243,7 @@ export async function updateDarkModePreferences({
             auto_dark_mode_enabled: darkModeEnabled,
             dark_mode_start_hour: darkModeStartHour,
             dark_mode_end_hour: darkModeEndHour,
-            dark_mode_override: darkModeOverride,
-            override_expires_at: overrideExpiresAt,
+            dark_mode_override: darkModeOverride
         })
         .where(eq(Schema.user.id, userId))
 
