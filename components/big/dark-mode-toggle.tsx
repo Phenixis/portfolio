@@ -116,14 +116,16 @@ export default function DarkModeToggle({
     const handleAutoDarkModeDialogResponse = async (response: boolean) => {
         setShowAutoDarkModeDialog(false)
         setHasAskedForAutoDarkMode(true)
-        setIsDarkMode(!response)
+        setIsDarkMode(response)
+
+
 
         const newCookie: DarkModeCookie = {
             ...cookie,
-            dark_mode: !response,
+            dark_mode: response,
             override: false,
             has_jarvis_asked_dark_mode: true,
-            auto_dark_mode: !response,
+            auto_dark_mode: response,
         }
 
         await updateDarkModeCookie(newCookie)
@@ -214,7 +216,7 @@ export default function DarkModeToggle({
                 </DialogContent>
             </Dialog>
 
-            <Dialog open={showAutoDarkModeDialog} onOpenChange={setShowAutoDarkModeDialog}>
+            { hasAskedForAutoDarkMode !== true && (<Dialog open={showAutoDarkModeDialog} onOpenChange={setShowAutoDarkModeDialog}>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Hi sir, Jarvis Here</DialogTitle>
@@ -233,7 +235,7 @@ export default function DarkModeToggle({
                         </Button>
                     </DialogFooter>
                 </DialogContent>
-            </Dialog>
+            </Dialog>) }
         </div>
     )
 }
