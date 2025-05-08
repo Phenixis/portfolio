@@ -18,6 +18,13 @@ export const user = pgTable('user', {
     first_name: varchar('first_name', { length: 255 }).notNull(),
     last_name: varchar('last_name', { length: 255 }).notNull(),
     api_key: varchar('api_key', { length: 255 }).notNull(),
+    dark_mode_enabled: boolean('dark_mode_enabled').notNull().default(false),
+    dark_mode_start_hour: integer('dark_mode_start_hour').notNull().default(19),
+    dark_mode_end_hour: integer('dark_mode_end_hour').notNull().default(6),
+    dark_mode_start_minute: integer('dark_mode_start_minute').notNull().default(0),
+    dark_mode_end_minute: integer('dark_mode_end_minute').notNull().default(0),
+    dark_mode_override: boolean('dark_mode_override').notNull().default(false),
+    override_expires_at: timestamp('override_expires_at'),
     created_at: timestamp('created_at').notNull().defaultNow(),
     updated_at: timestamp('updated_at').notNull().defaultNow(),
     deleted_at: timestamp('deleted_at')
