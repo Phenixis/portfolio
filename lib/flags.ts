@@ -7,6 +7,7 @@ export interface DarkModeCookie {
     startMinute: number
     endHour: number
     endMinute: number
+    override: boolean
 }
 
 export const defaultValueCookie = {
@@ -16,6 +17,7 @@ export const defaultValueCookie = {
     startMinute: 0,
     endHour: 6, // 6am
     endMinute: 0,
+    override: false,
 } as DarkModeCookie
 
 export const darkMode = flag<boolean, DarkModeCookie>({
@@ -34,10 +36,11 @@ export const darkMode = flag<boolean, DarkModeCookie>({
             return preferences
         }
 
+        
         let isDarkModeEnabled: boolean
         const isAfterStartTime = now.getHours() > preferences.startHour || (now.getHours() >= preferences.startHour && now.getMinutes() >= preferences.startMinute)
         const isBeforeEndTime = now.getHours() < preferences.endHour || (now.getHours() === preferences.endHour && now.getMinutes() < preferences.endMinute)
-
+        
         if (preferences.startHour < preferences.endHour) {
             // start hour before end hour, so time must be between these two to be enable dark mode
             isDarkModeEnabled = isAfterStartTime && isBeforeEndTime
@@ -45,7 +48,18 @@ export const darkMode = flag<boolean, DarkModeCookie>({
             // start hour after end hour (overlaps midnight), so time must be before end hour or after start hour to be enable dark mode
             isDarkModeEnabled = isAfterStartTime || isBeforeEndTime
         }
-
+        
+        if (preferences.override) {
+            if (!isDarkModeEnabled) {
+                return {
+                    ...preferences,
+                    dark_mode: false,
+                    override: false,
+                }
+            }
+            return preferences
+        }
+        
         return {
             ...preferences,
             dark_mode: isDarkModeEnabled,
