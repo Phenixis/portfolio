@@ -15,16 +15,15 @@ import { Button } from "@/components/ui/button"
 import { DarkModeCookie } from "@/lib/flags"
 import { updateDarkModeCookie, syncDarkModeState } from "@/lib/cookies"
 import { getUser, updateDarkModePreferences, getUserPreferences } from "@/lib/db/queries/user"
-import { usePathname } from "next/navigation"
 
 export default function DarkModeToggle({
     className,
-    cookie
+    initialCookie
 }: {
-    cookie: DarkModeCookie
+    initialCookie: DarkModeCookie
     className?: string
 }) {
-    const inBackOffice = usePathname().includes("/my")
+    const [cookie, setCookie] = useState<DarkModeCookie>(initialCookie)
     const [isDarkMode, setIsDarkMode] = useState(cookie.dark_mode)
     const [showAutoDarkModeDialog, setShowAutoDarkModeDialog] = useState(false)
     const [hasAskedForAutoDarkMode, setHasAskedForAutoDarkMode] = useState(cookie.has_jarvis_asked_dark_mode || false)
@@ -40,8 +39,25 @@ export default function DarkModeToggle({
             // Sync the cookie with the actual state using the Server Action
             syncDarkModeState(actualDarkMode, cookie).then(newCookie => {
                 // Optionally update local state if needed
+                setCookie(newCookie)
             })
+
         }
+
+        // CHECK SI DARK MODE ACTIVÉ EN BD MAIS PAS EN COOKIE (autre appareil)
+        getUser().then(user => {
+            if (user) {
+                getUserPreferences(user.id).then(userPreferences => {
+                    if (userPreferences) {
+                        setHasAskedForAutoDarkMode(userPreferences.has_jarvis_asked_dark_mode)
+                        const shouldDarkModeBeEnabled = userPreferences.dark_mode
+                        if (shouldDarkModeBeEnabled !== isDarkMode) {
+                            setShowSyncWithDBDataDialog(true)
+                        }
+                    }
+                })
+            }
+        })
 
         // CHECK RECURRENT POUR CHANGEMENT D'ÉTAT
         const recurrentCheck = setInterval(async () => {
@@ -54,22 +70,6 @@ export default function DarkModeToggle({
                 }
             }
         }, 1000) // Check every second
-
-        // CHECK SI DARK MODE ACTIVÉ EN BD MAIS PAS EN COOKIE (autre appareil)
-        if (showAutoDarkModeDialog === false && inBackOffice) {
-            getUser().then(user => {
-                if (user) {
-                    getUserPreferences(user.id).then(userPreferences => {
-                        if (userPreferences) {
-                            const shouldDarkModeBeEnabled = userPreferences.dark_mode
-                            if (shouldDarkModeBeEnabled !== isDarkMode) {
-                                setShowSyncWithDBDataDialog(true)
-                            }
-                        }
-                    })
-                }
-            })
-        }
 
         return () => {
             clearInterval(recurrentCheck)
@@ -105,6 +105,7 @@ export default function DarkModeToggle({
             }
         }
 
+        setCookie(newCookie)
         await updateDarkModeCookie(newCookie)
         const user = await getUser()
         if (user) {
@@ -128,6 +129,7 @@ export default function DarkModeToggle({
             auto_dark_mode: response,
         }
 
+        setCookie(newCookie)
         await updateDarkModeCookie(newCookie)
         const user = await getUser()
         if (user) {
@@ -158,6 +160,7 @@ export default function DarkModeToggle({
             override: false
         }
 
+        setCookie(newCookie)
         await updateDarkModeCookie(newCookie)
         await updateDarkModePreferences({
             userId: user.id,
@@ -216,7 +219,7 @@ export default function DarkModeToggle({
                 </DialogContent>
             </Dialog>
 
-            { hasAskedForAutoDarkMode !== true && (<Dialog open={showAutoDarkModeDialog} onOpenChange={setShowAutoDarkModeDialog}>
+            {hasAskedForAutoDarkMode !== true && (<Dialog open={showAutoDarkModeDialog} onOpenChange={setShowAutoDarkModeDialog}>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Hi sir, Jarvis Here</DialogTitle>
@@ -235,7 +238,7 @@ export default function DarkModeToggle({
                         </Button>
                     </DialogFooter>
                 </DialogContent>
-            </Dialog>) }
+            </Dialog>)}
         </div>
     )
 }
