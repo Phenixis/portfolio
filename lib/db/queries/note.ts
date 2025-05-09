@@ -17,6 +17,14 @@ import { db } from "../drizzle"
 import * as Schema from "../schema"
 import { revalidatePath } from "next/cache"
 
+export type NotesAndData = {
+    notes: Schema.Note[]
+    totalCount: number
+    totalPages: number
+    currentPage: number
+    limit: number
+}
+
 export async function getNotes(
     userId: string,
     title?: string,
@@ -86,7 +94,7 @@ export async function getNotes(
         totalPages: Math.ceil(count / limit),
         currentPage: page,
         limit
-    }
+    } as NotesAndData
 }
 
 export async function createNote(userId: string, title: string, content: string, projectTitle?: string, salt?: string, iv?: string) {

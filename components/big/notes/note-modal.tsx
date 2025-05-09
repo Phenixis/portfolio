@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/collapsible"
 import { useDebouncedCallback } from "use-debounce"
 import SearchProjectsInput from "@/components/big/projects/search-projects-input"
+import { NotesAndData } from "@/lib/db/queries/note"
 
 export default function NoteModal({
     className,
@@ -105,17 +106,27 @@ export default function NoteModal({
 
             mutate(
                 (key: unknown) => typeof key === "string" && key.startsWith("/api/note"),
-                async (currentData: unknown): Promise<Note[] | unknown> => {
-                    if (!Array.isArray(currentData)) return currentData
-
-                    let updatedData: Note[]
-                    if (mode === "edit") {
-                        updatedData = currentData.map((item: Note) => (item.id === note?.id ? noteData : item))
-                    } else {
-                        updatedData = [...currentData, noteData]
+                async (currentData: unknown): Promise<NotesAndData | unknown> => {
+                    try {
+                        const data = currentData as NotesAndData
+                        if (!data) return currentData
+                        const currentNotes = data.notes || []
+                        
+                        let updatedData: Note[]
+                        if (mode === "edit") {
+                            updatedData = currentNotes.map((item: Note) => (item.id === note?.id ? noteData : item))
+                        } else {
+                            updatedData = [...currentNotes, noteData]
+                        }
+                        
+                        return {
+                            ...data,
+                            notes: updatedData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+                        }
+                    } catch (error: any) {
+                        console.error("Error updating local data:", error)
+                        return currentData
                     }
-
-                    return updatedData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
                 },
                 { revalidate: false },
             )

@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button"
 import { decryptNote } from "@/lib/utils/crypt"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { NotesAndData } from "@/lib/db/queries/note"
 
 export default function NoteDisplay({ note }: { note?: Note }) {
     const user = useUser().user
@@ -70,9 +71,21 @@ export default function NoteDisplay({ note }: { note?: Note }) {
             mutate(
                 (key: unknown) => typeof key === "string" && key.startsWith("/api/note"),
                 async (currentData: unknown): Promise<unknown> => {
-                    if (!Array.isArray(currentData)) return currentData
+                    try {
+                        const data = currentData as NotesAndData
+                        if (!data) return currentData
+                        const currentNotes = data.notes || []
 
-                    return currentData.filter((item: Note) => item.id !== note.id)
+                        return {
+                            ...data,
+                            notes: currentNotes.filter((n: Note) => n.id !== note.id),
+                            totalCount: data.totalCount - 1,
+                            totalPages: Math.ceil((data.totalCount - 1) / data.limit),
+                        }
+                    } catch (error: any) {
+                        console.error("Error updating notes data:", error)
+                        return currentData
+                    }
                 },
                 { revalidate: false }
             )
