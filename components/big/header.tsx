@@ -77,7 +77,7 @@ export default function Header({
                                 setIsOpen(false)
                                 setIsHovering(false)
                             }}>
-                            <NoteModal />
+                            <NoteModal className="lg:ml-2 xl:ml-4" />
                         </div>
                     )
                 }
