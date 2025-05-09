@@ -14,24 +14,22 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination"
-import { Input } from "@/components/ui/input"
-import { useDebouncedCallback } from "use-debounce"
-import { Label } from "@/components/ui/label"
 import SearchProjectsInput from "@/components/big/projects/search-projects-input"
 import { Button } from "@/components/ui/button"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
+import SearchNote from "@/components/big/notes/search-note"
+import { NOTE_PARAMS } from "@/components/big/notes/notes-card"
 
 export default function NotesPage() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const [isHeaderExpanded, setIsHeaderExpanded] = useState(true)
 
-    const [title, setTitle] = useState<string>(searchParams.get("title") || "")
-    const [titleInputValue, setTitleInputValue] = useState<string>(title)
-    const [projectTitle, setProjectTitle] = useState<string>(searchParams.get("project_title") || "")
-    const [limit, setLimit] = useState<number>(searchParams.get("limit") ? Number.parseInt(searchParams.get("limit") as string) : 25)
-    const [page, setPage] = useState<number>(searchParams.get("page") ? Number.parseInt(searchParams.get("page") as string) : 1)
+    const [title, setTitle] = useState<string>(searchParams.get(NOTE_PARAMS["TITLE"]) || "")
+    const [projectTitle, setProjectTitle] = useState<string>(searchParams.get(NOTE_PARAMS["PROJECT_TITLE"]) || "")
+    const [limit, setLimit] = useState<number>(searchParams.get(NOTE_PARAMS["LIMIT"]) ? Number.parseInt(searchParams.get(NOTE_PARAMS["LIMIT"]) as string) : 25)
+    const [page, setPage] = useState<number>(searchParams.get(NOTE_PARAMS["PAGE"]) ? Number.parseInt(searchParams.get(NOTE_PARAMS["PAGE"]) as string) : 1)
 
     const activeFiltersCount = useMemo(() => {
         let count = 0
@@ -39,27 +37,6 @@ export default function NotesPage() {
         if (projectTitle) count++
         return count
     }, [title, projectTitle])
-
-    const debouncedSetTitle = useDebouncedCallback((value: string) => {
-        setTitle(value)
-        if (title !== "") {
-            const params = new URLSearchParams(searchParams.toString())
-            params.set('title', value)
-            router.push(`?${params.toString()}`)
-        } else {
-            const params = new URLSearchParams(searchParams.toString())
-            params.delete('title')
-            router.push(`?${params.toString()}`)
-        }
-    }, 200)
-
-    useEffect(() => {
-        setTitleInputValue(title)
-    }, [title])
-
-    useEffect(() => {
-        debouncedSetTitle(titleInputValue)
-    }, [titleInputValue])
 
     const { data: notesData, isLoading, isError, mutate } = useNotes({
         title,
@@ -71,7 +48,7 @@ export default function NotesPage() {
     const handlePageChange = useCallback((newPage: number) => {
         setPage(newPage)
         const params = new URLSearchParams(searchParams.toString())
-        params.set('page', newPage.toString())
+        params.set(NOTE_PARAMS["PAGE"], newPage.toString())
         router.push(`?${params.toString()}`)
     }, [router, searchParams])
 
@@ -101,13 +78,13 @@ export default function NotesPage() {
                         "flex flex-col lg:flex-row items-center gap-4 transition-all duration-300",
                         !isHeaderExpanded && "hidden lg:flex"
                     )}>
-                        <div className="w-full lg:w-1/3">
-                            <Label className="text-nowrap">Search notes by title</Label>
-                            <Input
-                                value={titleInputValue}
-                                onChange={(e) => setTitleInputValue(e.target.value)}
-                            />
-                        </div>
+                        <SearchNote
+                            className="lg:w-1/3"
+                            title={title}
+                            setTitle={setTitle}
+                            defaultValue={searchParams.get(NOTE_PARAMS["TITLE"]) || ""}
+                            label="Search notes by title"
+                        />
                         <div className="w-full lg:w-1/3">
                             <SearchProjectsInput
                                 project={projectTitle}
@@ -176,8 +153,8 @@ export default function NotesPage() {
                                             setTitle("")
                                             setProjectTitle("")
                                             const params = new URLSearchParams(searchParams.toString())
-                                            params.delete('title')
-                                            params.delete('project_title')
+                                            params.delete(NOTE_PARAMS["TITLE"])
+                                            params.delete(NOTE_PARAMS["PROJECT_TITLE"])
                                             router.push(`?${params.toString()}`)
                                         }}
                                     >

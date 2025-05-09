@@ -19,19 +19,23 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { CircleHelp } from "lucide-react"
+import SearchNote from "@/components/big/notes/search-note"
 
 // Constants for URL parameters
-const NOTE_PARAMS = {
+export const NOTE_PARAMS = {
+    TITLE: 'note_title',
     LIMIT: 'note_limit',
     ORDER_BY: 'note_orderBy',
     ORDERING_DIRECTION: 'note_orderingDirection',
     PROJECTS: 'note_projects',
     REMOVED_PROJECTS: 'note_removedProjects',
     GROUP_BY_PROJECT: 'note_groupByProject',
+    PROJECT_TITLE: "note_projectTitle",
+    PAGE: "note_page",
 } as const;
 
 // Type for URL parameters
-type NoteUrlParams = {
+export type NoteUrlParams = {
     [NOTE_PARAMS.LIMIT]?: string;
     [NOTE_PARAMS.ORDER_BY]?: keyof Note;
     [NOTE_PARAMS.ORDERING_DIRECTION]?: 'asc' | 'desc';
@@ -130,6 +134,7 @@ export function NotesCard({
         searchParams.get(NOTE_PARAMS.GROUP_BY_PROJECT) === "true"
     )
 
+    const [title, setTitle] = useState<string>(searchParams.get(NOTE_PARAMS["TITLE"]) || "")
     // -------------------- Data Fetching --------------------
     const { projects, isLoading: projectsLoading } = useProjects({
         completed: false,
@@ -138,6 +143,7 @@ export function NotesCard({
     })
 
     const { data: notesData, isLoading } = useNotes({
+        title,
         limit,
         projectTitles: groupByProject && selectedProjects.length > 0 ? selectedProjects : undefined,
         excludedProjectTitles: groupByProject && removedProjects.length > 0 ? removedProjects : undefined,
@@ -249,7 +255,7 @@ export function NotesCard({
                     </div>
                 </div>
                 <div className={`${!isFilterOpen && "hidden"} flex flex-col gap-2`}>
-                    <div className="flex flex-row justify-between items-center gap-6 flex-wrap">
+                    <div className="flex flex-row justify-between items-end gap-6 flex-wrap">
                         <div className="flex flex-row items-center gap-2">
                             <Button
                                 variant={limit === 5 ? "default" : "outline"}
@@ -288,6 +294,13 @@ export function NotesCard({
                                 50
                             </Button>
                         </div>
+                        <SearchNote
+                            className="lg:w-1/3"
+                            title={title}
+                            setTitle={setTitle}
+                            defaultValue={searchParams.get(NOTE_PARAMS["TITLE"]) || ""}
+                            label="Search notes by title"
+                        />
                         <Button
                             variant={groupByProject ? "default" : "outline"}
                             size="sm"
