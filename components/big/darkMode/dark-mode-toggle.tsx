@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Moon, Sun } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -12,13 +12,13 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { type DarkModeCookie } from "@/lib/flags"
-import { updateDarkModeCookie, syncDarkModeState } from "@/lib/cookies"
+import type { DarkModeCookie } from "@/lib/flags"
+import { updateDarkModeCookie } from "@/lib/cookies"
 import { getUser, updateDarkModePreferences, getUserPreferences } from "@/lib/db/queries/user"
 
 export default function DarkModeToggle({
     className,
-    initialCookie
+    initialCookie,
 }: {
     initialCookie: DarkModeCookie
     className?: string
@@ -27,6 +27,11 @@ export default function DarkModeToggle({
     const [isDarkMode, setIsDarkMode] = useState(cookie.dark_mode)
     const [showAutoDarkModeDialog, setShowAutoDarkModeDialog] = useState(false)
     const [hasAskedForAutoDarkMode, setHasAskedForAutoDarkMode] = useState(cookie.has_jarvis_asked_dark_mode || false)
+    const [isUpdating, setIsUpdating] = useState(false)
+
+    // Use refs to track the last toggle time to prevent excessive updates
+    const lastToggleTimeRef = useRef<Date | null>(null)
+    const lastCheckResultRef = useRef<boolean | null>(null)
 
     useEffect(() => {
         // RÉCUPÉRER VALEURS DB
@@ -38,27 +43,56 @@ export default function DarkModeToggle({
         })
 
         // CHECK RECURRENT POUR CHANGEMENT D'ÉTAT
-        const recurrentCheck = setInterval(async () => {
-            const timeToToggle = isTimeToToggleDarkMode()
-            if (timeToToggle) {
-                if (!isDarkMode && !hasAskedForAutoDarkMode) {
-                    setShowAutoDarkModeDialog(true)
-                } else {
-                    await toggleDarkMode()
-                }
+        const recurrentCheck = setInterval(() => {
+            if (isUpdating) return
+
+            // Only check if auto dark mode is enabled and not overridden
+            if (!cookie.auto_dark_mode || cookie.override) return
+
+            const shouldBeDark = shouldDarkModeBeEnabled()
+
+            // Only proceed if the state needs to change
+            if (isDarkMode === shouldBeDark) return
+
+            // Prevent toggling more than once per minute
+            const now = new Date()
+            if (lastToggleTimeRef.current && now.getTime() - lastToggleTimeRef.current.getTime() < 60000) {
+                return
             }
-        }, 1000) // Check every second
+
+            // Prevent toggling if the check result is the same as last time
+            if (lastCheckResultRef.current === shouldBeDark) return
+
+            lastCheckResultRef.current = shouldBeDark
+
+            console.log("Time to toggle dark mode:", shouldBeDark)
+
+            if (!isDarkMode && !hasAskedForAutoDarkMode) {
+                setShowAutoDarkModeDialog(true)
+            } else {
+                setIsUpdating(true)
+                lastToggleTimeRef.current = now
+
+                setIsDarkMode(shouldBeDark)
+                document.documentElement.classList.toggle("dark", shouldBeDark)
+
+                toggleDarkMode(!shouldBeDark)
+                    .then(() => {
+                        setIsUpdating(false)
+                    })
+                    .catch((error) => {
+                        console.error("Error toggling dark mode:", error)
+                        setIsUpdating(false)
+                    })
+            }
+        }, 10000) // Check every 10 seconds instead of every second
 
         return () => {
             clearInterval(recurrentCheck)
         }
-    }, [])
+    }, []) // Empty dependency array to run only once
 
-    const toggleDarkMode = async () => {
-        const previousState = isDarkMode
-
-        setIsDarkMode((prev) => !prev)
-        document.documentElement.classList.toggle("dark")
+    const toggleDarkMode = async (previousState: boolean) => {
         const now = new Date()
 
         let newCookie: DarkModeCookie = {
@@ -66,20 +100,24 @@ export default function DarkModeToggle({
             dark_mode: !previousState,
         }
 
-        const isAfterStartTime = now.getHours() > cookie.startHour || (now.getHours() >= cookie.startHour && now.getMinutes() >= cookie.startMinute)
-        const isBeforeEndTime = now.getHours() < cookie.endHour || (now.getHours() === cookie.endHour && now.getMinutes() < cookie.endMinute)
-        const isInAutoDarkModeTime = cookie.startHour > cookie.endHour ? isAfterStartTime || isBeforeEndTime : isAfterStartTime && isBeforeEndTime // if start hour is before end hour, dark mode is enabled between these two times, otherwise dark mode is enabled outside these two times
+        const isAfterStartTime =
+            now.getHours() > cookie.startHour ||
+            (now.getHours() === cookie.startHour && now.getMinutes() >= cookie.startMinute)
+        const isBeforeEndTime =
+            now.getHours() < cookie.endHour || (now.getHours() === cookie.endHour && now.getMinutes() < cookie.endMinute)
+        const isInAutoDarkModeTime =
+            cookie.startHour > cookie.endHour ? isAfterStartTime || isBeforeEndTime : isAfterStartTime && isBeforeEndTime // if start hour is before end hour, dark mode is enabled between these two times, otherwise dark mode is enabled outside these two times
         if (isInAutoDarkModeTime) {
             const isOverridingAutoDarkMode = previousState // if dark mode has been disabled during the auto dark mode time
 
             newCookie = {
                 ...newCookie,
-                override: isOverridingAutoDarkMode
+                override: isOverridingAutoDarkMode,
             }
         } else {
             newCookie = {
                 ...newCookie,
-                override: false
+                override: false,
             }
         }
 
@@ -89,16 +127,12 @@ export default function DarkModeToggle({
         if (user) {
             await updateDarkModePreferences({
                 userId: user.id,
-                darkModeCookie: newCookie
+                darkModeCookie: newCookie,
             })
         }
     }
 
     const handleAutoDarkModeDialogResponse = async (response: boolean) => {
-        setShowAutoDarkModeDialog(false)
-        setHasAskedForAutoDarkMode(true)
-        setIsDarkMode(response)
-
         const newCookie: DarkModeCookie = {
             ...cookie,
             dark_mode: response,
@@ -113,31 +147,43 @@ export default function DarkModeToggle({
         if (user) {
             await updateDarkModePreferences({
                 userId: user.id,
-                darkModeCookie: newCookie
+                darkModeCookie: newCookie,
             })
         }
     }
 
-    const isTimeToToggleDarkMode = () => {
-        if (!cookie.auto_dark_mode || cookie.override) {
-            return false
-        }
-
+    const shouldDarkModeBeEnabled = () => {
         const now = new Date()
-        const isAfterStartTime = now.getHours() > cookie.startHour || (now.getHours() >= cookie.startHour && now.getMinutes() >= cookie.startMinute)
-        const isBeforeEndTime = now.getHours() < cookie.endHour || (now.getHours() === cookie.endHour && now.getMinutes() < cookie.endMinute)
+        const isAfterStartTime =
+            now.getHours() > cookie.startHour ||
+            (now.getHours() === cookie.startHour && now.getMinutes() >= cookie.startMinute)
+        const isBeforeEndTime =
+            now.getHours() < cookie.endHour || (now.getHours() === cookie.endHour && now.getMinutes() < cookie.endMinute)
 
         if (cookie.startHour > cookie.endHour) {
-            return isDarkMode != (isAfterStartTime || isBeforeEndTime)
+            // Dark mode is enabled outside the time range (e.g., 22:00 to 06:00)
+            return isAfterStartTime || isBeforeEndTime
         } else {
-            return isDarkMode != (isAfterStartTime && isBeforeEndTime)
+            // Dark mode is enabled within the time range (e.g., 18:00 to 06:00)
+            return isAfterStartTime && isBeforeEndTime
         }
     }
 
     return (
         <div>
             <div
-                onClick={toggleDarkMode}
+                onClick={async () => {
+                    const previousState = isDarkMode
+
+                    setIsDarkMode((prev) => !prev)
+                    document.documentElement.classList.toggle("dark")
+                    setIsUpdating(true)
+                    await toggleDarkMode(previousState)
+                    setIsUpdating(false)
+
+                    // Update the last toggle time to prevent auto-toggling right after manual toggle
+                    lastToggleTimeRef.current = new Date()
+                }}
                 role="button"
                 aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
                 className={cn(
@@ -148,26 +194,57 @@ export default function DarkModeToggle({
                 {isDarkMode ? <Moon /> : <Sun />}
             </div>
 
-            {hasAskedForAutoDarkMode !== true && (<Dialog open={showAutoDarkModeDialog} onOpenChange={setShowAutoDarkModeDialog}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Hi sir, Jarvis Here</DialogTitle>
-                        <DialogDescription>
-                            It's getting late.<br />
-                            <br />
-                            Do you want me to automatically turn back on dark mode after {cookie.startHour}:{cookie.startMinute < 10 && "0"}{cookie.startMinute}?
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button variant="secondary" size="default" onClick={() => handleAutoDarkModeDialogResponse(false)} className="">
-                            No
-                        </Button>
-                        <Button variant="default" size="default" onClick={() => handleAutoDarkModeDialogResponse(true)} className="">
-                            Yes
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>)}
+            {hasAskedForAutoDarkMode !== true && (
+                <Dialog open={showAutoDarkModeDialog} onOpenChange={setShowAutoDarkModeDialog}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Hi sir, Jarvis Here</DialogTitle>
+                            <DialogDescription>
+                                It's getting late.
+                                <br />
+                                <br />
+                                Do you want me to automatically turn back on dark mode after {cookie.startHour}:
+                                {cookie.startMinute < 10 && "0"}
+                                {cookie.startMinute}?
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                            <Button
+                                variant="secondary"
+                                size="default"
+                                onClick={() => {
+                                    setShowAutoDarkModeDialog(false)
+                                    setHasAskedForAutoDarkMode(true)
+                                    setIsDarkMode(false)
+                                    document.documentElement.classList.remove("dark")
+                                    setIsUpdating(true)
+                                    handleAutoDarkModeDialogResponse(false)
+                                    setIsUpdating(false)
+                                }}
+                                className=""
+                            >
+                                No
+                            </Button>
+                            <Button
+                                variant="default"
+                                size="default"
+                                onClick={() => {
+                                    setShowAutoDarkModeDialog(false)
+                                    setHasAskedForAutoDarkMode(true)
+                                    setIsDarkMode(true)
+                                    document.documentElement.classList.add("dark")
+                                    setIsUpdating(true)
+                                    handleAutoDarkModeDialogResponse(true)
+                                    setIsUpdating(false)
+                                }}
+                                className=""
+                            >
+                                Yes
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            )}
         </div>
     )
 }
