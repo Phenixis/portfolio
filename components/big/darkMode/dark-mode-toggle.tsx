@@ -29,18 +29,13 @@ export default function DarkModeToggle({
     const [hasAskedForAutoDarkMode, setHasAskedForAutoDarkMode] = useState(cookie.has_jarvis_asked_dark_mode || false)
 
     useEffect(() => {
-        // CHECK SI CONSISTENCE DES DONNÉES
-        const actualDarkMode = document.documentElement.classList.contains("dark")
-
-        if (actualDarkMode !== isDarkMode) {
-            setIsDarkMode(actualDarkMode)
-
-            // Sync the cookie with the actual state using the Server Action
-            syncDarkModeState(actualDarkMode, cookie).then(newCookie => {
-                // Optionally update local state if needed
-                setCookie(newCookie)
-            })
-        }
+        // RÉCUPÉRER VALEURS DB
+        getUserPreferences().then((userPreferences) => {
+            if (userPreferences) {
+                setCookie(userPreferences as DarkModeCookie)
+                setIsDarkMode(userPreferences.dark_mode)
+            }
+        })
 
         // CHECK RECURRENT POUR CHANGEMENT D'ÉTAT
         const recurrentCheck = setInterval(async () => {
