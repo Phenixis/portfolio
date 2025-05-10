@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import DarkModeToggleFrontOffice from './dark-mode-toggle-front-office'
+import DarkModeToggleFrontOffice from './darkMode/dark-mode-toggle-front-office'
 import Logo from './logo'
 
 const navItems = {
