@@ -1,5 +1,6 @@
 import {
     getUncompletedAndDueInTheNextThreeDaysOrLessTasks,
+    getTasksCompletedTheDayBefore
 } from "@/lib/db/queries"
 import {
     type NextRequest,
@@ -14,7 +15,7 @@ import { getUser, getAllUsers } from "@/lib/db/queries/user"
 export async function GET(request: NextRequest) {
     const verification = await verifyRequest(request)
     if ('error' in verification) return verification.error
-    if (verification.userId !== "cron") {
+    if (verification.userId !== "cron" && verification.userId !== "00000000") {
         return NextResponse.json({
             error: "Unauthorized"
         }, {
@@ -25,11 +26,15 @@ export async function GET(request: NextRequest) {
     const users = await getAllUsers()
 
     for (const user of users) {
+        if (verification.userId === "00000000" && user.id !== "00000000") {
+            continue
+        }
         try {
-            const tasks = await getUncompletedAndDueInTheNextThreeDaysOrLessTasks(user.id);
+            const tasksToDo = await getUncompletedAndDueInTheNextThreeDaysOrLessTasks(user.id);
+            const tasksDone = await getTasksCompletedTheDayBefore(user.id);
 
-            // Sort tasks by due date in ascending order
-            const sortedTasks = tasks.sort((a, b) => new Date(a.due).getTime() - new Date(b.due).getTime());
+            // Sort tasksToDo by due date in ascending order
+            const sortedTasksToDo = tasksToDo.sort((a, b) => new Date(a.due).getTime() - new Date(b.due).getTime());
 
             // Helper function to calculate relative days
             const getRelativeDay = (dueDate: Date): string => {
@@ -39,8 +44,18 @@ export async function GET(request: NextRequest) {
                 return rtf.format(diffInDays, "day");
             };
 
-            // Group tasks by relative days
-            const groupedByDays = sortedTasks.reduce((acc: Record<string, any[]>, task) => {
+            // Group tasksDone by projects
+            const groupedTasksDone = tasksDone.reduce((acc: Record<string, any[]>, task) => {
+                const project = task.project_title || "No Project";
+                if (!acc[project]) {
+                    acc[project] = [];
+                }
+                acc[project].push(task);
+                return acc;
+            }, {});
+
+            // Group tasksToDo by relative days
+            const groupedByDays = sortedTasksToDo.reduce((acc: Record<string, any[]>, task) => {
                 const relativeDay = getRelativeDay(new Date(task.due));
                 if (!acc[relativeDay]) {
                     acc[relativeDay] = [];
@@ -49,9 +64,9 @@ export async function GET(request: NextRequest) {
                 return acc;
             }, {});
 
-            // Group tasks by projects within each relative day
-            const groupedByProjects = Object.entries(groupedByDays).reduce((acc: Record<string, any>, [day, tasks]) => {
-                acc[day] = (tasks as any[]).reduce((projectAcc: Record<string, any[]>, task) => {
+            // Group tasksToDo by projects within each relative day
+            const groupedByProjects = Object.entries(groupedByDays).reduce((acc: Record<string, any>, [day, tasksToDo]) => {
+                acc[day] = (tasksToDo as any[]).reduce((projectAcc: Record<string, any[]>, task) => {
                     const project = task.project_title || "No Project";
                     if (!projectAcc[project]) {
                         projectAcc[project] = [];
@@ -136,11 +151,22 @@ export async function GET(request: NextRequest) {
             <h1>Your Daily Task List</h1>
         `;
 
+            // Add tasksDone to the email content
+            emailContent += `<h2>Tasks Completed Yesterday</h2>`;
+            for (const [project, tasks] of Object.entries(groupedTasksDone)) {
+                emailContent += `<h3>${project}</h3><ul>`;
+                (tasks as any[]).forEach((task) => {
+                    emailContent += `<li>${task.title}</li>`;
+                });
+                emailContent += `</ul>`;
+            }
+
+            // Add tasksToDo to the email content
             for (const [day, projects] of Object.entries(groupedByProjects)) {
                 emailContent += `<h2>Due ${day}</h2>`;
-                for (const [project, tasks] of Object.entries(projects)) {
+                for (const [project, tasksToDo] of Object.entries(projects)) {
                     emailContent += `<h3>${project}</h3><ul>`;
-                    (tasks as any[]).forEach((task) => {
+                    (tasksToDo as any[]).forEach((task) => {
                         emailContent += `<li>${task.title}</li>`;
                     });
                     emailContent += `</ul>`;
@@ -154,7 +180,13 @@ export async function GET(request: NextRequest) {
         `;
 
             const today = new Date();
-            const formattedSubject = `${today.toLocaleDateString("en-GB", { weekday: 'long', day: '2-digit', month: 'long' })} - Your Daily Task List`;
+            let formattedSubject : string
+
+            if (tasksDone.length > 0) {
+                formattedSubject = `You did a great job completing ${tasksDone.length} task${tasksDone.length > 1 ? "s" : ""} yesterday! Here's your task list for ${today.toLocaleDateString("en-GB", { weekday: 'long', day: '2-digit', month: 'long' })} !`;
+            } else {
+                formattedSubject = `Here's your task list for ${today.toLocaleDateString("en-GB", { weekday: 'long', day: '2-digit', month: 'long' })} !`;
+            }
             const result = sendEmail(user.email, formattedSubject, emailContent);
 
             if (!result) {
@@ -171,9 +203,9 @@ export async function GET(request: NextRequest) {
                 status: 200
             });
         } catch (error) {
-            console.error("Error fetching tasks:", error);
+            console.error("Error fetching tasksToDo:", error);
             return NextResponse.json({
-                error: "Failed to fetch tasks"
+                error: "Failed to fetch tasksToDo"
             }, {
                 status: 500
             });
