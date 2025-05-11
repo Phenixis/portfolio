@@ -10,6 +10,7 @@ import {
 	and,
 	or,
 	lte,
+	gte,
 	inArray,
 	not,
 	count
@@ -198,6 +199,7 @@ export async function getTasks(
 	excludedProjectTitles?: string[],
 	dueBefore?: Date,
 	completed?: boolean,
+	completed_after?: Date
 ) {
 	// Step 1: First query to get distinct tasks with limit applied
 	const distinctTasks = await db
@@ -252,6 +254,7 @@ export async function getTasks(
 						? isNotNull(Schema.task.completed_at)
 						: isNull(Schema.task.completed_at)
 					: sql`1 = 1`,
+				completed_after ? gte(Schema.task.completed_at, completed_after) : sql`1 = 1`,
 			),
 		)
 		.orderBy(
@@ -397,12 +400,21 @@ export async function searchTasksByTitle(userId: string, title: string, limit = 
 		.limit(limit === -1 ? Number.MAX_SAFE_INTEGER : limit) as Schema.Task[]
 }
 
-export async function getUncompletedAndDueInTheNextThreeDaysOrLessTasks(userId: string, orderBy: keyof Schema.Task = "score", orderingDirection?: "asc" | "desc", limit = 50) {
+export async function getUncompletedAndDueInTheNextThreeDaysOrLessTasks(userId: string, orderBy: keyof Schema.Task = "score", orderingDirection?: "asc" | "desc") {
 	const today = new Date()
 	const threeDaysFromNow = new Date(today)
 	threeDaysFromNow.setDate(today.getDate() + 3)
 
-	return getTasks(userId, orderBy, orderingDirection, limit, undefined, undefined, threeDaysFromNow, false);
+	return getTasks(userId, orderBy, orderingDirection, -1, undefined, undefined, threeDaysFromNow, false);
+}
+
+export async function getTasksCompletedTheDayBefore(userId: string, orderBy: keyof Schema.Task = "completed_at", orderingDirection: "asc" | "desc"  = "asc") {
+	const today = new Date()
+	const yesterday = new Date(today)
+	yesterday.setHours(0, 0, 0, 0)
+	yesterday.setDate(today.getDate() - 1)
+
+	return getTasks(userId, orderBy, orderingDirection, -1, undefined, undefined, undefined, true, yesterday);
 }
 
 // ## Update
