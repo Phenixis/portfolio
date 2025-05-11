@@ -23,7 +23,10 @@ export async function GET(request: NextRequest) {
 	try {
 		const result = await getNumberOfTasks(verification.userId, completed, projectTitles, excludedProjectTitles, dueBefore)
 
-		return NextResponse.json(result)
+		return NextResponse.json(result.map((task) => ({
+			...task,
+			dueDate: task.due ? new Date(task.due).toISOString() : null,
+		})))
 	} catch (error) {
 		console.error("Error fetching tasks:", error)
 		return NextResponse.json({ error: "Failed to fetch tasks" }, { status: 500 })

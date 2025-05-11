@@ -22,6 +22,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { useUser } from "@/hooks/use-user"
 import { toast } from "sonner"
+import { TaskCount } from "@/components/ui/calendar"
 
 export default function TaskDisplay({
 	task,
@@ -93,6 +94,26 @@ export default function TaskDisplay({
 		try {
 			// Optimistic UI update for SWR cache
 			mutate(
+				(key: unknown) => typeof key === "string" && key.startsWith("/api/task/count"),
+				async (currentData: unknown): Promise<TaskCount[] | unknown> => {
+					if (!Array.isArray(currentData)) return currentData
+
+					const updatedData: TaskCount[] = currentData.map((item: TaskCount) => {
+						if (new Date(item.due).getDate() === new Date(task.due).getDate()) {
+							return {
+								...item,
+								count: item.count - 1,
+							}
+						}
+						return item
+					})
+
+					return updatedData
+				},
+				{ revalidate: false }, // Don't revalidate immediately
+			)
+
+			mutate(
 				(key: unknown) => typeof key === "string" && key.startsWith("/api/task"),
 				async (currentData: unknown): Promise<unknown> => {
 					if (!Array.isArray(currentData)) return currentData
@@ -113,6 +134,7 @@ export default function TaskDisplay({
 			// No need to set state again since we already did it optimistically
 			// Revalidate after successful toggle
 			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
+			mutate((key) => typeof key === "string" && key.startsWith("/api/task/count"))
 		} catch (error) {
 			console.error("Error toggling task:", error)
 			toast.error("Error toggling task. Try again later.")
@@ -146,6 +168,26 @@ export default function TaskDisplay({
 		try {
 			setIsDeleting(true)
 
+			mutate(
+				(key: unknown) => typeof key === "string" && key.startsWith("/api/task/count"),
+				async (currentData: unknown): Promise<TaskCount[] | unknown> => {
+					if (!Array.isArray(currentData)) return currentData
+
+					const updatedData: TaskCount[] = currentData.map((item: TaskCount) => {
+						if (new Date(item.due).getDate() === task.due.getDate()) {
+							return {
+								...item,
+								count: item.count - 1,
+							}
+						}
+						return item
+					})
+
+					return updatedData
+				},
+				{ revalidate: false }, // Don't revalidate immediately
+			)
+
 			// Optimistic UI update - remove the task from all lists
 			mutate(
 				(key: unknown) => typeof key === "string" && key.startsWith("/api/task"),
@@ -176,6 +218,7 @@ export default function TaskDisplay({
 
 			// Revalidate after successful deletion
 			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
+			mutate((key) => typeof key === "string" && key.startsWith("/api/task/count"))
 		} catch (error) {
 			console.error("Error deleting task:", error)
 			toast.error("Error deleting task. Try again later.")
@@ -410,12 +453,12 @@ export default function TaskDisplay({
 											Score: <span className="text-black dark:text-white">{task.score}</span>
 										</p>
 									</Tooltip>
-									{task.project_title && (
+									{task.project_title !== null && (
 										<p className="text-sm text-muted-foreground">
 											Project: <span className="text-black dark:text-white">{task.project_title}</span>
 										</p>
 									)}
-									{task.importance && (
+									{task.importance !== null && (
 										<p className="text-sm text-muted-foreground">
 											Importance: <span className="text-black dark:text-white">{task.importanceDetails.name}</span>
 										</p>

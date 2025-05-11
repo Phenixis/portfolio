@@ -10,7 +10,7 @@ import type { Project, TaskToDoAfter, TaskWithNonRecursiveRelations, TaskWithRel
 import { PlusIcon, PenIcon, Minus, Plus, ChevronDown, CircleHelp } from "lucide-react"
 import { useRef, useState, useEffect } from "react"
 import { useSWRConfig } from "swr"
-import { Calendar } from "@/components/ui/calendar"
+import { Calendar, TaskCount } from "@/components/ui/calendar"
 import { calculateUrgency } from "@/lib/utils/task"
 import { format } from "date-fns"
 import { useDebouncedCallback } from "use-debounce"
@@ -209,6 +209,33 @@ export default function TaskModal({
 			setOpen(false)
 
 			mutate(
+				(key: unknown) => typeof key === "string" && key.startsWith("/api/task/count"),
+				async (currentData: unknown): Promise<TaskCount[] | unknown> => {
+					if (!Array.isArray(currentData)) return currentData
+
+					const updatedData: TaskCount[] = currentData.map((item: TaskCount) => {
+						if (new Date(item.due).getDate() === todoData.due.getDate()) {
+							return {
+								...item,
+								count: item.count + (mode === "edit" ? 0 : 1),
+							}
+						}
+						return item
+					})
+
+					if (!updatedData.some((item) => new Date(item.due).getDate() === todoData.due.getDate())) {
+						updatedData.push({
+							due: todoData.due.toISOString(),
+							count: 1,
+						})
+					}
+
+					return updatedData
+				},
+				{ revalidate: false },
+			)
+
+			mutate(
 				(key: unknown) => typeof key === "string" && key.startsWith("/api/task"),
 				async (currentData: unknown): Promise<TaskWithRelations[] | unknown> => {
 					if (!Array.isArray(currentData)) return currentData
@@ -299,15 +326,15 @@ export default function TaskModal({
 					return response.json()
 				})
 				.then(() => {
-					mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
 				})
 				.catch((error) => {
 					console.error("Erreur lors de l'opération:", error)
-					mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
 				})
 
 			resetForm();
 			toast.success(`Task ${mode === "edit" ? "updated" : "created"} successfully`)
+			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
+			mutate((key) => typeof key === "string" && key.startsWith("/api/task/count"))
 		} catch (error) {
 			toast.error(`Failed to ${mode === "edit" ? "update" : "create"} task. Try again later.`)
 			console.error("Erreur lors de la soumission:", error)
