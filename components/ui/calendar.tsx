@@ -79,7 +79,7 @@ function Calendar({
     }
 
     return ( 
-        <DayPicker // I know about the error but I don't know how to fix it
+        <DayPicker
             showOutsideDays={showOutsideDays}
             className={cn("p-2 h-fit", className)}
             classNames={{
@@ -166,7 +166,7 @@ function Calendar({
                     )
                 },
             }}
-            selected={selected}
+            selected={selected as any}
             {...props}
         />
     )
