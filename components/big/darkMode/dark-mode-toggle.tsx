@@ -29,11 +29,13 @@ export default function DarkModeToggle({
     const [hasAskedForAutoDarkMode, setHasAskedForAutoDarkMode] = useState(cookie.has_jarvis_asked_dark_mode || false)
     const [isUpdating, setIsUpdating] = useState(false)
 
-    // Use refs to track the last toggle time to prevent excessive updates
-    const lastToggleTimeRef = useRef<Date | null>(null)
-    const lastCheckResultRef = useRef<boolean | null>(null)
-
     useEffect(() => {
+        const darkModeActivated = document.documentElement.classList.contains("dark")
+
+        if (darkModeActivated !== isDarkMode) {
+            setIsDarkMode(darkModeActivated)
+        }
+
         // RÉCUPÉRER VALEURS DB
         getUserPreferences().then((userPreferences) => {
             if (userPreferences) {
@@ -54,24 +56,10 @@ export default function DarkModeToggle({
             // Only proceed if the state needs to change
             if (isDarkMode === shouldBeDark) return
 
-            // Prevent toggling more than once per minute
-            const now = new Date()
-            if (lastToggleTimeRef.current && now.getTime() - lastToggleTimeRef.current.getTime() < 60000) {
-                return
-            }
-
-            // Prevent toggling if the check result is the same as last time
-            if (lastCheckResultRef.current === shouldBeDark) return
-
-            lastCheckResultRef.current = shouldBeDark
-
-            console.log("Time to toggle dark mode:", shouldBeDark)
-
             if (!isDarkMode && !hasAskedForAutoDarkMode) {
                 setShowAutoDarkModeDialog(true)
             } else {
                 setIsUpdating(true)
-                lastToggleTimeRef.current = now
 
                 setIsDarkMode(shouldBeDark)
                 document.documentElement.classList.toggle("dark", shouldBeDark)
@@ -85,7 +73,7 @@ export default function DarkModeToggle({
                         setIsUpdating(false)
                     })
             }
-        }, 10000) // Check every 10 seconds instead of every second
+        }, 1000) // Check every second
 
         return () => {
             clearInterval(recurrentCheck)
@@ -180,9 +168,6 @@ export default function DarkModeToggle({
                     setIsUpdating(true)
                     await toggleDarkMode(previousState)
                     setIsUpdating(false)
-
-                    // Update the last toggle time to prevent auto-toggling right after manual toggle
-                    lastToggleTimeRef.current = new Date()
                 }}
                 role="button"
                 aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
@@ -203,8 +188,9 @@ export default function DarkModeToggle({
                                 It's getting late.
                                 <br />
                                 <br />
-                                Do you want me to automatically turn back on dark mode after {cookie.startHour}:
-                                {cookie.startMinute < 10 && "0"}
+                                Do you want me to automatically turn on dark mode between {cookie.startHour}:
+                                {cookie.startMinute < 10 && "0"} and {cookie.endHour}:
+                                {cookie.endMinute < 10 && "0"}?
                                 {cookie.startMinute}?
                             </DialogDescription>
                         </DialogHeader>
