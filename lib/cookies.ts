@@ -18,7 +18,11 @@ export async function getDarkModeCookie() {
 }
 
 export async function updateDarkModeCookie(cookie: DarkModeCookie) {
-    (await cookies()).set("dark_mode", JSON.stringify(cookie))
+    const cookieStore = await cookies();
+    cookieStore.set("dark_mode", JSON.stringify(cookie), {
+        path: "/", // Ensure the cookie is accessible across the app
+        maxAge: 30 * 24 * 60 * 60 // 30 days in seconds
+    });
 }
 
 export async function syncDarkModeState(isDarkMode: boolean, cookie: DarkModeCookie) {
