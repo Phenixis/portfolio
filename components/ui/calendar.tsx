@@ -6,6 +6,17 @@ import { DayPicker } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
+import type { DailyMood } from "@/lib/db/schema"
+
+export const DailyMoodColors: {
+    [key: number]: string
+} = {
+    0: "bg-red-500/30 dark:bg-red-600",
+    1: "bg-orange-500/30 dark:bg-orange-600",
+    2: "bg-yellow-500/30 dark:bg-yellow-600",
+    3: "bg-green-500/30 dark:bg-green-600",
+    4: "bg-blue-500/30 dark:bg-blue-600",
+}
 
 export type TaskCount = {
     count: number
@@ -14,9 +25,18 @@ export type TaskCount = {
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
     taskCounts?: TaskCount[]
+    dailyMoods?: DailyMood[]
 }
 
-function Calendar({ className, classNames, showOutsideDays = true, taskCounts = [], ...props }: CalendarProps) {
+function Calendar({
+    className,
+    classNames,
+    showOutsideDays = true,
+    taskCounts = [],
+    dailyMoods = [],
+    selected,
+    ...props
+}: CalendarProps) {
     // Function to get task count for a specific date
     const getTaskCountForDate = (date: Date) => {
         // Find task count for this date (comparing just the date part)
@@ -24,8 +44,42 @@ function Calendar({ className, classNames, showOutsideDays = true, taskCounts = 
         return taskData?.count || 0
     }
 
-    return (
-        <DayPicker
+    // Function to get mood for a specific date
+    const getMoodForDate = (date: Date) => {
+        const moodData = dailyMoods.find((mood) => new Date(mood.date).toDateString() === date.toDateString())
+        return moodData?.mood ?? -1 // Return -1 if no mood is found
+    }
+
+    // Function to get mood color class based on mood value
+    const getMoodColorClass = (mood: number) => {
+        if (mood === -1) return "" // No color for mood -1
+        return DailyMoodColors[mood] || ""
+    }
+
+    // Function to check if a date is selected
+    const isDateSelected = (date: Date) => {
+        if (!selected) return false
+
+        // Handle both single date and date range selections
+        if (Array.isArray(selected)) {
+            return selected.some((selectedDate) => selectedDate instanceof Date && selectedDate.toDateString() === date.toDateString())
+        } else if (selected instanceof Date) {
+            return selected.toDateString() === date.toDateString()
+        } else if (selected && typeof selected === 'object' && "from" in selected) {
+            // Handle date range
+            const { from, to } = selected
+            if (!from) return false
+            if (!to) return from.toDateString() === date.toDateString()
+
+            // Check if date is within range
+            return date >= new Date(from.setHours(0, 0, 0, 0)) && date <= new Date(to.setHours(23, 59, 59, 999))
+        }
+
+        return false
+    }
+
+    return ( 
+        <DayPicker // I know about the error but I don't know how to fix it
             showOutsideDays={showOutsideDays}
             className={cn("p-2 h-fit", className)}
             classNames={{
@@ -45,7 +99,10 @@ function Calendar({ className, classNames, showOutsideDays = true, taskCounts = 
                 head_cell: "text-muted-foreground rounded-md w-7 lg:w-9 font-normal text-[0.8rem]",
                 row: "flex w-full mt-2",
                 cell: "h-7 lg:h-9 w-7 lg:w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-                day: cn(buttonVariants({ variant: "ghost" }), "h-7 lg:h-9 w-7 lg:w-9 p-0 font-normal aria-selected:opacity-100 relative"),
+                day: cn(
+                    buttonVariants({ variant: "ghost" }),
+                    "h-7 lg:h-9 w-7 lg:w-9 p-0 font-normal aria-selected:opacity-100 relative",
+                ),
                 day_range_end: "day-range-end",
                 day_selected:
                     "bg-primary text-primary-foreground lg:hover:bg-primary lg:hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
@@ -64,13 +121,44 @@ function Calendar({ className, classNames, showOutsideDays = true, taskCounts = 
                     const maxDots = 5 // Maximum number of dots to display
                     const dotsToShow = Math.min(taskCount, maxDots)
 
+                    // Get mood for this date
+                    const mood = getMoodForDate(props.date)
+                    const moodColorClass = getMoodColorClass(mood)
+
+                    // Check if this date is selected
+                    const isSelected = isDateSelected(props.date)
+
+                    // Determine if today for styling - using full date comparison
+                    const today = new Date()
+                    const isToday =
+                        props.date.getDate() === today.getDate() &&
+                        props.date.getMonth() === today.getMonth() &&
+                        props.date.getFullYear() === today.getFullYear()
+
                     return (
-                        <div className="flex flex-col items-center justify-center h-full">
-                            <div className="mb-1">{props.date.getDate()}</div>
+                        <div className="flex flex-col items-center justify-center h-full w-full">
+                            {/* Mood indicator as background */}
+                            {mood !== -1 && (
+                                <div
+                                    className={`absolute inset-0.5 rounded-sm opacity-30 ${moodColorClass}`}
+                                    aria-hidden="true"
+                                    style={{ pointerEvents: "none" }}
+                                />
+                            )}
+
+                            {/* Date number */}
+                            <div className="mb-1 relative z-10">{props.date.getDate()}</div>
+
+                            {/* Task count dots */}
                             {taskCount > 0 && (
-                                <div className="grid grid-cols-3 lg:grid-cols-5 justify-center gap-0.5 absolute bottom-1">
+                                <div className="grid grid-cols-3 lg:grid-cols-5 justify-center gap-0.5 absolute bottom-1 z-10">
                                     {Array.from({ length: dotsToShow }).map((_, i) => (
-                                        <div key={i} className={`h-1 w-1 rounded-full ${props.date.getDate() == new Date().getDate() ? "bg-secondary" : "bg-primary"}`} aria-hidden="true" />
+                                        <div
+                                            key={i}
+                                            className={`h-1 w-1 rounded-full ${isSelected ? "bg-primary-foreground" : "bg-primary"
+                                                }`}
+                                            aria-hidden="true"
+                                        />
                                     ))}
                                 </div>
                             )}
@@ -78,6 +166,7 @@ function Calendar({ className, classNames, showOutsideDays = true, taskCounts = 
                     )
                 },
             }}
+            selected={selected}
             {...props}
         />
     )
