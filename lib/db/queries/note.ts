@@ -119,7 +119,7 @@ export async function updateNote(userId: string, id: number, title: string, cont
         iv
     }).where(and(eq(Schema.note.id, id), eq(Schema.note.user_id, userId)))
 
-    revalidatePath("/", "layout");
+    revalidatePath("/my", "layout");
 
     return note
 }
@@ -129,7 +129,7 @@ export async function deleteNote(userId: string, id: number) {
         deleted_at: new Date()
     }).where(and(eq(Schema.note.id, id), eq(Schema.note.user_id, userId)))
 
-    revalidatePath("/", "layout");
+    revalidatePath("/my", "layout");
 
     return note
 }

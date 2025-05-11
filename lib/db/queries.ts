@@ -43,7 +43,7 @@ export async function createTask(title: string, importance: number, dueDate: Dat
 		.returning({ id: Schema.task.id })
 
 	// Revalidate all pages that might show todos
-	revalidatePath("/", 'layout')
+	revalidatePath("/my", 'layout')
 
 	return result[0].id
 }
@@ -385,7 +385,7 @@ export async function updateTask(userId: string, id: number, title: string, impo
 		.returning({ id: Schema.task.id })
 
 	// Revalidate all pages that might show todos
-	revalidatePath("/", 'layout')
+	revalidatePath("/my", 'layout')
 
 	if (!result) {
 		return null
@@ -416,7 +416,7 @@ export async function updateTaskUrgency(userId: string, id: number) {
 		.returning({ id: Schema.task.id })
 
 	// Revalidate all pages that might show todos
-	revalidatePath("/", 'layout')
+	revalidatePath("/my", 'layout')
 
 	if (!result) {
 		return null
@@ -439,7 +439,7 @@ export async function markTaskAsDone(userId: string, id: number) {
 		.returning({ id: Schema.task.id })
 
 	// Revalidate all pages that might show todos
-	revalidatePath("/", 'layout')
+	revalidatePath("/my", 'layout')
 
 	if (!result) {
 		return null
@@ -462,7 +462,7 @@ export async function markTaskAsUndone(userId: string, id: number) {
 		.returning({ id: Schema.task.id })
 
 	// Revalidate all pages that might show todos
-	revalidatePath("/", 'layout')
+	revalidatePath("/my", 'layout')
 
 	return result[0].id
 }
@@ -482,7 +482,7 @@ export async function deleteTaskById(userId: string, id: number) {
 		.returning({ id: Schema.task.id })
 
 	// Revalidate all pages that might show todos
-	revalidatePath("/", 'layout')
+	revalidatePath("/my", 'layout')
 
 	if (result && result.length > 0) {
 		return result[0].id
@@ -520,7 +520,7 @@ export async function createMeteo(userId: string, dayOrMeteo: string | Schema.Ne
 		.returning({ day: Schema.meteo.day });
 
 	// Revalidate all pages that might show meteo
-	revalidatePath("/", 'layout');
+	revalidatePath("/my", 'layout');
 
 	return result[0].day;
 }
@@ -576,7 +576,7 @@ export async function updateMeteo(userId: string, dayOrMeteo: string | Schema.Ne
 		.returning({ day: Schema.meteo.day });
 
 	// Revalidate all pages that might show meteo
-	revalidatePath("/", 'layout');
+	revalidatePath("/my", 'layout');
 
 	if (!result) {
 		return null;
@@ -597,7 +597,7 @@ export async function deleteMeteoByDay(userId: string, day: string) {
 		.returning({ day: Schema.meteo.day })
 
 	// Revalidate all pages that might show meteo
-	revalidatePath("/", 'layout')
+	revalidatePath("/my", 'layout')
 
 	if (result && result.length > 0) {
 		return result[0].day
@@ -621,7 +621,7 @@ export async function createProject(userId: string, title: string, description?:
 		.returning({ id: Schema.project.title })
 
 	// Revalidate all pages that might show projects
-	revalidatePath("/", 'layout')
+	revalidatePath("/my", 'layout')
 
 	return result[0].id
 }
@@ -797,7 +797,7 @@ export async function updateProject(userId: string, title: string, new_title?: s
 		.returning({ title: Schema.project.title })
 
 	// Revalidate all pages that might show projects
-	revalidatePath("/", 'layout')
+	revalidatePath("/my", 'layout')
 
 	if (!result) {
 		return null
@@ -820,7 +820,7 @@ export async function completeProject(userId: string, title: string) {
 		.returning({ title: Schema.project.title })
 
 	// Revalidate all pages that might show projects
-	revalidatePath("/", 'layout')
+	revalidatePath("/my", 'layout')
 
 	if (!result) {
 		return null
@@ -843,7 +843,7 @@ export async function uncompleteProject(userId: string, title: string) {
 		.returning({ title: Schema.project.title })
 
 	// Revalidate all pages that might show projects
-	revalidatePath("/", 'layout')
+	revalidatePath("/my", 'layout')
 
 	if (!result) {
 		return null
@@ -867,7 +867,7 @@ export async function deleteProject(userId: string, title: string) {
 		.returning({ title: Schema.project.title })
 
 	// Revalidate all pages that might show projects
-	revalidatePath("/", 'layout')
+	revalidatePath("/my", 'layout')
 
 	if (result && result.length > 0) {
 		return result[0].title
@@ -899,7 +899,7 @@ export async function createExercice(userId: string, nameOrExercice: string | Sc
 	const result = await db.insert(Schema.exercice).values(newExercice).returning({ id: Schema.exercice.id })
 
 	// Revalidate all pages that might show exercices
-	revalidatePath("/", "layout")
+	revalidatePath("/my", "layout")
 
 	return result[0].id
 }
@@ -947,7 +947,7 @@ export async function updateExercice(userId: string, idOrExercice: number | Sche
 		.returning({ id: Schema.exercice.id })
 
 	// Revalidate all pages that might show exercices
-	revalidatePath("/", "layout")
+	revalidatePath("/my", "layout")
 
 	if (!result) {
 		return null
@@ -969,7 +969,7 @@ export async function deleteExerciceById(userId: string, id: number) {
 		.returning({ id: Schema.exercice.id })
 
 	// Revalidate all pages that might show exercices
-	revalidatePath("/", "layout")
+	revalidatePath("/my", "layout")
 
 	if (result && result.length > 0) {
 		return result[0].id
@@ -999,7 +999,7 @@ export async function createSeance(userId: string, nameOrSeance: string | Schema
 	const result = await db.insert(Schema.seance).values(newSeance).returning({ id: Schema.seance.id })
 
 	// Revalidate all pages that might show seances
-	revalidatePath("/", "layout")
+	revalidatePath("/my", "layout")
 
 	return result[0].id
 }
@@ -1047,7 +1047,7 @@ export async function updateSeance(userId: string, idOrSeance: number | Schema.N
 		.returning({ id: Schema.seance.id })
 
 	// Revalidate all pages that might show seances
-	revalidatePath("/", "layout")
+	revalidatePath("/my", "layout")
 
 	if (!result) {
 		return null
@@ -1069,7 +1069,7 @@ export async function deleteSeanceById(userId: string, id: number) {
 		.returning({ id: Schema.seance.id })
 
 	// Revalidate all pages that might show seances
-	revalidatePath("/", "layout")
+	revalidatePath("/my", "layout")
 
 	if (result && result.length > 0) {
 		return result[0].id
@@ -1109,7 +1109,7 @@ export async function createSeanceExercice(
 		.returning({ id: Schema.seanceExercice.id })
 
 	// Revalidate all pages that might show seance exercices
-	revalidatePath("/", "layout")
+	revalidatePath("/my", "layout")
 
 	return result[0].id
 }
@@ -1176,7 +1176,7 @@ export async function updateSeanceExercice(
 		.returning({ id: Schema.seanceExercice.id })
 
 	// Revalidate all pages that might show seance exercices
-	revalidatePath("/", "layout")
+	revalidatePath("/my", "layout")
 
 	if (!result) {
 		return null
@@ -1195,7 +1195,7 @@ export async function deleteSeanceExerciceById(id: number) {
 		.returning({ id: Schema.seanceExercice.id })
 
 	// Revalidate all pages that might show seance exercices
-	revalidatePath("/", "layout")
+	revalidatePath("/my", "layout")
 
 	if (result && result.length > 0) {
 		return result[0].id
@@ -1234,7 +1234,7 @@ export async function createWorkout(
 	const result = await db.insert(Schema.workout).values(newWorkout).returning({ id: Schema.workout.id })
 
 	// Revalidate all pages that might show workouts
-	revalidatePath("/", "layout")
+	revalidatePath("/my", "layout")
 
 	return result[0].id
 }
@@ -1318,7 +1318,7 @@ export async function updateWorkout(
 		.returning({ id: Schema.workout.id })
 
 	// Revalidate all pages that might show workouts
-	revalidatePath("/", "layout")
+	revalidatePath("/my", "layout")
 
 	if (!result) {
 		return null
@@ -1340,7 +1340,7 @@ export async function deleteWorkoutById(userId: string, id: number) {
 		.returning({ id: Schema.workout.id })
 
 	// Revalidate all pages that might show workouts
-	revalidatePath("/", "layout")
+	revalidatePath("/my", "layout")
 
 	if (result && result.length > 0) {
 		return result[0].id
@@ -1383,7 +1383,7 @@ export async function createSerie(
 	const result = await db.insert(Schema.serie).values(newSerie).returning({ id: Schema.serie.id })
 
 	// Revalidate all pages that might show series
-	revalidatePath("/", "layout")
+	revalidatePath("/my", "layout")
 
 	return result[0].id
 }
@@ -1471,7 +1471,7 @@ export async function updateSerie(
 		.returning({ id: Schema.serie.id })
 
 	// Revalidate all pages that might show series
-	revalidatePath("/", "layout")
+	revalidatePath("/my", "layout")
 
 	if (!result) {
 		return null
@@ -1493,7 +1493,7 @@ export async function deleteSerieById(userId: string, id: number) {
 		.returning({ id: Schema.serie.id })
 
 	// Revalidate all pages that might show series
-	revalidatePath("/", "layout")
+	revalidatePath("/my", "layout")
 
 	if (result && result.length > 0) {
 		return result[0].id
