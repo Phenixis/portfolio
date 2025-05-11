@@ -204,6 +204,13 @@
       "when": 1746740814543,
       "tag": "0028_cool_prodigy",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1746970326419,
+      "tag": "0029_magical_lady_deathstrike",
+      "breakpoints": true
     }
   ]
 }

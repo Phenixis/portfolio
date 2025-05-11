@@ -18,6 +18,7 @@ export const user = pgTable('user', {
     first_name: varchar('first_name', { length: 255 }).notNull(),
     last_name: varchar('last_name', { length: 255 }).notNull(),
     api_key: varchar('api_key', { length: 255 }).notNull(),
+
     has_jarvis_asked_dark_mode: boolean('has_jarvis_asked_dark_mode').notNull().default(false),
     dark_mode_activated: boolean('dark_mode_activated').notNull().default(false),
     auto_dark_mode_enabled: boolean('auto_dark_mode_enabled').notNull().default(true),
@@ -26,6 +27,11 @@ export const user = pgTable('user', {
     dark_mode_start_minute: integer('dark_mode_start_minute').notNull().default(0),
     dark_mode_end_minute: integer('dark_mode_end_minute').notNull().default(0),
     dark_mode_override: boolean('dark_mode_override').notNull().default(false),
+
+    note_draft_title: varchar('note_draft_title', { length: 255 }).notNull().default(""),
+    note_draft_content: text('note_draft_content').notNull().default(""),
+    note_draft_project_title: varchar('note_draft_project_title', { length: 255 }).notNull().default(""),
+    
     created_at: timestamp('created_at').notNull().defaultNow(),
     updated_at: timestamp('updated_at').notNull().defaultNow(),
     deleted_at: timestamp('deleted_at')
