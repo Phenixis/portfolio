@@ -33,11 +33,12 @@ export default function DarkModeToggle({
         const darkModeActivated = document.documentElement.classList.contains("dark")
 
         if (darkModeActivated !== isDarkMode) {
-            setIsDarkMode(darkModeActivated)
-            setCookie((prev) => ({
-                ...prev,
-                dark_mode: darkModeActivated,
-            }))
+            console.log("Actual dark mode state is different :", darkModeActivated, isDarkMode)
+            // setIsDarkMode(darkModeActivated)
+            // setCookie((prev) => ({
+            //     ...prev,
+            //     dark_mode: darkModeActivated,
+            // }))
         }
 
         // RÉCUPÉRER VALEURS DB
