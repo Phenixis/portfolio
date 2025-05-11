@@ -211,6 +211,13 @@
       "when": 1746970326419,
       "tag": "0029_magical_lady_deathstrike",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1746988033442,
+      "tag": "0030_tired_bromley",
+      "breakpoints": true
     }
   ]
 }

@@ -47,6 +47,19 @@ export const duration = pgTable('duration', {
     name: varchar("name", { length: 50 }).notNull(),
 })
 
+// Table DailyMood
+export const dailyMood = pgTable('daily_mood', {
+    id: serial('id').primaryKey(),
+    user_id: char('user_id', { length: 8 }).default("00000000").notNull()
+        .references(() => user.id),
+    date: timestamp('date').notNull().defaultNow(),
+    mood: integer('mood').notNull().default(0),
+    comment: varchar('comment', { length: 5000 }).notNull().default(""),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow(),
+    deleted_at: timestamp('deleted_at')
+});
+
 // Table Project
 export const project = pgTable('project', {
     user_id: char('user_id', { length: 8 }).default("00000000").notNull()
@@ -209,6 +222,20 @@ export const note = pgTable('note', {
 });
 
 // Relations
+export const userRelations = relations(user, ({ one, many }) => ({
+    tasks: many(task),
+    projects: many(project),
+    notes: many(note),
+    exercices: many(exercice),
+    seances: many(seance),
+    workouts: many(workout),
+    series: many(serie),
+    dailyMoods: many(dailyMood),
+    meteo: many(meteo),
+    seriesGroups: many(seriesGroup),
+    seanceExercices: many(seanceExercice),
+}));
+
 export const projectRelations = relations(project, ({ one, many }) => ({
     tasks: many(task),
     user: one(user, {
@@ -338,3 +365,5 @@ export type Duration = typeof duration.$inferSelect;
 export type NewDuration = typeof duration.$inferInsert;
 export type Note = typeof note.$inferSelect;
 export type NewNote = typeof note.$inferInsert;
+export type DailyMood = typeof dailyMood.$inferSelect;
+export type NewDailyMood = typeof dailyMood.$inferInsert;
