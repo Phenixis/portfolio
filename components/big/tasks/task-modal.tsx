@@ -341,11 +341,11 @@ export default function TaskModal({
 		if (date) {
 			date.setHours(0, 0, 0, 0)
 			setDueDate(date)
-			setShowCalendar(false)
 			setFormChanged(
 				(mode === "edit" && task && date.getDate() !== new Date(task.due).getDate()) || date.getDate() !== new Date().getDate()
 			)
 		}
+		setShowCalendar(false)
 	}
 
 	const handleProjectChange = useDebouncedCallback((value: string) => {
