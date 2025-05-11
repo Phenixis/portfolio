@@ -174,7 +174,7 @@ export default function TaskDisplay({
 					if (!Array.isArray(currentData)) return currentData
 
 					const updatedData: TaskCount[] = currentData.map((item: TaskCount) => {
-						if (new Date(item.due).getDate() === task.due.getDate()) {
+						if (new Date(item.due).getDate() === new Date(task.due).getDate()) {
 							return {
 								...item,
 								count: item.count - 1,

@@ -214,16 +214,16 @@ export default function TaskModal({
 					if (!Array.isArray(currentData)) return currentData
 
 					const updatedData: TaskCount[] = currentData.map((item: TaskCount) => {
-						if (new Date(item.due).getDate() === todoData.due.getDate()) {
+						if (new Date(item.due).getDate() === new Date(todoData.due).getDate()) {
 							return {
 								...item,
-								count: item.count + (mode === "edit" ? 0 : 1),
+								count: item.count + 1,
 							}
 						}
 						return item
 					})
 
-					if (!updatedData.some((item) => new Date(item.due).getDate() === todoData.due.getDate())) {
+					if (!updatedData.some((item) => new Date(item.due).getDate() === new Date(todoData.due).getDate())) {
 						updatedData.push({
 							due: todoData.due.toISOString(),
 							count: 1,
