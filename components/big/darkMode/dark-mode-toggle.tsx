@@ -34,6 +34,10 @@ export default function DarkModeToggle({
 
         if (darkModeActivated !== isDarkMode) {
             setIsDarkMode(darkModeActivated)
+            setCookie((prev) => ({
+                ...prev,
+                dark_mode: darkModeActivated,
+            }))
         }
 
         // RÉCUPÉRER VALEURS DB
