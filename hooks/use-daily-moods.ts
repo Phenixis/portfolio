@@ -1,10 +1,10 @@
 "use client"
 
-import type { DailyMood, Task, TaskWithRelations } from "@/lib/db/schema"
+import type { DailyMood } from "@/lib/db/schema"
 import { useFilteredData } from "./use-filtered-data"
 
 // hooks/use--number-of-tasks.ts
-export function useNumberOfTasks({
+export function useDailyMoods({
     enabled,
     startDate,
     endDate,
