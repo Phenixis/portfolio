@@ -53,7 +53,7 @@ export const dailyMood = pgTable('daily_mood', {
     user_id: char('user_id', { length: 8 }).default("00000000").notNull()
         .references(() => user.id),
     date: timestamp('date').notNull().defaultNow(),
-    mood: integer('mood').notNull().default(0),
+    mood: integer('mood').notNull().default(-1),
     comment: varchar('comment', { length: 5000 }).notNull().default(""),
     created_at: timestamp('created_at').notNull().defaultNow(),
     updated_at: timestamp('updated_at').notNull().defaultNow(),
