@@ -11,7 +11,8 @@ import {
 	or,
 	lte,
 	inArray,
-	not
+	not,
+	count
 } from "drizzle-orm"
 import { db } from "./drizzle"
 import * as Schema from "./schema"
@@ -144,6 +145,48 @@ export async function getTaskById(id: number, recursive: boolean = false) {
 		return dbresult[0] ? { ...dbresult[0], recursive: false } as Schema.TaskWithNonRecursiveRelations : null;
 	}
 
+}
+
+export async function getNumberOfTasks(userId: string, completed?: boolean, projectTitles?: string[], excludedProjectTitles?: string[], dueBefore?: Date) {
+	const dbresult = await db
+		.select({
+			count: count(Schema.task.id).as("count"),
+			due: Schema.task.due,
+		})
+		.from(Schema.task)
+		.where(and(
+			isNull(Schema.task.deleted_at),
+			eq(Schema.task.user_id, userId),
+			projectTitles
+				? or(
+					inArray(Schema.task.project_title, projectTitles),
+					sql`${isNull(Schema.task.project_title)} AND ${projectTitles.includes("No project")}`,
+				)
+				: sql`1 = 1`,
+			excludedProjectTitles && excludedProjectTitles.length > 0
+				? and(
+					or(
+						isNull(Schema.task.project_title),
+						not(inArray(
+							Schema.task.project_title,
+							excludedProjectTitles.filter(p => p !== "No project")
+						))
+					),
+					excludedProjectTitles.includes("No project")
+						? isNotNull(Schema.task.project_title)
+						: sql`1 = 1`
+				)
+				: sql`1 = 1`,
+			dueBefore ? lte(Schema.task.due, dueBefore) : sql`1 = 1`,
+			completed !== undefined
+				? completed
+					? isNotNull(Schema.task.completed_at)
+					: isNull(Schema.task.completed_at)
+				: sql`1 = 1`,
+		))
+		.groupBy(Schema.task.due)
+
+	return dbresult;
 }
 
 export async function getTasks(
