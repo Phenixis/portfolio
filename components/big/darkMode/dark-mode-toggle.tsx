@@ -32,15 +32,12 @@ export default function DarkModeToggle({
     useEffect(() => {
         const darkModeActivated = document.documentElement.classList.contains("dark")
 
-        console.log("Dark mode activated:", darkModeActivated)
-        console.log("Dark mode state:", isDarkMode)
         if (darkModeActivated !== isDarkMode) {
-            console.log("Actual dark mode state is different :", darkModeActivated, isDarkMode)
-            // setIsDarkMode(darkModeActivated)
-            // setCookie((prev) => ({
-            //     ...prev,
-            //     dark_mode: darkModeActivated,
-            // }))
+            setIsDarkMode(darkModeActivated)
+            setCookie((prev) => ({
+                ...prev,
+                dark_mode: darkModeActivated,
+            }))
         }
 
         // RÉCUPÉRER VALEURS DB
