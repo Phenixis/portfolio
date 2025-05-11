@@ -188,9 +188,8 @@ export default function DarkModeToggle({
                                 It's getting late.
                                 <br />
                                 <br />
-                                Do you want me to automatically turn on dark mode between {cookie.startHour}:
-                                {cookie.startMinute < 10 && "0"} and {cookie.endHour}:
-                                {cookie.endMinute < 10 && "0"}?
+                                Do you want me to automatically turn on dark mode between {cookie.startHour < 10 ? "0" + cookie.startHour : cookie.startHour}:{cookie.startMinute < 10 ? "0" + cookie.startMinute : cookie.startMinute} and {cookie.endHour}:
+                                {cookie.endMinute < 10 && "0"}
                                 {cookie.startMinute}?
                             </DialogDescription>
                         </DialogHeader>
