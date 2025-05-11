@@ -6,17 +6,21 @@ import { cn } from "@/lib/utils"
 import { useSearchParams } from "next/navigation"
 import { TASK_PARAMS } from "../tasks/tasks-card"
 import { useNumberOfTasks } from "@/hooks/use-number-of-tasks"
+import { useDailyMoods } from "@/hooks/use-daily-moods" 
 
 export default function Calendar({
     className,
     showNumberOfTasks = true,
+    showDailyMood = true,
 }: {
     className: string,
     showNumberOfTasks?: boolean
+    showDailyMood?: boolean
 }) {
     const searchParams = useSearchParams()
-
+    const now = new Date()
     const [date, setDate] = useState<Date | undefined>(new Date())
+    const [month, setMonth] = useState<Date>(date ? new Date(date.getFullYear(), date.getMonth(), 1) : new Date(now.getFullYear(), now.getMonth(), 1))
 
     // Only fetch data when showNumberOfTasks is true
     const { data, isLoading, isError } = useNumberOfTasks({
@@ -27,8 +31,15 @@ export default function Calendar({
         excludedProjectTitles: searchParams.get(TASK_PARAMS.REMOVED_PROJECTS)
             ? searchParams.get(TASK_PARAMS.REMOVED_PROJECTS)?.split(",")
             : undefined,
-        month: date ? new Date(date.getFullYear(), date.getMonth(), 1) : undefined,
+        month: month ? new Date(month.getFullYear(), month.getMonth() + 1, 0) : undefined,
         enabled: showNumberOfTasks, // Skip data fetching when not needed
+    })
+
+    // Fetch daily moods data
+    const { data: dailyMoods, isLoading: isLoadingDailyMoods, isError: isErrorDailyMoods } = useDailyMoods({
+        startDate: new Date(month.getFullYear(), month.getMonth(), 1),
+        endDate: new Date(month.getFullYear(), month.getMonth() + 1, 0),
+        enabled: showDailyMood,
     })
 
     useEffect(() => {
@@ -52,6 +63,10 @@ export default function Calendar({
                     console.log(day)
                 }}
                 taskCounts={showNumberOfTasks ? data : []}
+                dailyMoods={showDailyMood ? dailyMoods : []}
+                onMonthChange={(month) => {
+                    setMonth(month)
+                }}
             />
             <div>
                 <div className="flex items-center justify-center w-full text-2xl">
