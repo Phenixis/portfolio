@@ -21,6 +21,7 @@ import {
 import { useDebouncedCallback } from "use-debounce"
 import SearchProjectsInput from "@/components/big/projects/search-projects-input"
 import { NotesAndData } from "@/lib/db/queries/note"
+import { getUserDraftNote, updateUserDraftNote } from "@/lib/db/queries/user"
 
 export default function NoteModal({
     className,
@@ -32,6 +33,7 @@ export default function NoteModal({
     password?: string
 }) {
     const user = useUser().user;
+    if (!user) return null
     const mode = note ? "edit" : "create"
     const { mutate } = useSWRConfig()
 
@@ -42,19 +44,74 @@ export default function NoteModal({
     const [decryptedContent, setDecryptedContent] = useState<string | null>(null)
     const [passwordValue, setPasswordValue] = useState<string>(password || "")
 
-    const [project, setProject] = useState<string>(note && note.project_title ? note.project_title : "")
+    const [noteTitle, setNoteTitle] = useState<string>(note ? (note.title ? note.title : "") : user.note_draft_title || "")
+    const [inputNoteTitle, setInputNoteTitle] = useState<string>(note ? (note.title ? note.title : "") : user.note_draft_title || "")
+    const [noteContent, setNoteContent] = useState<string>(note ? (note.content ? note.content : "") : user.note_draft_content || "")
+    const [inputNoteContent, setInputNoteContent] = useState<string>(note ? (note.content ? note.content : "") : user.note_draft_content || "")
+    const [project, setProject] = useState<string>(note ? (note.project_title ? note.project_title : "") : user.note_draft_project_title || "")
+
+    const updateNoteTitle = useDebouncedCallback((value: string) => {
+        setNoteTitle(value)
+    }, 200)
+
+    const updateNoteContent = useDebouncedCallback((value: string) => {
+        setNoteContent(value)
+    }, 200)
+
+    const updateUserDraftNoteDebounced = useDebouncedCallback(() => {
+        if (!user || mode == "edit") return 
+
+        updateUserDraftNote({
+            userId: user?.id,
+            note_title: noteTitle,
+            note_content: noteContent,
+            note_project_title: project,
+        }).then(() => {
+            console.log("Draft note updated successfully")
+        }
+        ).catch((error) => {
+            console.error("Error updating draft note:", error)
+        })
+    }, 1000)
+
+    useEffect(() => {
+        updateNoteTitle(inputNoteTitle)
+    }, [inputNoteTitle])
+
+    useEffect(() => {
+        updateNoteContent(inputNoteContent)
+    }, [inputNoteContent])
+
+
+    useEffect(() => {
+        updateUserDraftNoteDebounced()
+    }, [noteContent, noteTitle, project])
 
     // Refs
-    const titleRef = useRef<HTMLInputElement>(null)
-    const contentRef = useRef<HTMLTextAreaElement>(null)
     const isSubmittingRef = useRef(false)
 
     // Handlers
     const resetForm = () => {
-        titleRef.current!.value = ""
-        contentRef.current!.value = ""
+        setNoteTitle("")
+        setInputNoteTitle("")
+        setNoteContent("")
+        setInputNoteContent("")
         setProject("")
+        setPasswordValue("")
+        setDecryptedContent(null)
         setFormChanged(false)
+        setShowAdvancedOptions(false)
+
+        updateUserDraftNote({
+            userId: user?.id,
+            note_title: "",
+            note_content: "",
+            note_project_title: "",
+        }).then(() => {
+            console.log("Draft note reset successfully")
+        }).catch((error: any) => {
+            console.error("Error resetting draft note:", error)
+        })
     }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -64,10 +121,7 @@ export default function NoteModal({
         isSubmittingRef.current = true
 
         try {
-            const title = titleRef.current?.value || ""
-            const content = contentRef.current?.value || ""
-
-            if (!title.trim()) {
+            if (!noteTitle.trim()) {
                 isSubmittingRef.current = false
                 return
             }
@@ -76,12 +130,12 @@ export default function NoteModal({
 
             // 🔐 Encrypt the note content
             if (passwordValue) {
-                const encrypted = await encryptNote(content, passwordValue)
+                const encrypted = await encryptNote(noteContent, passwordValue)
 
                 noteData = {
                     id: mode === "edit" ? note?.id : -1,
                     user_id: user?.id,
-                    title,
+                    title: noteTitle,
                     content: encrypted.ciphertext,
                     project_title: project,
                     salt: encrypted.salt,
@@ -93,8 +147,8 @@ export default function NoteModal({
                 noteData = {
                     id: mode === "edit" ? note?.id : -1,
                     user_id: user?.id,
-                    title,
-                    content,
+                    title: noteTitle,
+                    content: noteContent,
                     project_title: project,
                     created_at: mode === "create" ? new Date() : note?.created_at,
                     updated_at: new Date(),
@@ -111,14 +165,14 @@ export default function NoteModal({
                         const data = currentData as NotesAndData
                         if (!data) return currentData
                         const currentNotes = data.notes || []
-                        
+
                         let updatedData: Note[]
                         if (mode === "edit") {
                             updatedData = currentNotes.map((item: Note) => (item.id === note?.id ? noteData : item))
                         } else {
                             updatedData = [...currentNotes, noteData]
                         }
-                        
+
                         return {
                             ...data,
                             notes: updatedData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
@@ -154,13 +208,13 @@ export default function NoteModal({
     const verifyFormChanged = () => {
         setFormChanged(
             (mode === "edit" ?
-                titleRef.current?.value.trim() !== note?.title.trim() :
-                titleRef.current?.value.trim() !== ""
+                inputNoteTitle.trim() !== note?.title.trim() :
+                inputNoteTitle.trim() !== ""
             )
             &&
             (mode === "edit" ?
-                contentRef.current?.value.trim() !== note?.content.trim() :
-                contentRef.current?.value.trim() !== ""
+                inputNoteContent.trim() !== note?.content.trim() :
+                inputNoteContent.trim() !== ""
             )
         )
     }
@@ -171,9 +225,8 @@ export default function NoteModal({
             decryptNote(note.content, pwd, note.salt, note.iv)
                 .then((decryptedContent) => {
                     setDecryptedContent(decryptedContent)
-                    if (contentRef.current) {
-                        contentRef.current.value = decryptedContent
-                    }
+                    setInputNoteContent(decryptedContent)
+                    setNoteContent(decryptedContent)
                 })
                 .catch((err) => {
                     console.error("Decryption failed", err)
@@ -212,31 +265,35 @@ export default function NoteModal({
                     <div>
                         <Label htmlFor="title" required>Title</Label>
                         <Input
-                            ref={titleRef}
                             type="text"
                             id="title"
                             name="title"
-                            defaultValue={note?.title || ""}
+                            defaultValue={noteTitle}
                             autoFocus
-                            onChange={() => verifyFormChanged()}
+                            onChange={(e) => {
+                                setInputNoteTitle(e.target.value)
+                                verifyFormChanged()
+                            }}
                             className="text-sm lg:text-base"
                         />
                     </div>
                     <div>
                         <Label htmlFor="content" required>Content</Label>
                         <Textarea
-                            ref={contentRef}
                             id="content"
                             name="content"
                             className="text-xs lg:text-sm"
-                            defaultValue={decryptedContent || note?.content || ""}
-                            onChange={() => verifyFormChanged()}
+                            defaultValue={decryptedContent || noteContent}
+                            onChange={(e) => {
+                                setInputNoteContent(e.target.value)
+                                verifyFormChanged()
+                            }}
                         />
                     </div>
                     <SearchProjectsInput
                         project={project}
                         setProject={setProject}
-                        defaultValue={note && note.project_title ? note.project_title : ""}
+                        defaultValue={project}
                     />
                     <Collapsible className="w-full" open={showAdvancedOptions} onOpenChange={setShowAdvancedOptions}>
                         <CollapsibleTrigger className="flex text-sm font-medium text-muted-foreground mb-4">
