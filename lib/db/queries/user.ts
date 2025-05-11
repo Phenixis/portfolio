@@ -125,97 +125,88 @@ export async function createUser(
     return { user: insertedUser[0], password: password }
 }
 
-export async function getUser(id?: string) {
-    if (!id) {
-        const session = await getClientSession();
+export async function getUserId() {
+    const session = await getClientSession();
 
-        if (!session) {
-            return null;
-        }
-
-        if (new Date(session.expires) < new Date()) {
-            return null;
-        }
-
-        const user = await db
-            .select()
-            .from(Schema.user)
-            .where(and(
-                (session.userId ? eq(Schema.user.id, session.userId) : eq(Schema.user.email, session.userId)),
-                isNull(Schema.user.deleted_at))
-            )
-            .limit(1);
-
-        if (user.length === 0) {
-            return null;
-        }
-
-        return user[0];
-    } else {
-        const user = await db.select().from(Schema.user).where(eq(Schema.user.id, id))
-
-        if (!user || user.length === 0) {
-            throw new Error("User not found")
-        }
-
-        return user[0]
+    if (!session) {
+        return null;
     }
+
+    if (new Date(session.expires) < new Date()) {
+        return null;
+    }
+
+    return session.userId;
+
+}
+
+export async function getUser(id?: string) {
+    const userId = id || await getUserId();
+
+    if (!userId) {
+        return null
+    }
+
+    const user = await db.select()
+    .from(Schema.user)
+    .where(eq(Schema.user.id, userId))
+    .limit(1)
+
+    if (!user || user.length === 0) {
+        throw new Error("User not found")
+    }
+
+    return user[0]
 }
 
 export async function getUserPreferences(id?: string) {
-    if (!id) {
-        const session = await getClientSession();
+    const userId = id || await getUserId();
 
-        if (!session) {
-            return null;
-        }
-
-        if (new Date(session.expires) < new Date()) {
-            return null;
-        }
-
-        const user = await db
-            .select({
-                has_jarvis_asked_dark_mode: Schema.user.has_jarvis_asked_dark_mode,
-                dark_mode: Schema.user.dark_mode_activated,
-                auto_dark_mode: Schema.user.auto_dark_mode_enabled,
-                startHour: Schema.user.dark_mode_start_hour,
-                endHour: Schema.user.dark_mode_end_hour,
-                startMinute: Schema.user.dark_mode_start_minute,
-                endMinute: Schema.user.dark_mode_end_minute,
-                override: Schema.user.dark_mode_override
-            })
-            .from(Schema.user)
-            .where(and(
-                (session.userId ? eq(Schema.user.id, session.userId) : eq(Schema.user.email, session.userId)),
-                isNull(Schema.user.deleted_at))
-            )
-            .limit(1);
-
-        if (user.length === 0) {
-            return null;
-        }
-
-        return user[0] as DarkModeCookie
-    } else {
-        const user = await db.select({
-            has_jarvis_asked_dark_mode: Schema.user.has_jarvis_asked_dark_mode,
-            dark_mode: Schema.user.dark_mode_activated,
-            auto_dark_mode: Schema.user.auto_dark_mode_enabled,
-            startHour: Schema.user.dark_mode_start_hour,
-            endHour: Schema.user.dark_mode_end_hour,
-            startMinute: Schema.user.dark_mode_start_minute,
-            endMinute: Schema.user.dark_mode_end_minute,
-            override: Schema.user.dark_mode_override
-        }).from(Schema.user)
-        .where(eq(Schema.user.id, id))
-
-        if (!user || user.length === 0) {
-            return null
-        }
-
-        return user[0] as DarkModeCookie
+    if (!userId) {
+        return null
     }
+
+    const user = await db.select({
+        has_jarvis_asked_dark_mode: Schema.user.has_jarvis_asked_dark_mode,
+        dark_mode: Schema.user.dark_mode_activated,
+        auto_dark_mode: Schema.user.auto_dark_mode_enabled,
+        startHour: Schema.user.dark_mode_start_hour,
+        endHour: Schema.user.dark_mode_end_hour,
+        startMinute: Schema.user.dark_mode_start_minute,
+        endMinute: Schema.user.dark_mode_end_minute,
+        override: Schema.user.dark_mode_override
+    }).from(Schema.user)
+    .where(eq(Schema.user.id, userId))
+    .limit(1)
+
+    if (!user || user.length === 0) {
+        return null
+    }
+
+    return user[0] as DarkModeCookie
+}
+
+export async function getUserDraftNote(id?: string) {
+    const userId = id || await getUserId();
+
+    if (!userId) {
+        return null
+    }
+
+    const draftNote = await db.select({
+        note_title: Schema.user.note_draft_title,
+        note_content: Schema.user.note_draft_content,
+        note_project_title: Schema.user.note_draft_project_title,
+    })
+    .from(Schema.user)
+    .where(eq(Schema.user.id, userId))
+    .limit(1)
+
+    if (!draftNote || draftNote.length === 0) {
+        return null
+    }
+
+    return draftNote[0]
 }
 
 export async function getAllUsers() {
@@ -254,4 +245,32 @@ export async function updateDarkModePreferences({
     console.error("Failed to update dark mode preferences:", error)
     return { success: false, error: "Failed to update preferences" }
   }
+}
+
+export async function updateUserDraftNote({
+    userId,
+    note_title,
+    note_content,
+    note_project_title
+}: {
+    userId: string
+    note_title: string
+    note_content: string
+    note_project_title: string
+}) {
+    try {
+        const result = await db
+            .update(Schema.user)
+            .set({
+                note_draft_title: note_title,
+                note_draft_content: note_content,
+                note_draft_project_title: note_project_title
+            })
+            .where(eq(Schema.user.id, userId))
+
+        return { success: true }
+    } catch (error) {
+        console.error("Failed to update draft note:", error)
+        return { success: false, error: "Failed to update draft" }
+    }
 }
