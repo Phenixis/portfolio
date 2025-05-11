@@ -23,6 +23,9 @@ export async function GET(request: NextRequest) {
         const result = await getDailyMoods(verification.userId, startDate, endDate)
         return NextResponse.json(result)
     } catch (error) {
+        if (error instanceof Error && error.message.includes("No mood found")) {
+            return NextResponse.json({ error: "No mood found for the given date range" }, { status: 204 })
+        }
         console.error("Error fetching mood:", error)
         return NextResponse.json({ error: "Failed to fetch mood" }, { status: 500 })
     }
