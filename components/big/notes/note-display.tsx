@@ -22,8 +22,9 @@ import { decryptNote } from "@/lib/utils/crypt"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { NotesAndData } from "@/lib/db/queries/note"
+import { cn } from "@/lib/utils"
 
-export default function NoteDisplay({ note }: { note?: Note }) {
+export default function NoteDisplay({ note, className }: { note?: Note, className?: string }) {
     const user = useUser().user
     const { mutate } = useSWRConfig()
 
@@ -110,7 +111,7 @@ export default function NoteDisplay({ note }: { note?: Note }) {
 
     return (
         <>
-            <Card className="h-fit group/Note">
+            <Card className={cn(`h-fit group/Note`, className)}>
                 <CardHeader className={`flex flex-row justify-between items-center space-y-0 px-2 pt-2 pb-2 md:px-4 md:pt-2 md:pb-2 xl:px-6 xl:pt-2 ${!note && "h-12 w-full animate-pulse bg-muted"}`}>
                     {
                         note && (
