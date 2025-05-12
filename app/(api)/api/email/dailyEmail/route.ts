@@ -22,7 +22,6 @@ export async function GET(request: NextRequest) {
             status: 401
         })
     }
-
     const users = await getAllUsers()
 
     for (const user of users) {
@@ -180,7 +179,7 @@ export async function GET(request: NextRequest) {
         `;
 
             const today = new Date();
-            let formattedSubject : string
+            let formattedSubject: string
 
             if (tasksDone.length > 0) {
                 formattedSubject = `You did a great job completing ${tasksDone.length} task${tasksDone.length > 1 ? "s" : ""} yesterday! Here's your task list for ${today.toLocaleDateString("en-GB", { weekday: 'long', day: '2-digit', month: 'long' })} !`;
@@ -196,12 +195,6 @@ export async function GET(request: NextRequest) {
                     status: 500
                 });
             }
-
-            return NextResponse.json({
-                message: "Email sent successfully"
-            }, {
-                status: 200
-            });
         } catch (error) {
             console.error("Error fetching tasksToDo:", error);
             return NextResponse.json({
@@ -211,4 +204,9 @@ export async function GET(request: NextRequest) {
             });
         }
     }
+    return NextResponse.json({
+        message: "Email sent successfully"
+    }, {
+        status: 200
+    });
 }
