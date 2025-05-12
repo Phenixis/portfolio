@@ -28,7 +28,7 @@ export default function NotesPage() {
 
     const [title, setTitle] = useState<string>(searchParams.get(NOTE_PARAMS["TITLE"]) || "")
     const [projectTitle, setProjectTitle] = useState<string>(searchParams.get(NOTE_PARAMS["PROJECT_TITLE"]) || "")
-    const [limit, setLimit] = useState<number>(searchParams.get(NOTE_PARAMS["LIMIT"]) ? Number.parseInt(searchParams.get(NOTE_PARAMS["LIMIT"]) as string) : 25)
+    const [limit, setLimit] = useState<number>(searchParams.get(NOTE_PARAMS["LIMIT"]) ? Number.parseInt(searchParams.get(NOTE_PARAMS["LIMIT"]) as string) : 30)
     const [page, setPage] = useState<number>(searchParams.get(NOTE_PARAMS["PAGE"]) ? Number.parseInt(searchParams.get(NOTE_PARAMS["PAGE"]) as string) : 1)
 
     const activeFiltersCount = useMemo(() => {
@@ -78,20 +78,22 @@ export default function NotesPage() {
                         "flex flex-col lg:flex-row items-center gap-4 transition-all duration-300",
                         !isHeaderExpanded && "hidden lg:flex"
                     )}>
-                        <SearchNote
-                            className="lg:w-1/3"
-                            title={title}
-                            setTitle={setTitle}
-                            defaultValue={searchParams.get(NOTE_PARAMS["TITLE"]) || ""}
-                            label="Search notes by title"
-                        />
-                        <div className="w-full lg:w-1/3">
-                            <SearchProjectsInput
-                                project={projectTitle}
-                                setProject={setProjectTitle}
-                                defaultValue={projectTitle}
-                                label="Search notes by project title"
+                        <div className="flex flex-col lg:flex-row gap-4 w-full lg:w-2/3">
+                            <SearchNote
+                                className="lg:w-1/3"
+                                title={title}
+                                setTitle={setTitle}
+                                defaultValue={searchParams.get(NOTE_PARAMS["TITLE"]) || ""}
+                                label="Search notes by title"
                             />
+                            <div className="w-full lg:w-1/3">
+                                <SearchProjectsInput
+                                    project={projectTitle}
+                                    setProject={setProjectTitle}
+                                    defaultValue={projectTitle}
+                                    label="Search notes by project title"
+                                />
+                            </div>
                         </div>
                         <div className="w-full lg:w-1/3 flex items-end justify-center">
                             <Pagination>
@@ -166,22 +168,87 @@ export default function NotesPage() {
                     </div>
                 </div>
             </header>
-            <div className="p-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="flex gap-4">
                 {
                     isLoading ? (
                         <>
-                            {Array.from({ length: 10 }).map((_, index) => (
-                                <NoteDisplay key={index} />
-                            ))}
+                            {
+                                Array.from({ length: 5 }).map((_, index) => (
+                                    <div className="hidden flex-col gap-4 w-full lg:flex" key={index}>
+                                        {Array.from({ length: 3 }).map((_, index) => (
+                                            <NoteDisplay
+                                                key={index}
+                                            />
+                                        ))}
+                                    </div>
+                                ))
+                            }
+                            {
+                                Array.from({ length: 3 }).map((_, index) => (
+                                    <div className="hidden flex-col gap-4 w-full lg:flex" key={index}>
+                                        {Array.from({ length: 5 }).map((_, index) => (
+                                            <NoteDisplay
+                                                key={index}
+                                            />
+                                        ))}
+                                    </div>
+                                ))
+                            }
+                            {
+                                <div className="flex flex-col gap-4 w-full md:hidden">
+                                    {Array.from({ length: 15 }).map((_, index) => (
+                                        <NoteDisplay
+                                            key={index}
+                                        />
+                                    ))}
+                                </div>
+                            }
                         </>
                     ) : isError ? (
                         <div>
                             <p>Error</p>
                         </div>
                     ) : notesData && notesData.notes && notesData.notes.length > 0 ? (
-                        notesData.notes.map((note: Note) => (
-                            <NoteDisplay key={note.id} note={note} />
-                        ))
+                        <>
+                            {
+                                Array.from({ length: 5 }).map((_, index) => (
+                                    <div className="hidden flex-col gap-4 w-full lg:flex" key={index}>
+                                        {notesData.notes.filter(
+                                            (note: Note, idx: number) => idx % 5 === index
+                                        ).map((note: Note) => (
+                                            <NoteDisplay
+                                                key={note.id}
+                                                note={note}
+                                            />
+                                        ))}
+                                    </div>
+                                ))
+                            }
+                            {
+                                Array.from({ length: 3 }).map((_, index) => (
+                                    <div className="hidden flex-col gap-4 w-full md:flex lg:hidden" key={index}>
+                                        {notesData.notes.filter(
+                                            (note: Note, idx: number) => idx % 3 === index
+                                        ).map((note: Note) => (
+                                            <NoteDisplay
+                                                key={note.id}
+                                                note={note}
+                                            />
+                                        ))}
+                                    </div>
+                                ))
+                            }
+                            {
+                                <div className="flex flex-col gap-4 w-full md:hidden">
+                                    {notesData.notes.map((note: Note) => (
+                                        <NoteDisplay
+                                            key={note.id}
+                                            note={note}
+                                        />
+                                    ))}
+                                </div>
+                            }
+                        </>
                     ) : (
                         <div>
                             <p>No notes found</p>

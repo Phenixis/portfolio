@@ -111,9 +111,9 @@ export default function NoteDisplay({ note }: { note?: Note }) {
     return (
         <>
             <Card className="h-fit group/Note">
-                <CardHeader className={`flex flex-row justify-between items-center space-y-0 px-2 pt-2 pb-2 md:px-4 md:pt-2 md:pb-2 xl:px-6 xl:pt-2`}>
+                <CardHeader className={`flex flex-row justify-between items-center space-y-0 px-2 pt-2 pb-2 md:px-4 md:pt-2 md:pb-2 xl:px-6 xl:pt-2 ${!note && "h-12 w-full animate-pulse bg-muted"}`}>
                     {
-                        note ? (
+                        note && (
                             <div className="w-full" onClick={() => setIsOpen(note ? !isOpen : false)}>
                                 <CardTitle className={`w-full text-base xl:text-lg ${note && "cursor-pointer"}`}>
                                     {note.title}
@@ -122,8 +122,6 @@ export default function NoteDisplay({ note }: { note?: Note }) {
                                     {note.project_title}
                                 </p>
                             </div>
-                        ) : (
-                            <Skeleton className="h-8 w-full" />
                         )
                     }
                     <div className={`${!note && "hidden"} flex flex-row items-center duration-200 ${isOpen ? "opacity-100" : "lg:opacity-0"} ${note && "lg:group-hover/Note:opacity-100 cursor-pointer"}`}>
