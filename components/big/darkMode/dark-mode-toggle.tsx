@@ -61,7 +61,7 @@ export default function DarkModeToggle({
             if (isUpdating) return
 
             // Only check if auto dark mode is enabled and not overridden
-            if (!cookie.auto_dark_mode || cookie.override) return
+            if (!cookie.auto_dark_mode) return
 
             const shouldBeDark = shouldDarkModeBeEnabled()
 
@@ -70,6 +70,22 @@ export default function DarkModeToggle({
 
             if (!cookie.dark_mode && !cookie.has_jarvis_asked_dark_mode) {
                 setShowAutoDarkModeDialog(true)
+            } else if (!cookie.dark_mode) {
+                if (cookie.override) return
+                
+                setIsUpdating(true)
+
+                setIsDarkMode(shouldBeDark)
+                document.documentElement.classList.toggle("dark", shouldBeDark)
+
+                toggleDarkMode(!shouldBeDark)
+                    .then(() => {
+                        setIsUpdating(false)
+                    })
+                    .catch((error) => {
+                        console.error("Error toggling dark mode:", error)
+                        setIsUpdating(false)
+                    })
             } else {
                 setIsUpdating(true)
 
