@@ -405,7 +405,7 @@ export function NotesCard({
                     // Show loading state
                     Array(5)
                         .fill(null)
-                        .map((_, i) => <NoteDisplay key={i} />)
+                        .map((_, i) => <NoteDisplay key={i} className="mt-2" />)
                 ) : notesData?.notes?.length > 0 ? (
                     // Show notes, grouped or ungrouped based on the groupByProject state
                     groupByProject ? (
@@ -423,9 +423,7 @@ export function NotesCard({
                                         <h3 className="font-medium text-sm p-2 rounded-md">{name}</h3>
                                         <div className="pl-2">
                                             {notes.map((note: Note) => (
-                                                <div key={note.id} className="mt-1">
-                                                    <NoteDisplay note={note} />
-                                                </div>
+                                                <NoteDisplay note={note} className="mt-2" key={note.id} />
                                             ))}
                                         </div>
                                     </div>
