@@ -199,7 +199,8 @@ export async function getTasks(
 	excludedProjectTitles?: string[],
 	dueBefore?: Date,
 	completed?: boolean,
-	completed_after?: Date
+	completed_after?: Date,
+	completed_before?: Date,
 ) {
 	// Step 1: First query to get distinct tasks with limit applied
 	const distinctTasks = await db
@@ -255,6 +256,7 @@ export async function getTasks(
 						: isNull(Schema.task.completed_at)
 					: sql`1 = 1`,
 				completed_after ? gte(Schema.task.completed_at, completed_after) : sql`1 = 1`,
+				completed_before ? lte(Schema.task.completed_at, completed_before) : sql`1 = 1`,
 			),
 		)
 		.orderBy(
@@ -410,11 +412,11 @@ export async function getUncompletedAndDueInTheNextThreeDaysOrLessTasks(userId: 
 
 export async function getTasksCompletedTheDayBefore(userId: string, orderBy: keyof Schema.Task = "completed_at", orderingDirection: "asc" | "desc"  = "asc") {
 	const today = new Date()
+	today.setHours(0, 0, 0, 0)
 	const yesterday = new Date(today)
-	yesterday.setHours(0, 0, 0, 0)
 	yesterday.setDate(today.getDate() - 1)
 
-	return getTasks(userId, orderBy, orderingDirection, -1, undefined, undefined, undefined, true, yesterday);
+	return getTasks(userId, orderBy, orderingDirection, -1, undefined, undefined, undefined, true, yesterday, today);
 }
 
 // ## Update
