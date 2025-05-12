@@ -128,10 +128,10 @@ export async function GET(request: NextRequest) {
                     padding: 10px;
                 }
                 h1 {
-                    font-size: 1.25rem;
+                    font-size: 1.5rem;
                 }
                 h2 {
-                    font-size: 1rem;
+                    font-size: 1.2rem;
                 }
                 h3 {
                     font-size: 0.875rem;
