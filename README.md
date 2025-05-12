@@ -1,4 +1,4 @@
-[![wakatime](https://wakatime.com/badge/user/158e70b8-1c6f-41c1-9ee9-877c3547251d/project/491fba51-5393-46dd-9e3d-9fdbdfb26581.svg)](https://wakatime.com/badge/user/158e70b8-1c6f-41c1-9ee9-877c3547251d/project/491fba51-5393-46dd-9e3d-9fdbdfb26581)
+![wakatime](https://wakatime.com/badge/user/158e70b8-1c6f-41c1-9ee9-877c3547251d/project/491fba51-5393-46dd-9e3d-9fdbdfb26581.svg)
 
 # Portfolio
 
