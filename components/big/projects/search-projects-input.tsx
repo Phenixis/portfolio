@@ -11,15 +11,22 @@ export default function SearchProjectsInput({
     defaultValue,
     className,
     label,
-}:{
+    enabled = true,
+}: {
     project: string
     setProject: (project: string) => void
     defaultValue: string
     className?: string
     label?: string
+    enabled?: boolean
 }) {
     const [projectInputValue, setProjectInputValue] = useState<string>(defaultValue)
-    const { projects, isLoading, isError } = useSearchProject({ query: project, limit: 5 })
+    const { projects, isLoading, isError } = useSearchProject({
+        query: project,
+        limit: 5,
+        enabled: enabled
+    }
+    )
     const [showProjectSuggestions, setShowProjectSuggestions] = useState(false)
 
     const handleProjectChange = useDebouncedCallback((value: string) => {
