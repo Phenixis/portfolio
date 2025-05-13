@@ -48,11 +48,27 @@ export default function DarkModeToggle({
         }
 
         // RÉCUPÉRER VALEURS DB
-        getUserPreferences().then((userPreferences) => {
+        getUserPreferences().then((response) => {
+            if (!response) return
+            const { userId, darkModeCookie: userPreferences } = response
             if (userPreferences) {
                 setCookie(userPreferences as DarkModeCookie)
                 setIsDarkMode(shouldDarkModeBeEnabled())
                 document.documentElement.classList.toggle("dark", shouldDarkModeBeEnabled())
+                updateDarkModePreferences(
+                    {
+                        userId: userId,
+                        darkModeCookie: {
+                            ...userPreferences,
+                            dark_mode: shouldDarkModeBeEnabled(),
+                        },
+                    }
+                ).then(() => {
+                    setIsUpdating(false)
+                }).catch((error) => {
+                    console.error("Error updating dark mode preferences:", error)
+                    setIsUpdating(false)
+                })
             }
         })
 
@@ -72,7 +88,7 @@ export default function DarkModeToggle({
                 setShowAutoDarkModeDialog(true)
             } else if (!cookie.dark_mode) {
                 if (cookie.override) return
-                
+
                 setIsUpdating(true)
 
                 setIsDarkMode(shouldBeDark)
