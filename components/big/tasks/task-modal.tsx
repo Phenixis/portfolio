@@ -39,6 +39,7 @@ import { useSearchParams } from "next/navigation"
 import { useUser } from "@/hooks/use-user"
 import { toast } from "sonner"
 import { TASK_PARAMS } from "./tasks-card"
+import SearchProjectsInput from "../projects/search-projects-input"
 
 export default function TaskModal({
 	className,
@@ -64,9 +65,6 @@ export default function TaskModal({
 	const calendarRef = useRef<HTMLDivElement>(null)
 
 	const [project, setProject] = useState<string>(task && task.project_title ? task.project_title : "")
-	const [projectInputValue, setProjectInputValue] = useState<string>(task && task.project_title ? task.project_title : "")
-	const { projects, isLoading, isError } = useSearchProject({ query: project, limit: 5 })
-	const [showProjectSuggestions, setShowProjectSuggestions] = useState(false)
 
 	const [toDoAfter, setToDoAfter] = useState<number>(task && task.tasksToDoAfter && task.tasksToDoAfter.length > 0 && task.tasksToDoAfter[0].deleted_at === null ? task.tasksToDoAfter[0].id : -1)
 	const [toDoAfterInputValue, setToDoAfterInputValue] = useState<string>(task && task.tasksToDoAfter && task.tasksToDoAfter.length > 0 && task.tasksToDoAfter[0].deleted_at === null ? task.tasksToDoAfter[0].title : "")
@@ -101,7 +99,6 @@ export default function TaskModal({
 			return initialDate
 		})
 		setProject("")
-		setProjectInputValue("")
 		setToDoAfter(-1)
 		setToDoAfterInputValue("")
 		setToDoAfterDebounceValue("")
@@ -111,16 +108,12 @@ export default function TaskModal({
 
 	useEffect(() => {
 		if (open) {
-			if (project === "" && projectInputValue === "") {
+			if (project === "") {
 				if (task && task.project_title) {
 					setProject(task.project_title)
-					setProjectInputValue(task.project_title)
 				} else {
 					const projectFromSearchParams = searchParams.get(TASK_PARAMS.PROJECTS) ? searchParams.get(TASK_PARAMS.PROJECTS)?.split(",") : []
 					setProject(projectFromSearchParams && projectFromSearchParams.length === 1 ? projectFromSearchParams[0] : "")
-					setProjectInputValue(
-						projectFromSearchParams && projectFromSearchParams.length === 1 ? projectFromSearchParams[0] : ""
-					)
 				}
 			}
 		} else {
@@ -578,7 +571,15 @@ export default function TaskModal({
 							</div>
 						</div>
 						<div className="flex space-x-4">
-							<div className="w-full">
+							<SearchProjectsInput
+								project={project}
+								setProject={setProject}
+								defaultValue={project}
+								className="w-full"
+								label="Project"
+								enabled={open}
+							/>
+							{/* <div className="w-full">
 								<Label htmlFor="project">Project</Label>
 								<Input
 									type="text"
@@ -639,7 +640,7 @@ export default function TaskModal({
 										)}
 									</div>
 								)}
-							</div>
+							</div> */}
 						</div>
 						<Collapsible className="w-full" open={showAdvancedOptions} onOpenChange={setShowAdvancedOptions}>
 							<CollapsibleTrigger className="flex text-sm font-medium text-muted-foreground mb-4">
