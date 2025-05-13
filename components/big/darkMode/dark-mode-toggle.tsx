@@ -51,8 +51,8 @@ export default function DarkModeToggle({
         getUserPreferences().then((userPreferences) => {
             if (userPreferences) {
                 setCookie(userPreferences as DarkModeCookie)
-                setIsDarkMode(userPreferences.dark_mode)
-                document.documentElement.classList.toggle("dark", userPreferences.dark_mode)
+                setIsDarkMode(shouldDarkModeBeEnabled())
+                document.documentElement.classList.toggle("dark", shouldDarkModeBeEnabled())
             }
         })
 
