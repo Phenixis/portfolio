@@ -183,7 +183,10 @@ export async function getUserPreferences(id?: string) {
         return null
     }
 
-    return user[0] as DarkModeCookie
+    return {
+        userId,
+        darkModeCookie: user[0] as DarkModeCookie
+    }
 }
 
 export async function getUserDraftNote(id?: string) {
