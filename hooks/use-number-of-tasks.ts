@@ -9,13 +9,15 @@ export function useNumberOfTasks({
     completed,
     projectTitles,
     excludedProjectTitles,
-    month,
-    enabled
+    dueAfter,
+    dueBefore,
+    enabled = true
 }: {
     completed?: boolean
     projectTitles?: string[]
     excludedProjectTitles?: string[]
-    month?: Date
+    dueAfter?: Date
+    dueBefore?: Date
     enabled?: boolean
 }) {
     const { data, isLoading, isError, mutate } = useFilteredData<Task[]>({
@@ -24,7 +26,8 @@ export function useNumberOfTasks({
             completed,
             projectTitles: projectTitles?.join(","),
             excludedProjectTitles: excludedProjectTitles?.join(","),
-            dueBefore: month ? new Date(month.getFullYear(), month.getMonth() + 1, 0).toISOString() : undefined,
+            dueAfter: dueAfter ? dueAfter.toISOString() : undefined,
+            dueBefore: dueBefore ? dueBefore.toISOString() : undefined,
         },
         skipFetch: !enabled,
     })

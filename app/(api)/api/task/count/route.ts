@@ -15,14 +15,18 @@ export async function GET(request: NextRequest) {
 	const excludedProjectTitles = searchParams.get("excludedProjectTitles")
 		? searchParams.get("excludedProjectTitles")?.split(",")
 		: undefined
-        const dueBefore = searchParams.get("dueBefore")
-            ? new Date(searchParams.get("dueBefore") as string)
-            : undefined
+	const dueAfter = searchParams.get("dueAfter")
+		? new Date(searchParams.get("dueAfter") as string)
+		: undefined
+	const dueBefore = searchParams.get("dueBefore")
+		? new Date(searchParams.get("dueBefore") as string)
+		: undefined
 	let completed: boolean | undefined = completedParam === "true" ? true : completedParam === "false" ? false : undefined
 
 	try {
-		const result = await getNumberOfTasks(verification.userId, completed, projectTitles, excludedProjectTitles, dueBefore)
-
+		dueAfter && dueAfter.setHours(0, 0, 0, 0)
+		dueBefore && dueBefore.setHours(23, 59, 59, 999)
+		const result = await getNumberOfTasks(verification.userId, completed, projectTitles, excludedProjectTitles, dueAfter, dueBefore)
 		return NextResponse.json(result.map((task) => ({
 			...task,
 			dueDate: task.due ? new Date(task.due).toISOString() : null,

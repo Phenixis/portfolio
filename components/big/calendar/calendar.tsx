@@ -31,7 +31,8 @@ export default function Calendar({
         excludedProjectTitles: searchParams.get(TASK_PARAMS.REMOVED_PROJECTS)
             ? searchParams.get(TASK_PARAMS.REMOVED_PROJECTS)?.split(",")
             : undefined,
-        month: month ? new Date(month.getFullYear(), month.getMonth() + 1, 0) : undefined,
+        dueAfter: month ? new Date(month.getFullYear(), month.getMonth(), 0) : undefined,
+        dueBefore: month ? new Date(month.getFullYear(), month.getMonth() + 1, 0) : undefined,
         enabled: showNumberOfTasks, // Skip data fetching when not needed
     })
 

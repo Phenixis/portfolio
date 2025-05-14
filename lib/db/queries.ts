@@ -148,7 +148,7 @@ export async function getTaskById(id: number, recursive: boolean = false) {
 
 }
 
-export async function getNumberOfTasks(userId: string, completed?: boolean, projectTitles?: string[], excludedProjectTitles?: string[], dueBefore?: Date) {
+export async function getNumberOfTasks(userId: string, completed?: boolean, projectTitles?: string[], excludedProjectTitles?: string[], dueAfter?: Date, dueBefore?: Date) {
 	const dbresult = await db
 		.select({
 			count: count(Schema.task.id).as("count"),
@@ -178,6 +178,7 @@ export async function getNumberOfTasks(userId: string, completed?: boolean, proj
 						: sql`1 = 1`
 				)
 				: sql`1 = 1`,
+			dueAfter ? gte(Schema.task.due, dueAfter) : sql`1 = 1`,
 			dueBefore ? lte(Schema.task.due, dueBefore) : sql`1 = 1`,
 			completed !== undefined
 				? completed
