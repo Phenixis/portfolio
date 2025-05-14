@@ -10,6 +10,8 @@ import { verifyPassword } from "@/lib/utils/password"
 import { createUser } from "@/lib/db/queries/user"
 import { User } from "@/lib/db/schema"
 import { sendWelcomeEmail } from "@/components/utils/send_email"
+import { updateDarkModeCookie } from "@/lib/cookies"
+import { DarkModeCookie } from "@/lib/flags"
 
 export async function signUp(prevState: ActionState, formData: FormData) {
     const firstName = formData.get("first_name")
@@ -33,6 +35,19 @@ export async function signUp(prevState: ActionState, formData: FormData) {
     } catch (error: any) {
         return { error: error.message }
     }
+
+    const userData = user.user
+
+    await updateDarkModeCookie({
+        dark_mode: userData.dark_mode_activated,
+        auto_dark_mode: userData.auto_dark_mode_enabled,
+        startHour: userData.dark_mode_start_hour,
+        startMinute: userData.dark_mode_start_minute,
+        endHour: userData.dark_mode_end_hour,
+        endMinute: userData.dark_mode_end_minute,
+        override: userData.dark_mode_override,
+        has_jarvis_asked_dark_mode: userData.has_jarvis_asked_dark_mode,
+    } as DarkModeCookie)
 
     return { success: true }
 }
@@ -77,6 +92,17 @@ export async function verifyCredentials(prevState: ActionState, formData: FormDa
         expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         userId: userData.id
     })
+
+    await updateDarkModeCookie({
+        dark_mode: userData.dark_mode_activated,
+        auto_dark_mode: userData.auto_dark_mode_enabled,
+        startHour: userData.dark_mode_start_hour,
+        startMinute: userData.dark_mode_start_minute,
+        endHour: userData.dark_mode_end_hour,
+        endMinute: userData.dark_mode_end_minute,
+        override: userData.dark_mode_override,
+        has_jarvis_asked_dark_mode: userData.has_jarvis_asked_dark_mode,
+    } as DarkModeCookie)
 
     const redirectTo = formData.get("redirectTo");
     return { success: true, redirectTo: redirectTo ? redirectTo.toString() : '/my' };
