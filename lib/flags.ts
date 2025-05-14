@@ -1,4 +1,5 @@
 import { flag } from "flags/next"
+import { shouldDarkModeBeEnabled } from "@/lib/utils/dark-mode"
 
 export interface DarkModeCookie {
     has_jarvis_asked_dark_mode: boolean
@@ -25,8 +26,6 @@ export const defaultValueCookie = {
 export const darkMode = flag<boolean, DarkModeCookie>({
     key: "dark-mode",
     identify({ headers, cookies }) {
-        const now = new Date()
-
         // Get the current user from the session
         const darkModeCookie = cookies.get("dark_mode")?.value
         if (!darkModeCookie) {
@@ -34,37 +33,12 @@ export const darkMode = flag<boolean, DarkModeCookie>({
         }
         const preferences = JSON.parse(darkModeCookie) as DarkModeCookie
 
-        if (!preferences.auto_dark_mode) {
-            return preferences
-        }
+        const { dark_mode, override } = shouldDarkModeBeEnabled(preferences)
 
-        
-        let isDarkModeEnabled: boolean
-        const isAfterStartTime = now.getHours() > preferences.startHour || (now.getHours() >= preferences.startHour && now.getMinutes() >= preferences.startMinute)
-        const isBeforeEndTime = now.getHours() < preferences.endHour || (now.getHours() === preferences.endHour && now.getMinutes() < preferences.endMinute)
-        
-        if (preferences.startHour < preferences.endHour) {
-            // start hour before end hour, so time must be between these two to be enable dark mode
-            isDarkModeEnabled = isAfterStartTime && isBeforeEndTime
-        } else {
-            // start hour after end hour (overlaps midnight), so time must be before end hour or after start hour to be enable dark mode
-            isDarkModeEnabled = isAfterStartTime || isBeforeEndTime
-        }
-        
-        if (preferences.override) {
-            if (!isDarkModeEnabled) {
-                return {
-                    ...preferences,
-                    dark_mode: false,
-                    override: false,
-                }
-            }
-            return preferences
-        }
-        
         return {
             ...preferences,
-            dark_mode: isDarkModeEnabled,
+            dark_mode: dark_mode,
+            override: override,
         }
     },
     decide({ entities }) {
