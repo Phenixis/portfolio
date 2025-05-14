@@ -148,16 +148,26 @@ export async function GET(request: NextRequest) {
             <body>
             <main>
             <h1>Your Daily Task List</h1>
-        `;
+            `;
+
+            if (tasksToDo.length <= 0 && tasksDone.length <= 0) {
+                continue
+            }
 
             // Add tasksDone to the email content
-            emailContent += `<h2>Tasks Completed Yesterday</h2>`;
-            for (const [project, tasks] of Object.entries(groupedTasksDone)) {
-                emailContent += `<h3>${project}</h3><ul>`;
-                (tasks as any[]).forEach((task) => {
-                    emailContent += `<li>${task.title}</li>`;
-                });
-                emailContent += `</ul>`;
+            if (tasksDone.length > 0) {
+                emailContent += `<h2>Tasks Completed Yesterday</h2>`;
+                emailContent += `<p>You completed ${tasksDone.length} task${tasksDone.length > 1 ? "s" : ""} yesterday!</p>`;
+
+                for (const [project, tasks] of Object.entries(groupedTasksDone)) {
+                    emailContent += `<h3>${project}</h3><ul>`;
+                    (tasks as any[]).forEach((task) => {
+                        emailContent += `<li>${task.title}</li>`;
+                    });
+                    emailContent += `</ul>`;
+                }
+            } else {
+                emailContent += `<h2>No Tasks Completed Yesterday</h2>`;
             }
 
             // Add tasksToDo to the email content
@@ -176,7 +186,7 @@ export async function GET(request: NextRequest) {
             </main>
             </body>
             </html>
-        `;
+            `;
 
             const today = new Date();
             let formattedSubject: string
@@ -186,7 +196,7 @@ export async function GET(request: NextRequest) {
             } else {
                 formattedSubject = `Here's your task list for ${today.toLocaleDateString("en-GB", { weekday: 'long', day: '2-digit', month: 'long' })} !`;
             }
-            const result = sendEmail(user.email, formattedSubject, emailContent);
+            const result = await sendEmail(user.email, formattedSubject, emailContent);
 
             if (!result) {
                 return NextResponse.json({
@@ -203,10 +213,13 @@ export async function GET(request: NextRequest) {
                 status: 500
             });
         }
+        // Wait for 1 second before sending the next email
+        await new Promise(resolve => setTimeout(resolve, 1000));
     }
     return NextResponse.json({
         message: "Email sent successfully"
     }, {
         status: 200
     });
+
 }
