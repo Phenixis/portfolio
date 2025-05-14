@@ -26,7 +26,7 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog";
 
-export default function Login() {
+export default function SignUp() {
     const firstNameRef = useRef<HTMLInputElement>(null)
     const lastNameRef = useRef<HTMLInputElement>(null)
     const emailRef = useRef<HTMLInputElement>(null)
