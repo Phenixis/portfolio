@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(result)
     } catch (error) {
         if (error instanceof Error && error.message.includes("No mood found")) {
-            return NextResponse.json({ message: "No mood found for the given date range" }, { status: 404 })
+            return new Response(null, { status: 204 })
         }
         console.error("Error fetching mood:", error)
         return NextResponse.json({ error: "Failed to fetch mood" }, { status: 500 })
