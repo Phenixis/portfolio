@@ -215,6 +215,8 @@ export function TasksCard({
 	})
 
 	const { data: numberOfTasks, isLoading: isCountLoading, isError: isCountError, mutate: mutateNumberOfTasks } = useNumberOfTasks({
+		projectTitles: groupByProject && selectedProjects.length > 0 ? selectedProjects : undefined,
+		excludedProjectTitles: groupByProject && removedProjects.length > 0 ? removedProjects : undefined,
 		dueAfter: today,
 		dueBefore: dueBeforeDate !== undefined ? dueBeforeDate : new Date(new Date().setDate(today.getDate() + 1)),
 	})
@@ -406,9 +408,7 @@ export function TasksCard({
 						style={{ width: isCountLoading ? "100%" : `${progression}%` }}
 					/>
 					<div className="w-full flex justify-between items-center pt-1">
-						{isCountLoading ? (
-							<p className="text-muted-foreground text-xs">Loading...</p>
-						) : (
+						{isCountLoading  || isCountError ? null : (
 							<>
 								<p className="text-muted-foreground text-xs">
 									{tasksCompleted} task{tasksCompleted > 1 ? 's' : ''} completed
