@@ -373,7 +373,7 @@ export async function getTasks(
 	}
 
 	// Preserve the original ordering from distinctTasks
-	const result = taskIds.map((id) => groupedTasks[id]).filter(Boolean).sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
+	const result = taskIds.map((id) => groupedTasks[id]).filter(Boolean).sort((a, b) => b.score - a.score || (a.title || "").localeCompare(b.title))
 
 	return result as Schema.TaskWithRelations[]
 }
