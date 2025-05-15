@@ -5,7 +5,7 @@ import dynamic from "next/dynamic"
 const TaskModal = dynamic(() => import("@/components/big/tasks/task-modal"), { ssr: false })
 import { cn } from "@/lib/utils"
 import type { Task, TaskWithRelations } from "@/lib/db/schema"
-import { useState, useCallback, useTransition, useMemo, useEffect } from "react"
+import { useState, useCallback, useTransition, useMemo, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Filter, Square, SquareMinus, FolderTree, Calendar, CircleHelp } from "lucide-react"
 import TaskDisplay from "./task-display"
@@ -21,6 +21,8 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { updateTaskFilterCookieFromClient } from "./task-actions"
+import type { TaskFilterCookie } from "@/lib/flags"
 
 // Constants for URL parameters
 export const TASK_PARAMS = {
@@ -102,6 +104,7 @@ export function TasksCard({
 	orderBy: initialOrderBy = "score",
 	orderingDirection: initialOrderingDirection = "desc",
 	withProject = true,
+	initialTaskFilterCookie,
 }: {
 	className?: string
 	initialCompleted?: boolean
@@ -109,6 +112,7 @@ export function TasksCard({
 	orderBy?: keyof Task
 	orderingDirection?: "asc" | "desc"
 	withProject?: boolean
+	initialTaskFilterCookie?: TaskFilterCookie
 }) {
 	// -------------------- Imports & Hooks --------------------
 	const router = useRouter()
@@ -118,6 +122,7 @@ export function TasksCard({
 	// -------------------- State --------------------
 	const [isFilterOpen, setIsFilterOpen] = useState(false)
 
+	// Priority: URL params > Cookie > Props
 	const [completed, setCompleted] = useState<boolean | undefined>(
 		searchParams.has(TASK_PARAMS.COMPLETED)
 			? searchParams.get(TASK_PARAMS.COMPLETED) === "true"
@@ -125,44 +130,62 @@ export function TasksCard({
 				: searchParams.get(TASK_PARAMS.COMPLETED) === "false"
 					? false
 					: undefined
-			: initialCompleted
+			: initialTaskFilterCookie?.completed !== undefined
+				? initialTaskFilterCookie.completed
+				: initialCompleted
 	)
 
 	const [limit, setLimit] = useState<number | undefined>(
 		searchParams.has(TASK_PARAMS.LIMIT)
 			? Number.parseInt(searchParams.get(TASK_PARAMS.LIMIT) || "") || initialLimit
-			: initialLimit
+			: initialTaskFilterCookie?.limit !== undefined
+				? initialTaskFilterCookie.limit
+				: initialLimit
 	)
 
 	const [orderBy, setOrderBy] = useState<keyof Task | undefined>(
-		(searchParams.get(TASK_PARAMS.ORDER_BY) as keyof Task) || initialOrderBy
+		(searchParams.get(TASK_PARAMS.ORDER_BY) as keyof Task) || 
+		initialTaskFilterCookie?.orderBy || 
+		initialOrderBy
 	)
 
 	const [orderingDirection, setOrderingDirection] = useState<"asc" | "desc" | undefined>(
-		(searchParams.get(TASK_PARAMS.ORDERING_DIRECTION) as "asc" | "desc") || initialOrderingDirection
+		(searchParams.get(TASK_PARAMS.ORDERING_DIRECTION) as "asc" | "desc") || 
+		initialTaskFilterCookie?.orderingDirection || 
+		initialOrderingDirection
 	)
 
 	const [selectedProjects, setSelectedProjects] = useState<string[]>(
 		searchParams.has(TASK_PARAMS.PROJECTS)
 			? searchParams.get(TASK_PARAMS.PROJECTS)?.split(",") || []
-			: []
+			: initialTaskFilterCookie?.projects || []
 	)
 
 	const [removedProjects, setRemovedProjects] = useState<string[]>(
 		searchParams.has(TASK_PARAMS.REMOVED_PROJECTS)
 			? searchParams.get(TASK_PARAMS.REMOVED_PROJECTS)?.split(",") || []
-			: []
+			: initialTaskFilterCookie?.removedProjects || []
 	)
 
 	const [dueBeforeDate, setDueBeforeDate] = useState<Date | undefined>(
 		searchParams.has(TASK_PARAMS.DUE_BEFORE)
 			? new Date(searchParams.get(TASK_PARAMS.DUE_BEFORE) || "")
-			: undefined
+			: initialTaskFilterCookie?.dueBeforeDate 
+				? new Date(initialTaskFilterCookie.dueBeforeDate)
+				: undefined
 	)
 
 	const [groupByProject, setGroupByProject] = useState(
-		searchParams.get(TASK_PARAMS.GROUP_BY_PROJECT) === "true"
+		searchParams.get(TASK_PARAMS.GROUP_BY_PROJECT) === "true" ||
+		(searchParams.get(TASK_PARAMS.GROUP_BY_PROJECT) !== "false" && 
+		initialTaskFilterCookie?.groupByProject === true)
 	)
+
+	// Add a ref to track if this is the first render
+	const isFirstRender = useRef(true);
+	
+	// Add a ref to hold previous removedProjects to compare changes
+	const prevRemovedProjectsRef = useRef<string[]>([]);
 
 	// -------------------- Data Fetching --------------------
 	const { projects, isLoading: projectsLoading } = useProjects({
@@ -185,20 +208,78 @@ export function TasksCard({
 
 	// -------------------- Effects --------------------
 
+	// Fix the infinite update loop by removing removedProjects from dependencies
+	// and using a more careful approach to update state
 	useEffect(() => {
-		// Only update if we have actual project data
+		// Only update if we have actual project data and it's not the first render
 		if (projects && projects.length > 0) {
-			// Update selected projects based on the current projects
-			setSelectedProjects((prev) =>
+			// Skip the first render to avoid resetting on initial load
+			if (isFirstRender.current) {
+				isFirstRender.current = false;
+				// Store initial removedProjects for future comparison
+				prevRemovedProjectsRef.current = removedProjects;
+				return;
+			}
+			
+			// Filter selected projects to only include those in the current projects list
+			setSelectedProjects((prev) => 
 				prev.filter((title) => projects.some((project) => project.title === title))
 			);
-
-			// Update removed projects based on the current projects
-			setRemovedProjects((prev) =>
-				prev.filter((title) => !projects.some((project) => project.title === title))
-			);
+			
+			// Get all project titles from the current projects data
+			const currentProjectTitles = new Set(projects.map(project => project.title));
+			
+			// Compare current removedProjects with previous to avoid unnecessary updates
+			const currentRemovedProjects = [...removedProjects];
+			const prevRemovedProjects = prevRemovedProjectsRef.current;
+			
+			// Only update if there's an actual difference that needs reconciliation
+			if (JSON.stringify(currentRemovedProjects.sort()) !== 
+				JSON.stringify(prevRemovedProjects.sort())) {
+				
+				// Preserve user's choice for projects that exist in the current projects list
+				const preservedRemovedProjects = currentRemovedProjects.filter(
+					title => currentProjectTitles.has(title)
+				);
+				
+				// Keep track of removed projects that are not in the current projects list
+				// but were previously excluded by the user
+				const removedProjectsNotInCurrentList = currentRemovedProjects.filter(
+					title => !currentProjectTitles.has(title)
+				);
+				
+				// Only update state if there's actually a change needed
+				if (preservedRemovedProjects.length !== currentRemovedProjects.length || 
+					removedProjectsNotInCurrentList.length > 0) {
+					const newRemovedProjects = [...preservedRemovedProjects, ...removedProjectsNotInCurrentList];
+					
+					// Update the ref before setting state to avoid comparison issues
+					prevRemovedProjectsRef.current = newRemovedProjects;
+					
+					setRemovedProjects(newRemovedProjects);
+				}
+			}
 		}
+	// Importantly, we removed removedProjects from dependencies to avoid the loop
 	}, [completed, dueBeforeDate, projects]);
+
+	// Update cookie when filters change
+	useEffect(() => {
+		const updateCookie = async () => {
+			await updateTaskFilterCookieFromClient({
+				completed,
+				limit,
+				orderBy,
+				orderingDirection,
+				projects: selectedProjects,
+				removedProjects,
+				dueBeforeDate: dueBeforeDate?.toISOString(),
+				groupByProject
+			});
+		};
+		
+		updateCookie();
+	}, [completed, limit, orderBy, orderingDirection, selectedProjects, removedProjects, dueBeforeDate, groupByProject]);
 
 	useEffect(() => {
 		updateUrlParams()
