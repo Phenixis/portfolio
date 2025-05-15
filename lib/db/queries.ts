@@ -148,10 +148,11 @@ export async function getTaskById(id: number, recursive: boolean = false) {
 
 }
 
-export async function getNumberOfTasks(userId: string, completed?: boolean, projectTitles?: string[], excludedProjectTitles?: string[], dueAfter?: Date, dueBefore?: Date) {
+export async function getNumberOfTasks(userId: string, projectTitles?: string[], excludedProjectTitles?: string[], dueAfter?: Date, dueBefore?: Date) {
 	const dbresult = await db
 		.select({
-			count: count(Schema.task.id).as("count"),
+			completed_count: sql<number>`COUNT(CASE WHEN ${Schema.task.completed_at} IS NOT NULL THEN 1 END)`.as("completed_count"),
+			uncompleted_count: sql<number>`COUNT(CASE WHEN ${Schema.task.completed_at} IS NULL THEN 1 END)`.as("uncompleted_count"),
 			due: Schema.task.due,
 		})
 		.from(Schema.task)
@@ -179,14 +180,11 @@ export async function getNumberOfTasks(userId: string, completed?: boolean, proj
 				)
 				: sql`1 = 1`,
 			dueAfter ? gte(Schema.task.due, dueAfter) : sql`1 = 1`,
-			dueBefore ? lte(Schema.task.due, dueBefore) : sql`1 = 1`,
-			completed !== undefined
-				? completed
-					? isNotNull(Schema.task.completed_at)
-					: isNull(Schema.task.completed_at)
-				: sql`1 = 1`,
+			dueBefore ? lte(Schema.task.due, dueBefore) : sql`1 = 1`
 		))
 		.groupBy(Schema.task.due)
+
+	console.log("dbresult", dbresult)
 
 	return dbresult;
 }
@@ -240,13 +238,13 @@ export async function getTasks(
 						or(
 							isNull(Schema.task.project_title),
 							not(inArray(
-								Schema.task.project_title, 
+								Schema.task.project_title,
 								excludedProjectTitles.filter(p => p !== "No project")
 							))
 						),
 						// For tasks with null project title ("No project")
-						excludedProjectTitles.includes("No project") 
-							? isNotNull(Schema.task.project_title) 
+						excludedProjectTitles.includes("No project")
+							? isNotNull(Schema.task.project_title)
 							: sql`1 = 1`
 					)
 					: sql`1 = 1`,
@@ -411,7 +409,7 @@ export async function getUncompletedAndDueInTheNextThreeDaysOrLessTasks(userId: 
 	return getTasks(userId, orderBy, orderingDirection, -1, undefined, undefined, threeDaysFromNow, false);
 }
 
-export async function getTasksCompletedTheDayBefore(userId: string, orderBy: keyof Schema.Task = "completed_at", orderingDirection: "asc" | "desc"  = "asc") {
+export async function getTasksCompletedTheDayBefore(userId: string, orderBy: keyof Schema.Task = "completed_at", orderingDirection: "asc" | "desc" = "asc") {
 	const today = new Date()
 	today.setHours(0, 0, 0, 0)
 	const yesterday = new Date(today)
@@ -781,7 +779,7 @@ export async function getUncompletedProjects(userId: string, limit = 50, taskDel
 }
 
 export async function getProjectsWithNotes(
-	userId: string, 
+	userId: string,
 	limit = 50,
 	noteLimit?: number,
 	noteOrderBy?: keyof Schema.Note,

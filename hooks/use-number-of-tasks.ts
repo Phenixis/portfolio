@@ -6,14 +6,12 @@ import { TaskCount } from "@/components/ui/calendar"
 
 // hooks/use--number-of-tasks.ts
 export function useNumberOfTasks({
-    completed,
     projectTitles,
     excludedProjectTitles,
     dueAfter,
     dueBefore,
     enabled = true
 }: {
-    completed?: boolean
     projectTitles?: string[]
     excludedProjectTitles?: string[]
     dueAfter?: Date
@@ -23,7 +21,6 @@ export function useNumberOfTasks({
     const { data, isLoading, isError, mutate } = useFilteredData<Task[]>({
         endpoint: "/api/task/count",
         params: {
-            completed,
             projectTitles: projectTitles?.join(","),
             excludedProjectTitles: excludedProjectTitles?.join(","),
             dueAfter: dueAfter ? dueAfter.toISOString() : undefined,

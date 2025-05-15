@@ -19,7 +19,8 @@ export const DailyMoodColors: {
 }
 
 export type TaskCount = {
-    count: number
+    completed_count: number
+    uncompleted_count: number
     due: string
 }
 
@@ -41,7 +42,7 @@ function Calendar({
     const getTaskCountForDate = (date: Date) => {
         // Find task count for this date (comparing just the date part)
         const taskData = taskCounts.find((task) => new Date(task.due).toDateString() === date.toDateString())
-        return taskData?.count || 0
+        return taskData?.uncompleted_count || 0
     }
 
     // Function to get mood for a specific date

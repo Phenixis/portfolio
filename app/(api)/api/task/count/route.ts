@@ -8,7 +8,6 @@ export async function GET(request: NextRequest) {
 	if ('error' in verification) return verification.error
 
 	const searchParams = request.nextUrl.searchParams
-	const completedParam = searchParams.get("completed")
 	const projectTitles = searchParams.get("projectTitles")
 		? searchParams.get("projectTitles")?.split(",")
 		: undefined
@@ -21,12 +20,13 @@ export async function GET(request: NextRequest) {
 	const dueBefore = searchParams.get("dueBefore")
 		? new Date(searchParams.get("dueBefore") as string)
 		: undefined
-	let completed: boolean | undefined = completedParam === "true" ? true : completedParam === "false" ? false : undefined
 
 	try {
 		dueAfter && dueAfter.setHours(0, 0, 0, 0)
 		dueBefore && dueBefore.setHours(23, 59, 59, 999)
-		const result = await getNumberOfTasks(verification.userId, completed, projectTitles, excludedProjectTitles, dueAfter, dueBefore)
+
+		const result = await getNumberOfTasks(verification.userId, projectTitles, excludedProjectTitles, dueAfter, dueBefore)
+		
 		return NextResponse.json(result.map((task) => ({
 			...task,
 			dueDate: task.due ? new Date(task.due).toISOString() : null,

@@ -24,7 +24,6 @@ export default function Calendar({
 
     // Only fetch data when showNumberOfTasks is true
     const { data, isLoading, isError } = useNumberOfTasks({
-        completed: false,
         projectTitles: searchParams.get(TASK_PARAMS.PROJECTS)
             ? searchParams.get(TASK_PARAMS.PROJECTS)?.split(",")
             : undefined,
