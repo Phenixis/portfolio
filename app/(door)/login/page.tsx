@@ -45,6 +45,9 @@ export default function Login() {
         } else if (result.success) {
             toast.success("Login successful")
         }
+        console.log("Before:", new Date().getTime())
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+        console.log("After:", new Date().getTime())
         return result
     }, { error: "" })
 
