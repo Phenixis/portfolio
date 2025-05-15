@@ -235,18 +235,13 @@ export function TasksCard({
 			setTasksCompleted(completedCount)
 			setTasksUncompleted(uncompletedCount)
 			setTasksTotal(totalCount)
+			setProgression(Math.round((completedCount / totalCount) * 100))
 		}
 	}, [numberOfTasks])
 
 	useEffect(() => {
-		if (tasksCompleted && tasksUncompleted && tasksTotal && tasksTotal > 0) {
-			setProgression(Math.round((tasksCompleted / tasksTotal) * 100))
-		}
-	}, [tasksCompleted, tasksUncompleted, tasksTotal])
-
-	useEffect(() => {
 		mutateNumberOfTasks()
-	}, [dueBeforeDate])
+	}, [dueBeforeDate, selectedProjects, removedProjects])
 
 	// Fix the infinite update loop by removing removedProjects from dependencies
 	// and using a more careful approach to update state
