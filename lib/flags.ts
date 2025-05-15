@@ -1,5 +1,6 @@
 import { flag } from "flags/next"
 import { shouldDarkModeBeEnabled } from "@/lib/utils/dark-mode"
+import type { Task } from "@/lib/db/schema"
 
 export interface DarkModeCookie {
     has_jarvis_asked_dark_mode: boolean
@@ -12,6 +13,17 @@ export interface DarkModeCookie {
     override: boolean
 }
 
+export interface TaskFilterCookie {
+    completed?: boolean
+    limit?: number
+    orderBy?: keyof Task
+    orderingDirection?: "asc" | "desc"
+    projects?: string[]
+    removedProjects?: string[]
+    dueBeforeDate?: string
+    groupByProject?: boolean
+}
+
 export const defaultValueCookie = {
     has_jarvis_asked_dark_mode: false,
     dark_mode: false,
@@ -22,6 +34,16 @@ export const defaultValueCookie = {
     endMinute: 0,
     override: false,
 } as DarkModeCookie
+
+export const defaultTaskFilterCookie: TaskFilterCookie = {
+    completed: false,
+    limit: 5,
+    orderBy: "score",
+    orderingDirection: "desc",
+    projects: [],
+    removedProjects: [],
+    groupByProject: false
+}
 
 export const darkMode = flag<boolean, DarkModeCookie>({
     key: "dark-mode",
