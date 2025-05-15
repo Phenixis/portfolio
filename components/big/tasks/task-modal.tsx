@@ -288,7 +288,7 @@ export default function TaskModal({
 								}
 							}
 							// Default fallback sorting by score and title
-							return orderingDirectionFromSearchParams * (b.score - a.score || a.title.localeCompare(b.title))
+							return orderingDirectionFromSearchParams * (b.score - a.score || (a.title || "").localeCompare(b.title || ""))
 						}
 					)
 					const limitFromSearchParams = searchParams.get(TASK_PARAMS.LIMIT)
