@@ -184,8 +184,6 @@ export async function getNumberOfTasks(userId: string, projectTitles?: string[],
 		))
 		.groupBy(Schema.task.due)
 
-	console.log("dbresult", dbresult)
-
 	return dbresult;
 }
 
