@@ -67,7 +67,6 @@ export default function NoteModal({
             note_content: noteContent,
             note_project_title: project,
         }).then(() => {
-            console.log("Draft note updated successfully")
         }
         ).catch((error) => {
             console.error("Error updating draft note:", error)
@@ -108,7 +107,6 @@ export default function NoteModal({
             note_content: "",
             note_project_title: "",
         }).then(() => {
-            console.log("Draft note reset successfully")
         }).catch((error: any) => {
             console.error("Error resetting draft note:", error)
         })
