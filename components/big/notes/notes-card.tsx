@@ -238,7 +238,7 @@ export function NotesCard({
             <CardHeader className="flex flex-col sticky top-0 bg-background z-10">
                 <div className="flex flex-row items-center justify-between w-full gap-2">
                     <CardTitle>
-                        {generateTitle(orderBy, orderingDirection, limit, groupByProject, selectedProjects, removedProjects)}
+                        Your Notes
                     </CardTitle>
                     <div className="flex gap-2 xl:opacity-0 duration-300 lg:group-hover/NoteCard:opacity-100">
                         <Button
