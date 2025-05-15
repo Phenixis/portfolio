@@ -120,6 +120,9 @@ export function TasksCard({
 	const searchParams = useSearchParams()
 	const today = new Date()
 	today.setHours(0, 0, 0, 0)
+	const tomorrow = new Date()
+	tomorrow.setDate(tomorrow.getDate() + 1)
+	tomorrow.setHours(0, 0, 0, 0)
 	const [isPending, startTransition] = useTransition()
 
 	// -------------------- State --------------------
@@ -218,7 +221,7 @@ export function TasksCard({
 		projectTitles: groupByProject && selectedProjects.length > 0 ? selectedProjects : undefined,
 		excludedProjectTitles: groupByProject && removedProjects.length > 0 ? removedProjects : undefined,
 		dueAfter: today,
-		dueBefore: dueBeforeDate !== undefined ? dueBeforeDate : new Date(new Date().setDate(today.getDate() + 1)),
+		dueBefore: dueBeforeDate !== undefined ? dueBeforeDate : tomorrow,
 	})
 
 	// -------------------- Effects --------------------
