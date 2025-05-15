@@ -151,15 +151,20 @@ export default function Header({
                                 )
                             }
                             <DropdownMenuItem
-                                onClick={() => {
-                                    setIsOpen(false)
-                                    setIsHovering(false)
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    
+                                    setIsOpen(true)
+                                    setIsHovering(true)
                                     startTransition(async () => {
                                         try {
                                             await logout()
                                         } catch (error) {
-                                            console.error("Logout failed:", error)
-                                            toast.error("Failed to log out")
+                                            if (error instanceof Error && error.message != "NEXT_REDIRECT") {
+                                                console.error("Logout failed:", error)
+                                                toast.error("Failed to log out:" + error)
+                                            }
                                         }
                                         toast.success("Logged out")
                                     })
