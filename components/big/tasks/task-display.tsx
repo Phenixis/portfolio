@@ -122,8 +122,38 @@ export default function TaskDisplay({
 					return currentData.filter((item: Task) => item.id !== task.id)
 				},
 				{ revalidate: false },
-			)
-			toast.success(`"${task.title}" ${newIsToggled ? "completed. Well done!" : "uncompleted"}`)
+				)
+
+			// Store original task state to revert if canceled
+			const originalState = { completed: !newIsToggled }
+
+			toast.success(`"${task.title}" ${newIsToggled ? "completed. Well done!" : "uncompleted"}`, {
+				action: {
+					label: "Cancel",
+					onClick: async () => {
+						// Revert local state
+						setIsToggled(!newIsToggled)
+						startTransition(() => {
+							toggleOptimistic(!newIsToggled)
+						})
+
+						// Revert API state
+						try {
+							await fetch("/api/task", {
+								method: "PATCH",
+								headers: { "Content-Type": "application/json", "Authorization": `Bearer ${user?.api_key}` },
+								body: JSON.stringify({ id: task.id, completed: originalState.completed }),
+							})
+							mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
+							mutate((key) => typeof key === "string" && key.startsWith("/api/task/count"))
+							toast.success(`"${task.title}" restored to ${originalState.completed ? "completed" : "uncompleted"} state`)
+						} catch (error) {
+							console.error("Error canceling task toggle:", error)
+							toast.error("Error canceling. The action may have already been processed.")
+						}
+					}
+				}
+			})
 
 			// Actual API call
 			await fetch("/api/task", {
@@ -208,7 +238,7 @@ export default function TaskDisplay({
 								(
 									a: TaskWithRelations | TaskWithNonRecursiveRelations,
 									b: TaskWithRelations | TaskWithNonRecursiveRelations,
-								) => b.score - a.score || a.title.localeCompare(b.title),
+								) => b.score - a.score || (a.title || "").localeCompare(b.title),
 							)
 							.slice(0, currentLimit || Number.MAX_SAFE_INTEGER)
 					}
@@ -216,7 +246,31 @@ export default function TaskDisplay({
 				},
 				{ revalidate: false }, // Don't revalidate immediately
 			)
-			toast.success(`"${task.title}" deleted successfully`)
+
+			// Store original task state to revert if canceled
+			const originalState = { id: task.id, completed_at: task.completed_at }
+
+			toast.success(`"${task.title}" deleted successfully`, {
+				action: {
+					label: "Cancel",
+					onClick: async () => {
+						// Revert API state
+						try {
+							await fetch("/api/task", {
+								method: "POST",
+								headers: { "Content-Type": "application/json", "Authorization": `Bearer ${user?.api_key}` },
+								body: JSON.stringify(originalState),
+							})
+							mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
+							mutate((key) => typeof key === "string" && key.startsWith("/api/task/count"))
+							toast.success(`"${task.title}" restored successfully`)
+						} catch (error) {
+							console.error("Error canceling task deletion:", error)
+							toast.error("Error canceling. The action may have already been processed.")
+						}
+					}
+				}
+			})
 
 			// Actual deletion
 			await fetch(`/api/task?id=${task.id}`, {
