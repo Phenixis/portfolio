@@ -24,12 +24,14 @@ import { toast } from "sonner"
 import NoteModal from "./notes/note-modal"
 import { useTransition } from "react"
 import { DarkModeCookie } from "@/lib/flags"
+import { useRouter } from "next/navigation"
 
 export default function Header({
     darkModeCookie
 }: {
     darkModeCookie: DarkModeCookie
 }) {
+    const router = useRouter()
     const { isVisible } = useScrollDirection()
     const [isHovering, setIsHovering] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
@@ -53,7 +55,7 @@ export default function Header({
                         `overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center w-fit max-w-[24px] mr-2 lg:w-0 lg:max-w-0 lg:opacity-0 lg:m-0 ${isHovering || isOpen ? 'lg:w-fit lg:max-w-[24px] lg:opacity-100 lg:mr-2 xl:mr-4' : ''}`
                     }
                 >
-                    <DarkModeToggle className="transition-transform duration-300" initialCookie={darkModeCookie}/>
+                    <DarkModeToggle className="transition-transform duration-300" initialCookie={darkModeCookie} />
                 </div>
 
                 {/* Center content */}
@@ -96,48 +98,62 @@ export default function Header({
                         <DropdownMenuContent>
                             {
                                 pathname !== "/my" && (
-                                    <DropdownMenuItem onClick={() => {
-                                        setIsOpen(false)
-                                        setIsHovering(false)
-                                    }}>
-                                        <Link href="/my" className="flex items-center">
-                                            <Home size={24} className="mr-1" />
-                                            Dashboard
-                                        </Link>
+                                    <DropdownMenuItem
+                                        onClick={() => {
+                                            setIsOpen(false)
+                                            setIsHovering(false)
+                                            router.push("/my")
+                                        }}
+                                        onMouseEnter={() => {
+                                            router.prefetch("/my")
+                                        }}
+                                        className="cursor-pointer"
+                                    >
+                                        <Home size={24} />
+                                        Dashboard
                                     </DropdownMenuItem>
                                 )
                             }
                             {
                                 pathname !== "/my/settings" && (
-                                    <DropdownMenuItem onClick={() => {
-                                        setIsOpen(false)
-                                        setIsHovering(false)
-                                    }}>
-                                        <Link href="/my/settings" className="flex items-center">
-                                            <User size={24} className="mr-1" />
-                                            Settings
-                                        </Link>
+                                    <DropdownMenuItem
+                                        onClick={() => {
+                                            setIsOpen(false)
+                                            setIsHovering(false)
+                                            router.push("/my/settings")
+                                        }}
+                                        onMouseEnter={() => {
+                                            router.prefetch("/my/settings")
+                                        }}
+                                        className="cursor-pointer"
+                                    >
+                                        <User size={24} />
+                                        Settings
                                     </DropdownMenuItem>
                                 )
                             }
                             {
                                 pathname !== "/my/notes" && (
-                                    <DropdownMenuItem onClick={() => {
-                                        setIsOpen(false)
-                                        setIsHovering(false)
-                                    }}>
-                                        <Link href="/my/notes" className="flex items-center">
-                                            <NotebookText size={24} className="mr-1" />
-                                            Notes
-                                        </Link>
+                                    <DropdownMenuItem
+                                        onClick={() => {
+                                            setIsOpen(false)
+                                            setIsHovering(false)
+                                            router.push("/my/notes")
+                                        }}
+                                        onMouseEnter={() => {
+                                            router.prefetch("/my/notes")
+                                        }}
+                                        className="cursor-pointer"
+                                    >
+                                        <NotebookText size={24} />
+                                        Notes
                                     </DropdownMenuItem>
                                 )
                             }
-                            <DropdownMenuItem onClick={() => {
-                                setIsOpen(false)
-                                setIsHovering(false)
-                            }}>
-                                <div className="flex items-center" onClick={() => {
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    setIsOpen(false)
+                                    setIsHovering(false)
                                     startTransition(async () => {
                                         try {
                                             await logout()
@@ -147,10 +163,10 @@ export default function Header({
                                         }
                                         toast.success("Logged out")
                                     })
-                                }}>
-                                    <LogOut size={24} className="mr-1" />
-                                    {isPending ? "Logging out..." : "Log out"}
-                                </div>
+                                }}
+                                className="cursor-pointer">
+                                <LogOut size={24} />
+                                {isPending ? "Logging out..." : "Log out"}
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
