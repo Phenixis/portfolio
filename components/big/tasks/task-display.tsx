@@ -102,7 +102,8 @@ export default function TaskDisplay({
 						if (new Date(item.due).getDate() === new Date(task.due).getDate()) {
 							return {
 								...item,
-								count: item.count - 1,
+								uncompleted_count: item.uncompleted_count - 1,
+								completed_count: item.completed_count + 1,
 							}
 						}
 						return item
@@ -175,9 +176,16 @@ export default function TaskDisplay({
 
 					const updatedData: TaskCount[] = currentData.map((item: TaskCount) => {
 						if (new Date(item.due).getDate() === new Date(task.due).getDate()) {
-							return {
-								...item,
-								count: item.count - 1,
+							if (task.completed_at) {
+								return {
+									...item,
+									completed_count: item.completed_count - 1,
+								}
+							} else {
+								return {
+									...item,
+									uncompleted_count: item.uncompleted_count - 1,
+								}
 							}
 						}
 						return item

@@ -210,7 +210,7 @@ export default function TaskModal({
 						if (new Date(item.due).getDate() === new Date(todoData.due).getDate()) {
 							return {
 								...item,
-								count: item.count + 1,
+								uncompleted_count: item.uncompleted_count + 1,
 							}
 						}
 						return item
@@ -219,7 +219,8 @@ export default function TaskModal({
 					if (!updatedData.some((item) => new Date(item.due).getDate() === new Date(todoData.due).getDate())) {
 						updatedData.push({
 							due: todoData.due.toISOString(),
-							count: 1,
+							uncompleted_count: 1,
+							completed_count: 0,
 						})
 					}
 
