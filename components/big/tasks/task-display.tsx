@@ -102,8 +102,8 @@ export default function TaskDisplay({
 						if (new Date(item.due).getDate() === new Date(task.due).getDate()) {
 							return {
 								...item,
-								uncompleted_count: item.uncompleted_count - 1,
 								completed_count: item.completed_count + 1,
+								uncompleted_count: item.uncompleted_count - 1,
 							}
 						}
 						return item
@@ -123,7 +123,7 @@ export default function TaskDisplay({
 				},
 				{ revalidate: false },
 			)
-			toast.success(`"${task.title}" ${newIsToggled ? "completed" : "uncompleted"}`)
+			toast.success(`"${task.title}" ${newIsToggled ? "completed. Well done!" : "uncompleted"}`)
 
 			// Actual API call
 			await fetch("/api/task", {
