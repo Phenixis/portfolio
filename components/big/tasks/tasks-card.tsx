@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/tooltip"
 import { updateTaskFilterCookieFromClient } from "./task-actions"
 import type { TaskFilterCookie } from "@/lib/flags"
+import { useNumberOfTasks } from "@/hooks/use-number-of-tasks"
 
 // Constants for URL parameters
 export const TASK_PARAMS = {
@@ -117,6 +118,8 @@ export function TasksCard({
 	// -------------------- Imports & Hooks --------------------
 	const router = useRouter()
 	const searchParams = useSearchParams()
+	const today = new Date()
+	today.setHours(0, 0, 0, 0)
 	const [isPending, startTransition] = useTransition()
 
 	// -------------------- State --------------------
@@ -144,14 +147,14 @@ export function TasksCard({
 	)
 
 	const [orderBy, setOrderBy] = useState<keyof Task | undefined>(
-		(searchParams.get(TASK_PARAMS.ORDER_BY) as keyof Task) || 
-		initialTaskFilterCookie?.orderBy || 
+		(searchParams.get(TASK_PARAMS.ORDER_BY) as keyof Task) ||
+		initialTaskFilterCookie?.orderBy ||
 		initialOrderBy
 	)
 
 	const [orderingDirection, setOrderingDirection] = useState<"asc" | "desc" | undefined>(
-		(searchParams.get(TASK_PARAMS.ORDERING_DIRECTION) as "asc" | "desc") || 
-		initialTaskFilterCookie?.orderingDirection || 
+		(searchParams.get(TASK_PARAMS.ORDERING_DIRECTION) as "asc" | "desc") ||
+		initialTaskFilterCookie?.orderingDirection ||
 		initialOrderingDirection
 	)
 
@@ -170,20 +173,25 @@ export function TasksCard({
 	const [dueBeforeDate, setDueBeforeDate] = useState<Date | undefined>(
 		searchParams.has(TASK_PARAMS.DUE_BEFORE)
 			? new Date(searchParams.get(TASK_PARAMS.DUE_BEFORE) || "")
-			: initialTaskFilterCookie?.dueBeforeDate 
+			: initialTaskFilterCookie?.dueBeforeDate
 				? new Date(initialTaskFilterCookie.dueBeforeDate)
 				: undefined
 	)
 
 	const [groupByProject, setGroupByProject] = useState(
 		searchParams.get(TASK_PARAMS.GROUP_BY_PROJECT) === "true" ||
-		(searchParams.get(TASK_PARAMS.GROUP_BY_PROJECT) !== "false" && 
-		initialTaskFilterCookie?.groupByProject === true)
+		(searchParams.get(TASK_PARAMS.GROUP_BY_PROJECT) !== "false" &&
+			initialTaskFilterCookie?.groupByProject === true)
 	)
+
+	const [tasksCompleted, setTasksCompleted] = useState(0)
+	const [tasksUncompleted, setTasksUncompleted] = useState(0)
+	const [tasksTotal, setTasksTotal] = useState(0)
+	const [progression, setProgression] = useState(0)
 
 	// Add a ref to track if this is the first render
 	const isFirstRender = useRef(true);
-	
+
 	// Add a ref to hold previous removedProjects to compare changes
 	const prevRemovedProjectsRef = useRef<string[]>([]);
 
@@ -206,7 +214,34 @@ export function TasksCard({
 		dueBefore: dueBeforeDate,
 	})
 
+	const { data: numberOfTasks, isLoading: isCountLoading, isError: isCountError, mutate: mutateNumberOfTasks } = useNumberOfTasks({
+		dueAfter: today,
+		dueBefore: dueBeforeDate !== undefined ? dueBeforeDate : new Date(new Date().setDate(today.getDate() + 1)),
+	})
+
 	// -------------------- Effects --------------------
+
+	useEffect(() => {
+		if (numberOfTasks && numberOfTasks.length > 0) {
+			const completedCount = numberOfTasks.reduce((sum, task) => sum + Number(task.completed_count), 0)
+			const uncompletedCount = numberOfTasks.reduce((sum, task) => sum + Number(task.uncompleted_count), 0)
+			const totalCount = completedCount + uncompletedCount
+
+			setTasksCompleted(completedCount)
+			setTasksUncompleted(uncompletedCount)
+			setTasksTotal(totalCount)
+		}
+	}, [numberOfTasks])
+
+	useEffect(() => {
+		if (tasksCompleted && tasksUncompleted && tasksTotal && tasksTotal > 0) {
+			setProgression(Math.round((tasksCompleted / tasksTotal) * 100))
+		}
+	}, [tasksCompleted, tasksUncompleted, tasksTotal])
+
+	useEffect(() => {
+		mutateNumberOfTasks()
+	}, [dueBeforeDate])
 
 	// Fix the infinite update loop by removing removedProjects from dependencies
 	// and using a more careful approach to update state
@@ -220,47 +255,47 @@ export function TasksCard({
 				prevRemovedProjectsRef.current = removedProjects;
 				return;
 			}
-			
+
 			// Filter selected projects to only include those in the current projects list
-			setSelectedProjects((prev) => 
+			setSelectedProjects((prev) =>
 				prev.filter((title) => projects.some((project) => project.title === title))
 			);
-			
+
 			// Get all project titles from the current projects data
 			const currentProjectTitles = new Set(projects.map(project => project.title));
-			
+
 			// Compare current removedProjects with previous to avoid unnecessary updates
 			const currentRemovedProjects = [...removedProjects];
 			const prevRemovedProjects = prevRemovedProjectsRef.current;
-			
+
 			// Only update if there's an actual difference that needs reconciliation
-			if (JSON.stringify(currentRemovedProjects.sort()) !== 
+			if (JSON.stringify(currentRemovedProjects.sort()) !==
 				JSON.stringify(prevRemovedProjects.sort())) {
-				
+
 				// Preserve user's choice for projects that exist in the current projects list
 				const preservedRemovedProjects = currentRemovedProjects.filter(
 					title => currentProjectTitles.has(title)
 				);
-				
+
 				// Keep track of removed projects that are not in the current projects list
 				// but were previously excluded by the user
 				const removedProjectsNotInCurrentList = currentRemovedProjects.filter(
 					title => !currentProjectTitles.has(title)
 				);
-				
+
 				// Only update state if there's actually a change needed
-				if (preservedRemovedProjects.length !== currentRemovedProjects.length || 
+				if (preservedRemovedProjects.length !== currentRemovedProjects.length ||
 					removedProjectsNotInCurrentList.length > 0) {
 					const newRemovedProjects = [...preservedRemovedProjects, ...removedProjectsNotInCurrentList];
-					
+
 					// Update the ref before setting state to avoid comparison issues
 					prevRemovedProjectsRef.current = newRemovedProjects;
-					
+
 					setRemovedProjects(newRemovedProjects);
 				}
 			}
 		}
-	// Importantly, we removed removedProjects from dependencies to avoid the loop
+		// Importantly, we removed removedProjects from dependencies to avoid the loop
 	}, [completed, dueBeforeDate, projects]);
 
 	// Update cookie when filters change
@@ -277,7 +312,7 @@ export function TasksCard({
 				groupByProject
 			});
 		};
-		
+
 		updateCookie();
 	}, [completed, limit, orderBy, orderingDirection, selectedProjects, removedProjects, dueBeforeDate, groupByProject]);
 
@@ -337,12 +372,6 @@ export function TasksCard({
 		});
 	}, [selectedProjects, removedProjects])
 
-	const clearDueBeforeFilter = useCallback(() => {
-		startTransition(() => {
-			setDueBeforeDate(undefined)
-		})
-	}, [])
-
 	// -------------------- Derived Data --------------------
 	const groupedTodos = useMemo(() => {
 		if (!tasks) return {}
@@ -368,9 +397,32 @@ export function TasksCard({
 			className={cn(`w-full md:max-w-xl group/TodoCard h-fit max-h-screen overflow-y-auto scrollbar-hide`, className)}
 		>
 			<CardHeader className="flex flex-col sticky top-0 bg-background z-10">
+				<div className="absolute top-0 left-0 w-full h-1 bg-muted" title={`${tasksCompleted} task${tasksCompleted > 1 ? 's' : ''} completed out of ${tasksTotal} task${tasksTotal > 1 ? 's' : ''}`}>
+					<div
+						className={cn(
+							"absolute top-0 left-0 h-full transition-all duration-300",
+							isCountLoading ? "bg-muted animate-pulse" : "bg-primary"
+						)}
+						style={{ width: isCountLoading ? "100%" : `${progression}%` }}
+					/>
+					<div className="w-full flex justify-between items-center pt-1">
+						{isCountLoading ? (
+							<p className="text-muted-foreground text-xs">Loading...</p>
+						) : (
+							<>
+								<p className="text-muted-foreground text-xs">
+									{tasksCompleted} task{tasksCompleted > 1 ? 's' : ''} completed
+								</p>
+								<p className="text-muted-foreground text-xs">
+									{tasksUncompleted} task{tasksUncompleted > 1 ? 's' : ''} to complete
+								</p>
+							</>
+						)}
+					</div>
+				</div>
 				<div className="flex flex-row items-center justify-between w-full gap-2">
 					<CardTitle>
-						{generateTitle(completed, orderBy, orderingDirection, limit, groupByProject, selectedProjects, removedProjects, dueBeforeDate)}
+						Your Tasks
 					</CardTitle>
 					<div className="flex gap-2 xl:opacity-0 duration-300 lg:group-hover/TodoCard:opacity-100">
 						<Button
