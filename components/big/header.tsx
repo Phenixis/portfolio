@@ -42,7 +42,7 @@ export default function Header({
         <header
             className={cn(
                 `fixed z-50 bottom-4 ${(isHovering || isOpen) && 'lg:bottom-6'} flex items-center justify-center w-full transition-all duration-300 pointer-events-none`, // Added pointer-events-none
-                isVisible ? "translate-y-0 opacity-100" : "translate-y-24 opacity-0 lg:translate-y-0 lg:opacity-100",
+                isVisible ? "translate-y-0 opacity-100" : "translate-y-24 opacity-0",
             )}
         >
             <div className="relative w-fit max-w-[90%] p-1 xl:p-2 px-2 xl:px-4 bg-gray-50 dark:bg-gray-900 rounded-xl flex items-center justify-between border border-gray-200 dark:border-gray-800 transition-all duration-300 group/Header pointer-events-auto"
