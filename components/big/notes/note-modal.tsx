@@ -59,7 +59,7 @@ export default function NoteModal({
     }, 200)
 
     const updateUserDraftNoteDebounced = useDebouncedCallback(() => {
-        if (!user || mode == "edit") return 
+        if (!user || mode == "edit") return
 
         updateUserDraftNote({
             userId: user?.id,
@@ -254,7 +254,8 @@ export default function NoteModal({
                     )
                 }
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent
+                aria-describedby={undefined}>
                 <DialogHeader>
                     <DialogTitle>
                         {mode === "create" ? "Create Note" : "Edit Note"}

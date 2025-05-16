@@ -481,7 +481,10 @@ export default function TaskModal({
 						</Button>
 					)}
 				</DialogTrigger>
-				<DialogContent className="max-w-2xl">
+				<DialogContent
+					className="max-w-2xl"
+					aria-describedby={undefined}
+				>
 					<DialogHeader>
 						<DialogTitle>{mode === "edit" ? "Edit Task" : "Create Task"}</DialogTitle>
 					</DialogHeader>

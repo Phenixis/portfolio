@@ -123,7 +123,9 @@ export default function SignUp() {
                             <DialogTitle>Account created</DialogTitle>
                         </DialogHeader>
                         <p>Your account has been created !</p>
-                        <p>You should have received an email with your credentials. These credentials are unique and this is the only time you will see them, please save them in a secure location.</p>
+                        <DialogDescription>
+                            You should have received an email with your credentials. These credentials are unique and this is the only time you will see them, please save them in a secure location.
+                        </DialogDescription>
                         <DialogFooter>
                             <Button onClick={() => redirect("/login")}>Login</Button>
                         </DialogFooter>
