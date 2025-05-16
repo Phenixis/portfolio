@@ -29,6 +29,14 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
@@ -50,12 +58,21 @@
     --secondary-foreground: 210 40% 98%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
+    --radius: 0.5rem;
     --ring: 216 34% 17%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 
@@ -63,6 +80,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
@@ -92,6 +110,7 @@
     --sh-keyword: #f47067;
     --sh-string: #0fa295;
   }
+
   html {
     color-scheme: dark;
   }
@@ -125,7 +144,7 @@ html {
   content: '#';
 }
 
-.prose *:hover > .anchor {
+.prose *:hover>.anchor {
   @apply visible;
 }
 
@@ -152,11 +171,17 @@ html {
   @apply m-0;
 }
 
-.prose p, .prose a:not(.anchor) {
+.prose p,
+.prose a:not(.anchor) {
   @apply my-4 text-neutral-800 dark:text-neutral-200;
 }
 
-.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
   @apply text-black dark:text-white
 }
 
@@ -172,7 +197,9 @@ html {
   @apply text-2xl font-medium tracking-tight mt-6 mb-2;
 }
 
-.prose h4, .prose h5, .prose h6 {
+.prose h4,
+.prose h5,
+.prose h6 {
   @apply text-xl font-medium tracking-tight mt-6 mb-2;
 }
 
@@ -188,7 +215,7 @@ html {
   @apply list-decimal pl-6;
 }
 
-.prose > :first-child {
+.prose> :first-child {
   /* Override removing top margin, causing layout shift */
   margin-top: 1.25em !important;
   margin-bottom: 1.25em !important;
@@ -199,8 +226,10 @@ pre::-webkit-scrollbar {
 }
 
 pre {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 /* Remove Safari input shadow on mobile */
@@ -224,17 +253,17 @@ table {
 
 /* Component Page */
 
-section.page > h1.page-title {
+section.page>h1.page-title {
   @apply mb-2 text-2xl font-semibold tracking-tighter
 }
 
-section.page > p.page-description, section.page > div.page-description {
+section.page>p.page-description, section.page>div.page-description {
   @apply mb-4 text-justify text-neutral-600 dark:text-neutral-300 leading-[1.8]
 }
 
 /* ul */
 
-ul.list-decorated > li {
+ul.list-decorated>li {
   @apply flex space-x-2 items-center
 }
 
@@ -244,4 +273,16 @@ ul.list-decorated > li {
 
 .scrollbar-hide {
   scrollbar-width: none;
+}
+
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
 }
