@@ -70,7 +70,7 @@ export default function NoteDisplay({ note, className }: { note?: Note, classNam
             setIsDeleting(true)
 
             mutate(
-                (key: unknown) => typeof key === "string" && key.startsWith("/api/note"),
+                (key: unknown) => typeof key === "string" && (key === "/api/note" || key.startsWith("/api/note?")),
                 async (currentData: unknown): Promise<unknown> => {
                     try {
                         const data = currentData as NotesAndData
@@ -99,11 +99,11 @@ export default function NoteDisplay({ note, className }: { note?: Note, classNam
                 body: JSON.stringify({ id: note.id })
             })
 
-            mutate((key) => typeof key === "string" && key.startsWith("/api/note"))
+            mutate((key) => typeof key === "string" && (key === "/api/note" || key.startsWith("/api/note?")))
         } catch (error) {
             console.error("Error deleting note:", error)
             toast.error("Error deleting note. Try again later.")
-            mutate((key) => typeof key === "string" && key.startsWith("/api/note"))
+            mutate((key) => typeof key === "string" && (key === "/api/note" || key.startsWith("/api/note?")))
         } finally {
             setIsDeleting(false)
         }

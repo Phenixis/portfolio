@@ -157,7 +157,7 @@ export default function NoteModal({
             setOpen(false)
 
             mutate(
-                (key: unknown) => typeof key === "string" && key.startsWith("/api/note"),
+                (key: unknown) => typeof key === "string" && (key === "/api/note" || key.startsWith("/api/note?")),
                 async (currentData: unknown): Promise<NotesAndData | unknown> => {
                     try {
                         const data = currentData as NotesAndData
@@ -194,11 +194,12 @@ export default function NoteModal({
                 body: JSON.stringify(noteData),
             })
 
-            mutate((key) => typeof key === "string" && key.startsWith("/api/note"))
+            mutate((key) => typeof key === "string" && (key === "/api/note" || key.startsWith("/api/note?")))
             isSubmittingRef.current = false
         } catch (error) {
-            toast.error(`Failed to ${mode === "edit" ? "update" : "create"} note. Try again later.`)
             console.error("Erreur lors de la soumission:", error)
+            toast.error(`Failed to ${mode === "edit" ? "update" : "create"} note. Try again later.`)
+            mutate((key) => typeof key === "string" && (key === "/api/note" || key.startsWith("/api/note?")))
             isSubmittingRef.current = false
         }
     }

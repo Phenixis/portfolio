@@ -43,7 +43,7 @@ export default function DarkModeToggle({
 
         try {
             mutate(
-                (key: unknown) => typeof key === "string" && key.startsWith("/api/dark-mode"),
+                (key: unknown) => typeof key === "string" && (key === "/api/dark-mode" || key.startsWith("/api/dark-mode?")),
                 async (currentData: unknown): Promise<DarkModeCookie | unknown> => {
                     if (!(typeof currentData === "object" && currentData !== null && "dark_mode" in currentData)) return currentData
 
@@ -61,7 +61,7 @@ export default function DarkModeToggle({
                 body: JSON.stringify(newValue),
             })
 
-			mutate((key) => typeof key === "string" && key.startsWith("/api/dark-mode"))
+			mutate((key) => typeof key === "string" && (key === "/api/dark-mode" || key.startsWith("/api/dark-mode?")))
         } catch (error: any) {
             console.error("Error mutating dark mode data:", error)
         }

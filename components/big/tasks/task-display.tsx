@@ -94,7 +94,7 @@ export default function TaskDisplay({
 		try {
 			// Optimistic UI update for SWR cache
 			mutate(
-				(key: unknown) => typeof key === "string" && key.startsWith("/api/task/count"),
+				(key: unknown) => typeof key === "string" && (key === "/api/task/count" || key.startsWith("/api/task/count?")),
 				async (currentData: unknown): Promise<TaskCount[] | unknown> => {
 					if (!Array.isArray(currentData)) return currentData
 
@@ -102,8 +102,8 @@ export default function TaskDisplay({
 						if (new Date(item.due).getDate() === new Date(task.due).getDate()) {
 							return {
 								...item,
-								completed_count: item.completed_count + 1,
-								uncompleted_count: item.uncompleted_count - 1,
+								completed_count: Number(item.completed_count) + 1,
+								uncompleted_count: Number(item.uncompleted_count) - 1,
 							}
 						}
 						return item
@@ -115,7 +115,7 @@ export default function TaskDisplay({
 			)
 
 			mutate(
-				(key: unknown) => typeof key === "string" && key.startsWith("/api/task"),
+				(key: unknown) => typeof key === "string" && (key === "/api/task" || key.startsWith("/api/task?")),
 				async (currentData: unknown): Promise<unknown> => {
 					if (!Array.isArray(currentData)) return currentData
 
@@ -145,7 +145,6 @@ export default function TaskDisplay({
 								body: JSON.stringify({ id: task.id, completed: originalState.completed }),
 							})
 							mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
-							mutate((key) => typeof key === "string" && key.startsWith("/api/task/count"))
 							toast.success(`"${task.title}" restored to ${originalState.completed ? "completed" : "uncompleted"} state`)
 						} catch (error) {
 							console.error("Error canceling task toggle:", error)
@@ -165,7 +164,6 @@ export default function TaskDisplay({
 			// No need to set state again since we already did it optimistically
 			// Revalidate after successful toggle
 			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
-			mutate((key) => typeof key === "string" && key.startsWith("/api/task/count"))
 		} catch (error) {
 			console.error("Error toggling task:", error)
 			toast.error("Error toggling task. Try again later.")
@@ -200,7 +198,7 @@ export default function TaskDisplay({
 			setIsDeleting(true)
 
 			mutate(
-				(key: unknown) => typeof key === "string" && key.startsWith("/api/task/count"),
+				(key: unknown) => typeof key === "string" && (key === "/api/task/count" || key.startsWith("/api/task/count?")),
 				async (currentData: unknown): Promise<TaskCount[] | unknown> => {
 					if (!Array.isArray(currentData)) return currentData
 
@@ -209,12 +207,12 @@ export default function TaskDisplay({
 							if (task.completed_at) {
 								return {
 									...item,
-									completed_count: item.completed_count - 1,
+									completed_count: Number(item.completed_count) - 1,
 								}
 							} else {
 								return {
 									...item,
-									uncompleted_count: item.uncompleted_count - 1,
+									uncompleted_count: Number(item.uncompleted_count) - 1,
 								}
 							}
 						}
@@ -228,7 +226,7 @@ export default function TaskDisplay({
 
 			// Optimistic UI update - remove the task from all lists
 			mutate(
-				(key: unknown) => typeof key === "string" && key.startsWith("/api/task"),
+				(key: unknown) => typeof key === "string" && (key === "/api/task" || key.startsWith("/api/task?")),
 				async (currentData: unknown): Promise<unknown> => {
 					// Filter out the task being deleted from all cached lists
 					if (Array.isArray(currentData)) {
@@ -262,7 +260,6 @@ export default function TaskDisplay({
 								body: JSON.stringify(originalState),
 							})
 							mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
-							mutate((key) => typeof key === "string" && key.startsWith("/api/task/count"))
 							toast.success(`"${task.title}" restored successfully`)
 						} catch (error) {
 							console.error("Error canceling task deletion:", error)
@@ -280,7 +277,6 @@ export default function TaskDisplay({
 
 			// Revalidate after successful deletion
 			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
-			mutate((key) => typeof key === "string" && key.startsWith("/api/task/count"))
 		} catch (error) {
 			console.error("Error deleting task:", error)
 			toast.error("Error deleting task. Try again later.")
@@ -314,7 +310,7 @@ export default function TaskDisplay({
 		try {
 			// Optimistic UI update - update the task's dependencies in all lists
 			mutate(
-				(key: unknown) => typeof key === "string" && key.startsWith("/api/task"),
+				(key: unknown) => typeof key === "string" && (key === "/api/task" || key.startsWith("/api/task?")),
 				async (currentData: unknown): Promise<unknown> => {
 					// Find the task and update its dependencies
 					if (Array.isArray(currentData)) {

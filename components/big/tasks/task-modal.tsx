@@ -202,7 +202,7 @@ export default function TaskModal({
 			setOpen(false)
 
 			mutate(
-				(key: unknown) => typeof key === "string" && key.startsWith("/api/task/count"),
+				(key: unknown) => typeof key === "string" && (key === "/api/task/count" || key.startsWith("/api/task/count?")),
 				async (currentData: unknown): Promise<TaskCount[] | unknown> => {
 					if (!Array.isArray(currentData)) return currentData
 
@@ -210,7 +210,7 @@ export default function TaskModal({
 						if (new Date(item.due).getDate() === new Date(todoData.due).getDate()) {
 							return {
 								...item,
-								uncompleted_count: item.uncompleted_count + 1,
+								uncompleted_count: Number(item.uncompleted_count) + 1,
 							}
 						}
 						return item
@@ -230,7 +230,7 @@ export default function TaskModal({
 			)
 
 			mutate(
-				(key: unknown) => typeof key === "string" && key.startsWith("/api/task"),
+				(key: unknown) => typeof key === "string" && (key === "/api/task" || key.startsWith("/api/task?")),
 				async (currentData: unknown): Promise<TaskWithRelations[] | unknown> => {
 					if (!Array.isArray(currentData)) return currentData
 
@@ -328,7 +328,6 @@ export default function TaskModal({
 			resetForm();
 			toast.success(`Task ${mode === "edit" ? "updated" : "created"} successfully`)
 			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
-			mutate((key) => typeof key === "string" && key.startsWith("/api/task/count"))
 		} catch (error) {
 			toast.error(`Failed to ${mode === "edit" ? "update" : "create"} task. Try again later.`)
 			console.error("Erreur lors de la soumission:", error)
