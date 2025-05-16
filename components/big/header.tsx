@@ -8,7 +8,7 @@ import Time from "@/components/big/time"
 import { useScrollDirection } from "@/hooks/use-scroll-direction"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
-import { Menu, User, Home, LogOut, NotebookText, Plus } from "lucide-react"
+import { Menu, User, Home, LogOut, NotebookText, Plus, Wrench } from "lucide-react"
 import Link from "next/link"
 import {
     DropdownMenu,
@@ -45,7 +45,7 @@ export default function Header({
                 isVisible ? "translate-y-0 opacity-100" : "translate-y-24 opacity-0 lg:translate-y-0 lg:opacity-100",
             )}
         >
-            <div className="relative w-fit max-w-[90%] p-1 xl:p-2 px-2 xl:px-4 bg-gray-50 dark:bg-gray-900 rounded-full flex items-center justify-between border border-gray-200 dark:border-gray-800 transition-all duration-300 group/Header pointer-events-auto"
+            <div className="relative w-fit max-w-[90%] p-1 xl:p-2 px-2 xl:px-4 bg-gray-50 dark:bg-gray-900 rounded-xl flex items-center justify-between border border-gray-200 dark:border-gray-800 transition-all duration-300 group/Header pointer-events-auto"
                 onMouseEnter={() => setIsHovering(true)}
                 onMouseLeave={() => setIsHovering(false)}
             >
@@ -147,6 +147,24 @@ export default function Header({
                                     >
                                         <NotebookText size={24} />
                                         Notes
+                                    </DropdownMenuItem>
+                                )
+                            }
+                            {
+                                !pathname.startsWith("/my/tools") && (
+                                    <DropdownMenuItem
+                                        onClick={() => {
+                                            setIsOpen(false)
+                                            setIsHovering(false)
+                                            router.push("/my/tools")
+                                        }}
+                                        onMouseEnter={() => {
+                                            router.prefetch("/my/tools")
+                                        }}
+                                        className="cursor-pointer"
+                                    >
+                                        <Wrench size={24} />
+                                        Tools
                                     </DropdownMenuItem>
                                 )
                             }
