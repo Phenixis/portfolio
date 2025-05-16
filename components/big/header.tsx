@@ -41,7 +41,7 @@ export default function Header({
     return (
         <header
             className={cn(
-                `fixed z-50 bottom-4 ${(isHovering || isOpen) && 'lg:bottom-6'} flex items-center justify-center w-full transition-all duration-300 pointer-events-none`, // Added pointer-events-none
+                `fixed z-50 bottom-4 ${(isHovering || isOpen) && 'lg:mb-2'} flex items-center justify-center w-full transition-all duration-300 pointer-events-none`, // Added pointer-events-none
                 isVisible ? "translate-y-0 opacity-100" : "translate-y-24 opacity-0",
             )}
         >
