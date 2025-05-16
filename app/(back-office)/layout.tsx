@@ -1,4 +1,3 @@
-import type React from "react"
 import Header from "@/components/big/header"
 import { UserProvider } from "@/hooks/use-user"
 import { getUser } from "@/lib/db/queries/user"
