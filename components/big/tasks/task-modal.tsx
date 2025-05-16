@@ -206,25 +206,48 @@ export default function TaskModal({
 				async (currentData: unknown): Promise<TaskCount[] | unknown> => {
 					if (!Array.isArray(currentData)) return currentData
 
-					const updatedData: TaskCount[] = currentData.map((item: TaskCount) => {
-						if (new Date(item.due).getDate() === new Date(todoData.due).getDate()) {
-							return {
-								...item,
-								uncompleted_count: Number(item.uncompleted_count) + 1,
+					if (mode === "create") {
+
+						const updatedData: TaskCount[] = currentData.map((item: TaskCount) => {
+							if (new Date(item.due).getDate() === new Date(todoData.due).getDate()) {
+								return {
+									...item,
+									uncompleted_count: Number(item.uncompleted_count) + 1,
+								}
 							}
-						}
-						return item
-					})
-
-					if (!updatedData.some((item) => new Date(item.due).getDate() === new Date(todoData.due).getDate())) {
-						updatedData.push({
-							due: todoData.due.toISOString(),
-							uncompleted_count: 1,
-							completed_count: 0,
+							return item
 						})
-					}
 
-					return updatedData
+						if (!updatedData.some((item) => new Date(item.due).getDate() === new Date(todoData.due).getDate())) {
+							updatedData.push({
+								due: todoData.due.toISOString(),
+								uncompleted_count: 1,
+								completed_count: 0,
+							})
+						}
+
+						return updatedData
+					} else {
+						const updatedData: TaskCount[] = currentData.map((item: TaskCount) => {
+							if (new Date(item.due).getDate() === new Date(todoData.due).getDate()) {
+								return {
+									...item,
+									uncompleted_count: Number(item.uncompleted_count) + 1,
+								}
+							}
+							return item
+						})
+
+						if (!updatedData.some((item) => new Date(item.due).getDate() === new Date(todoData.due).getDate())) {
+							updatedData.push({
+								due: todoData.due.toISOString(),
+								uncompleted_count: 1,
+								completed_count: 0,
+							})
+						}
+
+						return updatedData
+					}
 				},
 				{ revalidate: false },
 			)
