@@ -47,8 +47,9 @@ export function ToolsSidebar() {
                             {tools.map((tool) => (
                                 <SidebarMenuItem key={tool.name}>
                                     <SidebarMenuButton
-                                        className="flex items-center space-x-2"
+                                        className="flex items-center space-x-2 text-wrap"
                                         asChild
+                                        tooltip={tool.description}
                                     >
                                         <Link href={tool.href}>
                                             {tool.icon}
