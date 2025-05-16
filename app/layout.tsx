@@ -1,4 +1,4 @@
-import './global.css'
+import './globals.css'
 import type { Metadata } from 'next'
 import { baseUrl } from './sitemap'
 import { Domine, Geist_Mono, Ubuntu_Sans_Mono } from 'next/font/google';
