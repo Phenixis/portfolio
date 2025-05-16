@@ -228,22 +228,53 @@ export default function TaskModal({
 
 						return updatedData
 					} else {
-						const updatedData: TaskCount[] = currentData.map((item: TaskCount) => {
-							if (new Date(item.due).getDate() === new Date(todoData.due).getDate()) {
-								return {
-									...item,
-									uncompleted_count: Number(item.uncompleted_count) + 1,
+						let updatedData: TaskCount[]
+						if (todoData.completed_at) {
+							updatedData = currentData.map((item: TaskCount) => {
+								if (new Date(item.due).getDate() === new Date(todoData.due).getDate()) {
+									return {
+										...item,
+										completed_count: Number(item.completed_count) + 1,
+									}
+								} else if (task?.due && new Date(item.due).getDate() === new Date(task?.due).getDate()) {
+									return {
+										...item,
+										completed_count: Number(item.completed_count) - 1,
+									}
 								}
-							}
-							return item
-						})
-
-						if (!updatedData.some((item) => new Date(item.due).getDate() === new Date(todoData.due).getDate())) {
-							updatedData.push({
-								due: todoData.due.toISOString(),
-								uncompleted_count: 1,
-								completed_count: 0,
+								return item
 							})
+
+							if (!updatedData.some((item) => new Date(item.due).getDate() === new Date(todoData.due).getDate())) {
+								updatedData.push({
+									due: todoData.due.toISOString(),
+									uncompleted_count: 0,
+									completed_count: 1,
+								})
+							}
+						} else {
+							updatedData = currentData.map((item: TaskCount) => {
+								if (new Date(item.due).getDate() === new Date(todoData.due).getDate()) {
+									return {
+										...item,
+										uncompleted_count: Number(item.uncompleted_count) + 1,
+									}
+								} else if (task?.due && new Date(item.due).getDate() === new Date(task?.due).getDate()) {
+									return {
+										...item,
+										uncompleted_count: Number(item.uncompleted_count) - 1,
+									}
+								}
+								return item
+							})
+
+							if (!updatedData.some((item) => new Date(item.due).getDate() === new Date(todoData.due).getDate())) {
+								updatedData.push({
+									due: todoData.due.toISOString(),
+									uncompleted_count: 1,
+									completed_count: 0,
+								})
+							}
 						}
 
 						return updatedData
