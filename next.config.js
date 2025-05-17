@@ -5,15 +5,18 @@ const withPWA = require('next-pwa')({
 });
 
 module.exports = {
-    images: {
-      remotePatterns: [
-        {
-          protocol: 'https',
-          hostname: 'openweathermap.org',
-          port: '',
-          pathname: '/img/wn/**',
-          search: '',
-        },
-      ],
-    },
-  }
+  experimental: {
+    ppr: 'incremental',
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'openweathermap.org',
+        port: '',
+        pathname: '/img/wn/**',
+        search: '',
+      },
+    ],
+  },
+}

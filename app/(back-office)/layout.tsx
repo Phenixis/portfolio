@@ -3,6 +3,8 @@ import { UserProvider } from "@/hooks/use-user"
 import { getUser } from "@/lib/db/queries/user"
 import { getDarkModeCookie } from "@/lib/cookies"
 
+export const experimental_ppr = true
+
 export default async function BackOfficeLayout({
   children,
 }: {
