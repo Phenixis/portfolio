@@ -48,6 +48,12 @@ export default function NoteDisplay({ note, className }: { note?: Note, classNam
         }
     }
 
+    const cancelDecrypt = () => {
+        setDecryptedContent(null)
+        setPassword("")
+        setDecryptError(false)
+    }
+
     const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             handleDecrypt()
@@ -115,7 +121,12 @@ export default function NoteDisplay({ note, className }: { note?: Note, classNam
                 <CardHeader className={`flex flex-row justify-between items-center space-y-0 px-2 pt-2 pb-2 md:px-4 md:pt-2 md:pb-2 xl:px-6 xl:pt-2 ${!note && "h-12 w-full animate-pulse bg-muted"}`}>
                     {
                         note && (
-                            <div className="w-full" onClick={() => setIsOpen(note ? !isOpen : false)}>
+                            <div className="w-full" onClick={() => {
+                                setIsOpen(note ? !isOpen : false)
+                                if (note.salt && note.iv && decryptedContent && !isOpen) {
+                                    cancelDecrypt()
+                                }
+                            }}>
                                 <CardTitle className={`w-full text-base xl:text-lg ${note && "cursor-pointer"}`}>
                                     {note.title}
                                 </CardTitle>
@@ -167,10 +178,7 @@ export default function NoteDisplay({ note, className }: { note?: Note, classNam
                             <CardFooter className="flex flex-row justify-end space-x-2">
                                 {
                                     note.salt && note.iv && decryptedContent && (
-                                        <Lock className="w-4 h-4 cursor-pointer" onClick={() => {
-                                            setDecryptedContent(null)
-                                            setPassword("")
-                                        }} />
+                                        <Lock className="w-4 h-4 cursor-pointer" onClick={cancelDecrypt} />
                                     )
                                 }
                                 <Trash className="w-4 h-4 cursor-pointer text-red-500" onClick={handleDelete} />
