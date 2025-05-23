@@ -41,16 +41,19 @@ export async function GET(request: NextRequest) {
 	const dueBefore = searchParams.get("dueBefore")
 		? new Date(searchParams.get("dueBefore") as string)
 		: undefined
+	const dueAfter = searchParams.get("dueAfter")
+		? new Date(searchParams.get("dueAfter") as string)
+		: undefined
 	const limit = limitParam ? Number.parseInt(limitParam) : undefined
 	let completed: boolean | undefined = completedParam === "true" ? true : completedParam === "false" ? false : undefined
 
 	try {
 		const tasks =
 			completed === true
-				? await getCompletedTasks(verification.userId, orderBy || undefined, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore)
+				? await getCompletedTasks(verification.userId, orderBy || undefined, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore, dueAfter)
 				: completed === false
-					? await getUncompletedTasks(verification.userId, orderBy || undefined, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore)
-					: await getTasks(verification.userId, orderBy || undefined, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore, completed)
+					? await getUncompletedTasks(verification.userId, orderBy || undefined, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore, dueAfter)
+					: await getTasks(verification.userId, orderBy || undefined, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore, dueAfter, completed)
 
 		return NextResponse.json(tasks)
 	} catch (error) {

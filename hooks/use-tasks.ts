@@ -13,6 +13,7 @@ export function useTasks({
   projectTitles,
   excludedProjectTitles,
   dueBefore,
+  dueAfter,
 }: {
   completed?: boolean
   orderBy?: keyof Task
@@ -22,6 +23,7 @@ export function useTasks({
   projectTitles?: string[]
   excludedProjectTitles?: string[]
   dueBefore?: Date
+  dueAfter?: Date
 }) {
   const { data, isLoading, isError, mutate } = useFilteredData<Task[]>({
     endpoint: "/api/task",
@@ -34,6 +36,7 @@ export function useTasks({
       projectTitles: projectTitles?.join(","),
       excludedProjectTitles: excludedProjectTitles?.join(","),
       dueBefore: dueBefore ? dueBefore.toISOString() : undefined,
+      dueAfter: dueAfter ? dueAfter.toISOString() : undefined,
     },
   })
 

@@ -49,7 +49,7 @@ export default function TaskDisplay({
 	const [optimisticState, toggleOptimistic] = useOptimistic(isToggled, (prev) => !prev)
 	const containerRef = useRef<HTMLDivElement>(null)
 	const { mutate } = useSWRConfig()
-	const skeleton = task !== undefined && orderedBy !== undefined
+	const skeleton = task !== undefined
 	const daysBeforeDue = task ? Math.ceil((new Date(task.due).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 4
 
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)

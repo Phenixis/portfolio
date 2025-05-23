@@ -195,6 +195,7 @@ export async function getTasks(
 	projectTitles?: string[],
 	excludedProjectTitles?: string[],
 	dueBefore?: Date,
+	dueAfter?: Date,
 	completed?: boolean,
 	completed_after?: Date,
 	completed_before?: Date,
@@ -247,6 +248,7 @@ export async function getTasks(
 					)
 					: sql`1 = 1`,
 				dueBefore ? lte(Schema.task.due, dueBefore) : sql`1 = 1`,
+				dueAfter ? gte(Schema.task.due, dueAfter) : sql`1 = 1`,
 				completed !== undefined
 					? completed
 						? isNotNull(Schema.task.completed_at)
@@ -378,12 +380,12 @@ export async function getTasks(
 	return result as Schema.TaskWithRelations[]
 }
 
-export async function getCompletedTasks(userId: string, orderBy: keyof Schema.Task = "completed_at", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[], excludedProjectTitles?: string[], dueBefore?: Date) {
-	return getTasks(userId, orderBy, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore, true);
+export async function getCompletedTasks(userId: string, orderBy: keyof Schema.Task = "completed_at", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[], excludedProjectTitles?: string[], dueBefore?: Date, dueAfter?: Date) {
+	return getTasks(userId, orderBy, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore, dueAfter, true);
 }
 
-export async function getUncompletedTasks(userId: string, orderBy: keyof Schema.Task = "score", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[], excludedProjectTitles?: string[], dueBefore?: Date) {
-	return getTasks(userId, orderBy, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore, false);
+export async function getUncompletedTasks(userId: string, orderBy: keyof Schema.Task = "score", orderingDirection?: "asc" | "desc", limit = 50, projectTitles?: string[], excludedProjectTitles?: string[], dueBefore?: Date, dueAfter?: Date) {
+	return getTasks(userId, orderBy, orderingDirection, limit, projectTitles, excludedProjectTitles, dueBefore, dueAfter, false);
 }
 
 export async function searchTasksByTitle(userId: string, title: string, limit = 50) {
@@ -404,7 +406,7 @@ export async function getUncompletedAndDueInTheNextThreeDaysOrLessTasks(userId: 
 	const threeDaysFromNow = new Date(today)
 	threeDaysFromNow.setDate(today.getDate() + 3)
 
-	return getTasks(userId, orderBy, orderingDirection, -1, undefined, undefined, threeDaysFromNow, false);
+	return getTasks(userId, orderBy, orderingDirection, -1, undefined, undefined, threeDaysFromNow, undefined, false);
 }
 
 export async function getTasksCompletedTheDayBefore(userId: string, orderBy: keyof Schema.Task = "completed_at", orderingDirection: "asc" | "desc" = "asc") {
@@ -413,7 +415,7 @@ export async function getTasksCompletedTheDayBefore(userId: string, orderBy: key
 	const yesterday = new Date(today)
 	yesterday.setDate(today.getDate() - 1)
 
-	return getTasks(userId, orderBy, orderingDirection, -1, undefined, undefined, undefined, true, yesterday, today);
+	return getTasks(userId, orderBy, orderingDirection, -1, undefined, undefined, undefined, undefined, true, yesterday, today);
 }
 
 // ## Update
