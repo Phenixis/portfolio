@@ -30,3 +30,26 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "Failed to fetch mood" }, { status: 500 })
     }
 }
+
+export async function POST(request: NextRequest) {
+    const verification = await verifyRequest(request)
+    if ('error' in verification) return verification.error
+
+    try {
+        const body = await request.json()
+        const { mood, date } = body
+
+        if (mood === undefined || date === undefined) {
+            return NextResponse.json({ error: "Missing required fields: mood and date" }, { status: 400 })
+        }
+
+        // Here you would typically save the mood to the database
+        // For example:
+        // await saveDailyMood(verification.userId, mood, new Date(date))
+        throw new Error(`This is a mock error to simulate saving mood.`)
+
+        return NextResponse.json({ message: "Mood saved successfully" }, { status: 201 })
+    } catch (error: any) {
+        return NextResponse.json({ error: `Failed to save mood: ${error.message}` }, { status: 500 })
+    }
+}
