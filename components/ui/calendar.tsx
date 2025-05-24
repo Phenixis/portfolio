@@ -11,11 +11,11 @@ import type { DailyMood } from "@/lib/db/schema"
 export const DailyMoodColors: {
     [key: number]: string
 } = {
-    0: "bg-red-500/30 dark:bg-red-600",
-    1: "bg-orange-500/30 dark:bg-orange-600",
-    2: "bg-yellow-500/30 dark:bg-yellow-600",
-    3: "bg-green-500/30 dark:bg-green-600",
-    4: "bg-blue-500/30 dark:bg-blue-600",
+    0: "bg-red-700/30 dark:bg-red-700",
+    1: "bg-blue-400/30 dark:bg-blue-600",
+    2: "bg-amber-300/30 dark:bg-amber-600",
+    3: "bg-green-400/30 dark:bg-green-400",
+    4: "bg-green-800/30 dark:bg-green-800",
 }
 
 export type TaskCount = {
