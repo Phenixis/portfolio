@@ -9,6 +9,7 @@ import { useNumberOfTasks } from "@/hooks/use-number-of-tasks"
 import { useDailyMoods } from "@/hooks/use-daily-moods"
 import { useTasks } from "@/hooks/use-tasks"
 import TaskDisplay from "@/components/big/tasks/task-display"
+import DailyMoodModal from "@/components/big/dailyMood/dailyMood-modal"
 
 export default function Calendar({
     className,
@@ -59,18 +60,10 @@ export default function Calendar({
         }
     }, [date])
 
-    useEffect(() => {
-        if (!isTaskError && !isTaskLoading) {
-            tasks.forEach((task) => {
-                console.log(task)
-            })
-        }
-    }, [tasks])
-
     return (
         <div
             className={cn(
-                "flex flex-row md:flex-col justify-start items-start md:items-center border-l border-gray-100 dark:border-gray-800 md:h-screen md:max-w-[300px]",
+                "flex flex-row md:flex-col justify-start items-start md:items-center border-l border-gray-100 dark:border-gray-800 md:h-screen md:max-w-[300px] lg:py-4",
                 className,
             )}
         >
@@ -87,80 +80,83 @@ export default function Calendar({
                     setMonth(month)
                 }}
             />
-            <div className="w-full md:w-[299px] flex flex-col items-center justify-center">
-                <div className="flex items-center justify-center w-fit text-2xl">
-                    <div className="flex flex-col items-center justify-center w-fit text-xl p-2">{date?.getDate()}</div>
-                    <div className="flex flex-col items-center justify-center w-full text-xl">
-                        <div className="w-full">
-                            {date?.toLocaleDateString(undefined, {
-                                weekday: "short",
-                            })}
-                        </div>
-                        <div className="w-full text-base flex flex-row gap-2">
-                            <div>
+            <div className="h-full flex flex-col items-start justify-between">
+                <div className="w-full md:w-[299px] flex flex-col items-center justify-center">
+                    <div className="flex items-center justify-center w-fit text-2xl">
+                        <div className="flex flex-col items-center justify-center w-fit text-xl p-2">{date?.getDate()}</div>
+                        <div className="flex flex-col items-center justify-center w-full text-xl">
+                            <div className="w-full">
                                 {date?.toLocaleDateString(undefined, {
-                                    month: "long",
-                                    year: "numeric",
+                                    weekday: "short",
                                 })}
                             </div>
-                            <div>
-                                {(() => {
-                                    if (!date) return ""
-                                    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
-                                    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7))
-                                    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
-                                    const weekNumber = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
-                                    return (
-                                        <span>
-                                            W<span className="hidden lg:inline">eek </span>
-                                            {weekNumber}
-                                        </span>
-                                    )
-                                })()}
+                            <div className="w-full text-base flex flex-row gap-2">
+                                <div>
+                                    {date?.toLocaleDateString(undefined, {
+                                        month: "long",
+                                        year: "numeric",
+                                    })}
+                                </div>
+                                <div>
+                                    {(() => {
+                                        if (!date) return ""
+                                        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+                                        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7))
+                                        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
+                                        const weekNumber = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
+                                        return (
+                                            <span>
+                                                W<span className="hidden lg:inline">eek </span>
+                                                {weekNumber}
+                                            </span>
+                                        )
+                                    })()}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                {
-                    !isTaskError && !isLoading ? (
+                    {
+                        !isTaskError && !isLoading ? (
 
-                        <div className="flex flex-col items-start justify-center w-full">
-                            <h6>
-                                Tasks of the day
-                            </h6>
-                            {isTaskLoading ? (
-                                isLoading || numberOfTasks.filter((task) => task.due === date?.toISOString()).length === 0 ? (
-                                    <div className="w-full">Loading tasks...</div>
+                            <div className="flex flex-col items-start justify-center w-full">
+                                <h6>
+                                    Tasks of the day
+                                </h6>
+                                {isTaskLoading ? (
+                                    isLoading || numberOfTasks.filter((task) => task.due === date?.toISOString()).length === 0 ? (
+                                        <div className="w-full">Loading tasks...</div>
+                                    ) : (
+                                        <>
+                                            {
+                                                Array.from({ length: numberOfTasks.filter((task) => task.due === date?.toISOString())[0].uncompleted_count || 1 }).map((_, i) => (
+                                                    <TaskDisplay
+                                                        key={i}
+                                                        className="w-full"
+                                                    />
+                                                ))
+                                            }
+                                        </>
+                                    )
+                                ) : isTaskError ? (
+                                    <div className="w-full">Error loading tasks</div>
+                                ) : tasks.length === 0 ? (
+                                    <div className="w-full">No tasks for the day</div>
                                 ) : (
                                     <>
-                                        {
-                                            Array.from({ length: numberOfTasks.filter((task) => task.due === date?.toISOString())[0].uncompleted_count || 1 }).map((_, i) => (
-                                                <TaskDisplay
-                                                    key={i}
-                                                    className="w-full"
-                                                />
-                                            ))
-                                        }
+                                        {tasks.map((task) => (
+                                            <TaskDisplay
+                                                key={task.id}
+                                                task={task}
+                                                className="w-full"
+                                            />
+                                        ))}
                                     </>
-                                )
-                            ) : isTaskError ? (
-                                <div className="w-full">Error loading tasks</div>
-                            ) : tasks.length === 0 ? (
-                                <div className="w-full">No tasks for the day</div>
-                            ) : (
-                                <>
-                                    {tasks.map((task) => (
-                                        <TaskDisplay
-                                            key={task.id}
-                                            task={task}
-                                            className="w-full"
-                                        />
-                                    ))}
-                                </>
-                            )}
-                        </div>
-                    ) : null
-                }
+                                )}
+                            </div>
+                        ) : null
+                    }
+                </div>
+                <DailyMoodModal />
             </div>
         </div>
     )
