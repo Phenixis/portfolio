@@ -232,10 +232,6 @@ export function TasksCard({
 			const uncompletedCount = numberOfTasks.reduce((sum, task) => sum + Number(task.uncompleted_count), 0)
 			const totalCount = completedCount + uncompletedCount
 
-			console.log("Completed:", completedCount)
-			console.log("Uncompleted:", uncompletedCount)
-			console.log("Total:", totalCount)
-
 			setTasksCompleted(completedCount)
 			setTasksUncompleted(uncompletedCount)
 			setTasksTotal(totalCount)
