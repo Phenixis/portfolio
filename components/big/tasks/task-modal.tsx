@@ -40,6 +40,7 @@ import { useUser } from "@/hooks/use-user"
 import { toast } from "sonner"
 import { TASK_PARAMS } from "./tasks-card"
 import SearchProjectsInput from "../projects/search-projects-input"
+import Help from "../help"
 
 export default function TaskModal({
 	className,
@@ -535,11 +536,12 @@ export default function TaskModal({
 								</Select>
 							</div>
 							<div className="relative">
-								<Label htmlFor="dueDate" required>Due date</Label>
+								<Label htmlFor="dueDate" required>Do date</Label>
 								<div className="flex gap-1">
 									<Button
 										type="button"
 										variant="outline"
+										className="px-2"
 										onClick={() => {
 											const newDate = new Date(dueDate.getTime() - 24 * 60 * 60 * 1000)
 											const today = new Date()
@@ -567,6 +569,7 @@ export default function TaskModal({
 									<Button
 										type="button"
 										variant="outline"
+										className="px-2"
 										onClick={() => {
 											setDueDate(new Date(dueDate.getTime() + 24 * 60 * 60 * 1000))
 											setFormChanged(
@@ -597,7 +600,14 @@ export default function TaskModal({
 								)}
 							</div>
 							<div>
-								<Label htmlFor="duration" required>Duration</Label>
+								<Label htmlFor="duration" required>
+									Duration
+								</Label>
+								{
+									durationRef.current === "3" && (
+										<Help className="ml-1" message="It is not recommended to mark a task as longer than 60 minutes, consider divide it into smaller tasks." size="sm" />
+									)
+								}
 								<Select
 									name="duration"
 									defaultValue={task?.duration?.toString() || "0"}

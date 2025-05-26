@@ -7,17 +7,15 @@ import {
 export default function Tooltip({
     children,
     tooltip,
-    cursorPointer,
+    cursor,
 }: {
     children: React.ReactNode
     tooltip: string
-    cursorPointer?: boolean
+    cursor?: "cursor-auto" | "cursor-pointer" | "cursor-default" | "cursor-help" | "cursor-wait" | "cursor-not-allowed" 
 }) {
     return (
         <TooltipRoot>
-            <TooltipTrigger className={`${
-                cursorPointer === true ? "cursor-pointer" : (cursorPointer === false ? "cursor-default" : "")
-            }`}>{children}</TooltipTrigger>
+            <TooltipTrigger className={`${cursor}`}>{children}</TooltipTrigger>
             <TooltipContent>{tooltip.split("<br/>").map((line) => (
                 <div key={line} className="text-sm">
                     {line}
