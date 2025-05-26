@@ -24,7 +24,7 @@ export default function DailyMoodModal({
 
     const handleMoodSelection = (mood: number) => {
         setOpen(false)
-        toast.success(`You selected: ${mood}`)
+
         fetch("/api/mood", {
             method: "POST",
             headers: {
@@ -55,17 +55,17 @@ export default function DailyMoodModal({
             <DropdownMenuTrigger asChild>
                 <Button
                     variant="ghost"
-                    className="h-10 px-2 flex items-center border-none w-full"
+                    className="h-10 px-2 flex items-center border-none w-fit text-xs"
                 >
                     <SmilePlus className="min-w-[24px] max-w-[24px] min-h-[24px]" />
-                    <p>
+                    <p className="hidden">
                         What's your mood today ?
                     </p>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="min-w-0 w-fit flex flex-row space-x-4 p-2" side="top">
                 {
-                    process.env.NEXT_PUBLIC_ENVIRONMENT === "development" ? (
+                    process.env.NEXT_PUBLIC_ENVIRONMENT == "development" ? (
                         <>
                             <Button
                                 variant="ghost"
