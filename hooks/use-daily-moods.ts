@@ -5,9 +5,9 @@ import { useFilteredData } from "./use-filtered-data"
 
 // hooks/use--number-of-tasks.ts
 export function useDailyMoods({
-    enabled,
     startDate,
     endDate,
+    enabled=true,
 }: {
     startDate: Date
     endDate: Date
@@ -16,14 +16,14 @@ export function useDailyMoods({
     const { data, isLoading, isError, mutate } = useFilteredData<DailyMood[]>({
         endpoint: "/api/mood",
         params: {
-            startDate: new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate()).toISOString(),
-            endDate: new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate()).toISOString(),
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString(),
         },
         skipFetch: !enabled,
     })
 
     return {
-        data: data || [],
+        data: data as DailyMood[] || [],
         isLoading,
         isError,
         mutate,
