@@ -127,7 +127,12 @@ export default function NoteDisplay({ note, className }: { note?: Note, classNam
                                     cancelDecrypt()
                                 }
                             }}>
-                                <CardTitle className={`w-full text-base xl:text-lg ${note && "cursor-pointer"}`}>
+                                <CardTitle className={`w-full text-sm lg:text-base xl:text-base ${note && "cursor-pointer"} flex flex-row items-center gap-1`}>
+                                    {
+                                        note.salt && note.iv ? (
+                                            <Lock className="size-3 cursor-pointer"/>
+                                        ) : null
+                                    }
                                     {note.title}
                                 </CardTitle>
                                 <p className="text-xs lg:text-sm text-gray-500">
