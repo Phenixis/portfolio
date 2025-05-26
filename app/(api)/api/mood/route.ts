@@ -1,5 +1,5 @@
 import { verifyRequest } from "@/lib/auth/api"
-import { getDailyMoods, createDailyMood } from "@/lib/db/queries/dailyMood"
+import { getDailyMoods, createDailyMood, updateDailyMood, deleteDailyMood } from "@/lib/db/queries/dailyMood"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(request: NextRequest) {
@@ -48,5 +48,46 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ message: "Mood saved successfully", mood: result }, { status: 201 })
     } catch (error: any) {
         return NextResponse.json({ error: `Failed to save mood: ${error.message}` }, { status: 500 })
+    }
+}
+
+export async function PUT(request: NextRequest) {
+    const verification = await verifyRequest(request)
+    if ('error' in verification) return verification.error
+
+    try {
+        const body = await request.json()
+        const { mood, date } = body
+
+        if (mood === undefined || date === undefined) {
+            return NextResponse.json({ error: "Missing required fields: mood and date" }, { status: 400 })
+        }
+
+        const result = await updateDailyMood(verification.userId, mood, new Date(date), "")
+
+        return NextResponse.json({ message: "Mood updated successfully", mood: result }, { status: 200 })
+    } catch (error: any) {
+        return NextResponse.json({ error: `Failed to update mood: ${error.message}` }, { status: 500 })
+    }
+}
+
+export async function DELETE(request: NextRequest) {
+    const verification = await verifyRequest(request)
+    if ('error' in verification) return verification.error
+
+    const body = await request.json()
+    const { mood, date: dateParam } = body
+
+    if (!dateParam) {
+        return NextResponse.json({ error: "Missing required parameter: date" }, { status: 400 })
+    }
+
+    try {
+        const date = new Date(dateParam)
+        await deleteDailyMood(verification.userId, date)
+        return NextResponse.json({ message: "Mood deleted successfully" }, { status: 200 })
+    } catch (error) {
+        console.error("Error deleting mood:", error)
+        return NextResponse.json({ error: "Failed to delete mood" }, { status: 500 })
     }
 }
