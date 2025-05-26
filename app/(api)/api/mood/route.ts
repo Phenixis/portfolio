@@ -1,5 +1,5 @@
 import { verifyRequest } from "@/lib/auth/api"
-import { getDailyMoods } from "@/lib/db/queries/dailyMood"
+import { getDailyMoods, createDailyMood } from "@/lib/db/queries/dailyMood"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(request: NextRequest) {
@@ -43,12 +43,9 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Missing required fields: mood and date" }, { status: 400 })
         }
 
-        // Here you would typically save the mood to the database
-        // For example:
-        // await saveDailyMood(verification.userId, mood, new Date(date))
-        throw new Error(`This is a mock error to simulate saving mood.`)
+        const result = await createDailyMood(verification.userId, mood, new Date(date), "")
 
-        return NextResponse.json({ message: "Mood saved successfully" }, { status: 201 })
+        return NextResponse.json({ message: "Mood saved successfully", mood: result }, { status: 201 })
     } catch (error: any) {
         return NextResponse.json({ error: `Failed to save mood: ${error.message}` }, { status: 500 })
     }
