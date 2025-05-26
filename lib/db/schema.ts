@@ -7,7 +7,8 @@ import {
     timestamp,
     integer,
     boolean,
-    foreignKey
+    foreignKey,
+    real
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -221,6 +222,39 @@ export const note = pgTable('note', {
     deleted_at: timestamp('deleted_at'),
 });
 
+// Movie Tracker Tables
+export const movie = pgTable('movie', {
+    id: serial('id').primaryKey(),
+    user_id: char('user_id', { length: 8 })
+        .default("00000000")
+        .notNull()
+        .references(() => user.id),
+    tmdb_id: integer('tmdb_id').notNull(),
+    media_type: varchar('media_type', { length: 10 }).notNull(), // 'movie' or 'tv'
+    title: varchar('title', { length: 500 }).notNull(),
+    overview: text('overview'),
+    poster_path: varchar('poster_path', { length: 500 }),
+    backdrop_path: varchar('backdrop_path', { length: 500 }),
+    release_date: varchar('release_date', { length: 20 }),
+    vote_average: real('vote_average'),
+    vote_count: integer('vote_count'),
+    popularity: real('popularity'),
+    original_language: varchar('original_language', { length: 10 }),
+    genres: text('genres'), // JSON string array
+    runtime: integer('runtime'), // in minutes
+    status: varchar('status', { length: 50 }), // released, upcoming, etc.
+    
+    // User tracking fields
+    user_rating: real('user_rating'), // 0.5 to 5.0 by 0.5 increments
+    user_comment: text('user_comment'),
+    watch_status: varchar('watch_status', { length: 20 }).notNull().default('will_watch'), // 'will_watch', 'watched'
+    watched_date: timestamp('watched_date'),
+    
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow(),
+    deleted_at: timestamp('deleted_at')
+});
+
 // Relations
 export const userRelations = relations(user, ({ one, many }) => ({
     tasks: many(task),
@@ -234,6 +268,7 @@ export const userRelations = relations(user, ({ one, many }) => ({
     meteo: many(meteo),
     seriesGroups: many(seriesGroup),
     seanceExercices: many(seanceExercice),
+    movies: many(movie),
 }));
 
 export const projectRelations = relations(project, ({ one, many }) => ({
@@ -335,6 +370,13 @@ export const noteRelations = relations(note, ({ one }) => ({
     })
 }));
 
+export const movieRelations = relations(movie, ({ one }) => ({
+    user: one(user, {
+        fields: [movie.user_id],
+        references: [user.id]
+    })
+}));
+
 export type User = typeof user.$inferSelect;
 export type NewUser = typeof user.$inferInsert;
 export type Task = typeof task.$inferSelect;
@@ -367,3 +409,5 @@ export type Note = typeof note.$inferSelect;
 export type NewNote = typeof note.$inferInsert;
 export type DailyMood = typeof dailyMood.$inferSelect;
 export type NewDailyMood = typeof dailyMood.$inferInsert;
+export type Movie = typeof movie.$inferSelect;
+export type NewMovie = typeof movie.$inferInsert;

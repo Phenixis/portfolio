@@ -1,4 +1,4 @@
-import { LayoutGrid, Grid2X2 } from "lucide-react"
+import { LayoutGrid, Grid2X2, Film } from "lucide-react"
 import type { ReactNode } from "react"
 
 export interface ToolCardProps {
@@ -22,5 +22,11 @@ export const tools: ToolCardProps[] = [
     icon: <Grid2X2 className="h-5 w-5" />,
     description: "A decision-making tool that helps evaluate multiple options against various criteria, with each criterion having a different level of importance (weight).",
   },
+  {
+    name: "Movie Tracker",
+    href: "/my/tools/movie-tracker",
+    icon: <Film className="h-5 w-5" />,
+    description: "A tool for tracking movies and TV shows.",
+  }
   // Future tools can be added here following the same structure
 ]
