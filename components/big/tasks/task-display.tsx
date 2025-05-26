@@ -422,7 +422,7 @@ export default function TaskDisplay({
 								</div>
 							</div>
 							<p
-								className={`w-full hyphens-auto ${optimisticState ? "line-through text-muted-foreground" : ""}`}
+								className={`w-full hyphens-auto text-xs md:text-sm ${optimisticState ? "line-through text-muted-foreground" : ""}`}
 								lang="en"
 							>
 								{task.title}
