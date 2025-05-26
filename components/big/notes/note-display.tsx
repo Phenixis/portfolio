@@ -154,7 +154,7 @@ export default function NoteDisplay({ note, className }: { note?: Note, classNam
                 {
                     note && isOpen && (
                         <>
-                            <CardContent className="xl:pb-2">
+                            <CardContent className="xl:pb-2 text-xs lg:text-sm break-words">
                                 {
                                     note.salt && note.iv ? (
                                         !decryptedContent ? (
@@ -173,10 +173,10 @@ export default function NoteDisplay({ note, className }: { note?: Note, classNam
                                                 {decryptError && <p className="text-red-500 text-sm">Incorrect password.</p>}
                                             </>
                                         ) : (
-                                            <p className="text-sm lg:text-base break-words">{decryptedContent}</p>
+                                            <p >{decryptedContent}</p>
                                         )
                                     ) : (
-                                        <p className="text-sm lg:text-base break-words">{note.content}</p>
+                                        <p>{note.content}</p>
                                     )
                                 }
                             </CardContent>
