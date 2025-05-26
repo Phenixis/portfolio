@@ -9,11 +9,13 @@ export async function createDailyMood(
     date: Date,
     comment: string
 ): Promise<Schema.DailyMood> {
-    const moodExists = await getDailyMood(userId, date);
 
-    if (moodExists) {
+    const alreadyExists = await getDailyMood(userId, date);
+
+    if (alreadyExists) {
         throw new Error("Mood already exists for this date");
     }
+
 
     const dailyMood = await db
         .insert(Schema.dailyMood)
@@ -70,7 +72,7 @@ export async function getDailyMood(
             new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1)
         );
     } catch (error) {
-        throw new Error("No mood found for this date");
+        return null
     }
 
     return (dailyMood && dailyMood.length > 0) ? dailyMood[0] : null;
