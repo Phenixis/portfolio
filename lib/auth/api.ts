@@ -25,13 +25,13 @@ export async function verifyApiKey(apiKey: string | null) {
 export async function verifyRequest(request: NextRequest) {
 	const apiKey = request.headers.get('Authorization')?.replace('Bearer ', '')
 	if (!apiKey) {
-		return { error: NextResponse.json({ error: "Missing API key" }, { status: 401 }) }
+		return { error: NextResponse.json({ error: "Missing API key"}, { status: 401 }), userId: "-1"}
 	}
 	const verification = await verifyApiKey(apiKey)
 	
 	if (!verification.isValid || !verification.userId) {
-		return { error: NextResponse.json({ error: verification.error }, { status: 401 }) }
+		return { error: NextResponse.json({ error: verification.error}, { status: 401 }), userId: "-1" }
 	}
-	
+
 	return { userId: verification.userId }
 }
