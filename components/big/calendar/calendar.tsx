@@ -67,54 +67,57 @@ export default function Calendar({
                 className,
             )}
         >
-            <CalendarComponent
-                mode="single"
-                selected={date}
-                onSelect={setDate}
-                onDayClick={(day) => {
-                    console.log(day)
-                }}
-                taskCounts={showNumberOfTasks ? numberOfTasks : []}
-                dailyMoods={showDailyMood ? dailyMoods : []}
-                onMonthChange={(month) => {
-                    setMonth(month)
-                }}
-            />
-            <div className="h-full flex flex-col items-start justify-between">
-                <div className="w-full md:w-[299px] flex flex-col items-center justify-center">
-                    <div className="flex items-center justify-center w-fit text-2xl">
-                        <div className="flex flex-col items-center justify-center w-fit text-xl p-2">{date?.getDate()}</div>
-                        <div className="flex flex-col items-center justify-center w-full text-xl">
-                            <div className="w-full">
+            <div className="w-full flex flex-col items-center justify-center">
+                <CalendarComponent
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    onDayClick={(day) => {
+                        console.log(day)
+                    }}
+                    taskCounts={showNumberOfTasks ? numberOfTasks : []}
+                    dailyMoods={showDailyMood ? dailyMoods : []}
+                    onMonthChange={(month) => {
+                        setMonth(month)
+                    }}
+                />
+                <div className="flex items-center justify-center w-full text-2xl">
+                    <div className="flex flex-col items-center justify-center w-fit text-xl p-2">{date?.getDate()}</div>
+                    <div className="flex flex-col items-center justify-center w-full text-xl">
+                        <div className="w-full">
+                            {date?.toLocaleDateString(undefined, {
+                                weekday: "short",
+                            })}
+                        </div>
+                        <div className="w-full text-base flex flex-row gap-2">
+                            <div>
                                 {date?.toLocaleDateString(undefined, {
-                                    weekday: "short",
+                                    month: "long",
+                                    year: "numeric",
                                 })}
                             </div>
-                            <div className="w-full text-base flex flex-row gap-2">
-                                <div>
-                                    {date?.toLocaleDateString(undefined, {
-                                        month: "long",
-                                        year: "numeric",
-                                    })}
-                                </div>
-                                <div>
-                                    {(() => {
-                                        if (!date) return ""
-                                        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
-                                        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7))
-                                        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
-                                        const weekNumber = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
-                                        return (
-                                            <span>
-                                                W<span className="hidden lg:inline">eek </span>
-                                                {weekNumber}
-                                            </span>
-                                        )
-                                    })()}
-                                </div>
+                            <div>
+                                {(() => {
+                                    if (!date) return ""
+                                    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+                                    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7))
+                                    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
+                                    const weekNumber = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
+                                    return (
+                                        <span>
+                                            W<span className="hidden lg:inline">eek </span>
+                                            {weekNumber}
+                                        </span>
+                                    )
+                                })()}
                             </div>
                         </div>
                     </div>
+                    <DailyMoodModal />
+                </div>
+            </div>
+            <div className="h-full flex flex-col items-start justify-between">
+                <div className="w-full md:w-[299px] flex flex-col items-center justify-center">
                     {
                         !isTaskError && !isLoading ? (
 
@@ -156,7 +159,6 @@ export default function Calendar({
                         ) : null
                     }
                 </div>
-                <DailyMoodModal />
             </div>
         </div>
     )
