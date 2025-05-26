@@ -522,7 +522,7 @@ export default function TaskDisplay({
 										</p>
 									)}
 									{task.due && (
-										<Tooltip tooltip={`${new Date(task.due).toLocaleDateString()}`} cursorPointer={false}>
+										<Tooltip tooltip={`${new Date(task.due).toLocaleDateString()}`} cursor="cursor-auto">
 											<p className="text-sm text-muted-foreground">
 												Due:{" "}
 												<span className="text-black dark:text-white">
