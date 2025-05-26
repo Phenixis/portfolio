@@ -63,7 +63,7 @@ export default function Calendar({
     return (
         <div
             className={cn(
-                "flex flex-row md:flex-col justify-start items-start md:items-center border-l border-gray-100 dark:border-gray-800 md:h-screen md:max-w-[300px] lg:py-4",
+                "flex flex-row md:flex-col justify-start items-start md:items-center border-l border-gray-100 dark:border-gray-800 md:h-screen md:max-w-[300px]",
                 className,
             )}
         >
