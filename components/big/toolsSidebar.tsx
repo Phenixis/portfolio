@@ -42,7 +42,7 @@ export function ToolsSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <SidebarTrigger className="w-full" />
+        <SidebarTrigger className="w-full [&_svg]:size-4" />
       </SidebarFooter>
     </Sidebar>
   )

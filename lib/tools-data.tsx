@@ -13,19 +13,19 @@ export const tools: ToolCardProps[] = [
   {
     name: "All Tools",
     href: "/my/tools",
-    icon: <LayoutGrid className="h-5 w-5" />,
+    icon: <LayoutGrid className="size-4" />,
     description: "View all available tools",
   },
   {
     name: "Weighted Multi-Criteria Decision Matrix",
     href: "/my/tools/WMCDM",
-    icon: <Grid2X2 className="h-5 w-5" />,
+    icon: <Grid2X2 className="size-4" />,
     description: "A decision-making tool that helps evaluate multiple options against various criteria, with each criterion having a different level of importance (weight).",
   },
   {
     name: "Movie Tracker",
     href: "/my/tools/movie-tracker",
-    icon: <Film className="h-5 w-5" />,
+    icon: <Film className="size-4" />,
     description: "A tool for tracking movies and TV shows.",
   }
   // Future tools can be added here following the same structure
