@@ -42,24 +42,30 @@ export async function GET(request: NextRequest) {
             movie.user_rating && movie.user_rating >= 4.0
         );
 
+        // Get all user's movies (both watched and watchlist) to exclude from recommendations
+        const allUserMovies = await MovieQueries.getUserMovies(userId);
+        const userMovieIds = new Set(allUserMovies.map(movie => movie.tmdb_id));
+
         if (highRatedMovies.length === 0) {
             // If no high-rated movies, fall back to popular content
             if (mediaType === 'movie') {
                 const popularMovies = await tmdbService.getPopularMovies(page);
+                const filteredMovies = popularMovies.results.filter(movie => !userMovieIds.has(movie.id));
                 return NextResponse.json({
-                    recommendations: popularMovies.results,
+                    recommendations: filteredMovies,
                     page: popularMovies.page,
                     total_pages: popularMovies.total_pages,
-                    total_results: popularMovies.total_results,
+                    total_results: filteredMovies.length,
                     method: 'popular_fallback'
                 });
             } else if (mediaType === 'tv') {
                 const popularTV = await tmdbService.getPopularTVShows(page);
+                const filteredShows = popularTV.results.filter(show => !userMovieIds.has(show.id));
                 return NextResponse.json({
-                    recommendations: popularTV.results,
+                    recommendations: filteredShows,
                     page: popularTV.page,
                     total_pages: popularTV.total_pages,
-                    total_results: popularTV.total_results,
+                    total_results: filteredShows.length,
                     method: 'popular_fallback'
                 });
             } else {
@@ -69,14 +75,14 @@ export async function GET(request: NextRequest) {
                     tmdbService.getPopularTVShows(1)
                 ]);
                 
-                // Interleave movies and TV shows
+                // Interleave movies and TV shows, excluding user's existing movies
                 const mixed = [];
                 const maxLength = Math.max(popularMovies.results.length, popularTV.results.length);
                 for (let i = 0; i < maxLength && mixed.length < 20; i++) {
-                    if (i < popularMovies.results.length) {
+                    if (i < popularMovies.results.length && !userMovieIds.has(popularMovies.results[i].id)) {
                         mixed.push({ ...popularMovies.results[i], media_type: 'movie' });
                     }
-                    if (i < popularTV.results.length && mixed.length < 20) {
+                    if (i < popularTV.results.length && mixed.length < 20 && !userMovieIds.has(popularTV.results[i].id)) {
                         mixed.push({ ...popularTV.results[i], media_type: 'tv' });
                     }
                 }
@@ -138,9 +144,10 @@ export async function GET(request: NextRequest) {
                         movieRecs = await tmdbService.getTVRecommendations(movieId, 1);
                     }
 
-                    // Add recommendations, avoiding duplicates
+                    // Add recommendations, avoiding duplicates and user's existing movies
                     for (const rec of movieRecs.results.filter(
-                        rec => mediaType === 'all' || (mediaType === 'movie' && isMovie(rec)) || (mediaType === 'tv' && isTVShow(rec))
+                        rec => (mediaType === 'all' || (mediaType === 'movie' && isMovie(rec)) || (mediaType === 'tv' && isTVShow(rec))) &&
+                               !userMovieIds.has(rec.id)
                     ).slice(0, 5)) {
                         if (!seenIds.has(rec.id) && recommendations.length < 15) {
                             seenIds.add(rec.id);
@@ -172,7 +179,7 @@ export async function GET(request: NextRequest) {
                     });
 
                     for (const movie of discovered.results.slice(0, 10)) {
-                        if (!seenIds.has(movie.id) && recommendations.length < 20) {
+                        if (!seenIds.has(movie.id) && !userMovieIds.has(movie.id) && recommendations.length < 20) {
                             seenIds.add(movie.id);
                             recommendations.push({
                                 ...movie,
@@ -193,7 +200,7 @@ export async function GET(request: NextRequest) {
                     });
 
                     for (const show of discovered.results.slice(0, 10)) {
-                        if (!seenIds.has(show.id) && recommendations.length < 20) {
+                        if (!seenIds.has(show.id) && !userMovieIds.has(show.id) && recommendations.length < 20) {
                             seenIds.add(show.id);
                             recommendations.push({
                                 ...show,
@@ -214,7 +221,7 @@ export async function GET(request: NextRequest) {
                 const trending = await tmdbService.getTrending(mediaType === 'all' ? 'all' : mediaType, 'week');
                 
                 for (const item of trending.results.slice(0, 10)) {
-                    if (!seenIds.has(item.id) && recommendations.length < 20) {
+                    if (!seenIds.has(item.id) && !userMovieIds.has(item.id) && recommendations.length < 20) {
                         seenIds.add(item.id);
                         recommendations.push({
                             ...item,
