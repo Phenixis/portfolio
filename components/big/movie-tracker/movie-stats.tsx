@@ -13,7 +13,7 @@ export function MovieStats() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {Array.from({ length: 4 }).map((_, i) => (
                     <Card key={i}>
-                        <CardContent className="p-4">
+                        <CardContent fullPadding>
                             <div className="animate-pulse">
                                 <div className="h-4 bg-muted rounded mb-2"></div>
                                 <div className="h-8 bg-muted rounded"></div>
