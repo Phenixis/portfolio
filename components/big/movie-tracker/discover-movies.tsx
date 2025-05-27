@@ -126,16 +126,11 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                             <CardTitle className="flex items-center gap-2">
                                 <Sparkles className="w-5 h-5 text-yellow-500" />
                                 Discover
-                                {recommendations.method === 'personalized' && (
-                                    <Badge variant="secondary" className="text-xs">
-                                        Personalized
-                                    </Badge>
-                                )}
                             </CardTitle>
                             <p className="text-sm text-muted-foreground mt-1">
                                 {recommendations.method === 'personalized'
                                     ? `Based on ${recommendations.based_on?.high_rated_count || 0} highly-rated titles`
-                                    : 'Popular content to get you started'
+                                    : null
                                 }
                             </p>
                         </div>
