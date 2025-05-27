@@ -4,12 +4,12 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-    Sparkles, 
-    TrendingUp, 
-    Target, 
-    Film, 
-    Tv, 
+import {
+    Sparkles,
+    TrendingUp,
+    Target,
+    Film,
+    Tv,
     Plus,
     Loader2,
     RefreshCw,
@@ -103,9 +103,9 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
             <Card className={className}>
                 <CardContent className="p-6 text-center">
                     <p className="text-muted-foreground">Failed to load recommendations</p>
-                    <Button 
-                        variant="outline" 
-                        size="sm" 
+                    <Button
+                        variant="outline"
+                        size="sm"
                         className="mt-2"
                         onClick={() => window.location.reload()}
                     >
@@ -133,13 +133,13 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                                 )}
                             </CardTitle>
                             <p className="text-sm text-muted-foreground mt-1">
-                                {recommendations.method === 'personalized' 
+                                {recommendations.method === 'personalized'
                                     ? `Based on ${recommendations.based_on?.high_rated_count || 0} highly-rated titles`
                                     : 'Popular content to get you started'
                                 }
                             </p>
                         </div>
-                        
+
                         <div className="flex gap-1">
                             <Button
                                 variant={mediaFilter === 'all' ? 'default' : 'outline'}
@@ -170,7 +170,7 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                         </div>
                     </div>
                 </CardHeader>
-                
+
                 <CardContent className="p-6 pt-0">
                     {isLoading ? (
                         <div className="flex items-center justify-center py-12">
@@ -213,7 +213,7 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                                                         )}
                                                     </div>
                                                 )}
-                                                
+
                                                 {/* Overlay with add buttons */}
                                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
                                                     <Button
@@ -244,15 +244,17 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                                                         Mark as Watched
                                                     </Button>
                                                 </div>
-                                                
+
                                                 {/* Source badge */}
                                                 <div className="absolute top-2 left-2">
                                                     <Badge variant="secondary" className="text-xs gap-1 bg-black/70 text-white border-0">
                                                         {getSourceIcon('recommendation_source' in item ? item.recommendation_source : 'trending')}
-                                                        {getSourceLabel('recommendation_source' in item ? item.recommendation_source : 'trending')}
+                                                        <span className="lg:hidden lg:group-hover:inline-block">
+                                                            {getSourceLabel('recommendation_source' in item ? item.recommendation_source : 'trending')}
+                                                        </span>
                                                     </Badge>
                                                 </div>
-                                                
+
                                                 {/* Rating badge */}
                                                 {item.vote_average > 0 && (
                                                     <div className="absolute top-2 right-2">
@@ -262,7 +264,7 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                                                     </div>
                                                 )}
                                             </div>
-                                            
+
                                             <div className="p-4">
                                                 <div className="flex items-start gap-2 mb-2">
                                                     <Badge variant="outline" className="text-xs h-5 flex-shrink-0">
@@ -272,11 +274,11 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                                                         <span className="text-xs text-muted-foreground">{year}</span>
                                                     )}
                                                 </div>
-                                                
+
                                                 <h3 className="font-medium text-sm line-clamp-2 mb-2 leading-tight">
                                                     {title}
                                                 </h3>
-                                                
+
                                                 {item.overview && (
                                                     <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
                                                         {item.overview}
@@ -289,12 +291,12 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                             })}
                         </div>
                     )}
-                    
+
                     {/* Strategy info for personalized recommendations */}
                     {recommendations.method === 'personalized' && recommendations.based_on && (
                         <div className="mt-6 p-4 bg-muted/50 rounded-lg">
                             <p className="text-xs text-muted-foreground">
-                                <span className="font-medium">Recommendation strategy:</span> Based on your highly-rated content, 
+                                <span className="font-medium">Recommendation strategy:</span> Based on your highly-rated content,
                                 using {recommendations.based_on.strategies_used.join(', ')} to find similar titles.
                             </p>
                         </div>
