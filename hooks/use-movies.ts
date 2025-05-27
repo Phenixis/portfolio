@@ -120,9 +120,8 @@ export function useMovieRecommendations(mediaType: 'movie' | 'tv' | 'all' = 'all
 
     const refresh = async () => {
         if (user && url) {
-            // Force a fresh fetch by adding a timestamp to bust cache
-            const freshUrl = `${url}&_t=${Date.now()}`;
-            await mutateSWR(fetcher(freshUrl, user.api_key), { revalidate: true });
+            // Trigger a fresh fetch without cache manipulation
+            await mutateSWR();
         }
     };
 
