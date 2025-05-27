@@ -3,8 +3,10 @@ import { verifyRequest } from '@/lib/auth/api';
 import MovieQueries from '@/lib/db/queries/movies';
 import TMDbService from '@/lib/services/tmdb';
 
-// Number of recommendations to return
-const RECOMMENDATIONS_COUNT = 24;
+// Number of recommendations to display to user
+const DISPLAYED_RECOMMENDATIONS_COUNT = 24;
+// Number of recommendations to fetch (includes buffer for replacement)
+const FETCHED_RECOMMENDATIONS_COUNT = 30;
 
 function isMovie(item: any) {
     return "title" in item
@@ -64,7 +66,8 @@ export async function GET(request: NextRequest) {
                 const popularMovies = await tmdbService.getPopularMovies(page);
                 const filteredMovies = popularMovies.results.filter(movie => !shouldExcludeMovie(movie.id));
                 return NextResponse.json({
-                    recommendations: filteredMovies,
+                    recommendations: filteredMovies.slice(0, DISPLAYED_RECOMMENDATIONS_COUNT),
+                    buffer: filteredMovies.slice(DISPLAYED_RECOMMENDATIONS_COUNT),
                     page: popularMovies.page,
                     total_pages: popularMovies.total_pages,
                     total_results: filteredMovies.length,
@@ -74,7 +77,8 @@ export async function GET(request: NextRequest) {
                 const popularTV = await tmdbService.getPopularTVShows(page);
                 const filteredShows = popularTV.results.filter(show => !shouldExcludeMovie(show.id));
                 return NextResponse.json({
-                    recommendations: filteredShows,
+                    recommendations: filteredShows.slice(0, DISPLAYED_RECOMMENDATIONS_COUNT),
+                    buffer: filteredShows.slice(DISPLAYED_RECOMMENDATIONS_COUNT),
                     page: popularTV.page,
                     total_pages: popularTV.total_pages,
                     total_results: filteredShows.length,
@@ -90,17 +94,18 @@ export async function GET(request: NextRequest) {
                 // Interleave movies and TV shows, excluding user's existing movies and not interested
                 const mixed = [];
                 const maxLength = Math.max(popularMovies.results.length, popularTV.results.length);
-                for (let i = 0; i < maxLength && mixed.length < RECOMMENDATIONS_COUNT; i++) {
+                for (let i = 0; i < maxLength && mixed.length < FETCHED_RECOMMENDATIONS_COUNT; i++) {
                     if (i < popularMovies.results.length && !shouldExcludeMovie(popularMovies.results[i].id)) {
                         mixed.push({ ...popularMovies.results[i], media_type: 'movie' });
                     }
-                    if (i < popularTV.results.length && mixed.length < RECOMMENDATIONS_COUNT && !shouldExcludeMovie(popularTV.results[i].id)) {
+                    if (i < popularTV.results.length && mixed.length < FETCHED_RECOMMENDATIONS_COUNT && !shouldExcludeMovie(popularTV.results[i].id)) {
                         mixed.push({ ...popularTV.results[i], media_type: 'tv' });
                     }
                 }
                 
                 return NextResponse.json({
-                    recommendations: mixed,
+                    recommendations: mixed.slice(0, DISPLAYED_RECOMMENDATIONS_COUNT),
+                    buffer: mixed.slice(DISPLAYED_RECOMMENDATIONS_COUNT),
                     page: 1,
                     total_pages: Math.max(popularMovies.total_pages, popularTV.total_pages),
                     total_results: popularMovies.total_results + popularTV.total_results,
@@ -161,7 +166,7 @@ export async function GET(request: NextRequest) {
                         rec => (mediaType === 'all' || (mediaType === 'movie' && isMovie(rec)) || (mediaType === 'tv' && isTVShow(rec))) &&
                                !shouldExcludeMovie(rec.id)
                     ).slice(0, 8)) {
-                        if (!seenIds.has(rec.id) && recommendations.length < RECOMMENDATIONS_COUNT) {
+                        if (!seenIds.has(rec.id) && recommendations.length < FETCHED_RECOMMENDATIONS_COUNT) {
                             seenIds.add(rec.id);
                             recommendations.push({
                                 ...rec,
@@ -177,7 +182,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Strategy 2: Discover movies by preferred genres (if we need more recommendations)
-        if (recommendations.length < RECOMMENDATIONS_COUNT && topGenres.length > 0) {
+        if (recommendations.length < FETCHED_RECOMMENDATIONS_COUNT && topGenres.length > 0) {
             try {
                 const genreString = topGenres.join(',');
                 
@@ -191,7 +196,7 @@ export async function GET(request: NextRequest) {
                     });
 
                     for (const movie of discovered.results.slice(0, 15)) {
-                        if (!seenIds.has(movie.id) && !shouldExcludeMovie(movie.id) && recommendations.length < RECOMMENDATIONS_COUNT) {
+                        if (!seenIds.has(movie.id) && !shouldExcludeMovie(movie.id) && recommendations.length < FETCHED_RECOMMENDATIONS_COUNT) {
                             seenIds.add(movie.id);
                             recommendations.push({
                                 ...movie,
@@ -212,7 +217,7 @@ export async function GET(request: NextRequest) {
                     });
 
                     for (const show of discovered.results.slice(0, 15)) {
-                        if (!seenIds.has(show.id) && !shouldExcludeMovie(show.id) && recommendations.length < RECOMMENDATIONS_COUNT) {
+                        if (!seenIds.has(show.id) && !shouldExcludeMovie(show.id) && recommendations.length < FETCHED_RECOMMENDATIONS_COUNT) {
                             seenIds.add(show.id);
                             recommendations.push({
                                 ...show,
@@ -228,12 +233,12 @@ export async function GET(request: NextRequest) {
         }
 
         // Strategy 3: Fill with trending content if still need more
-        if (recommendations.length < RECOMMENDATIONS_COUNT) {
+        if (recommendations.length < FETCHED_RECOMMENDATIONS_COUNT) {
             try {
                 const trending = await tmdbService.getTrending(mediaType === 'all' ? 'all' : mediaType, 'week');
                 
                 for (const item of trending.results.slice(0, 15)) {
-                    if (!seenIds.has(item.id) && !shouldExcludeMovie(item.id) && recommendations.length < RECOMMENDATIONS_COUNT) {
+                    if (!seenIds.has(item.id) && !shouldExcludeMovie(item.id) && recommendations.length < FETCHED_RECOMMENDATIONS_COUNT) {
                         seenIds.add(item.id);
                         recommendations.push({
                             ...item,
@@ -246,8 +251,8 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // Strategy 4: Fill with popular content if still need more to reach RECOMMENDATIONS_COUNT
-        if (recommendations.length < RECOMMENDATIONS_COUNT) {
+        // Strategy 4: Fill with popular content if still need more to reach FETCHED_RECOMMENDATIONS_COUNT
+        if (recommendations.length < FETCHED_RECOMMENDATIONS_COUNT) {
             try {
                 let popularContent = [];
                 
@@ -277,7 +282,7 @@ export async function GET(request: NextRequest) {
                 }
 
                 for (const item of popularContent) {
-                    if (!seenIds.has(item.id) && !shouldExcludeMovie(item.id) && recommendations.length < RECOMMENDATIONS_COUNT) {
+                    if (!seenIds.has(item.id) && !shouldExcludeMovie(item.id) && recommendations.length < FETCHED_RECOMMENDATIONS_COUNT) {
                         seenIds.add(item.id);
                         recommendations.push({
                             ...item,
@@ -291,9 +296,10 @@ export async function GET(request: NextRequest) {
         }
 
         return NextResponse.json({
-            recommendations: recommendations.slice(0, RECOMMENDATIONS_COUNT),
+            recommendations: recommendations.slice(0, DISPLAYED_RECOMMENDATIONS_COUNT),
+            buffer: recommendations.slice(DISPLAYED_RECOMMENDATIONS_COUNT),
             page: 1,
-            total_pages: Math.ceil(recommendations.length / RECOMMENDATIONS_COUNT),
+            total_pages: Math.ceil(recommendations.length / DISPLAYED_RECOMMENDATIONS_COUNT),
             total_results: recommendations.length,
             method: 'personalized',
             based_on: {

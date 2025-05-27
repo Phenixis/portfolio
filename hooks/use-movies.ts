@@ -40,6 +40,7 @@ interface RecommendationResult extends TMDbSearchResult {
 
 interface RecommendationsResponse {
     recommendations: RecommendationResult[];
+    buffer: RecommendationResult[];
     page: number;
     total_pages: number;
     total_results: number;
@@ -127,13 +128,37 @@ export function useMovieRecommendations(mediaType: 'movie' | 'tv' | 'all' = 'all
 
     /**
      * Replace a specific recommendation item with a new one
-     * This avoids full list refresh when adding movies
+     * This avoids full list refresh when adding movies.
+     * Uses buffer movies when available, falls back to API call if needed.
      */
     const replaceRecommendation = async (tmdbIdToRemove: number) => {
         if (!user || !data) return;
 
         try {
             const currentData = data as RecommendationsResponse;
+            const buffer = currentData.buffer || [];
+            
+            // First try to use a movie from the buffer
+            if (buffer.length > 0) {
+                const replacementMovie = buffer[0];
+                const remainingBuffer = buffer.slice(1);
+                
+                // Create new recommendations array with the removed item replaced
+                const updatedRecommendations = currentData.recommendations.map(rec => 
+                    rec.id === tmdbIdToRemove ? replacementMovie : rec
+                );
+
+                // Update the cache with the new data and reduced buffer
+                await mutateSWR({
+                    ...currentData,
+                    recommendations: updatedRecommendations,
+                    buffer: remainingBuffer
+                }, { revalidate: false });
+                
+                return;
+            }
+            
+            // Fallback: If no buffer available, fetch a single recommendation
             const existingIds = currentData.recommendations.map(rec => rec.id);
             
             // Get a replacement recommendation excluding current list + the removed item
@@ -164,6 +189,7 @@ export function useMovieRecommendations(mediaType: 'movie' | 'tv' | 'all' = 'all
     return {
         recommendations: data as RecommendationsResponse || {
             recommendations: [],
+            buffer: [],
             page: 1,
             total_pages: 0,
             total_results: 0,
