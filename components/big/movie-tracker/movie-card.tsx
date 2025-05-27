@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -46,8 +46,34 @@ export function MovieCard({ movie }: MovieCardProps) {
     const [editRating, setEditRating] = useState(movie.user_rating || 0);
     const [editComment, setEditComment] = useState(movie.user_comment || '');
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [isCommentExpanded, setIsCommentExpanded] = useState(false);
+    const [shouldShowSeeMore, setShouldShowSeeMore] = useState(false);
     
+    const commentRef = useRef<HTMLParagraphElement>(null);
     const { updateMovie, deleteMovie } = useMovieActions();
+
+    // Check if text is truncated by comparing scroll height vs client height
+    useEffect(() => {
+        const checkTextOverflow = () => {
+            if (commentRef.current && movie.user_comment && !isCommentExpanded) {
+                // Small delay to ensure rendering is complete
+                setTimeout(() => {
+                    if (commentRef.current) {
+                        const isOverflowing = commentRef.current.scrollHeight > commentRef.current.clientHeight;
+                        setShouldShowSeeMore(isOverflowing);
+                    }
+                }, 10);
+            } else {
+                setShouldShowSeeMore(false);
+            }
+        };
+
+        checkTextOverflow();
+        
+        // Re-check on window resize
+        window.addEventListener('resize', checkTextOverflow);
+        return () => window.removeEventListener('resize', checkTextOverflow);
+    }, [movie.user_comment, isCommentExpanded]);
 
     const posterUrl = TMDbService.getImageUrl(movie.poster_path, 'w185');
     const releaseYear = movie.release_date ? new Date(movie.release_date).getFullYear() : null;
@@ -102,19 +128,26 @@ export function MovieCard({ movie }: MovieCardProps) {
 
     return (
         <>
-            <Card className="group overflow-hidden hover:shadow-md transition-all duration-200 border-0 bg-card/50">
+            <Card className="group overflow-hidden lg:hover:shadow-md transition-all duration-200 border-0 bg-card/50">
                 <CardContent className="p-4">
-                    <div className="flex gap-4">
+                    <div className={`flex ${isEditing ? "" : "gap-4"} `}>
                         {/* Poster */}
-                        <div className="flex-shrink-0 flex justify-center items-center">
+                        {/* Poster - slides out when editing */}
+                        <div
+                            className={`flex-shrink-0 flex justify-center items-center transition-all duration-200
+                                ${isEditing ? '-translate-x-24 opacity-0 pointer-events-none w-0' : 'translate-x-0 opacity-100 w-16'}
+                            `}
+                            style={{ minWidth: isEditing ? 0 : '4rem', width: isEditing ? 0 : '4rem' }}
+                            aria-hidden={isEditing}
+                        >
                             {posterUrl ? (
                                 <img
                                     src={posterUrl}
                                     alt={movie.title}
-                                    className="w-16 h-24 object-cover rounded-md shadow-sm transition-transform group-hover:scale-105"
+                                    className="w-16 h-24 object-cover rounded-md shadow-sm transition-transform lg:group-hover:scale-105"
                                 />
                             ) : (
-                                <div className="w-16 h-24 bg-muted rounded-md flex items-center justify-center transition-colors group-hover:bg-muted/80">
+                                <div className="w-16 h-24 bg-muted rounded-md flex items-center justify-center transition-colors lg:group-hover:bg-muted/80">
                                     {movie.media_type === 'tv' ? (
                                         <Tv className="w-6 h-6 text-muted-foreground" />
                                     ) : (
@@ -129,7 +162,7 @@ export function MovieCard({ movie }: MovieCardProps) {
                             {/* Header */}
                             <div className="flex items-start justify-between mb-3">
                                 <div className="flex-1 min-w-0">
-                                    <h3 className="font-medium text-base line-clamp-1 mb-1 group-hover:text-primary transition-colors">{movie.title}</h3>
+                                    <h3 className="font-medium text-base line-clamp-1 mb-1">{movie.title}</h3>
                                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                         <Badge variant="secondary" className="text-xs h-5">
                                             {movie.media_type === 'tv' ? 'TV' : 'Movie'}
@@ -148,7 +181,7 @@ export function MovieCard({ movie }: MovieCardProps) {
                                 
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                                             <MoreHorizontal className="h-4 w-4" />
                                         </Button>
                                     </DropdownMenuTrigger>
@@ -184,9 +217,23 @@ export function MovieCard({ movie }: MovieCardProps) {
                                         <label className="text-sm font-medium mb-1.5 block text-foreground">Comment</label>
                                         <Textarea
                                             value={editComment}
-                                            onChange={(e) => setEditComment(e.target.value)}
+                                            onChange={(e) => {
+                                                setEditComment(e.target.value);
+                                                // Auto-resize the textarea
+                                                if (e.target) {
+                                                    e.target.style.height = 'auto';
+                                                    e.target.style.height = `${e.target.scrollHeight}px`;
+                                                }
+                                            }}
                                             placeholder="Share your thoughts..."
-                                            className="min-h-20 text-sm resize-none"
+                                            className="min-h-20 text-sm resize-none overflow-hidden"
+                                            // Set initial height on mount and when value changes
+                                            ref={el => {
+                                                if (el) {
+                                                    el.style.height = 'auto';
+                                                    el.style.height = `${el.scrollHeight}px`;
+                                                }
+                                            }}
                                         />
                                     </div>
                                     <div className="flex gap-2 pt-1">
@@ -229,7 +276,7 @@ export function MovieCard({ movie }: MovieCardProps) {
                                             variant="ghost"
                                             size="sm"
                                             onClick={handleEdit}
-                                            className="h-7 px-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                            className="h-7 px-2 text-xs lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
                                         >
                                             <Edit3 className="w-3 h-3 mr-1" />
                                             Edit
@@ -238,9 +285,24 @@ export function MovieCard({ movie }: MovieCardProps) {
                                     
                                     {/* Comment Display */}
                                     {movie.user_comment ? (
-                                        <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                                            {movie.user_comment}
-                                        </p>
+                                        <div className="space-y-1">
+                                            <p 
+                                                ref={commentRef}
+                                                className={`text-sm text-muted-foreground leading-relaxed transition-all duration-200 ${
+                                                    isCommentExpanded ? '' : 'line-clamp-2'
+                                                }`}
+                                            >
+                                                {movie.user_comment}
+                                            </p>
+                                            {(shouldShowSeeMore || isCommentExpanded) && (
+                                                <button
+                                                    onClick={() => setIsCommentExpanded(!isCommentExpanded)}
+                                                    className="text-xs text-primary hover:text-primary/80 transition-colors font-medium"
+                                                >
+                                                    {isCommentExpanded ? 'See less' : 'See more'}
+                                                </button>
+                                            )}
+                                        </div>
                                     ) : (
                                         <p className="text-xs text-muted-foreground/60 italic">
                                             No comment yet
