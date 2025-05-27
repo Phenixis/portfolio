@@ -1,13 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { MovieCard } from './movie-card';
 import { useMovies } from '@/hooks/use-movies';
 import { useDebounce } from 'use-debounce';
-import { Search, Filter, SortAsc, SortDesc } from 'lucide-react';
+import { Search, SortAsc, SortDesc } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -16,41 +15,43 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from '@/components/ui/pagination';
 
-type WatchStatus = 'all' | 'will_watch' | 'watched';
 type SortBy = 'updated' | 'title' | 'rating' | 'date_added';
 type SortOrder = 'asc' | 'desc';
 
+const ITEMS_PER_PAGE = 10;
+
 interface MovieListProps {
-    status?: WatchStatus;
+    status?: 'watched';
 }
 
 export function MovieList({ status }: MovieListProps) {
     const [searchQuery, setSearchQuery] = useState('');
-    const [watchStatus, setWatchStatus] = useState<WatchStatus>(status || 'all');
     const [sortBy, setSortBy] = useState<SortBy>('updated');
     const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+    const [currentPage, setCurrentPage] = useState(1);
     const [debouncedQuery] = useDebounce(searchQuery, 300);
 
-    const { movies: allMovies, isLoading: isLoadingAll } = useMovies();
-    const { movies: watchedMovies, isLoading: isLoadingWatched } = useMovies('watched');
-    const { movies: willWatchMovies, isLoading: isLoadingWillWatch } = useMovies('will_watch');
-    const { movies: searchMovies, isLoading: isLoadingSearch } = useMovies(undefined, debouncedQuery);
+    // Since this component is only used for watched movies, we only need the watched movies
+    const { movies: watchedMovies, isLoading } = useMovies(status || 'watched');
+    const { movies: searchMovies, isLoading: isLoadingSearch } = useMovies(status || 'watched', debouncedQuery);
 
-    // Determine which movies to show
-    let movies = allMovies;
-    let isLoading = isLoadingAll;
+    // Use search results if there's a query, otherwise use watched movies
+    const movies = debouncedQuery ? searchMovies : watchedMovies;
+    const actualIsLoading = debouncedQuery ? isLoadingSearch : isLoading;
 
-    if (debouncedQuery) {
-        movies = searchMovies;
-        isLoading = isLoadingSearch;
-    } else if (watchStatus === 'watched') {
-        movies = watchedMovies;
-        isLoading = isLoadingWatched;
-    } else if (watchStatus === 'will_watch') {
-        movies = willWatchMovies;
-        isLoading = isLoadingWillWatch;
-    }
+    // Reset to first page when search changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [debouncedQuery]);
 
     // Sort movies
     const sortedMovies = [...movies].sort((a, b) => {
@@ -77,11 +78,12 @@ export function MovieList({ status }: MovieListProps) {
         return sortOrder === 'asc' ? comparison : -comparison;
     });
 
-    const filterOptions = [
-        { value: 'all', label: 'All Movies', count: allMovies.length },
-        { value: 'will_watch', label: 'Will Watch', count: willWatchMovies.length },
-        { value: 'watched', label: 'Watched', count: watchedMovies.length },
-    ];
+    // Calculate pagination
+    const totalItems = sortedMovies.length;
+    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const paginatedMovies = sortedMovies.slice(startIndex, endIndex);
 
     const sortOptions = [
         { value: 'updated', label: 'Recently Updated' },
@@ -98,41 +100,12 @@ export function MovieList({ status }: MovieListProps) {
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                     <Input
-                        placeholder="Search your movies..."
+                        placeholder="Search your watched movies..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-10"
                     />
                 </div>
-
-                {/* Filter by Status - only show if no specific status is provided */}
-                {!status && (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="gap-2">
-                                <Filter className="w-4 h-4" />
-                                {filterOptions.find(f => f.value === watchStatus)?.label}
-                                <Badge variant="secondary" className="ml-1">
-                                    {filterOptions.find(f => f.value === watchStatus)?.count}
-                                </Badge>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            {filterOptions.map((option) => (
-                                <DropdownMenuItem
-                                    key={option.value}
-                                    onClick={() => setWatchStatus(option.value as WatchStatus)}
-                                    className="justify-between"
-                                >
-                                    {option.label}
-                                    <Badge variant="secondary">{option.count}</Badge>
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                )}
 
                 {/* Sort */}
                 <DropdownMenu>
@@ -172,29 +145,92 @@ export function MovieList({ status }: MovieListProps) {
             </div>
 
             {/* Movie List */}
-            {isLoading ? (
+            {actualIsLoading ? (
                 <div className="space-y-3">
                     {Array.from({ length: 4 }).map((_, i) => (
                         <div key={i} className="h-28 bg-muted rounded-lg animate-pulse"></div>
                     ))}
                 </div>
-            ) : sortedMovies.length > 0 ? (
-                <div className="space-y-3">
-                    {sortedMovies.map((movie) => (
-                        <MovieCard key={movie.id} movie={movie} />
-                    ))}
-                </div>
+            ) : paginatedMovies.length > 0 ? (
+                <>
+                    <div className="space-y-3">
+                        {paginatedMovies.map((movie) => (
+                            <MovieCard key={movie.id} movie={movie} />
+                        ))}
+                    </div>
+                    
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                        <div className="flex justify-center">
+                            <Pagination>
+                                <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious 
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                if (currentPage > 1) {
+                                                    setCurrentPage(currentPage - 1);
+                                                }
+                                            }}
+                                            className={currentPage <= 1 ? 'pointer-events-none opacity-50' : ''}
+                                        />
+                                    </PaginationItem>
+                                    
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                                        .filter(page => {
+                                            // Show first page, last page, current page, and pages around current
+                                            return page === 1 || 
+                                                   page === totalPages || 
+                                                   Math.abs(page - currentPage) <= 1;
+                                        })
+                                        .map((page, index, array) => {
+                                            const prevPage = array[index - 1];
+                                            const showEllipsis = prevPage && page - prevPage > 1;
+                                            
+                                            return (
+                                                <PaginationItem key={page}>
+                                                    {showEllipsis && (
+                                                        <span className="px-4 py-2 text-muted-foreground">...</span>
+                                                    )}
+                                                    <PaginationLink
+                                                        href="#"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            setCurrentPage(page);
+                                                        }}
+                                                        isActive={currentPage === page}
+                                                    >
+                                                        {page}
+                                                    </PaginationLink>
+                                                </PaginationItem>
+                                            );
+                                        })}
+                                    
+                                    <PaginationItem>
+                                        <PaginationNext 
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                if (currentPage < totalPages) {
+                                                    setCurrentPage(currentPage + 1);
+                                                }
+                                            }}
+                                            className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''}
+                                        />
+                                    </PaginationItem>
+                                </PaginationContent>
+                            </Pagination>
+                        </div>
+                    )}
+                </>
             ) : (
                 <div className="text-center py-12">
                     <div className="text-muted-foreground">
                         {debouncedQuery ? (
                             <>No movies found for "{debouncedQuery}"</>
-                        ) : watchStatus === 'all' ? (
-                            <>No movies in your collection yet</>
-                        ) : watchStatus === 'watched' ? (
-                            <>No watched movies yet</>
                         ) : (
-                            <>No movies in your watchlist yet</>
+                            <>No watched movies yet</>
                         )}
                     </div>
                     {!debouncedQuery && (
