@@ -73,7 +73,7 @@ function MovieCardItem({
 
     return (
         <Card className="overflow-hidden hover:shadow-md transition-all duration-200">
-            <CardContent className="p-0">
+            <CardContent fullPadding>
                 <div className="group relative">
                     {posterUrl ? (
                         <img
@@ -367,7 +367,7 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                             </p>
                         </div>
                     ) : (
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                             {recommendations.recommendations.map((item) => {
                                 const isAdding = addingIds.has(item.id);
 
