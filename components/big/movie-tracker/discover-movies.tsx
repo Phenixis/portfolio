@@ -29,6 +29,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { StarRating } from '@/components/ui/star-rating';
 
 interface DiscoverMoviesProps {
     className?: string;
@@ -38,7 +39,7 @@ interface MovieCardItemProps {
     item: any;
     isAdding: boolean;
     onAddToWatchlist: (tmdbId: number, mediaType: 'movie' | 'tv') => void;
-    onMarkAsWatched: (tmdbId: number, mediaType: 'movie' | 'tv') => void;
+    onRateMovie: (tmdbId: number, mediaType: 'movie' | 'tv', rating: number) => void;
     onMarkAsNotInterested: (tmdbId: number, mediaType: 'movie' | 'tv', title: string) => void;
     getSourceIcon: (source: string) => React.ReactNode;
     getSourceLabel: (source: string) => string;
@@ -48,7 +49,7 @@ function MovieCardItem({
     item,
     isAdding,
     onAddToWatchlist,
-    onMarkAsWatched,
+    onRateMovie,
     onMarkAsNotInterested,
     getSourceIcon,
     getSourceLabel
@@ -118,15 +119,14 @@ function MovieCardItem({
                                         <Plus className="w-3 h-3" />
                                         Add to Watchlist
                                     </Button>
-                                    <Button
-                                        onClick={() => onMarkAsWatched(item.id, item.media_type || 'movie')}
-                                        size="sm"
-                                        variant="secondary"
-                                        className="gap-2 w-full max-w-[200px]"
-                                    >
-                                        <Eye className="w-3 h-3" />
-                                        Mark as Watched
-                                    </Button>
+                                    <div className="w-full max-w-[200px] bg-primary/90 backdrop-blur-sm p-3 rounded-md">
+                                        <StarRating
+                                            rating={null}
+                                            onRatingChange={(rating) => onRateMovie(item.id, item.media_type || 'movie', rating)}
+                                            size="md"
+                                            className="justify-center"
+                                        />
+                                    </div>
                                     <Button
                                         onClick={() => onMarkAsNotInterested(item.id, item.media_type || 'movie', title)}
                                         size="sm"
@@ -177,17 +177,15 @@ function MovieCardItem({
                                     )}
                                     Add to Watchlist
                                 </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    onClick={() => onMarkAsWatched(item.id, item.media_type || 'movie')}
-                                    disabled={isAdding}
-                                >
-                                    {isAdding ? (
-                                        <Loader2 className="w-3 h-3 animate-spin" />
-                                    ) : (
-                                        <Eye className="w-3 h-3" />
-                                    )}
-                                    Mark as Watched
-                                </DropdownMenuItem>
+                                <div className="px-2 py-1.5">
+                                    <p className="text-xs text-muted-foreground mb-1 font-medium">Rate & Add to Watched</p>
+                                    <StarRating
+                                        rating={null}
+                                        onRatingChange={(rating) => onRateMovie(item.id, item.media_type || 'movie', rating)}
+                                        size="sm"
+                                        className="justify-start"
+                                    />
+                                </div>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
                                     onClick={() => onMarkAsNotInterested(item.id, item.media_type || 'movie', title)}
@@ -340,7 +338,7 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
         }
     };
 
-    const handleMarkAsWatched = async (tmdbId: number, mediaType: 'movie' | 'tv') => {
+    const handleRateMovie = async (tmdbId: number, mediaType: 'movie' | 'tv', rating: number) => {
         // First try optimistic update (immediate replacement if buffer available)
         const replacedMovie = await replaceRecommendation(tmdbId, true);
         
@@ -363,15 +361,18 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
         }
 
         try {
-            // Add movie with optimization flag
-            await addMovie(tmdbId, mediaType, 'watched', { optimizeRecommendations: true });
+            // Add movie with rating and watch status
+            await addMovie(tmdbId, mediaType, 'watched', { 
+                optimizeRecommendations: true,
+                rating: rating
+            });
 
             // If we didn't do optimistic replacement, do regular replacement
             if (!replacedMovie) {
                 await replaceRecommendation(tmdbId);
             }
 
-            toast.success('Added to watched movies!');
+            toast.success(`Rated ${rating}/5 and added to watched movies!`);
         } catch (error: any) {
             // If optimistic update failed, revert it by refreshing
             if (replacedMovie) {
@@ -381,7 +382,7 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
             if (error.message.includes('already in your list')) {
                 toast.info('This is already in your list');
             } else {
-                toast.error('Failed to mark as watched');
+                toast.error('Failed to rate movie');
             }
         } finally {
             setAddingIds(prev => {
@@ -575,7 +576,7 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                                         item={item}
                                         isAdding={isAdding}
                                         onAddToWatchlist={handleAddToWatchlist}
-                                        onMarkAsWatched={handleMarkAsWatched}
+                                        onRateMovie={handleRateMovie}
                                         onMarkAsNotInterested={handleMarkAsNotInterested}
                                         getSourceIcon={getSourceIcon}
                                         getSourceLabel={getSourceLabel}

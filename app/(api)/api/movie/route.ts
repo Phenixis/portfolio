@@ -17,12 +17,21 @@ export async function POST(request: NextRequest) {
 
         const userId = verification.userId;
         const body = await request.json();
-        const { tmdb_id, media_type, watch_status = 'will_watch' } = body;
+        const { tmdb_id, media_type, watch_status = 'will_watch', user_rating } = body;
 
         if (!tmdb_id || !media_type || !['movie', 'tv'].includes(media_type)) {
             return NextResponse.json({ 
                 error: 'tmdb_id and media_type (movie or tv) are required' 
             }, { status: 400 });
+        }
+
+        // Validate rating if provided
+        if (user_rating !== null && user_rating !== undefined) {
+            if (user_rating < 0.5 || user_rating > 5 || (user_rating * 2) % 1 !== 0) {
+                return NextResponse.json({ 
+                    error: 'Rating must be between 0.5 and 5.0 in 0.5 increments' 
+                }, { status: 400 });
+            }
         }
 
         // Check if movie already exists
@@ -50,7 +59,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Create movie record
-        const movieData = {
+        const movieData: any = {
             user_id: userId,
             tmdb_id,
             media_type,
@@ -78,6 +87,11 @@ export async function POST(request: NextRequest) {
             watch_status,
             watched_date: watch_status === 'watched' ? new Date() : null
         };
+
+        // Add rating if provided
+        if (user_rating !== null && user_rating !== undefined) {
+            movieData.user_rating = user_rating;
+        }
 
         const newMovie = await MovieQueries.addMovie(movieData);
 

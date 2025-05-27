@@ -71,6 +71,8 @@
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",
     "drizzle-kit": "^0.27.2",
+    "eslint": "^9.27.0",
+    "eslint-config-next": "15.3.2",
     "typescript": "5.8.3"
   }
 }

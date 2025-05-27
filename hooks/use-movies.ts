@@ -237,9 +237,23 @@ export function useMovieActions() {
         tmdbId: number, 
         mediaType: 'movie' | 'tv', 
         watchStatus: 'will_watch' | 'watched' = 'will_watch',
-        options?: { optimizeRecommendations?: boolean }
+        options?: { 
+            optimizeRecommendations?: boolean;
+            rating?: number;
+        }
     ) => {
         if (!user) throw new Error('User not authenticated');
+
+        const requestBody: any = {
+            tmdb_id: tmdbId,
+            media_type: mediaType,
+            watch_status: watchStatus
+        };
+
+        // If rating is provided and watch status is 'watched', include it
+        if (options?.rating && watchStatus === 'watched') {
+            requestBody.user_rating = options.rating;
+        }
 
         const response = await fetch('/api/movie', {
             method: 'POST',
@@ -247,11 +261,7 @@ export function useMovieActions() {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${user.api_key}`
             },
-            body: JSON.stringify({
-                tmdb_id: tmdbId,
-                media_type: mediaType,
-                watch_status: watchStatus
-            })
+            body: JSON.stringify(requestBody)
         });
 
         if (!response.ok) {

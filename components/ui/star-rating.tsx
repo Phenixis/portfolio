@@ -81,7 +81,7 @@ export function StarRating({
                         {/* Left half - for 0.5 increments */}
                         <button
                             type="button"
-                            className="absolute inset-0 w-1/2 opacity-0 hover:opacity-10 hover:bg-yellow-400 transition-opacity"
+                            className="absolute inset-0 w-1/2 opacity-0 hover:opacity-30 hover:bg-yellow-400 transition-opacity"
                             onClick={() => handleClick(starIndex, true)}
                             onMouseEnter={() => {
                                 // Optional: Preview half star on hover
@@ -90,7 +90,7 @@ export function StarRating({
                         {/* Right half - for full increments */}
                         <button
                             type="button"
-                            className="absolute inset-0 left-1/2 w-1/2 opacity-0 hover:opacity-10 hover:bg-yellow-400 transition-opacity"
+                            className="absolute inset-0 left-1/2 w-1/2 opacity-0 hover:opacity-30 hover:bg-yellow-400 transition-opacity"
                             onClick={() => handleClick(starIndex, false)}
                         />
                     </>
