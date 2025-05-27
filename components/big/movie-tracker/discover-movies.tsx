@@ -13,12 +13,19 @@ import {
     Plus,
     Loader2,
     RefreshCw,
-    Eye
+    Eye,
+    MoreHorizontal
 } from 'lucide-react';
 import { useMovieRecommendations, useMovieActions } from '@/hooks/use-movies';
 import TMDbService from '@/lib/services/tmdb';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface DiscoverMoviesProps {
     className?: string;
@@ -33,13 +40,13 @@ interface MovieCardItemProps {
     getSourceLabel: (source: string) => string;
 }
 
-function MovieCardItem({ 
-    item, 
-    isAdding, 
-    onAddToWatchlist, 
-    onMarkAsWatched, 
-    getSourceIcon, 
-    getSourceLabel 
+function MovieCardItem({
+    item,
+    isAdding,
+    onAddToWatchlist,
+    onMarkAsWatched,
+    getSourceIcon,
+    getSourceLabel
 }: MovieCardItemProps) {
     const [isOverviewExpanded, setIsOverviewExpanded] = useState(false);
     const [shouldShowSeeMore, setShouldShowSeeMore] = useState(false);
@@ -66,15 +73,15 @@ function MovieCardItem({
         };
 
         checkTextOverflow();
-        
+
         window.addEventListener('resize', checkTextOverflow);
         return () => window.removeEventListener('resize', checkTextOverflow);
     }, [item.overview, isOverviewExpanded]);
 
     return (
-        <Card className="overflow-hidden hover:shadow-md transition-all duration-200">
+        <Card className="group/Card overflow-hidden hover:shadow-md transition-all duration-200">
             <CardContent fullPadding>
-                <div className="group relative">
+                <div className="group/Poster relative">
                     {posterUrl ? (
                         <img
                             src={posterUrl}
@@ -92,7 +99,7 @@ function MovieCardItem({
                     )}
 
                     {/* Overlay with add buttons */}
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                    <div className="absolute inset-0 bg-black/60 hidden lg:group-hover/Poster:flex transition-opacity flex-col items-center justify-center gap-2">
                         <Button
                             onClick={() => onAddToWatchlist(item.id, item.media_type || 'movie')}
                             disabled={isAdding}
@@ -123,12 +130,12 @@ function MovieCardItem({
                     </div>
 
                     {/* Source badge */}
-                    <div className="absolute top-2 left-2">
+                    <div className="absolute bottom-2 right-2">
                         <Badge variant="secondary" className="text-xs gap-1 bg-black/70 text-white border-0">
-                            {getSourceIcon('recommendation_source' in item ? item.recommendation_source : 'trending')}
-                            <span className="lg:hidden lg:group-hover:inline-block">
+                            <span className="lg:hidden lg:group-hover/Poster:inline-block">
                                 {getSourceLabel('recommendation_source' in item ? item.recommendation_source : 'trending')}
                             </span>
+                            {getSourceIcon('recommendation_source' in item ? item.recommendation_source : 'trending')}
                         </Badge>
                     </div>
 
@@ -140,6 +147,38 @@ function MovieCardItem({
                             </Badge>
                         </div>
                     )}
+
+                    {/* Options menu */}
+                    <div className="absolute top-2 left-2 lg:opacity-0 lg:group-hover/Card:opacity-100 transition-opacity">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="secondary" size="sm" className="h-8 w-8 p-0 bg-black/70 hover:bg-black/80 border-0">
+                                    <MoreHorizontal className="h-4 w-4 text-white" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start">
+                                <DropdownMenuItem onClick={() => onAddToWatchlist(item.id, item.media_type || 'movie')} disabled={isAdding}>
+                                    {isAdding ? (
+                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                    ) : (
+                                        <Plus className="w-3 h-3" />
+                                    )}
+                                    Add to Watchlist
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() => onMarkAsWatched(item.id, item.media_type || 'movie')}
+                                    disabled={isAdding}
+                                >
+                                    {isAdding ? (
+                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                    ) : (
+                                        <Eye className="w-3 h-3" />
+                                    )}
+                                    Mark as Watched
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 </div>
 
                 <div className="p-4">
@@ -158,11 +197,10 @@ function MovieCardItem({
 
                     {item.overview && (
                         <div className="space-y-1">
-                            <p 
+                            <p
                                 ref={overviewRef}
-                                className={`text-xs text-muted-foreground leading-relaxed transition-all duration-200 ${
-                                    isOverviewExpanded ? '' : 'line-clamp-3'
-                                }`}
+                                className={`text-xs text-muted-foreground leading-relaxed transition-all duration-200 ${isOverviewExpanded ? '' : 'line-clamp-3'
+                                    }`}
                             >
                                 {item.overview}
                             </p>
