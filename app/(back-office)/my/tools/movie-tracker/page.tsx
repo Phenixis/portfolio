@@ -80,7 +80,7 @@ export default function MovieTrackerPage() {
 
                 <TabsContent value="movies" className="space-y-6">
                     <Card>
-                        <CardHeader>
+                        <CardHeader className="pb-2">
                             <CardTitle>Your Movie Collection</CardTitle>
                         </CardHeader>
                         <CardContent>
