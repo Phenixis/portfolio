@@ -100,13 +100,13 @@ export function TasksCard({
 				: initialLimit
 	)
 
-	const [orderBy, setOrderBy] = useState<keyof Task | undefined>(
+	const [orderBy] = useState<keyof Task | undefined>(
 		(searchParams.get(TASK_PARAMS.ORDER_BY) as keyof Task) ||
 		initialTaskFilterCookie?.orderBy ||
 		initialOrderBy
 	)
 
-	const [orderingDirection, setOrderingDirection] = useState<"asc" | "desc" | undefined>(
+	const [orderingDirection] = useState<"asc" | "desc" | undefined>(
 		(searchParams.get(TASK_PARAMS.ORDERING_DIRECTION) as "asc" | "desc") ||
 		initialTaskFilterCookie?.orderingDirection ||
 		initialOrderingDirection
@@ -176,7 +176,7 @@ export function TasksCard({
 		dueBefore: dueBeforeDate !== undefined ? dueBeforeDate : tomorrow,
 	}), [groupByProject, selectedProjects, removedProjects, dueBeforeDate, today, tomorrow])
 
-	const { data: numberOfTasks, isLoading: isCountLoading, isError: isCountError, mutate: mutateNumberOfTasks } = useNumberOfTasks(numberOfTasksParams)
+	const { data: numberOfTasks, isLoading: isCountLoading, isError: isCountError } = useNumberOfTasks(numberOfTasksParams)
 
 	// -------------------- Effects --------------------
 
