@@ -78,11 +78,11 @@ export async function GET(request: NextRequest) {
                 // Interleave movies and TV shows, excluding user's existing movies
                 const mixed = [];
                 const maxLength = Math.max(popularMovies.results.length, popularTV.results.length);
-                for (let i = 0; i < maxLength && mixed.length < 20; i++) {
+                for (let i = 0; i < maxLength && mixed.length < 25; i++) {
                     if (i < popularMovies.results.length && !userMovieIds.has(popularMovies.results[i].id)) {
                         mixed.push({ ...popularMovies.results[i], media_type: 'movie' });
                     }
-                    if (i < popularTV.results.length && mixed.length < 20 && !userMovieIds.has(popularTV.results[i].id)) {
+                    if (i < popularTV.results.length && mixed.length < 25 && !userMovieIds.has(popularTV.results[i].id)) {
                         mixed.push({ ...popularTV.results[i], media_type: 'tv' });
                     }
                 }
@@ -148,8 +148,8 @@ export async function GET(request: NextRequest) {
                     for (const rec of movieRecs.results.filter(
                         rec => (mediaType === 'all' || (mediaType === 'movie' && isMovie(rec)) || (mediaType === 'tv' && isTVShow(rec))) &&
                                !userMovieIds.has(rec.id)
-                    ).slice(0, 5)) {
-                        if (!seenIds.has(rec.id) && recommendations.length < 15) {
+                    ).slice(0, 8)) {
+                        if (!seenIds.has(rec.id) && recommendations.length < 25) {
                             seenIds.add(rec.id);
                             recommendations.push({
                                 ...rec,
@@ -165,7 +165,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Strategy 2: Discover movies by preferred genres (if we need more recommendations)
-        if (recommendations.length < 15 && topGenres.length > 0) {
+        if (recommendations.length < 25 && topGenres.length > 0) {
             try {
                 const genreString = topGenres.join(',');
                 
@@ -178,8 +178,8 @@ export async function GET(request: NextRequest) {
                         page: 1
                     });
 
-                    for (const movie of discovered.results.slice(0, 10)) {
-                        if (!seenIds.has(movie.id) && !userMovieIds.has(movie.id) && recommendations.length < 20) {
+                    for (const movie of discovered.results.slice(0, 15)) {
+                        if (!seenIds.has(movie.id) && !userMovieIds.has(movie.id) && recommendations.length < 25) {
                             seenIds.add(movie.id);
                             recommendations.push({
                                 ...movie,
@@ -199,8 +199,8 @@ export async function GET(request: NextRequest) {
                         page: 1
                     });
 
-                    for (const show of discovered.results.slice(0, 10)) {
-                        if (!seenIds.has(show.id) && !userMovieIds.has(show.id) && recommendations.length < 20) {
+                    for (const show of discovered.results.slice(0, 15)) {
+                        if (!seenIds.has(show.id) && !userMovieIds.has(show.id) && recommendations.length < 25) {
                             seenIds.add(show.id);
                             recommendations.push({
                                 ...show,
@@ -216,12 +216,12 @@ export async function GET(request: NextRequest) {
         }
 
         // Strategy 3: Fill with trending content if still need more
-        if (recommendations.length < 15) {
+        if (recommendations.length < 25) {
             try {
                 const trending = await tmdbService.getTrending(mediaType === 'all' ? 'all' : mediaType, 'week');
                 
-                for (const item of trending.results.slice(0, 10)) {
-                    if (!seenIds.has(item.id) && !userMovieIds.has(item.id) && recommendations.length < 20) {
+                for (const item of trending.results.slice(0, 15)) {
+                    if (!seenIds.has(item.id) && !userMovieIds.has(item.id) && recommendations.length < 25) {
                         seenIds.add(item.id);
                         recommendations.push({
                             ...item,
@@ -234,10 +234,54 @@ export async function GET(request: NextRequest) {
             }
         }
 
+        // Strategy 4: Fill with popular content if still need more to reach 25
+        if (recommendations.length < 25) {
+            try {
+                let popularContent = [];
+                
+                if (mediaType === 'movie') {
+                    const popular = await tmdbService.getPopularMovies(1);
+                    popularContent = popular.results.map(item => ({ ...item, media_type: 'movie' }));
+                } else if (mediaType === 'tv') {
+                    const popular = await tmdbService.getPopularTVShows(1);
+                    popularContent = popular.results.map(item => ({ ...item, media_type: 'tv' }));
+                } else {
+                    // Mix of popular movies and TV shows
+                    const [popularMovies, popularTV] = await Promise.all([
+                        tmdbService.getPopularMovies(1),
+                        tmdbService.getPopularTVShows(1)
+                    ]);
+                    
+                    // Interleave content
+                    const maxLength = Math.max(popularMovies.results.length, popularTV.results.length);
+                    for (let i = 0; i < maxLength; i++) {
+                        if (i < popularMovies.results.length) {
+                            popularContent.push({ ...popularMovies.results[i], media_type: 'movie' });
+                        }
+                        if (i < popularTV.results.length) {
+                            popularContent.push({ ...popularTV.results[i], media_type: 'tv' });
+                        }
+                    }
+                }
+
+                for (const item of popularContent) {
+                    if (!seenIds.has(item.id) && !userMovieIds.has(item.id) && recommendations.length < 25) {
+                        seenIds.add(item.id);
+                        recommendations.push({
+                            ...item,
+                            recommendation_source: 'popular_fillup'
+                        });
+                    }
+                }
+            } catch (error) {
+                console.warn('Failed to get popular content for fillup:', error);
+            }
+        }
+
         return NextResponse.json({
-            recommendations: recommendations.slice(0, 20),
+            recommendations: recommendations.slice(0, 25),
             page: 1,
-            total_pages: Math.ceil(recommendations.length / 20),
+            total_pages: Math.ceil(recommendations.length / 25),
             total_results: recommendations.length,
             method: 'personalized',
             based_on: {
@@ -246,7 +290,8 @@ export async function GET(request: NextRequest) {
                 strategies_used: [
                     'similar_to_rated',
                     'genre_discovery',
-                    ...(recommendations.some(r => r.recommendation_source === 'trending') ? ['trending'] : [])
+                    ...(recommendations.some(r => r.recommendation_source === 'trending') ? ['trending'] : []),
+                    ...(recommendations.some(r => r.recommendation_source === 'popular_fillup') ? ['popular_fillup'] : [])
                 ]
             }
         });
