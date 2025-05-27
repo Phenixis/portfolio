@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,164 @@ import { format } from 'date-fns';
 
 interface DiscoverMoviesProps {
     className?: string;
+}
+
+interface MovieCardItemProps {
+    item: any;
+    isAdding: boolean;
+    onAddToWatchlist: (tmdbId: number, mediaType: 'movie' | 'tv') => void;
+    onMarkAsWatched: (tmdbId: number, mediaType: 'movie' | 'tv') => void;
+    getSourceIcon: (source: string) => React.ReactNode;
+    getSourceLabel: (source: string) => string;
+}
+
+function MovieCardItem({ 
+    item, 
+    isAdding, 
+    onAddToWatchlist, 
+    onMarkAsWatched, 
+    getSourceIcon, 
+    getSourceLabel 
+}: MovieCardItemProps) {
+    const [isOverviewExpanded, setIsOverviewExpanded] = useState(false);
+    const [shouldShowSeeMore, setShouldShowSeeMore] = useState(false);
+    const overviewRef = useRef<HTMLParagraphElement>(null);
+
+    const title = 'title' in item ? item.title : item.name;
+    const releaseDate = 'release_date' in item ? item.release_date : item.first_air_date;
+    const year = releaseDate ? new Date(releaseDate).getFullYear() : null;
+    const posterUrl = TMDbService.getImageUrl(item.poster_path, 'w342');
+
+    // Check if overview text is truncated
+    useEffect(() => {
+        const checkTextOverflow = () => {
+            if (overviewRef.current && item.overview && !isOverviewExpanded) {
+                setTimeout(() => {
+                    if (overviewRef.current) {
+                        const isOverflowing = overviewRef.current.scrollHeight > overviewRef.current.clientHeight;
+                        setShouldShowSeeMore(isOverflowing);
+                    }
+                }, 10);
+            } else {
+                setShouldShowSeeMore(false);
+            }
+        };
+
+        checkTextOverflow();
+        
+        window.addEventListener('resize', checkTextOverflow);
+        return () => window.removeEventListener('resize', checkTextOverflow);
+    }, [item.overview, isOverviewExpanded]);
+
+    return (
+        <Card className="group overflow-hidden hover:shadow-md transition-all duration-200">
+            <CardContent className="p-0">
+                <div className="relative">
+                    {posterUrl ? (
+                        <img
+                            src={posterUrl}
+                            alt={title}
+                            className="w-full aspect-[2/3] object-cover"
+                        />
+                    ) : (
+                        <div className="w-full aspect-[2/3] bg-muted flex items-center justify-center">
+                            {item.media_type === 'tv' ? (
+                                <Tv className="w-8 h-8 text-muted-foreground" />
+                            ) : (
+                                <Film className="w-8 h-8 text-muted-foreground" />
+                            )}
+                        </div>
+                    )}
+
+                    {/* Overlay with add buttons */}
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                        <Button
+                            onClick={() => onAddToWatchlist(item.id, item.media_type || 'movie')}
+                            disabled={isAdding}
+                            size="sm"
+                            className="gap-2"
+                        >
+                            {isAdding ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                                <Plus className="w-3 h-3" />
+                            )}
+                            Add to Watchlist
+                        </Button>
+                        <Button
+                            onClick={() => onMarkAsWatched(item.id, item.media_type || 'movie')}
+                            disabled={isAdding}
+                            size="sm"
+                            variant="secondary"
+                            className="gap-2"
+                        >
+                            {isAdding ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                                <Eye className="w-3 h-3" />
+                            )}
+                            Mark as Watched
+                        </Button>
+                    </div>
+
+                    {/* Source badge */}
+                    <div className="absolute top-2 left-2">
+                        <Badge variant="secondary" className="text-xs gap-1 bg-black/70 text-white border-0">
+                            {getSourceIcon('recommendation_source' in item ? item.recommendation_source : 'trending')}
+                            <span className="lg:hidden lg:group-hover:inline-block">
+                                {getSourceLabel('recommendation_source' in item ? item.recommendation_source : 'trending')}
+                            </span>
+                        </Badge>
+                    </div>
+
+                    {/* Rating badge */}
+                    {item.vote_average > 0 && (
+                        <div className="absolute top-2 right-2">
+                            <Badge variant="secondary" className="text-xs bg-black/70 text-white border-0">
+                                ★ {item.vote_average.toFixed(1)}
+                            </Badge>
+                        </div>
+                    )}
+                </div>
+
+                <div className="p-4">
+                    <div className="flex items-start gap-2 mb-2">
+                        <Badge variant="outline" className="text-xs h-5 flex-shrink-0">
+                            {item.media_type === 'tv' ? 'TV' : 'Movie'}
+                        </Badge>
+                        {year && (
+                            <span className="text-xs text-muted-foreground">{year}</span>
+                        )}
+                    </div>
+
+                    <h3 className="font-medium text-sm line-clamp-2 mb-2 leading-tight">
+                        {title}
+                    </h3>
+
+                    {item.overview && (
+                        <div className="space-y-1">
+                            <p 
+                                ref={overviewRef}
+                                className={`text-xs text-muted-foreground leading-relaxed transition-all duration-200 ${
+                                    isOverviewExpanded ? '' : 'line-clamp-3'
+                                }`}
+                            >
+                                {item.overview}
+                            </p>
+                            {(shouldShowSeeMore || isOverviewExpanded) && (
+                                <button
+                                    onClick={() => setIsOverviewExpanded(!isOverviewExpanded)}
+                                    className="text-xs text-primary hover:text-primary/80 transition-colors font-medium"
+                                >
+                                    {isOverviewExpanded ? 'See less' : 'See more'}
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </CardContent>
+        </Card>
+    );
 }
 
 export function DiscoverMovies({ className }: DiscoverMoviesProps) {
@@ -183,105 +341,18 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                     ) : (
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             {recommendations.recommendations.map((item) => {
-                                const title = 'title' in item ? item.title : item.name;
-                                const releaseDate = 'release_date' in item ? item.release_date : item.first_air_date;
-                                const year = releaseDate ? new Date(releaseDate).getFullYear() : null;
-                                const posterUrl = TMDbService.getImageUrl(item.poster_path, 'w342');
                                 const isAdding = addingIds.has(item.id);
 
                                 return (
-                                    <Card key={`${item.id}-${item.media_type}`} className="group overflow-hidden hover:shadow-md transition-all duration-200">
-                                        <CardContent className="p-0">
-                                            <div className="relative">
-                                                {posterUrl ? (
-                                                    <img
-                                                        src={posterUrl}
-                                                        alt={title}
-                                                        className="w-full aspect-[2/3] object-cover"
-                                                    />
-                                                ) : (
-                                                    <div className="w-full aspect-[2/3] bg-muted flex items-center justify-center">
-                                                        {item.media_type === 'tv' ? (
-                                                            <Tv className="w-8 h-8 text-muted-foreground" />
-                                                        ) : (
-                                                            <Film className="w-8 h-8 text-muted-foreground" />
-                                                        )}
-                                                    </div>
-                                                )}
-
-                                                {/* Overlay with add buttons */}
-                                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
-                                                    <Button
-                                                        onClick={() => handleAddToWatchlist(item.id, item.media_type || 'movie')}
-                                                        disabled={isAdding}
-                                                        size="sm"
-                                                        className="gap-2"
-                                                    >
-                                                        {isAdding ? (
-                                                            <Loader2 className="w-3 h-3 animate-spin" />
-                                                        ) : (
-                                                            <Plus className="w-3 h-3" />
-                                                        )}
-                                                        Add to Watchlist
-                                                    </Button>
-                                                    <Button
-                                                        onClick={() => handleMarkAsWatched(item.id, item.media_type || 'movie')}
-                                                        disabled={isAdding}
-                                                        size="sm"
-                                                        variant="secondary"
-                                                        className="gap-2"
-                                                    >
-                                                        {isAdding ? (
-                                                            <Loader2 className="w-3 h-3 animate-spin" />
-                                                        ) : (
-                                                            <Eye className="w-3 h-3" />
-                                                        )}
-                                                        Mark as Watched
-                                                    </Button>
-                                                </div>
-
-                                                {/* Source badge */}
-                                                <div className="absolute top-2 left-2">
-                                                    <Badge variant="secondary" className="text-xs gap-1 bg-black/70 text-white border-0">
-                                                        {getSourceIcon('recommendation_source' in item ? item.recommendation_source : 'trending')}
-                                                        <span className="lg:hidden lg:group-hover:inline-block">
-                                                            {getSourceLabel('recommendation_source' in item ? item.recommendation_source : 'trending')}
-                                                        </span>
-                                                    </Badge>
-                                                </div>
-
-                                                {/* Rating badge */}
-                                                {item.vote_average > 0 && (
-                                                    <div className="absolute top-2 right-2">
-                                                        <Badge variant="secondary" className="text-xs bg-black/70 text-white border-0">
-                                                            ★ {item.vote_average.toFixed(1)}
-                                                        </Badge>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            <div className="p-4">
-                                                <div className="flex items-start gap-2 mb-2">
-                                                    <Badge variant="outline" className="text-xs h-5 flex-shrink-0">
-                                                        {item.media_type === 'tv' ? 'TV' : 'Movie'}
-                                                    </Badge>
-                                                    {year && (
-                                                        <span className="text-xs text-muted-foreground">{year}</span>
-                                                    )}
-                                                </div>
-
-                                                <h3 className="font-medium text-sm line-clamp-2 mb-2 leading-tight">
-                                                    {title}
-                                                </h3>
-
-                                                {item.overview && (
-                                                    <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
-                                                        {item.overview}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </CardContent>
-                                    </Card>
+                                    <MovieCardItem
+                                        key={`${item.id}-${item.media_type}`}
+                                        item={item}
+                                        isAdding={isAdding}
+                                        onAddToWatchlist={handleAddToWatchlist}
+                                        onMarkAsWatched={handleMarkAsWatched}
+                                        getSourceIcon={getSourceIcon}
+                                        getSourceLabel={getSourceLabel}
+                                    />
                                 );
                             })}
                         </div>
