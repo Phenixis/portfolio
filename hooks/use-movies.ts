@@ -114,7 +114,7 @@ export function useMovieRecommendations(mediaType: 'movie' | 'tv' | 'all' = 'all
         (url) => fetcher(url, user!.api_key),
         {
             revalidateOnFocus: false, // Don't revalidate on window focus
-            dedupingInterval: 0, // No caching - always fetch fresh data
+            dedupingInterval: 60 * 1000, // Cache for 60 seconds
         }
     );
 
