@@ -126,6 +126,42 @@ export function useMovieRecommendations(mediaType: 'movie' | 'tv' | 'all' = 'all
         }
     };
 
+    /**
+     * Replace a specific recommendation item with a new one
+     * This avoids full list refresh when adding movies
+     */
+    const replaceRecommendation = async (tmdbIdToRemove: number) => {
+        if (!user || !data) return;
+
+        try {
+            const currentData = data as RecommendationsResponse;
+            const existingIds = currentData.recommendations.map(rec => rec.id);
+            
+            // Get a replacement recommendation excluding current list + the removed item
+            const excludeIds = [...existingIds];
+            const singleRecUrl = `/api/movie/recommendations/single?media_type=${mediaType}&exclude_ids=${excludeIds.join(',')}`;
+            
+            const response = await fetcher(singleRecUrl, user.api_key);
+            
+            if (response?.recommendation) {
+                // Create new recommendations array with the removed item replaced
+                const updatedRecommendations = currentData.recommendations.map(rec => 
+                    rec.id === tmdbIdToRemove ? response.recommendation : rec
+                );
+
+                // Update the cache with the new data
+                await mutateSWR({
+                    ...currentData,
+                    recommendations: updatedRecommendations
+                }, { revalidate: false });
+            }
+        } catch (error) {
+            console.warn('Failed to replace recommendation, falling back to full refresh:', error);
+            // Fall back to full refresh if replacement fails
+            await refresh();
+        }
+    };
+
     return {
         recommendations: data as RecommendationsResponse || {
             recommendations: [],
@@ -136,14 +172,20 @@ export function useMovieRecommendations(mediaType: 'movie' | 'tv' | 'all' = 'all
         },
         isLoading,
         error,
-        refresh
+        refresh,
+        replaceRecommendation
     };
 }
 
 export function useMovieActions() {
     const { user } = useUser();
 
-    const addMovie = async (tmdbId: number, mediaType: 'movie' | 'tv', watchStatus: 'will_watch' | 'watched' = 'will_watch') => {
+    const addMovie = async (
+        tmdbId: number, 
+        mediaType: 'movie' | 'tv', 
+        watchStatus: 'will_watch' | 'watched' = 'will_watch',
+        options?: { optimizeRecommendations?: boolean }
+    ) => {
         if (!user) throw new Error('User not authenticated');
 
         const response = await fetch('/api/movie', {
@@ -164,8 +206,18 @@ export function useMovieActions() {
             throw new Error(error.error || 'Failed to add movie');
         }
 
-        // Invalidate movie lists
-        mutate((key) => typeof key === 'string' && key.startsWith('/api/movie/'));
+        // Invalidate movie lists (but not recommendations if optimizing)
+        if (options?.optimizeRecommendations) {
+            // Only invalidate non-recommendation endpoints
+            mutate((key) => 
+                typeof key === 'string' && 
+                key.startsWith('/api/movie/') && 
+                !key.includes('/api/movie/recommendations')
+            );
+        } else {
+            // Invalidate all movie endpoints (current behavior)
+            mutate((key) => typeof key === 'string' && key.startsWith('/api/movie/'));
+        }
         
         return response.json();
     };
@@ -225,7 +277,12 @@ export function useMovieActions() {
         return response.json();
     };
 
-    const markAsNotInterested = async (tmdbId: number, mediaType: 'movie' | 'tv', title: string) => {
+    const markAsNotInterested = async (
+        tmdbId: number, 
+        mediaType: 'movie' | 'tv', 
+        title: string,
+        options?: { optimizeRecommendations?: boolean }
+    ) => {
         if (!user) throw new Error('User not authenticated');
 
         const response = await fetch('/api/movie/not-interested', {
@@ -246,8 +303,10 @@ export function useMovieActions() {
             throw new Error(error.error || 'Failed to mark as not interested');
         }
 
-        // Invalidate recommendations to refresh them
-        mutate((key) => typeof key === 'string' && key.includes('/api/movie/recommendations'));
+        // Invalidate recommendations to refresh them (unless optimizing)
+        if (!options?.optimizeRecommendations) {
+            mutate((key) => typeof key === 'string' && key.includes('/api/movie/recommendations'));
+        }
         
         return response.json();
     };

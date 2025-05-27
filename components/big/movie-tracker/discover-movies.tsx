@@ -267,7 +267,7 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
         (searchParams.get('discover_filter') as 'all' | 'movie' | 'tv') || 'all'
     );
     
-    const { recommendations, isLoading, error, refresh } = useMovieRecommendations(mediaFilter);
+    const { recommendations, isLoading, error, refresh, replaceRecommendation } = useMovieRecommendations(mediaFilter);
     const { addMovie, markAsNotInterested } = useMovieActions();
     const [addingIds, setAddingIds] = useState<Set<number>>(new Set());
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -297,7 +297,13 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
     const handleAddToWatchlist = async (tmdbId: number, mediaType: 'movie' | 'tv') => {
         try {
             setAddingIds(prev => new Set(prev).add(tmdbId));
-            await addMovie(tmdbId, mediaType, 'will_watch');
+            
+            // Add movie with optimization flag
+            await addMovie(tmdbId, mediaType, 'will_watch', { optimizeRecommendations: true });
+            
+            // Replace the recommendation instead of refreshing the entire list
+            await replaceRecommendation(tmdbId);
+            
             toast.success('Added to your watchlist!');
         } catch (error: any) {
             if (error.message.includes('already in your list')) {
@@ -317,7 +323,13 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
     const handleMarkAsWatched = async (tmdbId: number, mediaType: 'movie' | 'tv') => {
         try {
             setAddingIds(prev => new Set(prev).add(tmdbId));
-            await addMovie(tmdbId, mediaType, 'watched');
+            
+            // Add movie with optimization flag
+            await addMovie(tmdbId, mediaType, 'watched', { optimizeRecommendations: true });
+            
+            // Replace the recommendation instead of refreshing the entire list
+            await replaceRecommendation(tmdbId);
+            
             toast.success('Added to watched movies!');
         } catch (error: any) {
             if (error.message.includes('already in your list')) {
@@ -337,7 +349,13 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
     const handleMarkAsNotInterested = async (tmdbId: number, mediaType: 'movie' | 'tv', title: string) => {
         try {
             setAddingIds(prev => new Set(prev).add(tmdbId));
-            await markAsNotInterested(tmdbId, mediaType, title);
+            
+            // Mark as not interested with optimization flag
+            await markAsNotInterested(tmdbId, mediaType, title, { optimizeRecommendations: true });
+            
+            // Replace the recommendation instead of refreshing the entire list
+            await replaceRecommendation(tmdbId);
+            
             toast.success('Marked as not interested - won\'t appear in future recommendations');
         } catch (error: any) {
             toast.error('Failed to mark as not interested');
