@@ -225,9 +225,59 @@ export function useMovieActions() {
         return response.json();
     };
 
+    const markAsNotInterested = async (tmdbId: number, mediaType: 'movie' | 'tv', title: string) => {
+        if (!user) throw new Error('User not authenticated');
+
+        const response = await fetch('/api/movie/not-interested', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${user.api_key}`
+            },
+            body: JSON.stringify({
+                tmdb_id: tmdbId,
+                media_type: mediaType,
+                title: title
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to mark as not interested');
+        }
+
+        // Invalidate recommendations to refresh them
+        mutate((key) => typeof key === 'string' && key.includes('/api/movie/recommendations'));
+        
+        return response.json();
+    };
+
+    const removeFromNotInterested = async (tmdbId: number, mediaType: 'movie' | 'tv') => {
+        if (!user) throw new Error('User not authenticated');
+
+        const response = await fetch(`/api/movie/not-interested?tmdb_id=${tmdbId}&media_type=${mediaType}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${user.api_key}`
+            }
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to remove from not interested');
+        }
+
+        // Invalidate recommendations to refresh them
+        mutate((key) => typeof key === 'string' && key.includes('/api/movie/recommendations'));
+        
+        return response.json();
+    };
+
     return {
         addMovie,
         updateMovie,
-        deleteMovie
+        deleteMovie,
+        markAsNotInterested,
+        removeFromNotInterested
     };
 }

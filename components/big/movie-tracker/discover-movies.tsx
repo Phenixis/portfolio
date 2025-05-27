@@ -14,7 +14,8 @@ import {
     Loader2,
     RefreshCw,
     Eye,
-    MoreHorizontal
+    MoreHorizontal,
+    X
 } from 'lucide-react';
 import { useMovieRecommendations, useMovieActions } from '@/hooks/use-movies';
 import TMDbService from '@/lib/services/tmdb';
@@ -36,6 +37,7 @@ interface MovieCardItemProps {
     isAdding: boolean;
     onAddToWatchlist: (tmdbId: number, mediaType: 'movie' | 'tv') => void;
     onMarkAsWatched: (tmdbId: number, mediaType: 'movie' | 'tv') => void;
+    onMarkAsNotInterested: (tmdbId: number, mediaType: 'movie' | 'tv', title: string) => void;
     getSourceIcon: (source: string) => React.ReactNode;
     getSourceLabel: (source: string) => string;
 }
@@ -45,6 +47,7 @@ function MovieCardItem({
     isAdding,
     onAddToWatchlist,
     onMarkAsWatched,
+    onMarkAsNotInterested,
     getSourceIcon,
     getSourceLabel
 }: MovieCardItemProps) {
@@ -127,6 +130,20 @@ function MovieCardItem({
                             )}
                             Mark as Watched
                         </Button>
+                        <Button
+                            onClick={() => onMarkAsNotInterested(item.id, item.media_type || 'movie', title)}
+                            disabled={isAdding}
+                            size="sm"
+                            variant="destructive"
+                            className="gap-2"
+                        >
+                            {isAdding ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                                <X className="w-3 h-3" />
+                            )}
+                            Not Interested
+                        </Button>
                     </div>
 
                     {/* Source badge */}
@@ -176,6 +193,19 @@ function MovieCardItem({
                                     )}
                                     Mark as Watched
                                 </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    onClick={() => onMarkAsNotInterested(item.id, item.media_type || 'movie', title)}
+                                    disabled={isAdding}
+                                    className="text-destructive focus:text-destructive"
+                                >
+                                    {isAdding ? (
+                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                    ) : (
+                                        <X className="w-3 h-3" />
+                                    )}
+                                    Not Interested
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
@@ -223,7 +253,7 @@ function MovieCardItem({
 export function DiscoverMovies({ className }: DiscoverMoviesProps) {
     const [mediaFilter, setMediaFilter] = useState<'all' | 'movie' | 'tv'>('all');
     const { recommendations, isLoading, error, refresh } = useMovieRecommendations(mediaFilter);
-    const { addMovie } = useMovieActions();
+    const { addMovie, markAsNotInterested } = useMovieActions();
     const [addingIds, setAddingIds] = useState<Set<number>>(new Set());
     const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -258,6 +288,22 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
             } else {
                 toast.error('Failed to mark as watched');
             }
+        } finally {
+            setAddingIds(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(tmdbId);
+                return newSet;
+            });
+        }
+    };
+
+    const handleMarkAsNotInterested = async (tmdbId: number, mediaType: 'movie' | 'tv', title: string) => {
+        try {
+            setAddingIds(prev => new Set(prev).add(tmdbId));
+            await markAsNotInterested(tmdbId, mediaType, title);
+            toast.success('Marked as not interested - won\'t appear in future recommendations');
+        } catch (error: any) {
+            toast.error('Failed to mark as not interested');
         } finally {
             setAddingIds(prev => {
                 const newSet = new Set(prev);
@@ -416,6 +462,7 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                                         isAdding={isAdding}
                                         onAddToWatchlist={handleAddToWatchlist}
                                         onMarkAsWatched={handleMarkAsWatched}
+                                        onMarkAsNotInterested={handleMarkAsNotInterested}
                                         getSourceIcon={getSourceIcon}
                                         getSourceLabel={getSourceLabel}
                                     />

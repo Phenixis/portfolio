@@ -1,5 +1,5 @@
 import { db } from '@/lib/db/drizzle';
-import { movie, type Movie, type NewMovie } from '@/lib/db/schema';
+import { movie, notInterestedMovie, type Movie, type NewMovie, type NotInterestedMovie, type NewNotInterestedMovie } from '@/lib/db/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 
 /**
@@ -207,6 +207,80 @@ export class MovieQueries {
                 sql`${movie.deleted_at} IS NULL`
             ))
             .orderBy(desc(movie.updated_at));
+    }
+
+    /**
+     * Mark a movie as "not interested"
+     */
+    static async markAsNotInterested(
+        userId: string,
+        tmdbId: number,
+        mediaType: 'movie' | 'tv',
+        title: string
+    ): Promise<NotInterestedMovie> {
+        const newNotInterestedMovie: NewNotInterestedMovie = {
+            user_id: userId,
+            tmdb_id: tmdbId,
+            media_type: mediaType,
+            title: title
+        };
+
+        const result = await db
+            .insert(notInterestedMovie)
+            .values(newNotInterestedMovie)
+            .returning();
+
+        return result[0];
+    }
+
+    /**
+     * Remove a movie from "not interested" list
+     */
+    static async removeFromNotInterested(
+        userId: string,
+        tmdbId: number,
+        mediaType: 'movie' | 'tv'
+    ): Promise<void> {
+        await db
+            .delete(notInterestedMovie)
+            .where(and(
+                eq(notInterestedMovie.user_id, userId),
+                eq(notInterestedMovie.tmdb_id, tmdbId),
+                eq(notInterestedMovie.media_type, mediaType)
+            ));
+    }
+
+    /**
+     * Get all not interested movie IDs for a user (for exclusion from recommendations)
+     */
+    static async getNotInterestedMovieIds(userId: string): Promise<number[]> {
+        const results = await db
+            .select({ tmdb_id: notInterestedMovie.tmdb_id })
+            .from(notInterestedMovie)
+            .where(eq(notInterestedMovie.user_id, userId));
+
+        return results.map(result => result.tmdb_id);
+    }
+
+    /**
+     * Check if a movie is marked as "not interested"
+     */
+    static async isNotInterested(
+        userId: string,
+        tmdbId: number,
+        mediaType: 'movie' | 'tv'
+    ): Promise<boolean> {
+        const result = await db
+            .select()
+            .from(notInterestedMovie)
+            .where(and(
+                eq(notInterestedMovie.user_id, userId),
+                eq(notInterestedMovie.tmdb_id, tmdbId),
+                eq(notInterestedMovie.media_type, mediaType)
+            ))
+            .limit(1);
+
+        return result.length > 0;
     }
 }
 
