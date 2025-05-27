@@ -109,14 +109,22 @@ export function useMovieRecommendations(mediaType: 'movie' | 'tv' | 'all' = 'all
     
     const url = `/api/movie/recommendations?media_type=${mediaType}&page=${page}`;
     
-    const { data, error, isLoading } = useSWR(
+    const { data, error, isLoading, mutate: mutateSWR } = useSWR(
         user ? url : null,
         (url) => fetcher(url, user!.api_key),
         {
             revalidateOnFocus: false, // Don't revalidate on window focus
-            dedupingInterval: 5 * 60 * 1000, // Cache for 5 minutes
+            dedupingInterval: 0, // No caching - always fetch fresh data
         }
     );
+
+    const refresh = async () => {
+        if (user && url) {
+            // Force a fresh fetch by adding a timestamp to bust cache
+            const freshUrl = `${url}&_t=${Date.now()}`;
+            await mutateSWR(fetcher(freshUrl, user.api_key), { revalidate: true });
+        }
+    };
 
     return {
         recommendations: data as RecommendationsResponse || {
@@ -127,7 +135,8 @@ export function useMovieRecommendations(mediaType: 'movie' | 'tv' | 'all' = 'all
             method: 'popular_fallback'
         },
         isLoading,
-        error
+        error,
+        refresh
     };
 }
 

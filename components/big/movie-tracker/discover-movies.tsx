@@ -184,9 +184,10 @@ function MovieCardItem({
 
 export function DiscoverMovies({ className }: DiscoverMoviesProps) {
     const [mediaFilter, setMediaFilter] = useState<'all' | 'movie' | 'tv'>('all');
-    const { recommendations, isLoading, error } = useMovieRecommendations(mediaFilter);
+    const { recommendations, isLoading, error, refresh } = useMovieRecommendations(mediaFilter);
     const { addMovie } = useMovieActions();
     const [addingIds, setAddingIds] = useState<Set<number>>(new Set());
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     const handleAddToWatchlist = async (tmdbId: number, mediaType: 'movie' | 'tv') => {
         try {
@@ -225,6 +226,18 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                 newSet.delete(tmdbId);
                 return newSet;
             });
+        }
+    };
+
+    const handleRefresh = async () => {
+        try {
+            setIsRefreshing(true);
+            await refresh();
+            toast.success('Recommendations refreshed!');
+        } catch (error) {
+            toast.error('Failed to refresh recommendations');
+        } finally {
+            setIsRefreshing(false);
         }
     };
 
@@ -293,33 +306,48 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                             </p>
                         </div>
 
-                        <div className="flex gap-1">
+                        <div className="flex items-center gap-2">
+                            {/* Refresh Button */}
                             <Button
-                                variant={mediaFilter === 'all' ? 'default' : 'outline'}
+                                variant="outline"
                                 size="sm"
-                                onClick={() => setMediaFilter('all')}
+                                onClick={handleRefresh}
+                                disabled={isLoading || isRefreshing}
                                 className="h-8 px-3"
                             >
-                                All
+                                <RefreshCw className={`w-3 h-3 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+                                Refresh
                             </Button>
-                            <Button
-                                variant={mediaFilter === 'movie' ? 'default' : 'outline'}
-                                size="sm"
-                                onClick={() => setMediaFilter('movie')}
-                                className="h-8 px-3"
-                            >
-                                <Film className="w-3 h-3 mr-1" />
-                                Movies
-                            </Button>
-                            <Button
-                                variant={mediaFilter === 'tv' ? 'default' : 'outline'}
-                                size="sm"
-                                onClick={() => setMediaFilter('tv')}
-                                className="h-8 px-3"
-                            >
-                                <Tv className="w-3 h-3 mr-1" />
-                                TV
-                            </Button>
+
+                            {/* Media Filter Buttons */}
+                            <div className="flex gap-1">
+                                <Button
+                                    variant={mediaFilter === 'all' ? 'default' : 'outline'}
+                                    size="sm"
+                                    onClick={() => setMediaFilter('all')}
+                                    className="h-8 px-3"
+                                >
+                                    All
+                                </Button>
+                                <Button
+                                    variant={mediaFilter === 'movie' ? 'default' : 'outline'}
+                                    size="sm"
+                                    onClick={() => setMediaFilter('movie')}
+                                    className="h-8 px-3"
+                                >
+                                    <Film className="w-3 h-3 mr-1" />
+                                    Movies
+                                </Button>
+                                <Button
+                                    variant={mediaFilter === 'tv' ? 'default' : 'outline'}
+                                    size="sm"
+                                    onClick={() => setMediaFilter('tv')}
+                                    className="h-8 px-3"
+                                >
+                                    <Tv className="w-3 h-3 mr-1" />
+                                    TV
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </CardHeader>
