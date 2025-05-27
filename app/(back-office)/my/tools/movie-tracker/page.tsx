@@ -1,8 +1,7 @@
-
-
 'use client';
 
 import { useState } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,7 +21,21 @@ import {
 
 export default function MovieTrackerPage() {
     const [showSearchDialog, setShowSearchDialog] = useState(false);
-    const [activeTab, setActiveTab] = useState('movies');
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+    
+    // Simple approach: directly use searchParams for active tab
+    const currentTab = searchParams.get('tab') || 'movies';
+    const validTabs = ['movies', 'watchlist', 'discover'];
+    const activeTab = validTabs.includes(currentTab) ? currentTab : 'movies';
+
+    // Simple tab change handler - just update the URL
+    const handleTabChange = (newTab: string) => {
+        const params = new URLSearchParams(searchParams);
+        params.set('tab', newTab);
+        router.replace(`${pathname}?${params.toString()}`);
+    };
 
     const handleMovieAdded = () => {
         setShowSearchDialog(false);
@@ -63,7 +76,7 @@ export default function MovieTrackerPage() {
             <MovieStats />
 
             {/* Main Content */}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
                 <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="movies" className="gap-2">
                         <Search className="w-4 h-4" />
