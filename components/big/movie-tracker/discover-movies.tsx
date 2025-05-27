@@ -330,7 +330,7 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
         <div className={className}>
             <Card>
                 <CardHeader>
-                    <div className="flex flex-col items-center justify-between gap-2 p-2">
+                    <div className="flex flex-col lg:flex-row items-center justify-between gap-2 p-2">
                         <div>
                             <CardTitle className="flex items-center gap-2">
                                 <Sparkles className="w-5 h-5 text-yellow-500" />
