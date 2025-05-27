@@ -12,7 +12,8 @@ import {
     Tv, 
     Plus,
     Loader2,
-    RefreshCw
+    RefreshCw,
+    Eye
 } from 'lucide-react';
 import { useMovieRecommendations, useMovieActions } from '@/hooks/use-movies';
 import TMDbService from '@/lib/services/tmdb';
@@ -48,6 +49,28 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
             });
         }
     };
+
+    const handleMarkAsWatched = async (tmdbId: number, mediaType: 'movie' | 'tv') => {
+        try {
+            setAddingIds(prev => new Set(prev).add(tmdbId));
+            await addMovie(tmdbId, mediaType, 'watched');
+            toast.success('Added to watched movies!');
+        } catch (error: any) {
+            if (error.message.includes('already in your list')) {
+                toast.info('This is already in your list');
+            } else {
+                toast.error('Failed to mark as watched');
+            }
+        } finally {
+            setAddingIds(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(tmdbId);
+                return newSet;
+            });
+        }
+    };
+
+
 
     const getSourceIcon = (source: string) => {
         switch (source) {
@@ -191,19 +214,34 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                                                     </div>
                                                 )}
                                                 
-                                                {/* Overlay with add button */}
-                                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                {/* Overlay with add buttons */}
+                                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
                                                     <Button
                                                         onClick={() => handleAddToWatchlist(item.id, item.media_type || 'movie')}
                                                         disabled={isAdding}
+                                                        size="sm"
                                                         className="gap-2"
                                                     >
                                                         {isAdding ? (
-                                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                                            <Loader2 className="w-3 h-3 animate-spin" />
                                                         ) : (
-                                                            <Plus className="w-4 h-4" />
+                                                            <Plus className="w-3 h-3" />
                                                         )}
                                                         Add to Watchlist
+                                                    </Button>
+                                                    <Button
+                                                        onClick={() => handleMarkAsWatched(item.id, item.media_type || 'movie')}
+                                                        disabled={isAdding}
+                                                        size="sm"
+                                                        variant="secondary"
+                                                        className="gap-2"
+                                                    >
+                                                        {isAdding ? (
+                                                            <Loader2 className="w-3 h-3 animate-spin" />
+                                                        ) : (
+                                                            <Eye className="w-3 h-3" />
+                                                        )}
+                                                        Mark as Watched
                                                     </Button>
                                                 </div>
                                                 
