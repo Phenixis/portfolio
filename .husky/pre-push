@@ -1,2 +1,13 @@
 #!/usr/bin/env sh
-pnpm build
+
+echo "🚀 Running pre-push checks..."
+echo "📦 Building the project..."
+
+if pnpm build; then
+    echo "✅ Build succeeded! Push is allowed to continue."
+    exit 0
+else
+    echo "❌ Build failed! Push has been blocked."
+    echo "💡 Please fix the build errors before pushing."
+    exit 1
+fi
