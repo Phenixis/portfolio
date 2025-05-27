@@ -130,15 +130,38 @@ export function useMovieRecommendations(mediaType: 'movie' | 'tv' | 'all' = 'all
      * Replace a specific recommendation item with a new one
      * This avoids full list refresh when adding movies.
      * Uses buffer movies when available, falls back to API call if needed.
+     * 
+     * @param tmdbIdToRemove - The TMDb ID of the movie to remove
+     * @param optimistic - If true, immediately replaces with buffer movie if available
      */
-    const replaceRecommendation = async (tmdbIdToRemove: number) => {
-        if (!user || !data) return;
+    const replaceRecommendation = async (tmdbIdToRemove: number, optimistic: boolean = false) => {
+        if (!user || !data) return null;
 
         try {
             const currentData = data as RecommendationsResponse;
             const buffer = currentData.buffer || [];
             
-            // First try to use a movie from the buffer
+            // For optimistic updates, immediately replace if buffer is available
+            if (optimistic && buffer.length > 0) {
+                const replacementMovie = buffer[0];
+                const remainingBuffer = buffer.slice(1);
+                
+                // Create new recommendations array with the removed item replaced
+                const updatedRecommendations = currentData.recommendations.map(rec => 
+                    rec.id === tmdbIdToRemove ? replacementMovie : rec
+                );
+
+                // Immediately update the cache with the new data and reduced buffer
+                mutateSWR({
+                    ...currentData,
+                    recommendations: updatedRecommendations,
+                    buffer: remainingBuffer
+                }, { revalidate: false });
+                
+                return replacementMovie;
+            }
+            
+            // First try to use a movie from the buffer (non-optimistic)
             if (buffer.length > 0) {
                 const replacementMovie = buffer[0];
                 const remainingBuffer = buffer.slice(1);
@@ -155,7 +178,7 @@ export function useMovieRecommendations(mediaType: 'movie' | 'tv' | 'all' = 'all
                     buffer: remainingBuffer
                 }, { revalidate: false });
                 
-                return;
+                return replacementMovie;
             }
             
             // Fallback: If no buffer available, fetch a single recommendation
@@ -178,11 +201,16 @@ export function useMovieRecommendations(mediaType: 'movie' | 'tv' | 'all' = 'all
                     ...currentData,
                     recommendations: updatedRecommendations
                 }, { revalidate: false });
+                
+                return response.recommendation;
             }
+            
+            return null;
         } catch (error) {
             console.warn('Failed to replace recommendation, falling back to full refresh:', error);
             // Fall back to full refresh if replacement fails
             await refresh();
+            return null;
         }
     };
 

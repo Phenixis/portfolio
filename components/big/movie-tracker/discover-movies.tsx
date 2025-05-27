@@ -264,6 +264,7 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
     const { addMovie, markAsNotInterested } = useMovieActions();
     const [addingIds, setAddingIds] = useState<Set<number>>(new Set());
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [recentlyReplacedIds, setRecentlyReplacedIds] = useState<Set<number>>(new Set());
 
     // Update search params when media filter changes
     const updateMediaFilter = (newFilter: 'all' | 'movie' | 'tv') => {
@@ -288,17 +289,43 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
     }, [searchParams, mediaFilter]);
 
     const handleAddToWatchlist = async (tmdbId: number, mediaType: 'movie' | 'tv') => {
-        try {
+        // First try optimistic update (immediate replacement if buffer available)
+        const replacedMovie = await replaceRecommendation(tmdbId, true);
+        
+        // Track the newly replaced movie for animation
+        if (replacedMovie) {
+            setRecentlyReplacedIds(prev => new Set(prev).add(replacedMovie.id));
+            // Remove from animation tracking after animation completes
+            setTimeout(() => {
+                setRecentlyReplacedIds(prev => {
+                    const newSet = new Set(prev);
+                    newSet.delete(replacedMovie.id);
+                    return newSet;
+                });
+            }, 500);
+        }
+        
+        // Only show loading state if we couldn't do optimistic replacement
+        if (!replacedMovie) {
             setAddingIds(prev => new Set(prev).add(tmdbId));
+        }
 
+        try {
             // Add movie with optimization flag
             await addMovie(tmdbId, mediaType, 'will_watch', { optimizeRecommendations: true });
 
-            // Replace the recommendation instead of refreshing the entire list
-            await replaceRecommendation(tmdbId);
+            // If we didn't do optimistic replacement, do regular replacement
+            if (!replacedMovie) {
+                await replaceRecommendation(tmdbId);
+            }
 
             toast.success('Added to your watchlist!');
         } catch (error: any) {
+            // If optimistic update failed, revert it by refreshing
+            if (replacedMovie) {
+                await refresh();
+            }
+            
             if (error.message.includes('already in your list')) {
                 toast.info('This is already in your list');
             } else {
@@ -314,17 +341,43 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
     };
 
     const handleMarkAsWatched = async (tmdbId: number, mediaType: 'movie' | 'tv') => {
-        try {
+        // First try optimistic update (immediate replacement if buffer available)
+        const replacedMovie = await replaceRecommendation(tmdbId, true);
+        
+        // Track the newly replaced movie for animation
+        if (replacedMovie) {
+            setRecentlyReplacedIds(prev => new Set(prev).add(replacedMovie.id));
+            // Remove from animation tracking after animation completes
+            setTimeout(() => {
+                setRecentlyReplacedIds(prev => {
+                    const newSet = new Set(prev);
+                    newSet.delete(replacedMovie.id);
+                    return newSet;
+                });
+            }, 500);
+        }
+        
+        // Only show loading state if we couldn't do optimistic replacement
+        if (!replacedMovie) {
             setAddingIds(prev => new Set(prev).add(tmdbId));
+        }
 
+        try {
             // Add movie with optimization flag
             await addMovie(tmdbId, mediaType, 'watched', { optimizeRecommendations: true });
 
-            // Replace the recommendation instead of refreshing the entire list
-            await replaceRecommendation(tmdbId);
+            // If we didn't do optimistic replacement, do regular replacement
+            if (!replacedMovie) {
+                await replaceRecommendation(tmdbId);
+            }
 
             toast.success('Added to watched movies!');
         } catch (error: any) {
+            // If optimistic update failed, revert it by refreshing
+            if (replacedMovie) {
+                await refresh();
+            }
+            
             if (error.message.includes('already in your list')) {
                 toast.info('This is already in your list');
             } else {
@@ -340,17 +393,30 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
     };
 
     const handleMarkAsNotInterested = async (tmdbId: number, mediaType: 'movie' | 'tv', title: string) => {
-        try {
+        // First try optimistic update (immediate replacement if buffer available)
+        const replacedMovie = await replaceRecommendation(tmdbId, true);
+        
+        // Only show loading state if we couldn't do optimistic replacement
+        if (!replacedMovie) {
             setAddingIds(prev => new Set(prev).add(tmdbId));
+        }
 
+        try {
             // Mark as not interested with optimization flag
             await markAsNotInterested(tmdbId, mediaType, title, { optimizeRecommendations: true });
 
-            // Replace the recommendation instead of refreshing the entire list
-            await replaceRecommendation(tmdbId);
+            // If we didn't do optimistic replacement, do regular replacement
+            if (!replacedMovie) {
+                await replaceRecommendation(tmdbId);
+            }
 
             toast.success('Marked as not interested - won\'t appear in future recommendations');
         } catch (error: any) {
+            // If optimistic update failed, revert it by refreshing
+            if (replacedMovie) {
+                await refresh();
+            }
+            
             toast.error('Failed to mark as not interested');
         } finally {
             setAddingIds(prev => {
