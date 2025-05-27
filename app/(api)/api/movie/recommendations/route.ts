@@ -3,6 +3,14 @@ import { verifyRequest } from '@/lib/auth/api';
 import MovieQueries from '@/lib/db/queries/movies';
 import TMDbService from '@/lib/services/tmdb';
 
+function isMovie(item: any) {
+    return "title" in item
+}
+
+function isTVShow(item: any) {
+    return "name" in item;
+}
+
 /**
  * GET /api/movie/recommendations
  * Get personalized movie recommendations based on user's watched movies
@@ -131,7 +139,9 @@ export async function GET(request: NextRequest) {
                     }
 
                     // Add recommendations, avoiding duplicates
-                    for (const rec of movieRecs.results.slice(0, 5)) {
+                    for (const rec of movieRecs.results.filter(
+                        rec => mediaType === 'all' || (mediaType === 'movie' && isMovie(rec)) || (mediaType === 'tv' && isTVShow(rec))
+                    ).slice(0, 5)) {
                         if (!seenIds.has(rec.id) && recommendations.length < 15) {
                             seenIds.add(rec.id);
                             recommendations.push({
