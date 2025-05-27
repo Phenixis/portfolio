@@ -59,7 +59,7 @@ export function MovieStats() {
                 const Icon = stat.icon;
                 return (
                     <Card key={stat.title}>
-                        <CardContent className="p-4">
+                        <CardContent className="pt-2 md:pt-4 xl:pt-6">
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm font-medium text-muted-foreground">
