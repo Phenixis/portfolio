@@ -4,13 +4,14 @@ import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-    MoreHorizontal, 
-    Eye, 
+import {
+    MoreHorizontal,
+    Eye,
     Trash2,
     Film,
     Tv,
-    Calendar
+    Calendar,
+    ExternalLink
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -40,7 +41,7 @@ export function WatchlistCard({ movie }: WatchlistCardProps) {
     const [isOverviewExpanded, setIsOverviewExpanded] = useState(false);
     const [shouldShowSeeMore, setShouldShowSeeMore] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-    
+
     const overviewRef = useRef<HTMLParagraphElement>(null);
     const { updateMovie, deleteMovie } = useMovieActions();
 
@@ -61,7 +62,7 @@ export function WatchlistCard({ movie }: WatchlistCardProps) {
         };
 
         checkTextOverflow();
-        
+
         // Re-check on window resize
         window.addEventListener('resize', checkTextOverflow);
         return () => window.removeEventListener('resize', checkTextOverflow);
@@ -72,7 +73,7 @@ export function WatchlistCard({ movie }: WatchlistCardProps) {
 
     const handleMarkAsWatched = async () => {
         try {
-            await updateMovie(movie.id, { 
+            await updateMovie(movie.id, {
                 watch_status: 'watched',
                 watched_date: new Date().toISOString()
             });
@@ -149,7 +150,7 @@ export function WatchlistCard({ movie }: WatchlistCardProps) {
                                         Mark as Watched
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem 
+                                    <DropdownMenuItem
                                         onClick={() => setShowDeleteDialog(true)}
                                         className="text-destructive"
                                     >
@@ -174,18 +175,22 @@ export function WatchlistCard({ movie }: WatchlistCardProps) {
                         </div>
 
                         {/* Title */}
-                        <h3 className="font-medium text-sm line-clamp-2 mb-3 leading-tight">
-                            {movie.title}
+                        <h3 className="font-medium text-sm line-clamp-2 mb-2 leading-tight underline lg:no-underline lg:group-hover/Card:underline">
+                            <a href={`https://google.com/search?q=${movie.title}+%28${movie.media_type === 'tv' ? 'TV' : 'Movie'}${" " + movie.release_date}%29`} target='_blank' rel='noopener noreferrer'>
+                                {movie.title}
+                                <span className="lg:hidden lg:group-hover/Card:inline-block text-muted-foreground ml-1">
+                                    <ExternalLink className="inline w-3 h-3" />
+                                </span>
+                            </a>
                         </h3>
 
                         {/* Overview */}
                         {movie.overview ? (
                             <div className="space-y-1">
-                                <p 
+                                <p
                                     ref={overviewRef}
-                                    className={`text-xs text-muted-foreground leading-relaxed transition-all duration-200 ${
-                                        isOverviewExpanded ? '' : 'line-clamp-3'
-                                    }`}
+                                    className={`text-xs text-muted-foreground leading-relaxed transition-all duration-200 ${isOverviewExpanded ? '' : 'line-clamp-3'
+                                        }`}
                                 >
                                     {movie.overview}
                                 </p>
@@ -220,7 +225,7 @@ export function WatchlistCard({ movie }: WatchlistCardProps) {
                         <DialogTitle>Remove from Watchlist</DialogTitle>
                     </DialogHeader>
                     <p className="text-muted-foreground">
-                        Are you sure you want to remove "{movie.title}" from your watchlist? 
+                        Are you sure you want to remove "{movie.title}" from your watchlist?
                         This action cannot be undone.
                     </p>
                     <DialogFooter>

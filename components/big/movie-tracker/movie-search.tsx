@@ -140,15 +140,15 @@ export function MovieSearch({ onMovieAdded }: MovieSearchProps) {
                                                 <div className="flex flex-col gap-1 flex-shrink-0">
                                                     <Button
                                                         size="sm"
-                                                        variant="outline"
                                                         onClick={() => handleAddMovie(item.id, mediaType as 'movie' | 'tv', title, 'will_watch')}
                                                         className="text-xs px-2 py-1 h-auto"
-                                                    >
+                                                        >
                                                         <Plus className="w-3 h-3 mr-1" />
                                                         Watchlist
                                                     </Button>
                                                     <Button
                                                         size="sm"
+                                                        variant="outline"
                                                         onClick={() => handleAddMovie(item.id, mediaType as 'movie' | 'tv', title, 'watched')}
                                                         className="text-xs px-2 py-1 h-auto"
                                                     >

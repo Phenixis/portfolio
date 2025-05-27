@@ -6,16 +6,17 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { StarRating } from '@/components/ui/star-rating';
-import { 
-    MoreHorizontal, 
-    Edit3, 
-    Trash2, 
-    Eye, 
+import {
+    MoreHorizontal,
+    Edit3,
+    Trash2,
+    Eye,
     Calendar,
     Film,
     Tv,
     Check,
-    X
+    X,
+    ExternalLink
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -48,7 +49,7 @@ export function MovieCard({ movie }: MovieCardProps) {
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isCommentExpanded, setIsCommentExpanded] = useState(false);
     const [shouldShowSeeMore, setShouldShowSeeMore] = useState(false);
-    
+
     const commentRef = useRef<HTMLParagraphElement>(null);
     const { updateMovie, deleteMovie } = useMovieActions();
 
@@ -69,7 +70,7 @@ export function MovieCard({ movie }: MovieCardProps) {
         };
 
         checkTextOverflow();
-        
+
         // Re-check on window resize
         window.addEventListener('resize', checkTextOverflow);
         return () => window.removeEventListener('resize', checkTextOverflow);
@@ -80,9 +81,9 @@ export function MovieCard({ movie }: MovieCardProps) {
 
     const handleSave = async () => {
         try {
-            await updateMovie(movie.id, { 
+            await updateMovie(movie.id, {
                 user_rating: editRating > 0 ? editRating : null,
-                user_comment: editComment.trim() || null 
+                user_comment: editComment.trim() || null
             });
             setIsEditing(false);
             toast.success('Rating and comment updated!');
@@ -106,7 +107,7 @@ export function MovieCard({ movie }: MovieCardProps) {
     const handleToggleWatchStatus = async () => {
         try {
             const newStatus = movie.watch_status === 'watched' ? 'will_watch' : 'watched';
-            await updateMovie(movie.id, { 
+            await updateMovie(movie.id, {
                 watch_status: newStatus,
                 watched_date: newStatus === 'watched' ? new Date().toISOString() : undefined
             });
@@ -162,7 +163,14 @@ export function MovieCard({ movie }: MovieCardProps) {
                             {/* Header */}
                             <div className="flex items-start justify-between mb-3">
                                 <div className="flex-1 min-w-0">
-                                    <h3 className="font-medium text-base line-clamp-1 mb-1">{movie.title}</h3>
+                                    <h3 className="font-medium text-sm line-clamp-2 mb-2 leading-tight underline lg:no-underline lg:group-hover:underline">
+                                        <a href={`https://google.com/search?q=${movie.title}+%28${movie.media_type === 'tv' ? 'TV' : 'Movie'}${" " + movie.release_date}%29`} target='_blank' rel='noopener noreferrer'>
+                                            {movie.title}
+                                            <span className="lg:hidden lg:group-hover:inline-block text-muted-foreground ml-1">
+                                                <ExternalLink className="inline w-3 h-3" />
+                                            </span>
+                                        </a>
+                                    </h3>
                                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                         <Badge variant="secondary" className="text-xs h-5">
                                             {movie.media_type === 'tv' ? 'TV' : 'Movie'}
@@ -170,7 +178,7 @@ export function MovieCard({ movie }: MovieCardProps) {
                                         {releaseYear && (
                                             <span>{releaseYear}</span>
                                         )}
-                                        <Badge 
+                                        <Badge
                                             variant={movie.watch_status === 'watched' ? 'default' : 'outline'}
                                             className="text-xs h-5"
                                         >
@@ -178,7 +186,7 @@ export function MovieCard({ movie }: MovieCardProps) {
                                         </Badge>
                                     </div>
                                 </div>
-                                
+
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
@@ -191,7 +199,7 @@ export function MovieCard({ movie }: MovieCardProps) {
                                             Mark as {movie.watch_status === 'watched' ? 'Watchlist' : 'Watched'}
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator />
-                                        <DropdownMenuItem 
+                                        <DropdownMenuItem
                                             onClick={() => setShowDeleteDialog(true)}
                                             className="text-destructive"
                                         >
@@ -241,8 +249,8 @@ export function MovieCard({ movie }: MovieCardProps) {
                                             <Check className="w-3 h-3 mr-1.5" />
                                             Save
                                         </Button>
-                                        <Button 
-                                            size="sm" 
+                                        <Button
+                                            size="sm"
                                             variant="outline"
                                             onClick={handleCancel}
                                             className="h-8 px-3"
@@ -282,15 +290,14 @@ export function MovieCard({ movie }: MovieCardProps) {
                                             Edit
                                         </Button>
                                     </div>
-                                    
+
                                     {/* Comment Display */}
                                     {movie.user_comment ? (
                                         <div className="space-y-1">
-                                            <p 
+                                            <p
                                                 ref={commentRef}
-                                                className={`text-sm text-muted-foreground leading-relaxed transition-all duration-200 ${
-                                                    isCommentExpanded ? '' : 'line-clamp-2'
-                                                }`}
+                                                className={`text-sm text-muted-foreground leading-relaxed transition-all duration-200 ${isCommentExpanded ? '' : 'line-clamp-2'
+                                                    }`}
                                             >
                                                 {movie.user_comment}
                                             </p>
@@ -308,7 +315,7 @@ export function MovieCard({ movie }: MovieCardProps) {
                                             No comment yet
                                         </p>
                                     )}
-                                    
+
                                     {/* Metadata */}
                                     {movie.watched_date && (
                                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -330,7 +337,7 @@ export function MovieCard({ movie }: MovieCardProps) {
                         <DialogTitle>Remove Movie</DialogTitle>
                     </DialogHeader>
                     <p className="text-muted-foreground">
-                        Are you sure you want to remove "{movie.title}" from your list? 
+                        Are you sure you want to remove "{movie.title}" from your list?
                         This action cannot be undone.
                     </p>
                     <DialogFooter>
