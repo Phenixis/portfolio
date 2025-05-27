@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MovieCard } from './movie-card';
+import { WatchlistCard } from './watchlist-card';
 import { useMovies } from '@/hooks/use-movies';
 import { useDebounce } from 'use-debounce';
-import { Search, Filter, SortAsc, SortDesc } from 'lucide-react';
+import { Search, SortAsc, SortDesc } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -17,39 +17,26 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-type WatchStatus = 'all' | 'will_watch' | 'watched';
-type SortBy = 'updated' | 'title' | 'rating' | 'date_added';
+type SortBy = 'updated' | 'title' | 'vote_average' | 'date_added';
 type SortOrder = 'asc' | 'desc';
 
-interface MovieListProps {
-    status?: WatchStatus;
-}
-
-export function MovieList({ status }: MovieListProps) {
+export function WatchlistGrid() {
     const [searchQuery, setSearchQuery] = useState('');
-    const [watchStatus, setWatchStatus] = useState<WatchStatus>(status || 'all');
-    const [sortBy, setSortBy] = useState<SortBy>('updated');
+    const [sortBy, setSortBy] = useState<SortBy>('date_added');
     const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
     const [debouncedQuery] = useDebounce(searchQuery, 300);
 
-    const { movies: allMovies, isLoading: isLoadingAll } = useMovies();
-    const { movies: watchedMovies, isLoading: isLoadingWatched } = useMovies('watched');
     const { movies: willWatchMovies, isLoading: isLoadingWillWatch } = useMovies('will_watch');
     const { movies: searchMovies, isLoading: isLoadingSearch } = useMovies(undefined, debouncedQuery);
 
     // Determine which movies to show
-    let movies = allMovies;
-    let isLoading = isLoadingAll;
+    let movies = willWatchMovies;
+    let isLoading = isLoadingWillWatch;
 
     if (debouncedQuery) {
-        movies = searchMovies;
+        // Filter search results to only show will_watch movies
+        movies = searchMovies.filter(movie => movie.watch_status === 'will_watch');
         isLoading = isLoadingSearch;
-    } else if (watchStatus === 'watched') {
-        movies = watchedMovies;
-        isLoading = isLoadingWatched;
-    } else if (watchStatus === 'will_watch') {
-        movies = willWatchMovies;
-        isLoading = isLoadingWillWatch;
     }
 
     // Sort movies
@@ -60,9 +47,9 @@ export function MovieList({ status }: MovieListProps) {
             case 'title':
                 comparison = a.title.localeCompare(b.title);
                 break;
-            case 'rating':
-                const ratingA = a.user_rating || 0;
-                const ratingB = b.user_rating || 0;
+            case 'vote_average':
+                const ratingA = a.vote_average || 0;
+                const ratingB = b.vote_average || 0;
                 comparison = ratingA - ratingB;
                 break;
             case 'date_added':
@@ -77,17 +64,11 @@ export function MovieList({ status }: MovieListProps) {
         return sortOrder === 'asc' ? comparison : -comparison;
     });
 
-    const filterOptions = [
-        { value: 'all', label: 'All Movies', count: allMovies.length },
-        { value: 'will_watch', label: 'Will Watch', count: willWatchMovies.length },
-        { value: 'watched', label: 'Watched', count: watchedMovies.length },
-    ];
-
     const sortOptions = [
-        { value: 'updated', label: 'Recently Updated' },
         { value: 'date_added', label: 'Date Added' },
+        { value: 'updated', label: 'Recently Updated' },
         { value: 'title', label: 'Title' },
-        { value: 'rating', label: 'Rating' },
+        { value: 'tmdb_rating', label: 'Rating' },
     ];
 
     return (
@@ -98,41 +79,12 @@ export function MovieList({ status }: MovieListProps) {
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                     <Input
-                        placeholder="Search your movies..."
+                        placeholder="Search your watchlist..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-10"
                     />
                 </div>
-
-                {/* Filter by Status - only show if no specific status is provided */}
-                {!status && (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="gap-2">
-                                <Filter className="w-4 h-4" />
-                                {filterOptions.find(f => f.value === watchStatus)?.label}
-                                <Badge variant="secondary" className="ml-1">
-                                    {filterOptions.find(f => f.value === watchStatus)?.count}
-                                </Badge>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            {filterOptions.map((option) => (
-                                <DropdownMenuItem
-                                    key={option.value}
-                                    onClick={() => setWatchStatus(option.value as WatchStatus)}
-                                    className="justify-between"
-                                >
-                                    {option.label}
-                                    <Badge variant="secondary">{option.count}</Badge>
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                )}
 
                 {/* Sort */}
                 <DropdownMenu>
@@ -171,35 +123,40 @@ export function MovieList({ status }: MovieListProps) {
                 </DropdownMenu>
             </div>
 
-            {/* Movie List */}
+            {/* Results count */}
+            {!isLoading && (
+                <div className="flex items-center justify-between">
+                    <p className="text-sm text-muted-foreground">
+                        {sortedMovies.length} {sortedMovies.length === 1 ? 'movie' : 'movies'} in your watchlist
+                    </p>
+                </div>
+            )}
+
+            {/* Movie Grid */}
             {isLoading ? (
-                <div className="space-y-3">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                        <div key={i} className="h-28 bg-muted rounded-lg animate-pulse"></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                    {Array.from({ length: 12 }).map((_, i) => (
+                        <div key={i} className="aspect-[2/3] bg-muted rounded-lg animate-pulse"></div>
                     ))}
                 </div>
             ) : sortedMovies.length > 0 ? (
-                <div className="space-y-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                     {sortedMovies.map((movie) => (
-                        <MovieCard key={movie.id} movie={movie} />
+                        <WatchlistCard key={movie.id} movie={movie} />
                     ))}
                 </div>
             ) : (
                 <div className="text-center py-12">
                     <div className="text-muted-foreground">
                         {debouncedQuery ? (
-                            <>No movies found for "{debouncedQuery}"</>
-                        ) : watchStatus === 'all' ? (
-                            <>No movies in your collection yet</>
-                        ) : watchStatus === 'watched' ? (
-                            <>No watched movies yet</>
+                            <>No movies found for "{debouncedQuery}" in your watchlist</>
                         ) : (
-                            <>No movies in your watchlist yet</>
+                            <>Your watchlist is empty</>
                         )}
                     </div>
                     {!debouncedQuery && (
                         <p className="text-sm text-muted-foreground mt-2">
-                            Search for movies above to start building your collection!
+                            Discover new movies to add to your watchlist!
                         </p>
                     )}
                 </div>

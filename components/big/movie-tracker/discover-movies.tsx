@@ -72,9 +72,9 @@ function MovieCardItem({
     }, [item.overview, isOverviewExpanded]);
 
     return (
-        <Card className="group overflow-hidden hover:shadow-md transition-all duration-200">
+        <Card className="overflow-hidden hover:shadow-md transition-all duration-200">
             <CardContent className="p-0">
-                <div className="relative">
+                <div className="group relative">
                     {posterUrl ? (
                         <img
                             src={posterUrl}
