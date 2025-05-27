@@ -13,7 +13,6 @@ import {
 	gte,
 	inArray,
 	not,
-	count
 } from "drizzle-orm"
 import { db } from "./drizzle"
 import * as Schema from "./schema"
@@ -940,7 +939,7 @@ export async function deleteProject(userId: string, title: string) {
 
 // ## Create
 
-export async function createExercice(userId: string, nameOrExercice: string | Schema.NewExercice, name?: string) {
+export async function createExercice(userId: string, nameOrExercice: string | Schema.NewExercice) {
 	let newExercice: Schema.NewExercice
 
 	if (typeof nameOrExercice === "string") {
@@ -1040,7 +1039,7 @@ export async function deleteExerciceById(userId: string, id: number) {
 
 // ## Create
 
-export async function createSeance(userId: string, nameOrSeance: string | Schema.NewSeance, name?: string) {
+export async function createSeance(userId: string, nameOrSeance: string | Schema.NewSeance) {
 	let newSeance: Schema.NewSeance
 
 	if (typeof nameOrSeance === "string") {

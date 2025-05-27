@@ -22,8 +22,12 @@ export async function GET(request: NextRequest) {
 		: undefined
 
 	try {
-		dueAfter && dueAfter.setHours(0, 0, 0, 0)
-		dueBefore && dueBefore.setHours(23, 59, 59, 999)
+		if (dueAfter) {
+			dueAfter.setHours(0, 0, 0, 0)
+		}
+		if (dueBefore) {
+			dueBefore.setHours(23, 59, 59, 999)
+		}
 
 		const result = await getNumberOfTasks(verification.userId, projectTitles, excludedProjectTitles, dueAfter, dueBefore)
 		

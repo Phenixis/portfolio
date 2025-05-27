@@ -26,14 +26,16 @@ export async function signUp(prevState: ActionState, formData: FormData) {
 
     try {
         user = await createUser(email, firstName, lastName)
-    } catch (error: any) {
-        return { error: error.message }
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+        return { error: errorMessage }
     }
 
     try {
         await sendWelcomeEmail(user.user, user.password)
-    } catch (error: any) {
-        return { error: error.message }
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+        return { error: errorMessage }
     }
 
     const userData = user.user

@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
 		? new Date(searchParams.get("dueAfter") as string)
 		: undefined
 	const limit = limitParam ? Number.parseInt(limitParam) : undefined
-	let completed: boolean | undefined = completedParam === "true" ? true : completedParam === "false" ? false : undefined
+	const completed: boolean | undefined = completedParam === "true" ? true : completedParam === "false" ? false : undefined
 
 	try {
 		const tasks =
@@ -108,12 +108,14 @@ export async function PUT(request: NextRequest) {
 
 	try {
 		const body = await request.json()
-		let { id, title, importance, dueDate, duration, projectTitle, toDoAfterId } = body
+		const { id, title, importance, dueDate: initialDueDate, duration, projectTitle, toDoAfterId } = body
 
 		// Validation
-		if (!id || !title || importance === undefined || dueDate === undefined || duration === undefined) {
+		if (!id || !title || importance === undefined || initialDueDate === undefined || duration === undefined) {
 			return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
 		}
+
+		let dueDate = initialDueDate
 
 		const project = projectTitle && await getProject(verification.userId, projectTitle)
 		if (!project && projectTitle) {

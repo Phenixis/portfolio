@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server"
-import { Note, NewNote } from "@/lib/db/schema"
 import { verifyRequest } from "@/lib/auth/api"
 import { getNotes, createNote, updateNote, deleteNote } from "@/lib/db/queries/note"
 

@@ -21,7 +21,7 @@ import {
 import { useDebouncedCallback } from "use-debounce"
 import SearchProjectsInput from "@/components/big/projects/search-projects-input"
 import { NotesAndData } from "@/lib/db/queries/note"
-import { getUserDraftNote, updateUserDraftNote } from "@/lib/db/queries/user"
+import { updateUserDraftNote } from "@/lib/db/queries/user"
 
 export default function NoteModal({
     className,
@@ -33,7 +33,6 @@ export default function NoteModal({
     password?: string
 }) {
     const user = useUser().user;
-    if (!user) return null
     const mode = note ? "edit" : "create"
     const { mutate } = useSWRConfig()
 
@@ -44,11 +43,11 @@ export default function NoteModal({
     const [decryptedContent, setDecryptedContent] = useState<string | null>(null)
     const [passwordValue, setPasswordValue] = useState<string>(password || "")
 
-    const [noteTitle, setNoteTitle] = useState<string>(note ? (note.title ? note.title : "") : user.note_draft_title || "")
-    const [inputNoteTitle, setInputNoteTitle] = useState<string>(note ? (note.title ? note.title : "") : user.note_draft_title || "")
-    const [noteContent, setNoteContent] = useState<string>(note ? (note.content ? note.content : "") : user.note_draft_content || "")
-    const [inputNoteContent, setInputNoteContent] = useState<string>(note ? (note.content ? note.content : "") : user.note_draft_content || "")
-    const [project, setProject] = useState<string>(note ? (note.project_title ? note.project_title : "") : user.note_draft_project_title || "")
+    const [noteTitle, setNoteTitle] = useState<string>(note ? (note.title ? note.title : "") : user?.note_draft_title || "")
+    const [inputNoteTitle, setInputNoteTitle] = useState<string>(note ? (note.title ? note.title : "") : user?.note_draft_title || "")
+    const [noteContent, setNoteContent] = useState<string>(note ? (note.content ? note.content : "") : user?.note_draft_content || "")
+    const [inputNoteContent, setInputNoteContent] = useState<string>(note ? (note.content ? note.content : "") : user?.note_draft_content || "")
+    const [project, setProject] = useState<string>(note ? (note.project_title ? note.project_title : "") : user?.note_draft_project_title || "")
 
     const updateNoteTitle = useDebouncedCallback((value: string) => {
         setNoteTitle(value)
@@ -102,12 +101,12 @@ export default function NoteModal({
         setShowAdvancedOptions(false)
 
         updateUserDraftNote({
-            userId: user?.id,
+            userId: user?.id || "-1",
             note_title: "",
             note_content: "",
             note_project_title: "",
         }).then(() => {
-        }).catch((error: any) => {
+        }).catch((error: unknown) => {
             console.error("Error resetting draft note:", error)
         })
     }
@@ -175,7 +174,7 @@ export default function NoteModal({
                             ...data,
                             notes: updatedData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
                         }
-                    } catch (error: any) {
+                    } catch (error: unknown) {
                         console.error("Error updating local data:", error)
                         return currentData
                     }

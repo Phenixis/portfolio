@@ -12,6 +12,7 @@ export async function getDarkModeCookie() {
         try {
             return JSON.parse(cookie) as DarkModeCookie
         } catch (error) {
+            console.error("Failed to parse dark mode cookie:", error)
             return defaultValueCookie
         }
     }
@@ -45,6 +46,7 @@ export async function getTaskFilterCookie(): Promise<TaskFilterCookie> {
         try {
             return JSON.parse(cookie) as TaskFilterCookie
         } catch (error) {
+            console.error("Failed to parse task filter cookie:", error)
             return defaultTaskFilterCookie
         }
     }

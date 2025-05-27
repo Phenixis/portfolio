@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyRequest } from '@/lib/auth/api';
 import MovieQueries from '@/lib/db/queries/movies';
 import TMDbService from '@/lib/services/tmdb';
+import type { NewMovie } from '@/lib/db/schema';
 
 /**
  * POST /api/movie
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Create movie record
-        const movieData: any = {
+        const movieData: Omit<NewMovie, 'created_at' | 'updated_at'> = {
             user_id: userId,
             tmdb_id,
             media_type,

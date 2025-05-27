@@ -4,11 +4,9 @@ import {
     getCompletedProjects,
     getUncompletedProjects,
     createProject,
-    updateProject,
-    deleteProject,
     getProjectsWithNotes
 } from '@/lib/db/queries';
-import type { Project, Note } from '@/lib/db/schema';
+import type { Note } from '@/lib/db/schema';
 import { type NextRequest, NextResponse } from 'next/server';
 import { verifyRequest } from '@/lib/auth/api';
 

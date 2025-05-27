@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import type { Project, TaskToDoAfter, TaskWithNonRecursiveRelations, TaskWithRelations } from "@/lib/db/schema"
+import type { Project, TaskWithNonRecursiveRelations, TaskWithRelations } from "@/lib/db/schema"
 import { PlusIcon, PenIcon, Minus, Plus, ChevronDown, CircleHelp } from "lucide-react"
 import { useRef, useState, useEffect } from "react"
 import { useSWRConfig } from "swr"
@@ -14,7 +14,6 @@ import { Calendar, TaskCount } from "@/components/ui/calendar"
 import { calculateUrgency } from "@/lib/utils/task"
 import { format } from "date-fns"
 import { useDebouncedCallback } from "use-debounce"
-import { useSearchProject } from "@/hooks/use-search-project"
 import { useSearchTasks } from "@/hooks/use-search-tasks"
 import { useImportanceAndDuration } from "@/hooks/use-importance-and-duration"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -120,7 +119,7 @@ export default function TaskModal({
 		} else {
 			resetForm()
 		}
-	}, [open])
+	}, [open, searchParams, task, project])
 
 	// Close calendar when clicking outside
 	useEffect(() => {
@@ -422,10 +421,6 @@ export default function TaskModal({
 		}
 		setShowCalendar(false)
 	}
-
-	const handleProjectChange = useDebouncedCallback((value: string) => {
-		setProject(value)
-	}, 200)
 
 	const handleToDoAfterChange = useDebouncedCallback((value: string) => {
 		setToDoAfterDebounceValue(value)

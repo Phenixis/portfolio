@@ -1,10 +1,9 @@
 "use client"
 
-import { Note, user } from "@/lib/db/schema"
+import { Note } from "@/lib/db/schema"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useState } from "react"
 import { ChevronDown, ChevronUp, ClipboardPlus, ClipboardCheck, Trash, Lock } from "lucide-react"
-import { Skeleton } from "@/components/ui/skeleton"
 import NoteModal from "./note-modal"
 import { toast } from "sonner"
 import { useSWRConfig } from "swr"
@@ -31,7 +30,6 @@ export default function NoteDisplay({ note, className }: { note?: Note, classNam
     const [isOpen, setIsOpen] = useState(false)
     const [isCopied, setIsCopied] = useState(false)
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-    const [isDeleting, setIsDeleting] = useState(false)
 
     const [decryptedContent, setDecryptedContent] = useState<string | null>(null)
     const [password, setPassword] = useState("")
@@ -41,8 +39,9 @@ export default function NoteDisplay({ note, className }: { note?: Note, classNam
         if (note && note.salt && note.iv && password && !decryptedContent) {
             decryptNote(note.content, password, note.salt, note.iv)
                 .then(setDecryptedContent)
-                .catch((e: any) => {
+                .catch((e: unknown) => {
                     setDecryptError(true)
+                    console.log(e)
                     toast.error("Decryption failed. Wrong password or corrupted data.")
                 })
         }
@@ -73,7 +72,6 @@ export default function NoteDisplay({ note, className }: { note?: Note, classNam
         setIsDeleteDialogOpen(false)
 
         try {
-            setIsDeleting(true)
 
             mutate(
                 (key: unknown) => typeof key === "string" && (key === "/api/note" || key.startsWith("/api/note?")),
@@ -89,7 +87,7 @@ export default function NoteDisplay({ note, className }: { note?: Note, classNam
                             totalCount: data.totalCount - 1,
                             totalPages: Math.ceil((data.totalCount - 1) / data.limit),
                         }
-                    } catch (error: any) {
+                    } catch (error: unknown) {
                         console.error("Error updating notes data:", error)
                         return currentData
                     }
@@ -110,8 +108,6 @@ export default function NoteDisplay({ note, className }: { note?: Note, classNam
             console.error("Error deleting note:", error)
             toast.error("Error deleting note. Try again later.")
             mutate((key) => typeof key === "string" && (key === "/api/note" || key.startsWith("/api/note?")))
-        } finally {
-            setIsDeleting(false)
         }
     }
 

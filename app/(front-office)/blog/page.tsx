@@ -26,7 +26,7 @@ export default function Page() {
 					<li className="group/Logo">
 						<Logo />
 						<p>
-							to start conversations about topics I'm interested in
+							to start conversations about topics I&apos;m interested in
 						</p>
 					</li>
 					<li className="group/Logo">

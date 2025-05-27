@@ -72,6 +72,7 @@ export async function getDailyMood(
             new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1)
         );
     } catch (error) {
+        console.error("Error fetching daily mood:", error);
         return null
     }
 

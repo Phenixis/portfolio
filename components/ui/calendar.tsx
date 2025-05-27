@@ -130,11 +130,6 @@ function Calendar({
                     const isSelected = isDateSelected(props.date)
 
                     // Determine if today for styling - using full date comparison
-                    const today = new Date()
-                    const isToday =
-                        props.date.getDate() === today.getDate() &&
-                        props.date.getMonth() === today.getMonth() &&
-                        props.date.getFullYear() === today.getFullYear()
 
                     return (
                         <div className="flex flex-col items-center justify-center h-full w-full">

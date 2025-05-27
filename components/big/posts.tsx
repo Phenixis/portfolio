@@ -6,7 +6,7 @@ export default function BlogPosts({
 }: {
     limit?: number
 }) {
-    let allBlogs = getBlogPosts()
+    const allBlogs = getBlogPosts()
 
     return (
         <div>

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyRequest } from '@/lib/auth/api';
 import MovieQueries from '@/lib/db/queries/movies';
-import TMDbService from '@/lib/services/tmdb';
+import TMDbService, { TMDbMovie, TMDbTVShow } from '@/lib/services/tmdb';
 
-function isMovie(item: any) {
+function isMovie(item: TMDbMovie | TMDbTVShow): item is TMDbMovie {
     return "title" in item;
 }
 
-function isTVShow(item: any) {
+function isTVShow(item: TMDbMovie | TMDbTVShow): item is TMDbTVShow {
     return "name" in item;
 }
 
@@ -88,6 +88,7 @@ export async function GET(request: NextRequest) {
                 }
             } catch (error) {
                 console.warn('Failed to get recommendations from rated movie:', randomMovie.tmdb_id);
+                console.warn(error);
             }
         }
 

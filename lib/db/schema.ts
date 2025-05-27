@@ -7,7 +7,6 @@ import {
     timestamp,
     integer,
     boolean,
-    foreignKey,
     real
 } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
@@ -272,7 +271,7 @@ export const notInterestedMovie = pgTable('not_interested_movie', {
 }));
 
 // Relations
-export const userRelations = relations(user, ({ one, many }) => ({
+export const userRelations = relations(user, ({ many }) => ({
     tasks: many(task),
     projects: many(project),
     notes: many(note),

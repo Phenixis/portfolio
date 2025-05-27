@@ -5,7 +5,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Search, BarChart3, Sparkles, Eye } from 'lucide-react';
+import { Plus, Search, Sparkles, Eye } from 'lucide-react';
 import { MovieStats } from '@/components/big/movie-tracker/movie-stats';
 import { MovieSearch } from '@/components/big/movie-tracker/movie-search';
 import { MovieList } from '@/components/big/movie-tracker/movie-list';

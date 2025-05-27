@@ -7,27 +7,22 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Angry, Frown, Laugh, Meh, Smile, SmilePlus } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { toast } from "sonner"
 import { useUser } from "@/hooks/use-user"
 import { useDailyMoods } from "@/hooks/use-daily-moods"
 import { DailyMoodColors } from "@/components/ui/calendar"
 import { useSWRConfig } from "swr"
-import { isArray } from "util"
 import { DailyMood } from "@/lib/db/schema"
 
-export default function DailyMoodModal({
-
-}: {
-
-    }) {
+export default function DailyMoodModal() {
     const { user } = useUser()
     const [open, setOpen] = useState(false)
     const today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), 0, 0, 0)
     const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, 0, 0, 0)
     const { mutate } = useSWRConfig()
 
-    const { data: dailyMoods, isLoading: isLoadingDailyMoods, isError: isErrorDailyMoods } = useDailyMoods({
+    const { data: dailyMoods } = useDailyMoods({
         startDate: today,
         endDate: tomorrow,
     })
@@ -36,15 +31,15 @@ export default function DailyMoodModal({
         setOpen(false)
         const method = dailyMoods.length == 0 ? "POST" : dailyMoods[0].mood == mood ? "DELETE" : "PUT"
 
-        mutate("/api/mood", (prevData: any) => {
+        mutate("/api/mood", (prevData: DailyMood[] | undefined) => {
             if (method === "POST") {
                 return [{ mood: mood, date: today, created_at: new Date(), comment: "", id: -1, user_id: user?.id, updated_at: new Date(), deleted_at: null } as DailyMood, ...(prevData !== undefined && Array.isArray(prevData) ? prevData : [])]
             }
             if (prevData !== undefined && Array.isArray(prevData)) {
                 if (method === "PUT") {
-                    return prevData.map((item: any) => item.date === today.toISOString() ? { ...item, mood: mood } : item)
+                    return prevData.map((item: DailyMood) => item.date === today ? { ...item, mood: mood } : item)
                 } else if (method === "DELETE") {
-                    return prevData.filter((item: any) => item.date !== today.toISOString())
+                    return prevData.filter((item: DailyMood) => item.date !== today)
                 }
             }
             return prevData
@@ -89,7 +84,7 @@ export default function DailyMoodModal({
                 >
                     <SmilePlus className="min-w-[24px] max-w-[24px] min-h-[24px]" />
                     <p className="hidden">
-                        What's your mood today ?
+                        What&apos;s your mood today ?
                     </p>
                 </Button>
             </DropdownMenuTrigger>

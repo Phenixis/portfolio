@@ -8,14 +8,11 @@ import Time from "@/components/big/time"
 import { useScrollDirection } from "@/hooks/use-scroll-direction"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
-import { Menu, User, Home, LogOut, NotebookText, Plus, Wrench } from "lucide-react"
-import Link from "next/link"
+import { Menu, User, Home, LogOut, NotebookText, Wrench } from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { usePathname } from "next/navigation"

@@ -3,7 +3,6 @@
 
 import { updateTaskFilterCookie } from "@/lib/cookies";
 import type { TaskFilterCookie } from "@/lib/flags";
-import { Task } from "@/lib/db/schema";
 
 /**
  * Client action to update the task filter cookie

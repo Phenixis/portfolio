@@ -47,7 +47,7 @@ export const defaultTaskFilterCookie: TaskFilterCookie = {
 
 export const darkMode = flag<boolean, DarkModeCookie>({
     key: "dark-mode",
-    identify({ headers, cookies }) {
+    identify({ cookies }) {
         // Get the current user from the session
         const darkModeCookie = cookies.get("dark_mode")?.value
         if (!darkModeCookie) {

@@ -79,6 +79,7 @@ export function WatchlistCard({ movie }: WatchlistCardProps) {
             });
             toast.success('Marked as watched!');
         } catch (error) {
+            console.log(error)
             toast.error('Failed to update watch status');
         }
     };
@@ -89,6 +90,7 @@ export function WatchlistCard({ movie }: WatchlistCardProps) {
             setShowDeleteDialog(false);
             toast.success('Removed from watchlist');
         } catch (error) {
+            console.log(error)
             toast.error('Failed to remove from watchlist');
         }
     };
@@ -225,7 +227,7 @@ export function WatchlistCard({ movie }: WatchlistCardProps) {
                         <DialogTitle>Remove from Watchlist</DialogTitle>
                     </DialogHeader>
                     <p className="text-muted-foreground">
-                        Are you sure you want to remove "{movie.title}" from your watchlist?
+                        Are you sure you want to remove &quot;{movie.title}&quot; from your watchlist?
                         This action cannot be undone.
                     </p>
                     <DialogFooter>

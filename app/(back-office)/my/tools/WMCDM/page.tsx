@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Trash, Plus, Save, Download, Upload, FileUp, Edit, Info, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -200,7 +200,8 @@ export default function Page() {
 
             // Remove this criterion's scores from all options
             const updatedOptions = prev.options.map(option => {
-                const { [criterionId]: removed, ...remainingScores } = option.scores;
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { [criterionId]: _, ...remainingScores } = option.scores;
                 return {
                     ...option,
                     scores: remainingScores

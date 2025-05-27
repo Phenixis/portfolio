@@ -4,27 +4,27 @@ import { formatDate, getBlogPosts } from '@/app/(front-office)/blog/utils'
 import { baseUrl } from 'app/sitemap'
 
 export async function generateStaticParams() {
-	let posts = getBlogPosts(true)
+	const posts = getBlogPosts(true)
 
 	return posts.map((post) => ({
 		slug: post.slug,
 	}))
 }
 
-export async function generateMetadata(props: { params: any }) {
+export async function generateMetadata(props: { params: Promise<{ slug: string }> }) {
 	const params = await props.params;
-	let post = getBlogPosts(true).find((post) => post.slug === params.slug)
+	const post = getBlogPosts(true).find((post) => post.slug === params.slug)
 	if (!post) {
 		return
 	}
 
-	let {
+	const {
 		title,
 		publishedAt: publishedTime,
 		summary: description,
 		image,
 	} = post.metadata
-	let ogImage = image
+	const ogImage = image
 		? image
 		: `${baseUrl}/og?title=${encodeURIComponent(title)}`
 
@@ -52,9 +52,9 @@ export async function generateMetadata(props: { params: any }) {
 	}
 }
 
-export default async function Blog(props: { params: any }) {
+export default async function Blog(props: { params: Promise<{ slug: string }> }) {
 	const params = await props.params;
-	let post = getBlogPosts(true).find((post) => post.slug === params.slug)
+	const post = getBlogPosts(true).find((post) => post.slug === params.slug)
 
 	if (!post) {
 		notFound()

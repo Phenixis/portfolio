@@ -46,8 +46,9 @@ export async function POST(request: NextRequest) {
         const result = await createDailyMood(verification.userId, mood, new Date(date), "")
 
         return NextResponse.json({ message: "Mood saved successfully", mood: result }, { status: 201 })
-    } catch (error: any) {
-        return NextResponse.json({ error: `Failed to save mood: ${error.message}` }, { status: 500 })
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+        return NextResponse.json({ error: `Failed to save mood: ${errorMessage}` }, { status: 500 })
     }
 }
 
@@ -66,8 +67,9 @@ export async function PUT(request: NextRequest) {
         const result = await updateDailyMood(verification.userId, mood, new Date(date), "")
 
         return NextResponse.json({ message: "Mood updated successfully", mood: result }, { status: 200 })
-    } catch (error: any) {
-        return NextResponse.json({ error: `Failed to update mood: ${error.message}` }, { status: 500 })
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+        return NextResponse.json({ error: `Failed to update mood: ${errorMessage}` }, { status: 500 })
     }
 }
 
@@ -76,7 +78,7 @@ export async function DELETE(request: NextRequest) {
     if ('error' in verification) return verification.error
 
     const body = await request.json()
-    const { mood, date: dateParam } = body
+    const { date: dateParam } = body
 
     if (!dateParam) {
         return NextResponse.json({ error: "Missing required parameter: date" }, { status: 400 })

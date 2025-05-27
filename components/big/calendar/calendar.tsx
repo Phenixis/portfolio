@@ -26,7 +26,7 @@ export default function Calendar({
     const [month, setMonth] = useState<Date>(date ? new Date(date.getFullYear(), date.getMonth(), 1) : new Date(now.getFullYear(), now.getMonth(), 1))
 
     // Only fetch data when showNumberOfTasks is true
-    const { data: numberOfTasks, isLoading, isError } = useNumberOfTasks({
+    const { data: numberOfTasks, isLoading } = useNumberOfTasks({
         projectTitles: searchParams.get(TASK_PARAMS.PROJECTS)
             ? searchParams.get(TASK_PARAMS.PROJECTS)?.split(",")
             : undefined,
@@ -39,7 +39,7 @@ export default function Calendar({
     })
 
     // Fetch daily moods data
-    const { data: dailyMoods, isLoading: isLoadingDailyMoods, isError: isErrorDailyMoods } = useDailyMoods({
+    const { data: dailyMoods } = useDailyMoods({
         startDate: new Date(month.getFullYear(), month.getMonth(), 1),
         endDate: new Date(month.getFullYear(), month.getMonth() + 1, 0),
         enabled: showDailyMood,

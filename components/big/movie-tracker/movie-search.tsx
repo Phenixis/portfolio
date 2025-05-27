@@ -44,11 +44,11 @@ export function MovieSearch({ onMovieAdded }: MovieSearchProps) {
         return mediaType === 'tv' ? <Tv className="w-4 h-4" /> : <Film className="w-4 h-4" />;
     };
 
-    const getTitle = (item: any) => {
+    const getTitle = (item: { title?: string; name?: string }) => {
         return item.title || item.name || 'Unknown Title';
     };
 
-    const getReleaseDate = (item: any) => {
+    const getReleaseDate = (item: { release_date?: string; first_air_date?: string }) => {
         const date = item.release_date || item.first_air_date;
         return date ? new Date(date).getFullYear() : null;
     };
@@ -168,7 +168,7 @@ export function MovieSearch({ onMovieAdded }: MovieSearchProps) {
 
             {searchQuery && !isLoading && filteredResults.length === 0 && (
                 <div className="text-center py-8">
-                    <p className="text-muted-foreground">No results found for "{searchQuery}"</p>
+                    <p className="text-muted-foreground">No results found for &quot;{searchQuery}&quot;</p>
                 </div>
             )}
         </div>

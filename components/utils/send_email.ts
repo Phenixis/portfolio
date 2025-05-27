@@ -38,7 +38,7 @@ export async function sendEmail(to: string, subject: string, htmlContent: string
 }
 
 export async function sendWelcomeEmail(user: User, password: string) {
-    let emailContent = `
+    const emailContent = `
             <html>
             <head>
             <style>
@@ -125,7 +125,7 @@ export async function sendWelcomeEmail(user: User, password: string) {
 
     await sendEmail(user.email, "Welcome to the app", emailContent);
 
-    let emailContent2 = `
+    const emailContent2 = `
             <html>
             <head>
             <style>

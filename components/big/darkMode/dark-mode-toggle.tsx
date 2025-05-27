@@ -62,7 +62,7 @@ export default function DarkModeToggle({
             })
 
 			mutate((key) => typeof key === "string" && (key === "/api/dark-mode" || key.startsWith("/api/dark-mode?")))
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Error mutating dark mode data:", error)
         }
     }
@@ -76,12 +76,12 @@ export default function DarkModeToggle({
         }
 
         setCookie(darkMode)
-    }, [isLoading])
+    }, [isLoading, darkMode])
 
     useEffect(() => {
         if (isLoading || isError) return
         toggleDarkMode(cookie.dark_mode) // this updates the dark mode state in the db everytime the cookie changes
-    }, [cookie])
+    }, [cookie, isLoading, isError, toggleDarkMode])
 
     return (
         <div>
@@ -117,7 +117,7 @@ export default function DarkModeToggle({
                         <DialogHeader>
                             <DialogTitle>Hi sir, Jarvis Here</DialogTitle>
                             <DialogDescription>
-                                It's getting late.
+                                It&apos;s getting late.
                                 <br />
                                 <br />
                                 Do you want me to automatically turn on dark mode between {cookie.startHour < 10 ? "0" + cookie.startHour : cookie.startHour}:{cookie.startMinute < 10 ? "0" + cookie.startMinute : cookie.startMinute} and {cookie.endHour}:

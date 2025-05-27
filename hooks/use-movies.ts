@@ -244,7 +244,13 @@ export function useMovieActions() {
     ) => {
         if (!user) throw new Error('User not authenticated');
 
-        const requestBody: any = {
+        const requestBody: {
+            tmdb_id: number;
+            media_type: 'movie' | 'tv';
+            watch_status: 'will_watch' | 'watched';
+            user_rating?: number;
+            optimizeRecommendations?: boolean;
+        } = {
             tmdb_id: tmdbId,
             media_type: mediaType,
             watch_status: watchStatus

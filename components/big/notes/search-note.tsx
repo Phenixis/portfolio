@@ -46,7 +46,7 @@ export default function SearchNotes({
             params.delete(NOTE_PARAMS["TITLE"])
             router.push(`?${params.toString()}`)
         }
-    }, [title])
+    }, [title, searchParams, router])
 
     return (
         <div className={cn("w-full", className)}>

@@ -5,18 +5,22 @@ import { highlight } from 'sugar-high'
 import React from 'react'
 
 let ids: string[] = []
+interface TableData {
+    headers: string[];
+    rows: string[][];
+}
 
-function Table({ data }: { data: any }) {
-	let headers = data.headers.map((header: any, index: any) => (
-		<th key={index}>{header}</th>
-	))
-	let rows = data.rows.map((row: any, index: any) => (
-		<tr key={index}>
-			{row.map((cell: any, cellIndex: any) => (
-				<td key={cellIndex}>{cell}</td>
-			))}
-		</tr>
-	))
+function Table({ data }: { data: TableData }) {
+    const headers = data.headers.map((header: string, index: number) => (
+        <th key={index}>{header}</th>
+    ))
+    const rows = data.rows.map((row: string[], index: number) => (
+        <tr key={index}>
+            {row.map((cell: string, cellIndex: number) => (
+                <td key={cellIndex}>{cell}</td>
+            ))}
+        </tr>
+    ))
 
 	return (
 		<table>
@@ -28,8 +32,8 @@ function Table({ data }: { data: any }) {
 	)
 }
 
-function CustomLink(props: any) {
-	let href = props.href
+function CustomLink(props: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
+    const href = props.href || ''
 
 	if (href.startsWith('/')) {
 		return (
@@ -46,12 +50,20 @@ function CustomLink(props: any) {
 	return <a target="_blank" rel="noopener noreferrer" {...props} />
 }
 
-function RoundedImage(props: any) {
-	return <Image alt={props.alt} className="rounded-lg" {...props} />
+interface RoundedImageProps {
+    src: string;
+    alt: string;
+    width?: number;
+    height?: number;
+    className?: string;
+}
+
+function RoundedImage({ className, alt, ...props }: RoundedImageProps) {
+    return <Image className={`rounded-lg ${className || ''}`} alt={alt} {...props} />
 }
 
 function Code({ children, ...props }: { children: string }) {
-	let codeHTML = highlight(children)
+	const codeHTML = highlight(children)
 	return <code dangerouslySetInnerHTML={{ __html: codeHTML }} {...props} />
 }
 
@@ -68,7 +80,7 @@ function slugify(str: string) {
 
 function createHeading(level: number) {
 	const Heading = ({ children }: { children: string }) => {
-		let slug = slugify(children)
+		const slug = slugify(children)
 		let id = slug
 
 		let counter = 1
@@ -97,7 +109,7 @@ function createHeading(level: number) {
 	return Heading
 }
 
-let components = {
+const components = {
 	h1: createHeading(1),
 	h2: createHeading(2),
 	h3: createHeading(3),

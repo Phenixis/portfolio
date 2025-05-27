@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({ message: "Tasks urgency updated" }, { status: 200 });
     } catch (error) {
+        console.error("Error updating tasks urgency:", error);
         return NextResponse.json({ error: "Failed to update tasks" }, { status: 500 })
     }
 }

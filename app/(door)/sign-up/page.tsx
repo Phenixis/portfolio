@@ -18,7 +18,6 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import {
     Dialog,
-    DialogTrigger,
     DialogContent,
     DialogHeader,
     DialogFooter,

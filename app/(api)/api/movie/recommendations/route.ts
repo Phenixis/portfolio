@@ -1,18 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyRequest } from '@/lib/auth/api';
 import MovieQueries from '@/lib/db/queries/movies';
-import TMDbService from '@/lib/services/tmdb';
+import TMDbService, { TMDbMovie, TMDbTVShow } from '@/lib/services/tmdb';
 
 // Number of recommendations to display to user
 const DISPLAYED_RECOMMENDATIONS_COUNT = 24;
 // Number of recommendations to fetch (includes buffer for replacement)
 const FETCHED_RECOMMENDATIONS_COUNT = 30;
 
-function isMovie(item: any) {
+function isMovie(item: TMDbMovie | TMDbTVShow): item is TMDbMovie {
     return "title" in item
 }
 
-function isTVShow(item: any) {
+function isTVShow(item: TMDbMovie | TMDbTVShow): item is TMDbTVShow {
     return "name" in item;
 }
 
@@ -129,6 +129,7 @@ export async function GET(request: NextRequest) {
                     });
                 } catch (error) {
                     console.warn('Failed to parse genres for movie:', movie.id);
+                    console.warn(error);
                 }
             }
         }
@@ -139,7 +140,7 @@ export async function GET(request: NextRequest) {
             .slice(0, 3)
             .map(([genreId]) => genreId);
 
-        let recommendations = [];
+        const recommendations = [];
         const seenIds = new Set<number>();
 
         // Strategy 1: Get recommendations from highly-rated movies
@@ -177,6 +178,7 @@ export async function GET(request: NextRequest) {
                     }
                 } catch (error) {
                     console.warn('Failed to get recommendations for movie:', movieId);
+                    console.warn(error);
                 }
             }
         }

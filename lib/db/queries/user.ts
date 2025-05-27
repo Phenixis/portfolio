@@ -1,25 +1,11 @@
 "use server"
 
 import {
-    desc,
-    asc,
     eq,
-    isNull,
-    isNotNull,
-    sql,
-    and,
-    or,
-    lte,
-    inArray,
-    not
 } from "drizzle-orm"
 import { db } from "../drizzle"
 import * as Schema from "../schema"
-import { revalidatePath } from "next/cache"
-import { calculateUrgency } from "@/lib/utils/task"
-import { alias } from "drizzle-orm/pg-core"
 import { hashPassword } from "@/lib/utils/password"
-import { user } from "../schema"
 import { getClientSession } from "@/lib/auth/session"
 import { revalidateTag } from "next/cache"
 import { DarkModeCookie } from "@/lib/flags"
@@ -226,7 +212,7 @@ export async function updateDarkModePreferences({
     darkModeCookie: DarkModeCookie
 }) {
   try {
-    const result = await db
+    await db
         .update(Schema.user)
         .set({
             has_jarvis_asked_dark_mode: darkModeCookie.has_jarvis_asked_dark_mode,
@@ -262,7 +248,7 @@ export async function updateUserDraftNote({
     note_project_title: string
 }) {
     try {
-        const result = await db
+        await db
             .update(Schema.user)
             .set({
                 note_draft_title: note_title,

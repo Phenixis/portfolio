@@ -4,7 +4,7 @@ import NoteDisplay from "@/components/big/notes/note-display"
 import { useNotes } from "@/hooks/use-notes"
 import { Note } from "@/lib/db/schema"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useState, useCallback, useTransition, useMemo, useEffect } from "react"
+import { useState, useCallback, useMemo } from "react"
 import {
     Pagination,
     PaginationContent,
@@ -28,7 +28,6 @@ export default function NotesPage() {
 
     const [title, setTitle] = useState<string>(searchParams.get(NOTE_PARAMS["TITLE"]) || "")
     const [projectTitle, setProjectTitle] = useState<string>(searchParams.get(NOTE_PARAMS["PROJECT_TITLE"]) || "")
-    const [limit, setLimit] = useState<number>(searchParams.get(NOTE_PARAMS["LIMIT"]) ? Number.parseInt(searchParams.get(NOTE_PARAMS["LIMIT"]) as string) : 30)
     const [page, setPage] = useState<number>(searchParams.get(NOTE_PARAMS["PAGE"]) ? Number.parseInt(searchParams.get(NOTE_PARAMS["PAGE"]) as string) : 1)
 
     const activeFiltersCount = useMemo(() => {
@@ -38,10 +37,10 @@ export default function NotesPage() {
         return count
     }, [title, projectTitle])
 
-    const { data: notesData, isLoading, isError, mutate } = useNotes({
+    const { data: notesData, isLoading, isError } = useNotes({
         title,
         projectTitle,
-        limit,
+        limit: 30,
         page
     })
 

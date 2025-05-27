@@ -14,7 +14,6 @@ import {
     Plus,
     Loader2,
     RefreshCw,
-    Eye,
     MoreHorizontal,
     X,
     ExternalLink
@@ -35,8 +34,22 @@ interface DiscoverMoviesProps {
     className?: string;
 }
 
+interface DiscoverMovieItem {
+    id: number;
+    title?: string;
+    name?: string;
+    overview: string;
+    poster_path: string | null;
+    backdrop_path: string | null;
+    release_date?: string;
+    first_air_date?: string;
+    vote_average: number;
+    media_type?: 'movie' | 'tv';
+    recommendation_source?: string;
+}
+
 interface MovieCardItemProps {
-    item: any;
+    item: DiscoverMovieItem;
     isAdding: boolean;
     onAddToWatchlist: (tmdbId: number, mediaType: 'movie' | 'tv') => void;
     onRateMovie: (tmdbId: number, mediaType: 'movie' | 'tv', rating: number) => void;
@@ -128,7 +141,7 @@ function MovieCardItem({
                                         />
                                     </div>
                                     <Button
-                                        onClick={() => onMarkAsNotInterested(item.id, item.media_type || 'movie', title)}
+                                        onClick={() => onMarkAsNotInterested(item.id, item.media_type || 'movie', title ?? '')}
                                         size="sm"
                                         variant="destructive"
                                         className="gap-2 w-full max-w-[200px]"
@@ -145,9 +158,9 @@ function MovieCardItem({
                     <div className="absolute bottom-2 right-2">
                         <Badge variant="secondary" className="text-xs gap-1 bg-black/70 text-white border-0">
                             <span className="lg:hidden lg:group-hover/Poster:inline-block">
-                                {getSourceLabel('recommendation_source' in item ? item.recommendation_source : 'trending')}
+                                {getSourceLabel('recommendation_source' in item && item.recommendation_source ? item.recommendation_source : 'trending')}
                             </span>
-                            {getSourceIcon('recommendation_source' in item ? item.recommendation_source : 'trending')}
+                            {getSourceIcon('recommendation_source' in item && item.recommendation_source ? item.recommendation_source : 'trending')}
                         </Badge>
                     </div>
 
@@ -188,7 +201,7 @@ function MovieCardItem({
                                 </div>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
-                                    onClick={() => onMarkAsNotInterested(item.id, item.media_type || 'movie', title)}
+                                    onClick={() => onMarkAsNotInterested(item.id, item.media_type || 'movie', title ?? "")}
                                     disabled={isAdding}
                                     className="text-destructive focus:text-destructive"
                                 >
@@ -262,7 +275,6 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
     const { addMovie, markAsNotInterested } = useMovieActions();
     const [addingIds, setAddingIds] = useState<Set<number>>(new Set());
     const [isRefreshing, setIsRefreshing] = useState(false);
-    const [recentlyReplacedIds, setRecentlyReplacedIds] = useState<Set<number>>(new Set());
 
     // Update search params when media filter changes
     const updateMediaFilter = (newFilter: 'all' | 'movie' | 'tv') => {
@@ -290,19 +302,6 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
         // First try optimistic update (immediate replacement if buffer available)
         const replacedMovie = await replaceRecommendation(tmdbId, true);
         
-        // Track the newly replaced movie for animation
-        if (replacedMovie) {
-            setRecentlyReplacedIds(prev => new Set(prev).add(replacedMovie.id));
-            // Remove from animation tracking after animation completes
-            setTimeout(() => {
-                setRecentlyReplacedIds(prev => {
-                    const newSet = new Set(prev);
-                    newSet.delete(replacedMovie.id);
-                    return newSet;
-                });
-            }, 500);
-        }
-        
         // Only show loading state if we couldn't do optimistic replacement
         if (!replacedMovie) {
             setAddingIds(prev => new Set(prev).add(tmdbId));
@@ -318,13 +317,14 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
             }
 
             toast.success('Added to your watchlist!');
-        } catch (error: any) {
+        } catch (error: unknown) {
             // If optimistic update failed, revert it by refreshing
             if (replacedMovie) {
                 await refresh();
             }
             
-            if (error.message.includes('already in your list')) {
+            const errorMessage = error instanceof Error ? error.message : '';
+            if (errorMessage.includes('already in your list')) {
                 toast.info('This is already in your list');
             } else {
                 toast.error('Failed to add to watchlist');
@@ -341,19 +341,6 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
     const handleRateMovie = async (tmdbId: number, mediaType: 'movie' | 'tv', rating: number) => {
         // First try optimistic update (immediate replacement if buffer available)
         const replacedMovie = await replaceRecommendation(tmdbId, true);
-        
-        // Track the newly replaced movie for animation
-        if (replacedMovie) {
-            setRecentlyReplacedIds(prev => new Set(prev).add(replacedMovie.id));
-            // Remove from animation tracking after animation completes
-            setTimeout(() => {
-                setRecentlyReplacedIds(prev => {
-                    const newSet = new Set(prev);
-                    newSet.delete(replacedMovie.id);
-                    return newSet;
-                });
-            }, 500);
-        }
         
         // Only show loading state if we couldn't do optimistic replacement
         if (!replacedMovie) {
@@ -373,13 +360,14 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
             }
 
             toast.success(`Rated ${rating}/5 and added to watched movies!`);
-        } catch (error: any) {
+        } catch (error: unknown) {
             // If optimistic update failed, revert it by refreshing
             if (replacedMovie) {
                 await refresh();
             }
             
-            if (error.message.includes('already in your list')) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            if (errorMessage.includes('already in your list')) {
                 toast.info('This is already in your list');
             } else {
                 toast.error('Failed to rate movie');
@@ -412,12 +400,13 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
             }
 
             toast.success('Marked as not interested - won\'t appear in future recommendations');
-        } catch (error: any) {
+        } catch (error: unknown) {
             // If optimistic update failed, revert it by refreshing
             if (replacedMovie) {
                 await refresh();
             }
             
+            console.log(error)
             toast.error('Failed to mark as not interested');
         } finally {
             setAddingIds(prev => {
@@ -434,6 +423,7 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
             await refresh();
             toast.success('Recommendations refreshed!');
         } catch (error) {
+            console.log(error)
             toast.error('Failed to refresh recommendations');
         } finally {
             setIsRefreshing(false);

@@ -1,5 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server"
-import type * as Schema from "@/lib/db/schema"
 import { createWorkout, updateWorkout, getAllWorkouts } from "@/lib/db/queries"
 import { verifyRequest } from "@/lib/auth/api"
 
@@ -8,12 +7,6 @@ export async function GET(request: NextRequest) {
   if ('error' in verification) return verification.error
 
   try {
-    const searchParams = request.nextUrl.searchParams
-    const orderBy = (searchParams.get("orderBy") as keyof Schema.Workout) || "date"
-    const orderingDirection = (searchParams.get("orderingDirection") as "asc" | "desc") || "desc"
-    const limit = searchParams.get("limit") ? Number.parseInt(searchParams.get("limit")!) : undefined
-    const withSeance = searchParams.get("withSeance") === "true"
-
     // This is a placeholder - you'll need to implement a function to get workouts with their seances
     const workouts = await getAllWorkouts(verification.userId)
 
@@ -29,7 +22,7 @@ export async function POST(request: NextRequest) {
   if ('error' in verification) return verification.error
 
   try {
-    const { date, note, seance_id } = await request.json()
+    const { date, seance_id } = await request.json()
 
     const workoutId = await createWorkout(verification.userId, new Date(date), seance_id)
 
@@ -45,7 +38,7 @@ export async function PUT(request: NextRequest) {
   if ('error' in verification) return verification.error
 
   try {
-    const { id, date, note, seance_id } = await request.json()
+    const { id, note, seance_id } = await request.json()
 
     const workoutId = await updateWorkout(verification.userId, id, note, seance_id)
 

@@ -49,55 +49,6 @@ export type TaskUrlParams = {
 	[TASK_PARAMS.GROUP_BY_PROJECT]?: string;
 };
 
-function generateTitle(
-	completed?: boolean,
-	orderBy?: keyof Task,
-	orderingDirection?: "asc" | "desc",
-	limit?: number,
-	groupedByProject?: boolean,
-	projectTitles?: string[],
-	excludedProjectTitles?: string[],
-	dueBeforeDate?: Date,
-) {
-	let title = limit ? `The top ${limit} ` : "All "
-
-	if (completed === true) {
-		title += "completed "
-	} else if (completed === false) {
-		title += "uncompleted "
-	}
-
-	title += "Tasks"
-
-	if (groupedByProject) {
-		if (projectTitles && projectTitles.length > 0) {
-			if (projectTitles.length === 1) {
-				title += ` in ${projectTitles[0]}`
-			} else if (projectTitles.length === 2) {
-				title += ` in ${projectTitles[0]} and ${projectTitles[1]}`
-			} else {
-				const lastProject = projectTitles[projectTitles.length - 1]
-				title += ` in ${projectTitles.slice(0, projectTitles.length - 1).join(", ")}, and ${lastProject}`
-			}
-		} else if (excludedProjectTitles && excludedProjectTitles.length > 0) {
-			if (excludedProjectTitles.length === 1) {
-				title += ` except in ${excludedProjectTitles[0]}`
-			} else if (excludedProjectTitles.length === 2) {
-				title += ` except in ${excludedProjectTitles[0]} and ${excludedProjectTitles[1]}`
-			} else {
-				const lastProject = excludedProjectTitles[excludedProjectTitles.length - 1]
-				title += ` except in ${excludedProjectTitles.slice(0, excludedProjectTitles.length - 1).join(", ")}, and ${lastProject}`
-			}
-		}
-	}
-
-	if (dueBeforeDate) {
-		title += ` due before ${format(dueBeforeDate, "MMM d, yyyy")}`
-	}
-
-	return title.trim()
-}
-
 export function TasksCard({
 	className,
 	initialCompleted = false,
@@ -149,13 +100,15 @@ export function TasksCard({
 				: initialLimit
 	)
 
-	const [orderBy, setOrderBy] = useState<keyof Task | undefined>(
+	const [orderBy, setOrderBy] = useState<keyof Task | undefined>(undefined)
+	setOrderBy(
 		(searchParams.get(TASK_PARAMS.ORDER_BY) as keyof Task) ||
 		initialTaskFilterCookie?.orderBy ||
 		initialOrderBy
 	)
 
-	const [orderingDirection, setOrderingDirection] = useState<"asc" | "desc" | undefined>(
+	const [orderingDirection, setOrderingDirection] = useState<"asc" | "desc" | undefined>()
+	setOrderingDirection(
 		(searchParams.get(TASK_PARAMS.ORDERING_DIRECTION) as "asc" | "desc") ||
 		initialTaskFilterCookie?.orderingDirection ||
 		initialOrderingDirection
@@ -296,7 +249,7 @@ export function TasksCard({
 			}
 		}
 		// Importantly, we removed removedProjects from dependencies to avoid the loop
-	}, [completed, dueBeforeDate, projects]);
+	}, [completed, dueBeforeDate, projects, selectedProjects, isLoading, isCountLoading, mutateNumberOfTasks]);
 
 	// Update cookie when filters change
 	useEffect(() => {
@@ -314,11 +267,7 @@ export function TasksCard({
 		};
 
 		updateCookie();
-	}, [completed, limit, orderBy, orderingDirection, selectedProjects, removedProjects, dueBeforeDate, groupByProject]);
-
-	useEffect(() => {
-		updateUrlParams()
-	}, [completed, limit, orderBy, orderingDirection, selectedProjects, dueBeforeDate, groupByProject])
+	}, [completed, limit, orderBy, orderingDirection, selectedProjects, removedProjects, dueBeforeDate, groupByProject, isFilterOpen]);
 
 	// -------------------- Callbacks --------------------
 	const updateUrlParams = useCallback(() => {
@@ -335,6 +284,10 @@ export function TasksCard({
 
 		router.push(`?${params.toString()}`, { scroll: false })
 	}, [completed, limit, orderBy, orderingDirection, selectedProjects, removedProjects, dueBeforeDate, groupByProject, router])
+
+	useEffect(() => {
+		updateUrlParams()
+	}, [completed, limit, orderBy, orderingDirection, selectedProjects, removedProjects, dueBeforeDate, groupByProject, isFilterOpen, updateUrlParams])
 
 	const cycleCompletedFilter = useCallback(() => {
 		startTransition(() => {
@@ -390,7 +343,7 @@ export function TasksCard({
 			},
 			{} as Record<string, { name: string; tasks: TaskWithRelations[] }>
 		)
-	}, [tasks, projects])
+	}, [tasks, projects, limit])
 
 	return (
 		<Card

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -47,7 +47,7 @@ export function MovieList({ status }: MovieListProps) {
     const [debouncedQuery] = useDebounce(searchQuery, 300);
 
     // Update search params when states change
-    const updateSearchParams = (updates: Record<string, string | number>) => {
+    const updateSearchParams = useCallback((updates: Record<string, string | number>) => {
         const params = new URLSearchParams(searchParams.toString());
         
         Object.entries(updates).forEach(([key, value]) => {
@@ -59,27 +59,27 @@ export function MovieList({ status }: MovieListProps) {
         });
         
         router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    };
+    }, [searchParams, router, pathname]);
 
     // Update URL when search query changes
     useEffect(() => {
         updateSearchParams({ movies_search: searchQuery });
-    }, [searchQuery]);
+    }, [searchQuery, updateSearchParams]);
 
     // Update URL when sort changes
     useEffect(() => {
         updateSearchParams({ movies_sort: sortBy });
-    }, [sortBy]);
+    }, [sortBy, updateSearchParams]);
 
     // Update URL when sort order changes
     useEffect(() => {
         updateSearchParams({ movies_order: sortOrder });
-    }, [sortOrder]);
+    }, [sortOrder, updateSearchParams]);
 
     // Update URL when page changes
     useEffect(() => {
         updateSearchParams({ movies_page: currentPage });
-    }, [currentPage]);
+    }, [currentPage, updateSearchParams]);
 
     // Update states when search params change (browser back/forward)
     useEffect(() => {
@@ -92,7 +92,7 @@ export function MovieList({ status }: MovieListProps) {
         if (sortFromParams !== sortBy) setSortBy(sortFromParams);
         if (orderFromParams !== sortOrder) setSortOrder(orderFromParams);
         if (pageFromParams !== currentPage) setCurrentPage(pageFromParams);
-    }, [searchParams]);
+    }, [searchParams, searchQuery, sortBy, sortOrder, currentPage]);
 
     // Since this component is only used for watched movies, we only need the watched movies
     const { movies: watchedMovies, isLoading } = useMovies(status || 'watched');
@@ -282,7 +282,7 @@ export function MovieList({ status }: MovieListProps) {
                 <div className="text-center py-12">
                     <div className="text-muted-foreground">
                         {debouncedQuery ? (
-                            <>No movies found for "{debouncedQuery}"</>
+                            <>No movies found for &quot;{debouncedQuery}&quot;</>
                         ) : (
                             <>No watched movies yet</>
                         )}

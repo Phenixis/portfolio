@@ -1,6 +1,3 @@
-"use client"
-
-import { AspectRatio } from "@/components/ui/aspect-ratio"
 
 /**
  * Generates hourglass data for a given life year.

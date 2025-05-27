@@ -2,9 +2,6 @@ import {
     searchProjects
 } from "@/lib/db/queries"
 import {
-    type Project
-} from "@/lib/db/schema"
-import {
     type NextRequest,
     NextResponse
 } from "next/server"

@@ -10,7 +10,7 @@ import {
     sendEmail
 } from "@/components/utils/send_email"
 import { verifyRequest } from "@/lib/auth/api"
-import { getUser, getAllUsers } from "@/lib/db/queries/user"
+import { getAllUsers } from "@/lib/db/queries/user"
 
 export async function GET(request: NextRequest) {
     const verification = await verifyRequest(request)
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
             };
 
             // Group tasksDone by projects
-            const groupedTasksDone = tasksDone.reduce((acc: Record<string, any[]>, task) => {
+            const groupedTasksDone = tasksDone.reduce((acc: Record<string, typeof tasksDone>, task) => {
                 const project = task.project_title || "No Project";
                 if (!acc[project]) {
                     acc[project] = [];
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
             }, {});
 
             // Group tasksToDo by relative days
-            const groupedByDays = sortedTasksToDo.reduce((acc: Record<string, any[]>, task) => {
+            const groupedByDays = sortedTasksToDo.reduce((acc: Record<string, typeof sortedTasksToDo>, task) => {
                 const relativeDay = getRelativeDay(new Date(task.due));
                 if (!acc[relativeDay]) {
                     acc[relativeDay] = [];
@@ -64,8 +64,8 @@ export async function GET(request: NextRequest) {
             }, {});
 
             // Group tasksToDo by projects within each relative day
-            const groupedByProjects = Object.entries(groupedByDays).reduce((acc: Record<string, any>, [day, tasksToDo]) => {
-                acc[day] = (tasksToDo as any[]).reduce((projectAcc: Record<string, any[]>, task) => {
+            const groupedByProjects = Object.entries(groupedByDays).reduce((acc: Record<string, Record<string, typeof sortedTasksToDo>>, [day, tasksToDo]) => {
+                acc[day] = tasksToDo.reduce((projectAcc: Record<string, typeof sortedTasksToDo>, task) => {
                     const project = task.project_title || "No Project";
                     if (!projectAcc[project]) {
                         projectAcc[project] = [];
@@ -161,7 +161,7 @@ export async function GET(request: NextRequest) {
 
                 for (const [project, tasks] of Object.entries(groupedTasksDone)) {
                     emailContent += `<h3>${project}</h3><ul>`;
-                    (tasks as any[]).forEach((task) => {
+                    tasks.forEach((task) => {
                         emailContent += `<li>${task.title}</li>`;
                     });
                     emailContent += `</ul>`;
@@ -173,9 +173,9 @@ export async function GET(request: NextRequest) {
             // Add tasksToDo to the email content
             for (const [day, projects] of Object.entries(groupedByProjects)) {
                 emailContent += `<h2>Due ${day}</h2>`;
-                for (const [project, tasksToDo] of Object.entries(projects)) {
+                for (const [project, tasksToDo] of Object.entries(projects as Record<string, typeof sortedTasksToDo>)) {
                     emailContent += `<h3>${project}</h3><ul>`;
-                    (tasksToDo as any[]).forEach((task) => {
+                    tasksToDo.forEach((task) => {
                         emailContent += `<li>${task.title}</li>`;
                     });
                     emailContent += `</ul>`;

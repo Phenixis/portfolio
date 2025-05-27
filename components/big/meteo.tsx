@@ -58,7 +58,7 @@ export default function Meteo({
 
     useEffect(() => {
         getLocation();
-    }, [error]);
+    }, [getLocation]);
 
     if (error) {
         return (

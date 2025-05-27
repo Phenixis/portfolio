@@ -5,13 +5,12 @@ import { Label } from '@/components/ui/label'
 import {
     Card,
     CardContent,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
 import { type DarkModeCookie } from "@/lib/flags"
 import { Checkbox } from '@/components/ui/checkbox'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { updateDarkModeCookie } from '@/lib/cookies'
 import { getUser } from '@/lib/auth/session'
 import { updateDarkModePreferences } from '@/lib/db/queries/user'

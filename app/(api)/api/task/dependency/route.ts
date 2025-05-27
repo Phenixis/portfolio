@@ -1,13 +1,7 @@
 import {
-    createTaskToDoAfter,
-    getTaskToDoAfterById,
-    getTasksToDoAfter,
-    getTasksToDoBefore,
     getTaskToDoAfterById1AndId2,
-    updateTaskToDoAfter,
     deleteTaskToDoAfterById,
 } from "@/lib/db/queries"
-import type { TaskToDoAfter } from "@/lib/db/schema"
 import { type NextRequest, NextResponse } from "next/server"
 import { verifyRequest } from "@/lib/auth/api"
 

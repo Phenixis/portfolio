@@ -25,6 +25,7 @@ export async function verifyToken(input: string) {
 		})
 		return payload as SessionData
 	} catch (error) {
+		console.error("Token verification failed:", error)
 		return null
 	}
 }
@@ -48,6 +49,7 @@ export async function getClientSession() {
 		return parsed
 	} catch (error) {
 		// Handle invalid or expired token
+		console.error("Session verification failed:", error)
 		return null
 	}
 }
@@ -76,6 +78,7 @@ export async function getServerSession() {
 		return parsed
 	} catch (error) {
 		// Handle invalid or expired token
+		console.error("Session verification failed:", error)
 		return null
 	}
 }
@@ -89,6 +92,8 @@ export async function verifySession(sessionCookie: string | undefined) {
 	try {
 		return await verifyToken(sessionCookie)
 	} catch (error) {
+		// Handle invalid or expired token
+		console.error("Session verification failed:", error)
 		return null
 	}
 }

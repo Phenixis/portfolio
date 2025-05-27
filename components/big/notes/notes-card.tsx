@@ -47,42 +47,6 @@ export type NoteUrlParams = {
 // Add this type definition after the NoteUrlParams type
 type GroupedNotes = Record<string, { name: string; notes: Note[] }>;
 
-function generateTitle(
-    orderBy?: keyof Note,
-    orderingDirection?: "asc" | "desc",
-    limit?: number,
-    groupedByProject?: boolean,
-    projectTitles?: string[],
-    excludedProjectTitles?: string[],
-) {
-    let title = limit ? `The ${limit} most recent ` : "All "
-    title += "notes"
-
-    if (groupedByProject) {
-        if (projectTitles && projectTitles.length > 0) {
-            if (projectTitles.length === 1) {
-                title += ` in ${projectTitles[0]}`
-            } else if (projectTitles.length === 2) {
-                title += ` in ${projectTitles[0]} and ${projectTitles[1]}`
-            } else {
-                const lastProject = projectTitles[projectTitles.length - 1]
-                title += ` in ${projectTitles.slice(0, projectTitles.length - 1).join(", ")}, and ${lastProject}`
-            }
-        } else if (excludedProjectTitles && excludedProjectTitles.length > 0) {
-            if (excludedProjectTitles.length === 1) {
-                title += ` except in ${excludedProjectTitles[0]}`
-            } else if (excludedProjectTitles.length === 2) {
-                title += ` except in ${excludedProjectTitles[0]} and ${excludedProjectTitles[1]}`
-            } else {
-                const lastProject = excludedProjectTitles[excludedProjectTitles.length - 1]
-                title += ` except in ${excludedProjectTitles.slice(0, excludedProjectTitles.length - 1).join(", ")}, and ${lastProject}`
-            }
-        }
-    }
-
-    return title.trim()
-}
-
 export function NotesCard({
     className,
     limit: initialLimit,
@@ -110,13 +74,11 @@ export function NotesCard({
             : initialLimit
     )
 
-    const [orderBy, setOrderBy] = useState<keyof Note | undefined>(
-        (searchParams.get(NOTE_PARAMS.ORDER_BY) as keyof Note) || initialOrderBy
-    )
+    const [orderBy, setOrderBy] = useState<keyof Note | undefined>(undefined)
+    setOrderBy((searchParams.get(NOTE_PARAMS.ORDER_BY) as keyof Note) || initialOrderBy)
 
-    const [orderingDirection, setOrderingDirection] = useState<"asc" | "desc" | undefined>(
-        (searchParams.get(NOTE_PARAMS.ORDERING_DIRECTION) as "asc" | "desc") || initialOrderingDirection
-    )
+    const [orderingDirection, setOrderingDirection] = useState<"asc" | "desc" | undefined>()
+    setOrderingDirection((searchParams.get(NOTE_PARAMS.ORDERING_DIRECTION) as "asc" | "desc") || initialOrderingDirection)
 
     const [selectedProjects, setSelectedProjects] = useState<string[]>(
         searchParams.has(NOTE_PARAMS.PROJECTS)
@@ -131,7 +93,7 @@ export function NotesCard({
     )
 
     const [groupByProject, setGroupByProject] = useState(
-        searchParams.get(NOTE_PARAMS.GROUP_BY_PROJECT) === "true"
+        searchParams.get(NOTE_PARAMS.GROUP_BY_PROJECT) === "true" || withProject
     )
 
     const [title, setTitle] = useState<string>(searchParams.get(NOTE_PARAMS["TITLE"]) || "")
@@ -165,10 +127,6 @@ export function NotesCard({
         }
     }, [projects]);
 
-    useEffect(() => {
-        updateUrlParams()
-    }, [limit, orderBy, orderingDirection, selectedProjects, groupByProject])
-
     // -------------------- Callbacks --------------------
     const updateUrlParams = useCallback(() => {
         const params = new URLSearchParams(searchParams.toString())
@@ -182,6 +140,10 @@ export function NotesCard({
 
         router.push(`?${params.toString()}`, { scroll: false })
     }, [limit, orderBy, orderingDirection, selectedProjects, removedProjects, groupByProject, router, searchParams])
+
+    useEffect(() => {
+        updateUrlParams()
+    }, [limit, orderBy, orderingDirection, selectedProjects, groupByProject, updateUrlParams])
 
     /**
      * Toggles a project through three states:

@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { WatchlistCard } from './watchlist-card';
 import { useMovies } from '@/hooks/use-movies';
 import { useDebounce } from 'use-debounce';
@@ -38,7 +37,7 @@ export function WatchlistGrid() {
     const [debouncedQuery] = useDebounce(searchQuery, 300);
 
     // Update search params when states change
-    const updateSearchParams = (updates: Record<string, string>) => {
+    const updateSearchParams = useCallback((updates: Record<string, string>) => {
         const params = new URLSearchParams(searchParams.toString());
         
         Object.entries(updates).forEach(([key, value]) => {
@@ -50,7 +49,7 @@ export function WatchlistGrid() {
         });
         
         router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    };
+    }, [searchParams, router, pathname]);
 
     // Update URL when search query changes
     useEffect(() => {
@@ -59,33 +58,33 @@ export function WatchlistGrid() {
         if (searchQuery !== searchParams.get('watchlist_search')) {
             setCurrentPage(1);
         }
-    }, [searchQuery]);
+    }, [searchQuery, updateSearchParams, searchParams]);
 
     // Update URL when sort changes
     useEffect(() => {
         updateSearchParams({ watchlist_sort: sortBy });
         // Reset to first page when sorting changes
         setCurrentPage(1);
-    }, [sortBy]);
+    }, [sortBy, updateSearchParams]);
 
     // Update URL when sort order changes
     useEffect(() => {
         updateSearchParams({ watchlist_order: sortOrder });
         // Reset to first page when sort order changes
         setCurrentPage(1);
-    }, [sortOrder]);
+    }, [sortOrder, updateSearchParams]);
 
     // Update URL when page changes
     useEffect(() => {
         updateSearchParams({ watchlist_page: currentPage.toString() });
-    }, [currentPage]);
+    }, [currentPage, updateSearchParams]);
 
     // Update URL when media filter changes
     useEffect(() => {
         updateSearchParams({ watchlist_media: mediaFilter });
         // Reset to first page when filter changes
         setCurrentPage(1);
-    }, [mediaFilter]);
+    }, [mediaFilter, updateSearchParams]);
 
     // Update states when search params change (browser back/forward)
     useEffect(() => {
@@ -100,7 +99,7 @@ export function WatchlistGrid() {
         if (orderFromParams !== sortOrder) setSortOrder(orderFromParams);
         if (pageFromParams !== currentPage) setCurrentPage(pageFromParams);
         if (mediaFromParams !== mediaFilter) setMediaFilter(mediaFromParams);
-    }, [searchParams]);
+    }, [searchParams, searchQuery, sortBy, sortOrder, currentPage, mediaFilter]);
 
     const { movies: willWatchMovies, isLoading: isLoadingWillWatch } = useMovies('will_watch');
     const { movies: searchMovies, isLoading: isLoadingSearch } = useMovies(undefined, debouncedQuery);
@@ -317,7 +316,7 @@ export function WatchlistGrid() {
                 <div className="text-center py-12">
                     <div className="text-muted-foreground">
                         {debouncedQuery ? (
-                            <>No {mediaFilter !== 'all' ? (mediaFilter === 'movie' ? 'movies' : 'TV shows') : 'items'} found for "{debouncedQuery}" in your watchlist</>
+                            <>No {mediaFilter !== 'all' ? (mediaFilter === 'movie' ? 'movies' : 'TV shows') : 'items'} found for &quot;{debouncedQuery}&quot; in your watchlist</>
                         ) : mediaFilter !== 'all' ? (
                             <>No {mediaFilter === 'movie' ? 'movies' : 'TV shows'} in your watchlist</>
                         ) : (

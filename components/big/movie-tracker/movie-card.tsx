@@ -87,7 +87,8 @@ export function MovieCard({ movie }: MovieCardProps) {
             });
             setIsEditing(false);
             toast.success('Rating and comment updated!');
-        } catch (error) {
+        } catch (error: unknown) {
+            console.error('Failed to update movie:', error);
             toast.error('Failed to update');
         }
     };
@@ -112,7 +113,8 @@ export function MovieCard({ movie }: MovieCardProps) {
                 watched_date: newStatus === 'watched' ? new Date().toISOString() : undefined
             });
             toast.success(`Moved to ${newStatus === 'watched' ? 'watched' : 'watchlist'}!`);
-        } catch (error) {
+        } catch (error: unknown) {
+            console.error('Failed to update watch status:', error);
             toast.error('Failed to update watch status');
         }
     };
@@ -122,7 +124,8 @@ export function MovieCard({ movie }: MovieCardProps) {
             await deleteMovie(movie.id);
             setShowDeleteDialog(false);
             toast.success('Movie removed from your list');
-        } catch (error) {
+        } catch (error: unknown) {
+            console.error('Failed to remove movie:', error);
             toast.error('Failed to remove movie');
         }
     };
@@ -337,7 +340,7 @@ export function MovieCard({ movie }: MovieCardProps) {
                         <DialogTitle>Remove Movie</DialogTitle>
                     </DialogHeader>
                     <p className="text-muted-foreground">
-                        Are you sure you want to remove "{movie.title}" from your list?
+                        Are you sure you want to remove &quot;{movie.title}&quot; from your list?
                         This action cannot be undone.
                     </p>
                     <DialogFooter>

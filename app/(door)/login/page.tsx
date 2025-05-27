@@ -16,7 +16,6 @@ import { Button } from "@/components/ui/button"
 import {
     InputOTP,
     InputOTPGroup,
-    InputOTPSeparator,
     InputOTPSlot,
 } from "@/components/ui/input-otp"
 import {
@@ -95,7 +94,7 @@ export default function Login() {
                 }
             })
         }
-    }, [password])
+    }, [password, formAction])
 
     return (
         <form
@@ -173,8 +172,7 @@ export default function Login() {
                         disabled={pending}
                     >Login</Button>
                 </CardFooter>
-            </Card>
-            <Link href="/sign-up" className="text-sm text-gray-300 lg:text-gray-500 lg:hover:text-gray-300 underline lg:no-underline lg:hover:underline">Don't have an account?</Link>
+            </Card>                <Link href="/sign-up" className="text-sm text-gray-300 lg:text-gray-500 lg:hover:text-gray-300 underline lg:no-underline lg:hover:underline">Don&apos;t have an account?</Link>
         </form>
     )
 }

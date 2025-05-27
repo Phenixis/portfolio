@@ -37,7 +37,6 @@ export function StarRating({
         // Determine star state
         const isFull = currentRating >= starValue;
         const isHalf = currentRating >= starValue - 0.5 && currentRating < starValue;
-        const isEmpty = currentRating < starValue - 0.5;
         
         return (
             <div

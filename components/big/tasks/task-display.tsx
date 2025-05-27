@@ -633,7 +633,7 @@ export default function TaskDisplay({
 					<DialogHeader>
 						<DialogTitle>Mark Task as Complete</DialogTitle>
 						<DialogDescription>
-							This task has tasks that should be done before that haven't been completed yet.<br /><br />{
+							This task has tasks that should be done before that haven&apos;t been completed yet.<br /><br />{
 								task && task.recursive && task.tasksToDoAfter && task.tasksToDoAfter.length > 0 && (
 									<div className="flex flex-col space-y-1">
 										{task.tasksToDoAfter.map((afterTask) => (
