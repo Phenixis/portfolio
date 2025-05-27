@@ -10,7 +10,7 @@ import {
     foreignKey,
     real
 } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 
 export const user = pgTable('user', {
     id: char('id', { length: 8 }).primaryKey().notNull(),
@@ -255,6 +255,22 @@ export const movie = pgTable('movie', {
     deleted_at: timestamp('deleted_at')
 });
 
+// Table to track movies/shows the user is not interested in
+export const notInterestedMovie = pgTable('not_interested_movie', {
+    id: serial('id').primaryKey(),
+    user_id: char('user_id', { length: 8 })
+        .notNull()
+        .references(() => user.id),
+    tmdb_id: integer('tmdb_id').notNull(),
+    media_type: varchar('media_type', { length: 10 }).notNull(), // 'movie' or 'tv'
+    title: varchar('title', { length: 500 }).notNull(), // Store title for reference
+    
+    created_at: timestamp('created_at').notNull().defaultNow(),
+}, (table) => ({
+    // Unique constraint to prevent duplicates
+    uniqueUserMovie: sql`UNIQUE (${table.user_id}, ${table.tmdb_id}, ${table.media_type})`
+}));
+
 // Relations
 export const userRelations = relations(user, ({ one, many }) => ({
     tasks: many(task),
@@ -269,6 +285,7 @@ export const userRelations = relations(user, ({ one, many }) => ({
     seriesGroups: many(seriesGroup),
     seanceExercices: many(seanceExercice),
     movies: many(movie),
+    notInterestedMovies: many(notInterestedMovie),
 }));
 
 export const projectRelations = relations(project, ({ one, many }) => ({
@@ -377,6 +394,13 @@ export const movieRelations = relations(movie, ({ one }) => ({
     })
 }));
 
+export const notInterestedMovieRelations = relations(notInterestedMovie, ({ one }) => ({
+    user: one(user, {
+        fields: [notInterestedMovie.user_id],
+        references: [user.id]
+    })
+}));
+
 export type User = typeof user.$inferSelect;
 export type NewUser = typeof user.$inferInsert;
 export type Task = typeof task.$inferSelect;
@@ -411,3 +435,5 @@ export type DailyMood = typeof dailyMood.$inferSelect;
 export type NewDailyMood = typeof dailyMood.$inferInsert;
 export type Movie = typeof movie.$inferSelect;
 export type NewMovie = typeof movie.$inferInsert;
+export type NotInterestedMovie = typeof notInterestedMovie.$inferSelect;
+export type NewNotInterestedMovie = typeof notInterestedMovie.$inferInsert;
