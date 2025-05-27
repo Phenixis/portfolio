@@ -104,48 +104,41 @@ function MovieCardItem({
                     )}
 
                     {/* Overlay with add buttons */}
-                    <div className="absolute inset-0 bg-black/60 hidden lg:group-hover/Poster:flex transition-opacity flex-col items-center justify-center gap-2">
-                        <Button
-                            onClick={() => onAddToWatchlist(item.id, item.media_type || 'movie')}
-                            disabled={isAdding}
-                            size="sm"
-                            className="gap-2 w-full max-w-[200px]"
-                        >
-                            {isAdding ? (
-                                <Loader2 className="w-3 h-3 animate-spin" />
+                    <div className={`absolute inset-0 bg-black/60 ${isAdding ? "flex" : "hidden lg:group-hover/Poster:flex transition-opacity"} flex-col items-center justify-center gap-2`}>
+                        {
+                            isAdding ? (
+                                <Loader2 className="size-4 text-white animate-spin" />
                             ) : (
-                                <Plus className="w-3 h-3" />
-                            )}
-                            Add to Watchlist
-                        </Button>
-                        <Button
-                            onClick={() => onMarkAsWatched(item.id, item.media_type || 'movie')}
-                            disabled={isAdding}
-                            size="sm"
-                            variant="secondary"
-                            className="gap-2 w-full max-w-[200px]"
-                        >
-                            {isAdding ? (
-                                <Loader2 className="w-3 h-3 animate-spin" />
-                            ) : (
-                                <Eye className="w-3 h-3" />
-                            )}
-                            Mark as Watched
-                        </Button>
-                        <Button
-                            onClick={() => onMarkAsNotInterested(item.id, item.media_type || 'movie', title)}
-                            disabled={isAdding}
-                            size="sm"
-                            variant="destructive"
-                            className="gap-2 w-full max-w-[200px]"
-                        >
-                            {isAdding ? (
-                                <Loader2 className="w-3 h-3 animate-spin" />
-                            ) : (
-                                <X className="w-3 h-3" />
-                            )}
-                            Not Interested
-                        </Button>
+                                <>
+                                    <Button
+                                        onClick={() => onAddToWatchlist(item.id, item.media_type || 'movie')}
+                                        size="sm"
+                                        className="gap-2 w-full max-w-[200px]"
+                                    >
+                                        <Plus className="w-3 h-3" />
+                                        Add to Watchlist
+                                    </Button>
+                                    <Button
+                                        onClick={() => onMarkAsWatched(item.id, item.media_type || 'movie')}
+                                        size="sm"
+                                        variant="secondary"
+                                        className="gap-2 w-full max-w-[200px]"
+                                    >
+                                        <Eye className="w-3 h-3" />
+                                        Mark as Watched
+                                    </Button>
+                                    <Button
+                                        onClick={() => onMarkAsNotInterested(item.id, item.media_type || 'movie', title)}
+                                        size="sm"
+                                        variant="destructive"
+                                        className="gap-2 w-full max-w-[200px]"
+                                    >
+                                        <X className="w-3 h-3" />
+                                        Not Interested
+                                    </Button>
+                                </>
+                            )
+                        }
                     </div>
 
                     {/* Source badge */}
@@ -261,12 +254,12 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
-    
+
     // Initialize media filter from search params
     const [mediaFilter, setMediaFilter] = useState<'all' | 'movie' | 'tv'>(
         (searchParams.get('discover_filter') as 'all' | 'movie' | 'tv') || 'all'
     );
-    
+
     const { recommendations, isLoading, error, refresh, replaceRecommendation } = useMovieRecommendations(mediaFilter);
     const { addMovie, markAsNotInterested } = useMovieActions();
     const [addingIds, setAddingIds] = useState<Set<number>>(new Set());
@@ -276,13 +269,13 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
     const updateMediaFilter = (newFilter: 'all' | 'movie' | 'tv') => {
         setMediaFilter(newFilter);
         const params = new URLSearchParams(searchParams.toString());
-        
+
         if (newFilter === 'all') {
             params.delete('discover_filter');
         } else {
             params.set('discover_filter', newFilter);
         }
-        
+
         router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     };
 
@@ -297,13 +290,13 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
     const handleAddToWatchlist = async (tmdbId: number, mediaType: 'movie' | 'tv') => {
         try {
             setAddingIds(prev => new Set(prev).add(tmdbId));
-            
+
             // Add movie with optimization flag
             await addMovie(tmdbId, mediaType, 'will_watch', { optimizeRecommendations: true });
-            
+
             // Replace the recommendation instead of refreshing the entire list
             await replaceRecommendation(tmdbId);
-            
+
             toast.success('Added to your watchlist!');
         } catch (error: any) {
             if (error.message.includes('already in your list')) {
@@ -323,13 +316,13 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
     const handleMarkAsWatched = async (tmdbId: number, mediaType: 'movie' | 'tv') => {
         try {
             setAddingIds(prev => new Set(prev).add(tmdbId));
-            
+
             // Add movie with optimization flag
             await addMovie(tmdbId, mediaType, 'watched', { optimizeRecommendations: true });
-            
+
             // Replace the recommendation instead of refreshing the entire list
             await replaceRecommendation(tmdbId);
-            
+
             toast.success('Added to watched movies!');
         } catch (error: any) {
             if (error.message.includes('already in your list')) {
@@ -349,13 +342,13 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
     const handleMarkAsNotInterested = async (tmdbId: number, mediaType: 'movie' | 'tv', title: string) => {
         try {
             setAddingIds(prev => new Set(prev).add(tmdbId));
-            
+
             // Mark as not interested with optimization flag
             await markAsNotInterested(tmdbId, mediaType, title, { optimizeRecommendations: true });
-            
+
             // Replace the recommendation instead of refreshing the entire list
             await replaceRecommendation(tmdbId);
-            
+
             toast.success('Marked as not interested - won\'t appear in future recommendations');
         } catch (error: any) {
             toast.error('Failed to mark as not interested');
