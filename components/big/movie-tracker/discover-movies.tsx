@@ -15,7 +15,8 @@ import {
     RefreshCw,
     Eye,
     MoreHorizontal,
-    X
+    X,
+    ExternalLink
 } from 'lucide-react';
 import { useMovieRecommendations, useMovieActions } from '@/hooks/use-movies';
 import TMDbService from '@/lib/services/tmdb';
@@ -107,7 +108,7 @@ function MovieCardItem({
                             onClick={() => onAddToWatchlist(item.id, item.media_type || 'movie')}
                             disabled={isAdding}
                             size="sm"
-                            className="gap-2"
+                            className="gap-2 w-full max-w-[200px]"
                         >
                             {isAdding ? (
                                 <Loader2 className="w-3 h-3 animate-spin" />
@@ -121,7 +122,7 @@ function MovieCardItem({
                             disabled={isAdding}
                             size="sm"
                             variant="secondary"
-                            className="gap-2"
+                            className="gap-2 w-full max-w-[200px]"
                         >
                             {isAdding ? (
                                 <Loader2 className="w-3 h-3 animate-spin" />
@@ -135,7 +136,7 @@ function MovieCardItem({
                             disabled={isAdding}
                             size="sm"
                             variant="destructive"
-                            className="gap-2"
+                            className="gap-2 w-full max-w-[200px]"
                         >
                             {isAdding ? (
                                 <Loader2 className="w-3 h-3 animate-spin" />
@@ -221,8 +222,13 @@ function MovieCardItem({
                         )}
                     </div>
 
-                    <h3 className="font-medium text-sm line-clamp-2 mb-2 leading-tight">
-                        {title}
+                    <h3 className="font-medium text-sm line-clamp-2 mb-2 leading-tight underline lg:no-underline lg:group-hover/Card:underline">
+                        <a href={`https://google.com/search?q=${title}+%28${item.media_type === 'tv' ? 'TV' : 'Movie'}${" " + year}%29`} target='_blank' rel='noopener noreferrer'>
+                            {title}
+                            <span className="lg:hidden lg:group-hover/Card:inline-block text-muted-foreground ml-1">
+                                <ExternalLink className="inline w-3 h-3" />
+                            </span>
+                        </a>
                     </h3>
 
                     {item.overview && (
