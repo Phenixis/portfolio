@@ -87,7 +87,7 @@ export function MovieSearch({ onMovieAdded }: MovieSearchProps) {
 
                         return (
                             <Card key={`${item.id}-${mediaType}`} className="hover:shadow-md transition-shadow">
-                                <CardContent className="p-4">
+                                <CardContent fullPadding>
                                     <div className="flex gap-4">
                                         {/* Poster */}
                                         <div className="flex-shrink-0">
