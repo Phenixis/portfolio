@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+# Add any pre-commit checks here
+echo "Running pre-commit checks..."
