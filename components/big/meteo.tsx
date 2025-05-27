@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import {
     type Meteo
@@ -19,46 +19,54 @@ export default function Meteo({
     className?: string
 }) {
     const user = useUser().user;
-    const now = new Date();
-    const date = now.getHours() >= 19
-        ? new Date(now.setDate(now.getDate() + 1)).toLocaleDateString('fr-FR', { year: 'numeric', month: '2-digit', day: '2-digit' })
-        : now.toLocaleDateString('fr-FR', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    
+    // Memoize the date calculation to prevent infinite re-renders
+    const date = useMemo(() => {
+        const now = new Date();
+        return now.getHours() >= 19
+            ? new Date(now.setDate(now.getDate() + 1)).toLocaleDateString('fr-FR', { year: 'numeric', month: '2-digit', day: '2-digit' })
+            : now.toLocaleDateString('fr-FR', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    }, []); // Empty dependency array - date should only be calculated once per component mount
+    
     const [meteo, setMeteo] = useState<Meteo | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const fetchWeather = async (latitude: number, longitude: number) => {
-        try {
-            const response = await fetch(`/api/weather?day=${date}&lat=${latitude}&lon=${longitude}`, {
-                headers: {
-                    "Authorization": `Bearer ${user?.api_key}`
-                }
-            });
-
-            const data = await response.json() as Meteo;
-
-            setMeteo(data);
-        } catch (err) {
-            setError((err as Error).message);
-        }
-    };
-
-    const getLocation = () => {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    fetchWeather(position.coords.latitude, position.coords.longitude);
-                },
-                () => {
-                    setError('Failed to get location');
-                }
-            );
-        } else {
-            setError('Geolocation is not supported by this browser');
-        }
-    };
-
+    
     useEffect(() => {
+        if (!user?.api_key) return;
+
+        const fetchWeather = async (latitude: number, longitude: number) => {
+            try {
+                const response = await fetch(`/api/weather?day=${date}&lat=${latitude}&lon=${longitude}`, {
+                    headers: {
+                        "Authorization": `Bearer ${user.api_key}`
+                    }
+                });
+
+                const data = await response.json() as Meteo;
+
+                setMeteo(data);
+            } catch (err) {
+                setError((err as Error).message);
+            }
+        };
+
+        const getLocation = () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        fetchWeather(position.coords.latitude, position.coords.longitude);
+                    },
+                    () => {
+                        setError('Failed to get location');
+                    }
+                );
+            } else {
+                setError('Geolocation is not supported by this browser');
+            }
+        };
+
         getLocation();
-    }, [getLocation]);
+    }, [user?.api_key, date]);
 
     if (error) {
         return (

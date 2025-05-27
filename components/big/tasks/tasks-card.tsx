@@ -100,15 +100,13 @@ export function TasksCard({
 				: initialLimit
 	)
 
-	const [orderBy, setOrderBy] = useState<keyof Task | undefined>(undefined)
-	setOrderBy(
+	const [orderBy, setOrderBy] = useState<keyof Task | undefined>(
 		(searchParams.get(TASK_PARAMS.ORDER_BY) as keyof Task) ||
 		initialTaskFilterCookie?.orderBy ||
 		initialOrderBy
 	)
 
-	const [orderingDirection, setOrderingDirection] = useState<"asc" | "desc" | undefined>()
-	setOrderingDirection(
+	const [orderingDirection, setOrderingDirection] = useState<"asc" | "desc" | undefined>(
 		(searchParams.get(TASK_PARAMS.ORDERING_DIRECTION) as "asc" | "desc") ||
 		initialTaskFilterCookie?.orderingDirection ||
 		initialOrderingDirection
@@ -170,12 +168,15 @@ export function TasksCard({
 		dueBefore: dueBeforeDate,
 	})
 
-	const { data: numberOfTasks, isLoading: isCountLoading, isError: isCountError, mutate: mutateNumberOfTasks } = useNumberOfTasks({
+	// Memoize the numberOfTasks parameters to prevent unnecessary re-renders
+	const numberOfTasksParams = useMemo(() => ({
 		projectTitles: groupByProject && selectedProjects.length > 0 ? selectedProjects : undefined,
 		excludedProjectTitles: groupByProject && removedProjects.length > 0 ? removedProjects : undefined,
 		dueAfter: today,
 		dueBefore: dueBeforeDate !== undefined ? dueBeforeDate : tomorrow,
-	})
+	}), [groupByProject, selectedProjects, removedProjects, dueBeforeDate, today, tomorrow])
+
+	const { data: numberOfTasks, isLoading: isCountLoading, isError: isCountError, mutate: mutateNumberOfTasks } = useNumberOfTasks(numberOfTasksParams)
 
 	// -------------------- Effects --------------------
 
@@ -191,10 +192,6 @@ export function TasksCard({
 			setProgression(Math.round((completedCount / totalCount) * 100))
 		}
 	}, [numberOfTasks])
-
-	useEffect(() => {
-		mutateNumberOfTasks()
-	}, [dueBeforeDate, selectedProjects, removedProjects])
 
 	// Fix the infinite update loop by removing removedProjects from dependencies
 	// and using a more careful approach to update state
@@ -249,7 +246,7 @@ export function TasksCard({
 			}
 		}
 		// Importantly, we removed removedProjects from dependencies to avoid the loop
-	}, [completed, dueBeforeDate, projects, selectedProjects, isLoading, isCountLoading, mutateNumberOfTasks]);
+	}, [completed, dueBeforeDate, projects, selectedProjects]);
 
 	// Update cookie when filters change
 	useEffect(() => {
@@ -267,7 +264,7 @@ export function TasksCard({
 		};
 
 		updateCookie();
-	}, [completed, limit, orderBy, orderingDirection, selectedProjects, removedProjects, dueBeforeDate, groupByProject, isFilterOpen]);
+	}, [completed, limit, orderBy, orderingDirection, selectedProjects, removedProjects, dueBeforeDate, groupByProject]);
 
 	// -------------------- Callbacks --------------------
 	const updateUrlParams = useCallback(() => {
@@ -286,8 +283,13 @@ export function TasksCard({
 	}, [completed, limit, orderBy, orderingDirection, selectedProjects, removedProjects, dueBeforeDate, groupByProject, router])
 
 	useEffect(() => {
-		updateUrlParams()
-	}, [completed, limit, orderBy, orderingDirection, selectedProjects, removedProjects, dueBeforeDate, groupByProject, isFilterOpen, updateUrlParams])
+		// Debounce URL updates to prevent excessive navigation
+		const timeoutId = setTimeout(() => {
+			updateUrlParams()
+		}, 200)
+		
+		return () => clearTimeout(timeoutId)
+	}, [completed, limit, orderBy, orderingDirection, selectedProjects, removedProjects, dueBeforeDate, groupByProject, updateUrlParams])
 
 	const cycleCompletedFilter = useCallback(() => {
 		startTransition(() => {
@@ -358,7 +360,7 @@ export function TasksCard({
 						)}
 						style={{ width: isCountLoading ? "100%" : `${progression}%` }}
 					/>
-					<div className="w-full flex justify-between items-center pt-1">
+					<div className="w-full flex justify-between items-center pt-2 px-1">
 						{isCountLoading  || isCountError ? null : (
 							<>
 								<p className="text-muted-foreground text-xs">

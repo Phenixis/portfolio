@@ -74,11 +74,9 @@ export function NotesCard({
             : initialLimit
     )
 
-    const [orderBy, setOrderBy] = useState<keyof Note | undefined>(undefined)
-    setOrderBy((searchParams.get(NOTE_PARAMS.ORDER_BY) as keyof Note) || initialOrderBy)
+    const [orderBy, setOrderBy] = useState<keyof Note | undefined>((searchParams.get(NOTE_PARAMS.ORDER_BY) as keyof Note) || initialOrderBy)
 
-    const [orderingDirection, setOrderingDirection] = useState<"asc" | "desc" | undefined>()
-    setOrderingDirection((searchParams.get(NOTE_PARAMS.ORDERING_DIRECTION) as "asc" | "desc") || initialOrderingDirection)
+    const [orderingDirection, setOrderingDirection] = useState<"asc" | "desc" | undefined>((searchParams.get(NOTE_PARAMS.ORDERING_DIRECTION) as "asc" | "desc") || initialOrderingDirection)
 
     const [selectedProjects, setSelectedProjects] = useState<string[]>(
         searchParams.has(NOTE_PARAMS.PROJECTS)
