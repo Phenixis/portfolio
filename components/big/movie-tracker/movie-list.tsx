@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MovieCard } from './movie-card';
@@ -34,11 +35,64 @@ interface MovieListProps {
 }
 
 export function MovieList({ status }: MovieListProps) {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [sortBy, setSortBy] = useState<SortBy>('updated');
-    const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
-    const [currentPage, setCurrentPage] = useState(1);
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+    
+    // Initialize states from search params
+    const [searchQuery, setSearchQuery] = useState(searchParams.get('movies_search') || '');
+    const [sortBy, setSortBy] = useState<SortBy>((searchParams.get('movies_sort') as SortBy) || 'updated');
+    const [sortOrder, setSortOrder] = useState<SortOrder>((searchParams.get('movies_order') as SortOrder) || 'desc');
+    const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('movies_page') || '1'));
     const [debouncedQuery] = useDebounce(searchQuery, 300);
+
+    // Update search params when states change
+    const updateSearchParams = (updates: Record<string, string | number>) => {
+        const params = new URLSearchParams(searchParams.toString());
+        
+        Object.entries(updates).forEach(([key, value]) => {
+            if (value === '' || value === null || value === undefined) {
+                params.delete(key);
+            } else {
+                params.set(key, value.toString());
+            }
+        });
+        
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    };
+
+    // Update URL when search query changes
+    useEffect(() => {
+        updateSearchParams({ movies_search: searchQuery });
+    }, [searchQuery]);
+
+    // Update URL when sort changes
+    useEffect(() => {
+        updateSearchParams({ movies_sort: sortBy });
+    }, [sortBy]);
+
+    // Update URL when sort order changes
+    useEffect(() => {
+        updateSearchParams({ movies_order: sortOrder });
+    }, [sortOrder]);
+
+    // Update URL when page changes
+    useEffect(() => {
+        updateSearchParams({ movies_page: currentPage });
+    }, [currentPage]);
+
+    // Update states when search params change (browser back/forward)
+    useEffect(() => {
+        const searchFromParams = searchParams.get('movies_search') || '';
+        const sortFromParams = (searchParams.get('movies_sort') as SortBy) || 'updated';
+        const orderFromParams = (searchParams.get('movies_order') as SortOrder) || 'desc';
+        const pageFromParams = parseInt(searchParams.get('movies_page') || '1');
+        
+        if (searchFromParams !== searchQuery) setSearchQuery(searchFromParams);
+        if (sortFromParams !== sortBy) setSortBy(sortFromParams);
+        if (orderFromParams !== sortOrder) setSortOrder(orderFromParams);
+        if (pageFromParams !== currentPage) setCurrentPage(pageFromParams);
+    }, [searchParams]);
 
     // Since this component is only used for watched movies, we only need the watched movies
     const { movies: watchedMovies, isLoading } = useMovies(status || 'watched');

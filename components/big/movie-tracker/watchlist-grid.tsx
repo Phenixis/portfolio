@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,10 +22,56 @@ type SortBy = 'updated' | 'title' | 'vote_average' | 'date_added';
 type SortOrder = 'asc' | 'desc';
 
 export function WatchlistGrid() {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [sortBy, setSortBy] = useState<SortBy>('date_added');
-    const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+    
+    // Initialize states from search params
+    const [searchQuery, setSearchQuery] = useState(searchParams.get('watchlist_search') || '');
+    const [sortBy, setSortBy] = useState<SortBy>((searchParams.get('watchlist_sort') as SortBy) || 'date_added');
+    const [sortOrder, setSortOrder] = useState<SortOrder>((searchParams.get('watchlist_order') as SortOrder) || 'desc');
     const [debouncedQuery] = useDebounce(searchQuery, 300);
+
+    // Update search params when states change
+    const updateSearchParams = (updates: Record<string, string>) => {
+        const params = new URLSearchParams(searchParams.toString());
+        
+        Object.entries(updates).forEach(([key, value]) => {
+            if (value === '' || value === null || value === undefined) {
+                params.delete(key);
+            } else {
+                params.set(key, value);
+            }
+        });
+        
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    };
+
+    // Update URL when search query changes
+    useEffect(() => {
+        updateSearchParams({ watchlist_search: searchQuery });
+    }, [searchQuery]);
+
+    // Update URL when sort changes
+    useEffect(() => {
+        updateSearchParams({ watchlist_sort: sortBy });
+    }, [sortBy]);
+
+    // Update URL when sort order changes
+    useEffect(() => {
+        updateSearchParams({ watchlist_order: sortOrder });
+    }, [sortOrder]);
+
+    // Update states when search params change (browser back/forward)
+    useEffect(() => {
+        const searchFromParams = searchParams.get('watchlist_search') || '';
+        const sortFromParams = (searchParams.get('watchlist_sort') as SortBy) || 'date_added';
+        const orderFromParams = (searchParams.get('watchlist_order') as SortOrder) || 'desc';
+        
+        if (searchFromParams !== searchQuery) setSearchQuery(searchFromParams);
+        if (sortFromParams !== sortBy) setSortBy(sortFromParams);
+        if (orderFromParams !== sortOrder) setSortOrder(orderFromParams);
+    }, [searchParams]);
 
     const { movies: willWatchMovies, isLoading: isLoadingWillWatch } = useMovies('will_watch');
     const { movies: searchMovies, isLoading: isLoadingSearch } = useMovies(undefined, debouncedQuery);

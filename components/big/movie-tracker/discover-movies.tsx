@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -257,11 +258,41 @@ function MovieCardItem({
 }
 
 export function DiscoverMovies({ className }: DiscoverMoviesProps) {
-    const [mediaFilter, setMediaFilter] = useState<'all' | 'movie' | 'tv'>('all');
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+    
+    // Initialize media filter from search params
+    const [mediaFilter, setMediaFilter] = useState<'all' | 'movie' | 'tv'>(
+        (searchParams.get('discover_filter') as 'all' | 'movie' | 'tv') || 'all'
+    );
+    
     const { recommendations, isLoading, error, refresh } = useMovieRecommendations(mediaFilter);
     const { addMovie, markAsNotInterested } = useMovieActions();
     const [addingIds, setAddingIds] = useState<Set<number>>(new Set());
     const [isRefreshing, setIsRefreshing] = useState(false);
+
+    // Update search params when media filter changes
+    const updateMediaFilter = (newFilter: 'all' | 'movie' | 'tv') => {
+        setMediaFilter(newFilter);
+        const params = new URLSearchParams(searchParams.toString());
+        
+        if (newFilter === 'all') {
+            params.delete('discover_filter');
+        } else {
+            params.set('discover_filter', newFilter);
+        }
+        
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    };
+
+    // Update state when search params change (browser back/forward)
+    useEffect(() => {
+        const filterFromParams = (searchParams.get('discover_filter') as 'all' | 'movie' | 'tv') || 'all';
+        if (filterFromParams !== mediaFilter) {
+            setMediaFilter(filterFromParams);
+        }
+    }, [searchParams, mediaFilter]);
 
     const handleAddToWatchlist = async (tmdbId: number, mediaType: 'movie' | 'tv') => {
         try {
@@ -414,7 +445,7 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                                 <Button
                                     variant={mediaFilter === 'all' ? 'default' : 'outline'}
                                     size="sm"
-                                    onClick={() => setMediaFilter('all')}
+                                    onClick={() => updateMediaFilter('all')}
                                     className="h-8 px-3"
                                 >
                                     All
@@ -422,7 +453,7 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                                 <Button
                                     variant={mediaFilter === 'movie' ? 'default' : 'outline'}
                                     size="sm"
-                                    onClick={() => setMediaFilter('movie')}
+                                    onClick={() => updateMediaFilter('movie')}
                                     className="h-8 px-3"
                                 >
                                     <Film className="w-3 h-3 mr-1" />
@@ -431,7 +462,7 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                                 <Button
                                     variant={mediaFilter === 'tv' ? 'default' : 'outline'}
                                     size="sm"
-                                    onClick={() => setMediaFilter('tv')}
+                                    onClick={() => updateMediaFilter('tv')}
                                     className="h-8 px-3"
                                 >
                                     <Tv className="w-3 h-3 mr-1" />
