@@ -146,9 +146,6 @@ export function TasksCard({
 	// Add a ref to track if this is the first render
 	const isFirstRender = useRef(true);
 
-	// Add a ref to hold previous removedProjects to compare changes
-	const prevRemovedProjectsRef = useRef<string[]>([]);
-
 	// -------------------- Data Fetching --------------------
 	const { projects, isLoading: projectsLoading } = useProjects({
 		completed: false,
@@ -193,60 +190,32 @@ export function TasksCard({
 		}
 	}, [numberOfTasks])
 
-	// Fix the infinite update loop by removing removedProjects from dependencies
-	// and using a more careful approach to update state
+	// Clean up project selections when projects data changes
 	useEffect(() => {
 		// Only update if we have actual project data and it's not the first render
 		if (projects && projects.length > 0) {
 			// Skip the first render to avoid resetting on initial load
 			if (isFirstRender.current) {
 				isFirstRender.current = false;
-				// Store initial removedProjects for future comparison
-				prevRemovedProjectsRef.current = removedProjects;
 				return;
 			}
-
-			// Filter selected projects to only include those in the current projects list
-			setSelectedProjects((prev) =>
-				prev.filter((title) => projects.some((project) => project.title === title))
-			);
 
 			// Get all project titles from the current projects data
 			const currentProjectTitles = new Set(projects.map(project => project.title));
 
-			// Compare current removedProjects with previous to avoid unnecessary updates
-			const currentRemovedProjects = [...removedProjects];
-			const prevRemovedProjects = prevRemovedProjectsRef.current;
+			// Filter selected projects to only include those that exist
+			setSelectedProjects((prev) => {
+				const filtered = prev.filter((title) => currentProjectTitles.has(title));
+				return filtered.length !== prev.length ? filtered : prev;
+			});
 
-			// Only update if there's an actual difference that needs reconciliation
-			if (JSON.stringify(currentRemovedProjects.sort()) !==
-				JSON.stringify(prevRemovedProjects.sort())) {
-
-				// Preserve user's choice for projects that exist in the current projects list
-				const preservedRemovedProjects = currentRemovedProjects.filter(
-					title => currentProjectTitles.has(title)
-				);
-
-				// Keep track of removed projects that are not in the current projects list
-				// but were previously excluded by the user
-				const removedProjectsNotInCurrentList = currentRemovedProjects.filter(
-					title => !currentProjectTitles.has(title)
-				);
-
-				// Only update state if there's actually a change needed
-				if (preservedRemovedProjects.length !== currentRemovedProjects.length ||
-					removedProjectsNotInCurrentList.length > 0) {
-					const newRemovedProjects = [...preservedRemovedProjects, ...removedProjectsNotInCurrentList];
-
-					// Update the ref before setting state to avoid comparison issues
-					prevRemovedProjectsRef.current = newRemovedProjects;
-
-					setRemovedProjects(newRemovedProjects);
-				}
-			}
+			// Filter removed projects to only include those that exist
+			setRemovedProjects((prev) => {
+				const filtered = prev.filter((title) => currentProjectTitles.has(title));
+				return filtered.length !== prev.length ? filtered : prev;
+			});
 		}
-		// Importantly, we removed removedProjects from dependencies to avoid the loop
-	}, [completed, dueBeforeDate, projects, selectedProjects]);
+	}, [projects]); // Only depend on projects to avoid infinite loops
 
 	// Update cookie when filters change
 	useEffect(() => {
@@ -267,29 +236,26 @@ export function TasksCard({
 	}, [completed, limit, orderBy, orderingDirection, selectedProjects, removedProjects, dueBeforeDate, groupByProject]);
 
 	// -------------------- Callbacks --------------------
-	const updateUrlParams = useCallback(() => {
-		const params = new URLSearchParams()
-
-		if (completed !== undefined) params.set(TASK_PARAMS.COMPLETED, completed.toString())
-		if (limit) params.set(TASK_PARAMS.LIMIT, limit.toString())
-		if (orderBy) params.set(TASK_PARAMS.ORDER_BY, orderBy as string)
-		if (orderingDirection) params.set(TASK_PARAMS.ORDERING_DIRECTION, orderingDirection)
-		if (selectedProjects.length > 0) params.set(TASK_PARAMS.PROJECTS, selectedProjects.join(","))
-		if (removedProjects.length > 0) params.set(TASK_PARAMS.REMOVED_PROJECTS, removedProjects.join(","))
-		if (dueBeforeDate) params.set(TASK_PARAMS.DUE_BEFORE, dueBeforeDate.toISOString())
-		if (groupByProject) params.set(TASK_PARAMS.GROUP_BY_PROJECT, "true")
-
-		router.push(`?${params.toString()}`, { scroll: false })
-	}, [completed, limit, orderBy, orderingDirection, selectedProjects, removedProjects, dueBeforeDate, groupByProject, router])
 
 	useEffect(() => {
 		// Debounce URL updates to prevent excessive navigation
 		const timeoutId = setTimeout(() => {
-			updateUrlParams()
+			const params = new URLSearchParams()
+
+			if (completed !== undefined) params.set(TASK_PARAMS.COMPLETED, completed.toString())
+			if (limit) params.set(TASK_PARAMS.LIMIT, limit.toString())
+			if (orderBy) params.set(TASK_PARAMS.ORDER_BY, orderBy as string)
+			if (orderingDirection) params.set(TASK_PARAMS.ORDERING_DIRECTION, orderingDirection)
+			if (selectedProjects.length > 0) params.set(TASK_PARAMS.PROJECTS, selectedProjects.join(","))
+			if (removedProjects.length > 0) params.set(TASK_PARAMS.REMOVED_PROJECTS, removedProjects.join(","))
+			if (dueBeforeDate) params.set(TASK_PARAMS.DUE_BEFORE, dueBeforeDate.toISOString())
+			if (groupByProject) params.set(TASK_PARAMS.GROUP_BY_PROJECT, "true")
+
+			router.push(`?${params.toString()}`, { scroll: false })
 		}, 200)
 		
 		return () => clearTimeout(timeoutId)
-	}, [completed, limit, orderBy, orderingDirection, selectedProjects, removedProjects, dueBeforeDate, groupByProject, updateUrlParams])
+	}, [completed, limit, orderBy, orderingDirection, selectedProjects, removedProjects, dueBeforeDate, groupByProject, router])
 
 	const cycleCompletedFilter = useCallback(() => {
 		startTransition(() => {
