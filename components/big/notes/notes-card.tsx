@@ -52,13 +52,11 @@ export function NotesCard({
     limit: initialLimit,
     orderBy: initialOrderBy = "created_at",
     orderingDirection: initialOrderingDirection = "desc",
-    withProject = true,
 }: {
     className?: string
     limit?: number
     orderBy?: keyof Note
     orderingDirection?: "asc" | "desc"
-    withProject?: boolean
 }) {
     // -------------------- Imports & Hooks --------------------
     const router = useRouter()
@@ -91,7 +89,7 @@ export function NotesCard({
     )
 
     const [groupByProject, setGroupByProject] = useState(
-        searchParams.get(NOTE_PARAMS.GROUP_BY_PROJECT) === "true" || withProject
+        searchParams.get(NOTE_PARAMS.GROUP_BY_PROJECT) === "true"
     )
 
     const [title, setTitle] = useState<string>(searchParams.get(NOTE_PARAMS["TITLE"]) || "")
