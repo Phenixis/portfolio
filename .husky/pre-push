@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-date '\n\n+%Y-%m-%d %H:%M:%S' >> .husky/pre-push.log
+date '+%Y-%m-%d %H:%M:%S' >> .husky/pre-push.log
 echo "🚀 Running pre-push checks..." >> .husky/pre-push.log
 echo "📦 Building the project..." >> .husky/pre-push.log
 
