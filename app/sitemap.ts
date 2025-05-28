@@ -1,17 +1,8 @@
-import { getBlogPosts } from '@/app/(front-office)/blog/utils'
-
-export const baseUrl = 'https://www.maximeduhamel.com'
-
 export default async function sitemap() {
-  const blogs = getBlogPosts().map((post) => ({
-    url: `${baseUrl}/blog/${post.slug}`,
-    lastModified: post.metadata.publishedAt,
-  }))
-
-  const routes = ['', '/blog'].map((route) => ({
-    url: `${baseUrl}${route}`,
+  const routes = [''].map((route) => ({
+    url: `${process.env.NEXT_PUBLIC_APP_URL}${route}`,
     lastModified: new Date().toISOString().split('T')[0],
   }))
 
-  return [...routes, ...blogs]
+  return [...routes]
 }

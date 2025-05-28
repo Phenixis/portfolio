@@ -1,6 +1,5 @@
 import './globals.css'
 import type { Metadata } from 'next'
-import { baseUrl } from './sitemap'
 import { Domine, Geist_Mono, Ubuntu_Sans_Mono } from 'next/font/google';
 import {
     TooltipProvider
@@ -23,17 +22,17 @@ const ubuntuSansMono = Ubuntu_Sans_Mono({
 })
 
 export const metadata: Metadata = {
-    metadataBase: new URL(baseUrl),
+    metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://life-os.xyz'),
     title: {
-        default: 'Maxime Duhamel',
-        template: '%s | Maxime Duhamel',
+        default: 'Life OS',
+        template: '%s | Life OS',
     },
-    description: 'This is my portfolio.',
+    description: 'Your life, all in one place.',
     openGraph: {
-        title: "Maxime Duhamel's Portfolio",
-        description: "Welcome to my portfolio.",
-        url: baseUrl,
-        siteName: "Maxime Duhamel's Portfolio",
+        title: "Life OS",
+        description: "Your life, all in one place.",
+        url: process.env.NEXT_PUBLIC_APP_URL || 'https://life-os.xyz',
+        siteName: "Life OS",
         locale: 'en_US',
         type: 'website',
     },

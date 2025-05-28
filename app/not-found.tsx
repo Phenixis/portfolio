@@ -1,10 +1,21 @@
+"use client"
+
+import { usePathname, useRouter } from "next/navigation"
+import { useEffect } from "react"
+import { toast } from "sonner"
+
 export default function NotFound() {
+  const router = useRouter()
+  const pathname = usePathname()
+
+  useEffect(() => {
+    toast.error("Page \""+ pathname + "\" not found, redirecting to home page...",)
+    router.replace("/my")
+  }, [pathname, router])
+
   return (
-    <section>
-      <h1 className="mb-8 text-2xl font-semibold tracking-tighter">
-        404 - Page Not Found
-      </h1>
-      <p className="mb-4">The page you are looking for does not exist.</p>
-    </section>
+    <div>
+      404 - Page Not Found
+    </div>
   )
 }
