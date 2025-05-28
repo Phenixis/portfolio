@@ -209,7 +209,7 @@ export default function TaskModal({
 					if (mode === "create") {
 
 						const updatedData: TaskCount[] = currentData.map((item: TaskCount) => {
-							if (new Date(item.due).getDate() === new Date(todoData.due).getDate()) {
+							if (new Date(item.due).toDateString() === new Date(todoData.due).toDateString()) {
 								return {
 									...item,
 									uncompleted_count: Number(item.uncompleted_count) + 1,
@@ -218,7 +218,7 @@ export default function TaskModal({
 							return item
 						})
 
-						if (!updatedData.some((item) => new Date(item.due).getDate() === new Date(todoData.due).getDate())) {
+						if (!updatedData.some((item) => new Date(item.due).toDateString() === new Date(todoData.due).toDateString())) {
 							updatedData.push({
 								due: todoData.due.toISOString(),
 								uncompleted_count: 1,
@@ -231,12 +231,12 @@ export default function TaskModal({
 						let updatedData: TaskCount[]
 						if (todoData.completed_at) {
 							updatedData = currentData.map((item: TaskCount) => {
-								if (new Date(item.due).getDate() === new Date(todoData.due).getDate()) {
+								if (new Date(item.due).toDateString() === new Date(todoData.due).toDateString()) {
 									return {
 										...item,
 										completed_count: Number(item.completed_count) + 1,
 									}
-								} else if (task?.due && new Date(item.due).getDate() === new Date(task?.due).getDate()) {
+								} else if (task?.due && new Date(item.due).toDateString() === new Date(task?.due).toDateString()) {
 									return {
 										...item,
 										completed_count: Number(item.completed_count) - 1,
@@ -245,7 +245,7 @@ export default function TaskModal({
 								return item
 							})
 
-							if (!updatedData.some((item) => new Date(item.due).getDate() === new Date(todoData.due).getDate())) {
+							if (!updatedData.some((item) => new Date(item.due).toDateString() === new Date(todoData.due).toDateString())) {
 								updatedData.push({
 									due: todoData.due.toISOString(),
 									uncompleted_count: 0,
@@ -254,12 +254,12 @@ export default function TaskModal({
 							}
 						} else {
 							updatedData = currentData.map((item: TaskCount) => {
-								if (new Date(item.due).getDate() === new Date(todoData.due).getDate()) {
+								if (new Date(item.due).toDateString() === new Date(todoData.due).toDateString()) {
 									return {
 										...item,
 										uncompleted_count: Number(item.uncompleted_count) + 1,
 									}
-								} else if (task?.due && new Date(item.due).getDate() === new Date(task?.due).getDate()) {
+								} else if (task?.due && new Date(item.due).toDateString() === new Date(task?.due).toDateString()) {
 									return {
 										...item,
 										uncompleted_count: Number(item.uncompleted_count) - 1,
@@ -268,7 +268,7 @@ export default function TaskModal({
 								return item
 							})
 
-							if (!updatedData.some((item) => new Date(item.due).getDate() === new Date(todoData.due).getDate())) {
+							if (!updatedData.some((item) => new Date(item.due).toDateString() === new Date(todoData.due).toDateString())) {
 								updatedData.push({
 									due: todoData.due.toISOString(),
 									uncompleted_count: 1,
@@ -416,7 +416,7 @@ export default function TaskModal({
 			date.setHours(0, 0, 0, 0)
 			setDueDate(date)
 			setFormChanged(
-				(mode === "edit" && task && date.getDate() !== new Date(task.due).getDate()) || date.getDate() !== new Date().getDate()
+				(mode === "edit" && task && date.toDateString() !== new Date(task.due).toDateString()) || date.toDateString() !== new Date().toDateString()
 			)
 		}
 		setShowCalendar(false)
@@ -547,7 +547,7 @@ export default function TaskModal({
 												setDueDate(today)
 											}
 											setFormChanged(
-												(mode === "edit" && task && today.getDate() !== new Date(task.due).getDate()) || today.getDate() !== new Date().getDate()
+												(mode === "edit" && task && newDate.toDateString() !== new Date(task.due).toDateString()) || newDate.toDateString() !== new Date().toDateString()
 											)
 										}}
 									>
@@ -566,9 +566,10 @@ export default function TaskModal({
 										variant="outline"
 										className="px-2"
 										onClick={() => {
-											setDueDate(new Date(dueDate.getTime() + 24 * 60 * 60 * 1000))
+											const nextDate = new Date(dueDate.getTime() + 24 * 60 * 60 * 1000)
+											setDueDate(nextDate)
 											setFormChanged(
-												(mode === "edit" && task && new Date(dueDate.getTime() + 24 * 60 * 60 * 1000).getDate() !== new Date(task.due).getDate()) || new Date(dueDate.getTime() + 24 * 60 * 60 * 1000).getDate() !== new Date().getDate()
+												(mode === "edit" && task && nextDate.toDateString() !== new Date(task.due).toDateString()) || nextDate.toDateString() !== new Date().toDateString()
 											)
 										}}
 									>
