@@ -9,7 +9,7 @@ export type ActionState = {
 }
 
 const protectedRoutes = ["/my"]
-const unaccessibleWhenLoggedIn = ["/login"]
+const unaccessibleWhenLoggedIn = ["/login", "/"]
 const apiRoutes = ["/api"]
 
 export async function middleware(request: NextRequest) {
