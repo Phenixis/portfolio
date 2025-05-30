@@ -54,6 +54,10 @@ jobs:
                   git config --global user.name "github-actions[bot]"
                   git config --global user.email "github-actions[bot]@users.noreply.github.com"
                   
+                  # Set git config to handle long commit messages better
+                  git config --global core.editor "true"
+                  git config --global commit.cleanup "strip"
+                  
                   # Check if this is the first release and handle accordingly
                   if ! git describe --tags --abbrev=0 2>/dev/null; then
                     echo "No previous tags found, creating initial baseline tag..."
@@ -63,8 +67,14 @@ jobs:
                     echo "Baseline tag created. Semantic release will start from this point."
                   fi
                   
-                  # Run semantic release
-                  pnpm semantic-release
+                  # Run semantic release with error handling
+                  pnpm semantic-release || {
+                    echo "Semantic release failed, checking for common issues..."
+                    git status
+                    echo "Git log of recent commits:"
+                    git log --oneline -5
+                    exit 1
+                  }
             
             # Optional: Deploy to Vercel after successful release
             # Uncomment the step below if you want automatic deployment
