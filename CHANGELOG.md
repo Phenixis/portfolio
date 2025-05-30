@@ -1,6 +1,12 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [1.0.1-dev.1748610462] - 2025-05-30
+
+### 📝 Other Changes
+- style: fix badge hovering for movie card
+
+
 ## [1.0.1-dev.1748610180] - 2025-05-30
 
 ### 📝 Other Changes
