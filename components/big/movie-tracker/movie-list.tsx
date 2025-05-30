@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MovieCard } from './movie-card';
@@ -24,8 +23,10 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from '@/components/ui/pagination';
+import { getClientMoviesFilterCookie, updateClientMoviesFilterCookie } from '@/lib/utils/client-cookies';
+import type { MoviesFilterCookie } from '@/lib/types/watchlist';
 
-type SortBy = 'updated' | 'title' | 'rating' | 'date_added';
+type SortBy = 'updated' | 'title' | 'vote_average' | 'date_added';
 type SortOrder = 'asc' | 'desc';
 
 const ITEMS_PER_PAGE = 10;
@@ -35,64 +36,53 @@ interface MovieListProps {
 }
 
 export function MovieList({ status }: MovieListProps) {
-    const searchParams = useSearchParams();
-    const router = useRouter();
-    const pathname = usePathname();
-    
-    // Initialize states from search params
-    const [searchQuery, setSearchQuery] = useState(searchParams.get('movies_search') || '');
-    const [sortBy, setSortBy] = useState<SortBy>((searchParams.get('movies_sort') as SortBy) || 'updated');
-    const [sortOrder, setSortOrder] = useState<SortOrder>((searchParams.get('movies_order') as SortOrder) || 'desc');
-    const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('movies_page') || '1'));
+    // Initialize states from cookies
+    const [isClient, setIsClient] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [sortBy, setSortBy] = useState<SortBy>('updated');
+    const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+    const [currentPage, setCurrentPage] = useState(1);
     const [debouncedQuery] = useDebounce(searchQuery, 300);
 
-    // Update search params when states change
-    const updateSearchParams = useCallback((updates: Record<string, string | number>) => {
-        const params = new URLSearchParams(searchParams.toString());
-        
-        Object.entries(updates).forEach(([key, value]) => {
-            if (value === '' || value === null || value === undefined) {
-                params.delete(key);
-            } else {
-                params.set(key, value.toString());
-            }
-        });
-        
-        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    }, [searchParams, router, pathname]);
-
-    // Update URL when search query changes
+    // Set client flag on mount to prevent hydration mismatch
     useEffect(() => {
-        updateSearchParams({ movies_search: searchQuery });
-    }, [searchQuery, updateSearchParams]);
+        setIsClient(true);
+        // Load filters from cookies on client
+        const cookieFilters = getClientMoviesFilterCookie();
+        setSearchQuery(cookieFilters.search || '');
+        setSortBy(cookieFilters.sortBy || 'updated');
+        setSortOrder(cookieFilters.sortOrder || 'desc');
+        setCurrentPage(cookieFilters.currentPage || 1);
+    }, []);
 
-    // Update URL when sort changes
-    useEffect(() => {
-        updateSearchParams({ movies_sort: sortBy });
-    }, [sortBy, updateSearchParams]);
+    // Update cookies when filters change
+    const updateFilters = useCallback((updates: Partial<MoviesFilterCookie>) => {
+        if (!isClient) return;
+        updateClientMoviesFilterCookie(updates);
+    }, [isClient]);
 
-    // Update URL when sort order changes
+    // Update cookies when individual states change
     useEffect(() => {
-        updateSearchParams({ movies_order: sortOrder });
-    }, [sortOrder, updateSearchParams]);
+        if (!isClient) return;
+        updateFilters({ search: searchQuery });
+    }, [searchQuery, updateFilters, isClient]);
 
-    // Update URL when page changes
     useEffect(() => {
-        updateSearchParams({ movies_page: currentPage });
-    }, [currentPage, updateSearchParams]);
+        if (!isClient) return;
+        updateFilters({ sortBy });
+        setCurrentPage(1); // Reset to first page when sorting changes
+    }, [sortBy, updateFilters, isClient]);
 
-    // Update states when search params change (browser back/forward)
     useEffect(() => {
-        const searchFromParams = searchParams.get('movies_search') || '';
-        const sortFromParams = (searchParams.get('movies_sort') as SortBy) || 'updated';
-        const orderFromParams = (searchParams.get('movies_order') as SortOrder) || 'desc';
-        const pageFromParams = parseInt(searchParams.get('movies_page') || '1');
-        
-        if (searchFromParams !== searchQuery) setSearchQuery(searchFromParams);
-        if (sortFromParams !== sortBy) setSortBy(sortFromParams);
-        if (orderFromParams !== sortOrder) setSortOrder(orderFromParams);
-        if (pageFromParams !== currentPage) setCurrentPage(pageFromParams);
-    }, [searchParams, searchQuery, sortBy, sortOrder, currentPage]);
+        if (!isClient) return;
+        updateFilters({ sortOrder });
+        setCurrentPage(1); // Reset to first page when sort order changes
+    }, [sortOrder, updateFilters, isClient]);
+
+    useEffect(() => {
+        if (!isClient) return;
+        updateFilters({ currentPage });
+    }, [currentPage, updateFilters, isClient]);
 
     // Since this component is only used for watched movies, we only need the watched movies
     const { movies: watchedMovies, isLoading } = useMovies(status || 'watched');
@@ -115,7 +105,7 @@ export function MovieList({ status }: MovieListProps) {
             case 'title':
                 comparison = a.title.localeCompare(b.title);
                 break;
-            case 'rating':
+            case 'vote_average':
                 const ratingA = a.user_rating || 0;
                 const ratingB = b.user_rating || 0;
                 comparison = ratingA - ratingB;
@@ -143,7 +133,7 @@ export function MovieList({ status }: MovieListProps) {
         { value: 'updated', label: 'Recently Updated' },
         { value: 'date_added', label: 'Date Added' },
         { value: 'title', label: 'Title' },
-        { value: 'rating', label: 'Rating' },
+        { value: 'vote_average', label: 'Rating' },
     ];
 
     return (

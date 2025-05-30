@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,6 +28,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { StarRating } from '@/components/ui/star-rating';
+import { getClientDiscoverFilterCookie, updateClientDiscoverFilterCookie } from '@/lib/utils/client-cookies';
 
 interface DiscoverMoviesProps {
     className?: string;
@@ -262,41 +262,30 @@ function MovieCardItem({
 }
 
 export function DiscoverMovies({ className }: DiscoverMoviesProps) {
-    const searchParams = useSearchParams();
-    const router = useRouter();
-    const pathname = usePathname();
-
-    // Initialize media filter from search params
-    const [mediaFilter, setMediaFilter] = useState<'all' | 'movie' | 'tv'>(
-        (searchParams.get('discover_filter') as 'all' | 'movie' | 'tv') || 'all'
-    );
+    // Initialize media filter from cookies
+    const [isClient, setIsClient] = useState(false);
+    const [mediaFilter, setMediaFilter] = useState<'all' | 'movie' | 'tv'>('all');
 
     const { recommendations, isLoading, error, refresh, replaceRecommendation } = useMovieRecommendations(mediaFilter);
     const { addMovie, markAsNotInterested } = useMovieActions();
     const [addingIds, setAddingIds] = useState<Set<number>>(new Set());
     const [isRefreshing, setIsRefreshing] = useState(false);
 
-    // Update search params when media filter changes
-    const updateMediaFilter = (newFilter: 'all' | 'movie' | 'tv') => {
-        setMediaFilter(newFilter);
-        const params = new URLSearchParams(searchParams.toString());
-
-        if (newFilter === 'all') {
-            params.delete('discover_filter');
-        } else {
-            params.set('discover_filter', newFilter);
-        }
-
-        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    };
-
-    // Update state when search params change (browser back/forward)
+    // Set client flag on mount to prevent hydration mismatch
     useEffect(() => {
-        const filterFromParams = (searchParams.get('discover_filter') as 'all' | 'movie' | 'tv') || 'all';
-        if (filterFromParams !== mediaFilter) {
-            setMediaFilter(filterFromParams);
-        }
-    }, [searchParams, mediaFilter]);
+        setIsClient(true);
+        // Load filters from cookies on client
+        const cookieFilters = getClientDiscoverFilterCookie();
+        setMediaFilter(cookieFilters.filter || 'all');
+    }, []);
+
+    // Update media filter and save to cookies
+    const updateMediaFilter = (newFilter: 'all' | 'movie' | 'tv') => {
+        if (!isClient) return;
+        
+        setMediaFilter(newFilter);
+        updateClientDiscoverFilterCookie({ filter: newFilter });
+    };
 
     const handleAddToWatchlist = async (tmdbId: number, mediaType: 'movie' | 'tv') => {
         // First try optimistic update (immediate replacement if buffer available)

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { WatchlistCard } from './watchlist-card';
@@ -16,6 +15,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { getClientWatchlistFilterCookie, updateClientWatchlistFilterCookie } from '@/lib/utils/client-cookies';
+import type { WatchlistFilterCookie } from '@/lib/types/watchlist';
 
 type SortBy = 'updated' | 'title' | 'vote_average' | 'date_added';
 type SortOrder = 'asc' | 'desc';
@@ -24,82 +25,76 @@ type MediaFilter = 'all' | 'movie' | 'tv';
 const ITEMS_PER_PAGE = 30;
 
 export function WatchlistGrid() {
-    const searchParams = useSearchParams();
-    const router = useRouter();
-    const pathname = usePathname();
+    // Initialize states from cookies
+    const [isClient, setIsClient] = useState(false);
+    const [filters, setFilters] = useState<WatchlistFilterCookie>(() => {
+        if (typeof window !== 'undefined') {
+            return getClientWatchlistFilterCookie();
+        }
+        return {
+            search: '',
+            sortBy: 'date_added',
+            sortOrder: 'desc',
+            mediaFilter: 'all',
+            currentPage: 1
+        };
+    });
     
-    // Initialize states from search params
-    const [searchQuery, setSearchQuery] = useState(searchParams.get('watchlist_search') || '');
-    const [sortBy, setSortBy] = useState<SortBy>((searchParams.get('watchlist_sort') as SortBy) || 'date_added');
-    const [sortOrder, setSortOrder] = useState<SortOrder>((searchParams.get('watchlist_order') as SortOrder) || 'desc');
-    const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('watchlist_page') || '1', 10));
-    const [mediaFilter, setMediaFilter] = useState<MediaFilter>((searchParams.get('watchlist_media') as MediaFilter) || 'all');
+    const [searchQuery, setSearchQuery] = useState(filters.search || '');
+    const [sortBy, setSortBy] = useState<SortBy>(filters.sortBy || 'date_added');
+    const [sortOrder, setSortOrder] = useState<SortOrder>(filters.sortOrder || 'desc');
+    const [currentPage, setCurrentPage] = useState(filters.currentPage || 1);
+    const [mediaFilter, setMediaFilter] = useState<MediaFilter>(filters.mediaFilter || 'all');
     const [debouncedQuery] = useDebounce(searchQuery, 300);
 
-    // Update search params when states change
-    const updateSearchParams = useCallback((updates: Record<string, string>) => {
-        const params = new URLSearchParams(searchParams.toString());
+    // Set client flag on mount to prevent hydration mismatch
+    useEffect(() => {
+        setIsClient(true);
+        // Load filters from cookies on client
+        const cookieFilters = getClientWatchlistFilterCookie();
+        setSearchQuery(cookieFilters.search || '');
+        setSortBy(cookieFilters.sortBy || 'date_added');
+        setSortOrder(cookieFilters.sortOrder || 'desc');
+        setCurrentPage(cookieFilters.currentPage || 1);
+        setMediaFilter(cookieFilters.mediaFilter || 'all');
+    }, []);
+
+    // Update cookies when filters change
+    const updateFilters = useCallback((updates: Partial<WatchlistFilterCookie>) => {
+        if (!isClient) return;
         
-        Object.entries(updates).forEach(([key, value]) => {
-            if (value === '' || value === null || value === undefined) {
-                params.delete(key);
-            } else {
-                params.set(key, value);
-            }
-        });
-        
-        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    }, [searchParams, router, pathname]);
+        const newFilters = updateClientWatchlistFilterCookie(updates);
+        setFilters(newFilters);
+    }, [isClient]);
 
-    // Update URL when search query changes
+    // Update cookies when individual states change
     useEffect(() => {
-        updateSearchParams({ watchlist_search: searchQuery });
-        // Reset to first page when searching
-        if (searchQuery !== searchParams.get('watchlist_search')) {
-            setCurrentPage(1);
-        }
-    }, [searchQuery, updateSearchParams, searchParams]);
+        if (!isClient) return;
+        updateFilters({ search: searchQuery });
+    }, [searchQuery, updateFilters, isClient]);
 
-    // Update URL when sort changes
     useEffect(() => {
-        updateSearchParams({ watchlist_sort: sortBy });
-        // Reset to first page when sorting changes
-        setCurrentPage(1);
-    }, [sortBy, updateSearchParams]);
+        if (!isClient) return;
+        updateFilters({ sortBy });
+        setCurrentPage(1); // Reset to first page when sorting changes
+    }, [sortBy, updateFilters, isClient]);
 
-    // Update URL when sort order changes
     useEffect(() => {
-        updateSearchParams({ watchlist_order: sortOrder });
-        // Reset to first page when sort order changes
-        setCurrentPage(1);
-    }, [sortOrder, updateSearchParams]);
+        if (!isClient) return;
+        updateFilters({ sortOrder });
+        setCurrentPage(1); // Reset to first page when sort order changes
+    }, [sortOrder, updateFilters, isClient]);
 
-    // Update URL when page changes
     useEffect(() => {
-        updateSearchParams({ watchlist_page: currentPage.toString() });
-    }, [currentPage, updateSearchParams]);
+        if (!isClient) return;
+        updateFilters({ currentPage });
+    }, [currentPage, updateFilters, isClient]);
 
-    // Update URL when media filter changes
     useEffect(() => {
-        updateSearchParams({ watchlist_media: mediaFilter });
-        // Reset to first page when filter changes
-        setCurrentPage(1);
-    }, [mediaFilter, updateSearchParams]);
-
-    // Update states when search params change (browser back/forward)
-    useEffect(() => {
-        const searchFromParams = searchParams.get('watchlist_search') || '';
-        const sortFromParams = (searchParams.get('watchlist_sort') as SortBy) || 'date_added';
-        const orderFromParams = (searchParams.get('watchlist_order') as SortOrder) || 'desc';
-        const pageFromParams = parseInt(searchParams.get('watchlist_page') || '1', 10);
-        const mediaFromParams = (searchParams.get('watchlist_media') as MediaFilter) || 'all';
-        
-        if (searchFromParams !== searchQuery) setSearchQuery(searchFromParams);
-        if (sortFromParams !== sortBy) setSortBy(sortFromParams);
-        if (orderFromParams !== sortOrder) setSortOrder(orderFromParams);
-        if (pageFromParams !== currentPage) setCurrentPage(pageFromParams);
-        if (mediaFromParams !== mediaFilter) setMediaFilter(mediaFromParams);
-    }, [searchParams, searchQuery, sortBy, sortOrder, currentPage, mediaFilter]);
+        if (!isClient) return;
+        updateFilters({ mediaFilter });
+        setCurrentPage(1); // Reset to first page when filter changes
+    }, [mediaFilter, updateFilters, isClient]);
 
     const { movies: willWatchMovies, isLoading: isLoadingWillWatch } = useMovies('will_watch');
     const { movies: searchMovies, isLoading: isLoadingSearch } = useMovies(undefined, debouncedQuery);

@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers"
 import { DarkModeCookie, TaskFilterCookie, defaultValueCookie, defaultTaskFilterCookie } from "@/lib/flags"
+import { WatchlistFilterCookie, defaultWatchlistFilterCookie } from "@/lib/types/watchlist"
 
 export async function getDarkModeCookie() {
     const cookieStore = await cookies()
@@ -58,5 +59,28 @@ export async function updateTaskFilterCookie(cookie: TaskFilterCookie): Promise<
         path: "/", // Ensure the cookie is accessible across the app
         // Setting maxAge to undefined makes this a session cookie
         // It will expire when the browser is closed
+    });
+}
+
+export async function getWatchlistFilterCookie(): Promise<WatchlistFilterCookie> {
+    const cookieStore = await cookies()
+    const cookie = cookieStore.get("watchlist_filter")?.value
+    if (!cookie) {
+        return defaultWatchlistFilterCookie
+    } else {
+        try {
+            return JSON.parse(cookie) as WatchlistFilterCookie
+        } catch (error) {
+            console.error("Failed to parse watchlist filter cookie:", error)
+            return defaultWatchlistFilterCookie
+        }
+    }
+}
+
+export async function updateWatchlistFilterCookie(cookie: WatchlistFilterCookie): Promise<void> {
+    const cookieStore = await cookies();
+    cookieStore.set("watchlist_filter", JSON.stringify(cookie), {
+        path: "/", // Ensure the cookie is accessible across the app
+        maxAge: 30 * 24 * 60 * 60 // 30 days in seconds
     });
 }
