@@ -10,7 +10,7 @@ Life OS is a personal knowledge management system designed to help you organize 
 - [x] Dark Mode [V0.1]
     - [x] Auto dark mode [V0.1]
         - [x] Auto update based on time [V0.1]
-        - [ ] Problem about GET/PUT requests
+        - [x] Problem about GET/PUT requests [V0.1]
 - [x] Note Taking [V0.1]
 - [ ] Mood Tracker 
     - [x] CRUD [V0.1]
@@ -19,6 +19,8 @@ Life OS is a personal knowledge management system designed to help you organize 
 - [x] Tools Page [V0.1]
 - [x] Weighted Multi-Criteria Decision Matrix [V0.1]
 - [x] Movie Tracker [V0.1]
+    - [ ] Filter by rating
+    - [ ] Filter by type (Movie/TV show)
 - [ ] Settings Page
     - [x] Dark Mode settings [V0.1]
     - [ ] Profile settings
@@ -27,3 +29,10 @@ Life OS is a personal knowledge management system designed to help you organize 
 - [ ] Habit Tracker
 - [ ] Workout Tracker
 - [ ] Google Calendar Integration
+- [ ] Branding
+    - [ ] Logo
+    - [ ] Colors
+    - [ ] Fonts
+    - [ ] UI adaptation
+- [ ] Landing Page
+- [ ] Book Tracker

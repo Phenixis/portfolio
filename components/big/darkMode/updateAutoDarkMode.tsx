@@ -35,6 +35,16 @@ export default function UpdateAutoDarkMode({
             auto_dark_mode: autoDarkMode,
         }
 
+        // Only update if there are actual changes
+        const hasChanges = 
+            newCookie.startHour !== darkModeCookie.startHour ||
+            newCookie.startMinute !== darkModeCookie.startMinute ||
+            newCookie.endHour !== darkModeCookie.endHour ||
+            newCookie.endMinute !== darkModeCookie.endMinute ||
+            newCookie.auto_dark_mode !== darkModeCookie.auto_dark_mode
+
+        if (!hasChanges) return
+
         await updateDarkModeCookie(newCookie)
         const user = await getUser()
         if (user) {
@@ -50,9 +60,10 @@ export default function UpdateAutoDarkMode({
             <CardHeader className={`flex flex-row items-center gap-2 space-y-0 ${!autoDarkMode && "xl:pb-6"}`}>
                 <Checkbox
                     id="auto-dark-mode"
-                    defaultChecked={autoDarkMode}
-                    onCheckedChange={() => {
-                        setAutoDarkMode(!autoDarkMode)
+                    checked={autoDarkMode}
+                    onCheckedChange={(checked) => {
+                        const newValue = checked === true
+                        setAutoDarkMode(newValue)
                         updateCookie()
                     }}
                 />
@@ -63,7 +74,7 @@ export default function UpdateAutoDarkMode({
                     <CardContent className="flex flex-row items-center gap-2">
                         <Input
                             type="time"
-                            defaultValue={startTime}
+                            value={startTime}
                             onChange={(e) => {
                                 setStartTime(e.target.value)
                                 updateCookie()
@@ -72,7 +83,7 @@ export default function UpdateAutoDarkMode({
                         <Label className="text-base xl:text-lg">to</Label>
                         <Input
                             type="time"
-                            defaultValue={endTime}
+                            value={endTime}
                             onChange={(e) => {
                                 setEndTime(e.target.value)
                                 updateCookie()

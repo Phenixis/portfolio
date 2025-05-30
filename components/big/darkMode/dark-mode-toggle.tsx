@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { type DarkModeCookie } from "@/lib/flags"
 import { shouldDarkModeBeEnabled } from "@/lib/utils/dark-mode"
 import { useDarkMode } from "@/hooks/use-dark-mode"
+import { useAutoDarkModeTimer } from "@/hooks/use-auto-dark-mode-timer"
 import { useSWRConfig } from "swr"
 import { useUser } from "@/hooks/use-user"
 
@@ -33,26 +34,27 @@ export default function DarkModeToggle({
     const [showAutoDarkModeDialog, setShowAutoDarkModeDialog] = useState(false)
 
     const { mutate } = useSWRConfig()
-    const { darkMode, isLoading, isError } = useDarkMode()
+        const { darkMode, isLoading } = useDarkMode()
 
-    const toggleDarkMode = (newState?: boolean) => {
-        const newValue = {
-            ...cookie,
-            dark_mode: newState !== undefined ? newState : !cookie.dark_mode
-        }
+    // Handle automatic dark mode timer updates
+    useAutoDarkModeTimer(cookie, async (newDarkMode: boolean, newCookie: DarkModeCookie) => {
+        setCookie(newCookie)
+        document.documentElement.classList.toggle("dark", newDarkMode)
+        await updateDarkModePreference(newCookie)
+    })
 
+    const updateDarkModePreference = async (newValue: DarkModeCookie) => {
         try {
             mutate(
                 (key: unknown) => typeof key === "string" && (key === "/api/dark-mode" || key.startsWith("/api/dark-mode?")),
                 async (currentData: unknown): Promise<DarkModeCookie | unknown> => {
                     if (!(typeof currentData === "object" && currentData !== null && "dark_mode" in currentData)) return currentData
-
                     return newValue
                 },
                 { revalidate: false },
             )
 
-            fetch("/api/dark-mode", {
+            await fetch("/api/dark-mode", {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -61,9 +63,9 @@ export default function DarkModeToggle({
                 body: JSON.stringify(newValue),
             })
 
-			mutate((key) => typeof key === "string" && (key === "/api/dark-mode" || key.startsWith("/api/dark-mode?")))
+            mutate((key) => typeof key === "string" && (key === "/api/dark-mode" || key.startsWith("/api/dark-mode?")))
         } catch (error: unknown) {
-            console.error("Error mutating dark mode data:", error)
+            console.error("Error updating dark mode preference:", error)
         }
     }
 
@@ -78,27 +80,27 @@ export default function DarkModeToggle({
         setCookie(darkMode)
     }, [isLoading, darkMode])
 
-    useEffect(() => {
-        if (isLoading || isError) return
-        toggleDarkMode(cookie.dark_mode) // this updates the dark mode state in the db everytime the cookie changes
-    }, [cookie, isLoading, isError, toggleDarkMode])
+    // Remove the problematic useEffect that was causing infinite API calls
+    // The dark mode state is already managed through user interactions and the useDarkMode hook
 
     return (
         <div>
             <div
-                onClick={() => {
+                onClick={async () => {
                     if (cookie.auto_dark_mode && !cookie.has_jarvis_asked_dark_mode) {
                         setShowAutoDarkModeDialog(true)
                     } else {
-                        setCookie((prev) => ({
-                            ...prev,
-                            dark_mode: !prev.dark_mode,
+                        const newCookie = {
+                            ...cookie,
+                            dark_mode: !cookie.dark_mode,
                             override: shouldDarkModeBeEnabled({
-                                ...prev,
-                                dark_mode: !prev.dark_mode,
+                                ...cookie,
+                                dark_mode: !cookie.dark_mode,
                             }).override,
-                        }))
+                        }
+                        setCookie(newCookie)
                         document.documentElement.classList.toggle("dark", !cookie.dark_mode)
+                        await updateDarkModePreference(newCookie)
                     }
                 }}
                 role="button"
@@ -129,16 +131,18 @@ export default function DarkModeToggle({
                             <Button
                                 variant="secondary"
                                 size="default"
-                                onClick={() => {
+                                onClick={async () => {
                                     setShowAutoDarkModeDialog(false)
-                                    setCookie((prev) => ({
-                                        ...prev,
+                                    const newCookie = {
+                                        ...cookie,
                                         has_jarvis_asked_dark_mode: true,
                                         auto_dark_mode: false,
                                         dark_mode: false,
                                         override: false
-                                    }))
+                                    }
+                                    setCookie(newCookie)
                                     document.documentElement.classList.toggle("dark", false)
+                                    await updateDarkModePreference(newCookie)
                                 }}
                                 className=""
                             >
@@ -147,16 +151,18 @@ export default function DarkModeToggle({
                             <Button
                                 variant="default"
                                 size="default"
-                                onClick={() => {
+                                onClick={async () => {
                                     setShowAutoDarkModeDialog(false)
-                                    setCookie((prev) => ({
-                                        ...prev,
+                                    const newCookie = {
+                                        ...cookie,
                                         has_jarvis_asked_dark_mode: true,
                                         auto_dark_mode: true,
                                         dark_mode: true,
                                         override: false
-                                    }))
+                                    }
+                                    setCookie(newCookie)
                                     document.documentElement.classList.toggle("dark", true)
+                                    await updateDarkModePreference(newCookie)
                                 }}
                                 className=""
                             >
