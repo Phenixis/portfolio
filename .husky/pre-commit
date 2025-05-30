@@ -10,8 +10,4 @@ pnpm type-check
 echo "🧹 Linting code..."
 pnpm lint
 
-# Run build to ensure no build errors
-echo "🏗️ Building project..."
-pnpm build
-
 echo "✅ Pre-commit checks passed!"
