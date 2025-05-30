@@ -4,6 +4,7 @@ on:
     push:
         branches:
             - main
+            - dev
 
 permissions:
     contents: write
@@ -64,6 +65,10 @@ jobs:
                     git push origin v0.0.0
                     echo "Baseline tag created. Semantic release will start from this point."
                   fi
+                  
+                  # Display current branch for debugging
+                  echo "Current branch: $(git branch --show-current)"
+                  echo "Current commit: $(git rev-parse HEAD)"
                   
                   # Run semantic release with error handling
                   pnpm semantic-release || {
