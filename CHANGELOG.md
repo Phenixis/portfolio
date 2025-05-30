@@ -1,6 +1,7 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+
 ## [1.1.0-dev.1748607298] - 2025-05-30
 
 ### 🚀 Features

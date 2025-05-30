@@ -99,8 +99,8 @@ function MovieCardItem({
 
     return (
         <Card className="group/Card overflow-hidden hover:shadow-md transition-all duration-200">
-            <CardContent fullPadding>
-                <div className="group/Poster relative">
+            <CardContent fullPadding className="flex md:flex-col items-start gap-4">
+                <div className="group/Poster relative min-w-[140px] w-[40%] md:w-full">
                     {posterUrl ? (
                         <img
                             src={posterUrl}
@@ -191,11 +191,10 @@ function MovieCardItem({
                                     Add to Watchlist
                                 </DropdownMenuItem>
                                 <div className="px-2 py-1.5">
-                                    <p className="text-xs text-muted-foreground mb-1 font-medium">Rate & Add to Watched</p>
                                     <StarRating
                                         rating={null}
                                         onRatingChange={(rating) => onRateMovie(item.id, item.media_type || 'movie', rating)}
-                                        size="sm"
+                                        size="md"
                                         className="justify-start"
                                     />
                                 </div>
@@ -217,7 +216,7 @@ function MovieCardItem({
                     </div>
                 </div>
 
-                <div className="p-4">
+                <div className="w-full h-full">
                     <div className="flex items-start gap-2 mb-2">
                         <Badge variant="outline" className="text-xs h-5 flex-shrink-0">
                             {item.media_type === 'tv' ? 'TV' : 'Movie'}
@@ -240,7 +239,7 @@ function MovieCardItem({
                         <div className="space-y-1">
                             <p
                                 ref={overviewRef}
-                                className={`text-xs text-muted-foreground leading-relaxed transition-all duration-200 ${isOverviewExpanded ? '' : 'line-clamp-3'
+                                className={`text-xs text-muted-foreground leading-relaxed transition-all duration-200 ${isOverviewExpanded ? '' : 'line-clamp-6 md:line-clamp-3'
                                     }`}
                             >
                                 {item.overview}
@@ -337,6 +336,8 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
         }
 
         try {
+            toast.success(`Rated ${rating}/5 and added to watched movies!`);
+
             // Add movie with rating and watch status
             await addMovie(tmdbId, mediaType, 'watched', { 
                 optimizeRecommendations: true,
@@ -348,7 +349,6 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                 await replaceRecommendation(tmdbId);
             }
 
-            toast.success(`Rated ${rating}/5 and added to watched movies!`);
         } catch (error: unknown) {
             // If optimistic update failed, revert it by refreshing
             if (replacedMovie) {

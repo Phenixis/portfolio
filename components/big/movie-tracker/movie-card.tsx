@@ -165,8 +165,8 @@ export function MovieCard({ movie }: MovieCardProps) {
                         <div className="flex flex-col justify-between flex-1 min-w-0">
                             {/* Header */}
                             <div className="flex items-start justify-between">
-                                <div className="flex flex-col items-start md:flex-row md:gap-4 md:items-center flex-1 min-w-0">
-                                    <h3 className="font-medium text-sm line-clamp-2 leading-tight underline lg:no-underline lg:group-hover:underline mt-1">
+                                <div className="flex flex-col items-start md:flex-row gap-2 md:items-center flex-1 min-w-0">
+                                    <h3 className="font-medium text-sm line-clamp-2 underline-offset-2 leading-tight underline lg:no-underline lg:group-hover:underline mt-1">
                                         <a href={`https://google.com/search?q=${movie.title}+%28${movie.media_type === 'tv' ? 'TV' : 'Movie'}${" " + movie.release_date}%29`} target='_blank' rel='noopener noreferrer'>
                                             {movie.title}
                                             <span className="lg:opacity-0 lg:group-hover:opacity-100 text-muted-foreground">

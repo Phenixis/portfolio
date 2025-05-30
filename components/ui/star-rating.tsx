@@ -107,7 +107,7 @@ export function StarRating({
                 <span className="ml-2 text-sm text-muted-foreground">
                     {rating.toFixed(1)}/5.0
                 </span>
-            ) : (
+            ) : readonly &&(
                 <span className="text-xs text-muted-foreground">Not rated</span>
             )}
             
