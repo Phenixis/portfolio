@@ -15,6 +15,7 @@ export interface MoviesFilterCookie {
     search?: string
     sortBy?: 'updated' | 'title' | 'vote_average' | 'date_added'
     sortOrder?: 'asc' | 'desc'
+    ratingFilter?: 'all' | '1' | '2' | '3' | '4' | '5' | 'no_rating'
     currentPage?: number
 }
 
@@ -40,6 +41,7 @@ export const defaultMoviesFilterCookie: MoviesFilterCookie = {
     search: '',
     sortBy: 'updated',
     sortOrder: 'desc',
+    ratingFilter: 'all',
     currentPage: 1
 }
 

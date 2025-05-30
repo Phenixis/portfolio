@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { MovieCard } from './movie-card';
 import { useMovies } from '@/hooks/use-movies';
 import { useDebounce } from 'use-debounce';
-import { Search, SortAsc, SortDesc } from 'lucide-react';
+import { Search, SortAsc, SortDesc, Star } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -28,6 +28,7 @@ import type { MoviesFilterCookie } from '@/lib/types/watchlist';
 
 type SortBy = 'updated' | 'title' | 'vote_average' | 'date_added';
 type SortOrder = 'asc' | 'desc';
+type RatingFilter = 'all' | '1' | '2' | '3' | '4' | '5' | 'no_rating';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -41,6 +42,7 @@ export function MovieList({ status }: MovieListProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState<SortBy>('updated');
     const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+    const [ratingFilter, setRatingFilter] = useState<RatingFilter>('all');
     const [currentPage, setCurrentPage] = useState(1);
     const [debouncedQuery] = useDebounce(searchQuery, 300);
 
@@ -52,6 +54,7 @@ export function MovieList({ status }: MovieListProps) {
         setSearchQuery(cookieFilters.search || '');
         setSortBy(cookieFilters.sortBy || 'updated');
         setSortOrder(cookieFilters.sortOrder || 'desc');
+        setRatingFilter(cookieFilters.ratingFilter || 'all');
         setCurrentPage(cookieFilters.currentPage || 1);
     }, []);
 
@@ -81,6 +84,12 @@ export function MovieList({ status }: MovieListProps) {
 
     useEffect(() => {
         if (!isClient) return;
+        updateFilters({ ratingFilter });
+        setCurrentPage(1); // Reset to first page when rating filter changes
+    }, [ratingFilter, updateFilters, isClient]);
+
+    useEffect(() => {
+        if (!isClient) return;
         updateFilters({ currentPage });
     }, [currentPage, updateFilters, isClient]);
 
@@ -97,8 +106,22 @@ export function MovieList({ status }: MovieListProps) {
         setCurrentPage(1);
     }, [debouncedQuery]);
 
+    // Filter movies by rating
+    const filteredMovies = movies.filter((movie) => {
+        if (ratingFilter === 'all') return true;
+        if (ratingFilter === 'no_rating') {
+            return !movie.user_rating || movie.user_rating === 0;
+        }
+        
+        const rating = movie.user_rating;
+        if (!rating) return false;
+        
+        const filterRating = parseInt(ratingFilter);
+        return Math.floor(rating) === filterRating;
+    });
+
     // Sort movies
-    const sortedMovies = [...movies].sort((a, b) => {
+    const sortedMovies = [...filteredMovies].sort((a, b) => {
         let comparison = 0;
 
         switch (sortBy) {
@@ -150,6 +173,43 @@ export function MovieList({ status }: MovieListProps) {
                         className="pl-10"
                     />
                 </div>
+
+                {/* Rating Filter */}
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="gap-2">
+                            <Star className="w-4 h-4" />
+                            {ratingFilter === 'all' ? 'All Ratings' : 
+                             ratingFilter === 'no_rating' ? 'No Rating' : 
+                             `${ratingFilter} Star${ratingFilter !== '1' ? 's' : ''}`}
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Filter by Rating</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => setRatingFilter('all')}>
+                            All Ratings
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setRatingFilter('5')}>
+                            5 Stars
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setRatingFilter('4')}>
+                            4 Stars
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setRatingFilter('3')}>
+                            3 Stars
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setRatingFilter('2')}>
+                            2 Stars
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setRatingFilter('1')}>
+                            1 Star
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setRatingFilter('no_rating')}>
+                            No Rating
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
 
                 {/* Sort */}
                 <DropdownMenu>
@@ -273,11 +333,17 @@ export function MovieList({ status }: MovieListProps) {
                     <div className="text-muted-foreground">
                         {debouncedQuery ? (
                             <>No movies found for &quot;{debouncedQuery}&quot;</>
+                        ) : ratingFilter !== 'all' ? (
+                            ratingFilter === 'no_rating' ? (
+                                <>No movies without ratings found</>
+                            ) : (
+                                <>No {ratingFilter} star movies found</>
+                            )
                         ) : (
                             <>No watched movies yet</>
                         )}
                     </div>
-                    {!debouncedQuery && (
+                    {!debouncedQuery && ratingFilter === 'all' && (
                         <p className="text-sm text-muted-foreground mt-2">
                             Search for movies above to start building your collection!
                         </p>

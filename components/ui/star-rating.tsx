@@ -101,7 +101,7 @@ export function StarRating({
     return (
         <div className={cn('flex items-center gap-1.5', className)}>
             {Array.from({ length: 5 }, (_, index) => renderStar(index))}
-            {rating && (
+            {rating !== null && (
                 <span className="ml-2 text-sm text-muted-foreground">
                     {rating.toFixed(1)}/5.0
                 </span>
