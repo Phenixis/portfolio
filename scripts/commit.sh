@@ -95,6 +95,33 @@ fi
 git add -A
 git commit -m "$commit_msg"
 
-semantic-release
+# Run local semantic release to update version and changelog
+echo ""
+echo "🔄 Running local version bump..."
 
+# Check current branch
+current_branch=$(git branch --show-current)
+valid_branches=("main" "dev")
+
+if [[ " ${valid_branches[@]} " =~ " ${current_branch} " ]]; then
+    # Run local version bump script
+    if ./scripts/local-version-bump.sh; then
+        echo "✅ Local version bump completed"
+        
+        # Show what was updated
+        echo ""
+        echo "📋 Changes made:"
+        echo "  • Version in package.json: $(grep '"version":' package.json | cut -d'"' -f4)"
+        echo "  • CHANGELOG.md updated"
+        echo ""
+        echo "💡 Push your changes to trigger remote release workflow"
+    else
+        echo "ℹ️  No version bump needed (no releasable changes)"
+    fi
+else
+    echo "⚠️  Skipping version bump - not on release branch (current: $current_branch)"
+    echo "   Version bumps only run on: ${valid_branches[*]}"
+fi
+
+echo ""
 echo "✅ Commit created successfully!"

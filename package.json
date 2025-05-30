@@ -1,6 +1,6 @@
 {
   "name": "life-os",
-  "version": "1.0.0",
+  "version": "1.1.0-dev.1748602020",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -10,6 +10,8 @@
     "db:migrate": "npx tsx lib/db/migrate.ts",
     "prepare": "husky",
     "semantic-release": "semantic-release",
+    "semantic-release:local": "semantic-release --config-file ./.releaserc.local.json",
+    "version-bump": "./scripts/local-version-bump.sh",
     "update-version": "./scripts/update-readme-version.sh",
     "test": "echo \"No tests specified\" && exit 0",
     "lint": "next lint",
