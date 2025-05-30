@@ -1,9 +1,10 @@
-name: Release
+name: Release Management
 
 on:
     push:
         branches:
             - main
+            - dev
 
 permissions:
     contents: write
@@ -12,7 +13,48 @@ permissions:
     packages: write
 
 jobs:
-    release:
+    check-promotion:
+        runs-on: ubuntu-latest
+        outputs:
+            should-promote: ${{ steps.check.outputs.promote }}
+            from-branch: ${{ steps.check.outputs.from-branch }}
+            to-branch: ${{ steps.check.outputs.to-branch }}
+        
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  token: ${{ secrets.GITHUB_TOKEN }}
+            
+            - name: Check for promotion
+              id: check
+              run: |
+                  # Check if latest commit message contains [promote]
+                  commit_msg=$(git log -1 --pretty=%B)
+                  echo "Latest commit message: $commit_msg"
+                  
+                  if [[ "$commit_msg" == *"[promote]"* ]]; then
+                      echo "Promotion requested in commit message"
+                      current_branch="${GITHUB_REF#refs/heads/}"
+                      
+                      if [[ "$current_branch" == "dev" ]]; then
+                          echo "promote=true" >> $GITHUB_OUTPUT
+                          echo "from-branch=dev" >> $GITHUB_OUTPUT
+                          echo "to-branch=main" >> $GITHUB_OUTPUT
+                          echo "Will promote from dev to main"
+                      else
+                          echo "promote=false" >> $GITHUB_OUTPUT
+                          echo "Promotion only supported from dev branch"
+                      fi
+                  else
+                      echo "promote=false" >> $GITHUB_OUTPUT
+                      echo "No promotion requested"
+                  fi
+    
+    promote:
+        needs: check-promotion
+        if: needs.check-promotion.outputs.should-promote == 'true'
         runs-on: ubuntu-latest
         
         steps:
@@ -21,6 +63,40 @@ jobs:
               with:
                   fetch-depth: 0
                   token: ${{ secrets.GITHUB_TOKEN }}
+            
+            - name: Setup Git
+              run: |
+                  git config --global user.name "github-actions[bot]"
+                  git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            
+            - name: Promote to main
+              run: |
+                  echo "Promoting from ${{ needs.check-promotion.outputs.from-branch }} to ${{ needs.check-promotion.outputs.to-branch }}"
+                  
+                  # Switch to main branch
+                  git checkout main
+                  git pull origin main
+                  
+                  # Merge dev into main
+                  git merge origin/dev --no-ff -m "chore: promote dev to main [skip ci]"
+                  
+                  # Push to main
+                  git push origin main
+                  
+                  echo "✅ Successfully promoted to main branch"
+    
+    publish-release:
+        needs: [check-promotion, promote]
+        if: always() && (github.ref == 'refs/heads/main' || needs.check-promotion.outputs.should-promote == 'true')
+        runs-on: ubuntu-latest
+        
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  ref: main
             
             - name: Install pnpm
               uses: pnpm/action-setup@v2
@@ -36,51 +112,82 @@ jobs:
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
             
+            - name: Install GitHub CLI
+              run: |
+                  type -p curl >/dev/null || sudo apt update && sudo apt install curl -y
+                  curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+                  && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+                  && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+                  && sudo apt update \
+                  && sudo apt install gh -y
+            
             - name: Type check
               run: pnpm type-check
             
             - name: Lint
               run: pnpm lint
             
-            - name: Release
+            - name: Publish GitHub Release
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  # NPM_TOKEN: ${{ secrets.NPM_TOKEN }}  # Uncomment if publishing to npm
-                  # VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}  # Uncomment for Vercel deployment
               run: |
                   # Configure git for tagging
                   git config --global user.name "github-actions[bot]"
                   git config --global user.email "github-actions[bot]@users.noreply.github.com"
                   
-                  # Set git config to handle long commit messages better
-                  git config --global core.editor "true"
-                  git config --global commit.cleanup "strip"
+                  # Check if version in package.json has a corresponding tag
+                  current_version=$(node -p "require('./package.json').version")
+                  tag_name="v${current_version}"
                   
-                  # Check if this is the first release and handle accordingly
-                  if ! git describe --tags --abbrev=0 2>/dev/null; then
-                    echo "No previous tags found, creating initial baseline tag..."
-                    # Create a lightweight tag at the current commit to establish a baseline
-                    git tag v0.0.0
-                    git push origin v0.0.0
-                    echo "Baseline tag created. Semantic release will start from this point."
+                  echo "Current version: $current_version"
+                  echo "Expected tag: $tag_name"
+                  
+                  # Check if tag already exists
+                  if git rev-parse "$tag_name" >/dev/null 2>&1; then
+                      echo "Tag $tag_name already exists, checking if GitHub release exists..."
+                      
+                      # Check if GitHub release exists
+                      if gh release view "$tag_name" >/dev/null 2>&1; then
+                          echo "GitHub release for $tag_name already exists, skipping"
+                      else
+                          echo "Creating GitHub release for existing tag $tag_name"
+                          # Extract changelog for this version
+                          changelog_content=$(awk "/^## \[${current_version}\]/{flag=1; next} /^## \[/{flag=0} flag" CHANGELOG.md || echo "Release notes not available")
+                          
+                          gh release create "$tag_name" \
+                              --title "Release $current_version" \
+                              --notes "$changelog_content" \
+                              --latest
+                      fi
+                  else
+                      echo "No matching tag found for version $current_version"
+                      echo "This indicates the local semantic-release didn't run or failed"
+                      echo "Current tags:"
+                      git tag --sort=-version:refname | head -5
                   fi
-                  
-                  # Run semantic release with error handling
-                  pnpm semantic-release || {
-                    echo "Semantic release failed, checking for common issues..."
-                    git status
-                    echo "Git log of recent commits:"
-                    git log --oneline -5
-                    exit 1
-                  }
+    
+    sync-dev:
+        needs: [check-promotion, promote, publish-release]
+        if: always() && needs.check-promotion.outputs.should-promote == 'true'
+        runs-on: ubuntu-latest
+        
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  ref: main
             
-            # Optional: Deploy to Vercel after successful release
-            # Uncomment the step below if you want automatic deployment
-            # - name: Deploy to Vercel
-            #   if: github.ref == 'refs/heads/main'
-            #   env:
-            #       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-            #       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-            #       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-            #   run: |
-            #       npx vercel --prod --token $VERCEL_TOKEN
+            - name: Sync dev with main
+              run: |
+                  git config --global user.name "github-actions[bot]"
+                  git config --global user.email "github-actions[bot]@users.noreply.github.com"
+                  
+                  # Switch to dev and merge main back
+                  git checkout dev
+                  git pull origin dev
+                  git merge origin/main --no-ff -m "chore: sync dev with main after promotion [skip ci]"
+                  git push origin dev
+                  
+                  echo "✅ Successfully synced dev with main"

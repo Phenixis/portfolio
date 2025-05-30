@@ -1,22 +1,22 @@
 #!/usr/bin/env sh
 
-date '+%Y-%m-%d %H:%M:%S' >> .husky/pre-push.log
-echo "🚀 Running pre-push checks..." >> .husky/pre-push.log
+date '+%Y-%m-%d %H:%M:%S'
+echo "🚀 Running pre-push checks..."
 
 # Check if .env file exists
 if [ ! -f ".env" ]; then
-    echo "⚠️  No .env file found, skipping build check (likely CI/release environment)" >> .husky/pre-push.log
-    echo "✅ Push is allowed to continue without build check." >> .husky/pre-push.log
+    echo "⚠️  No .env file found, skipping build check (likely CI/release environment)"
+    echo "✅ Push is allowed to continue without build check."
     exit 0
 fi
 
-echo "📦 Building the project..." >> .husky/pre-push.log
+echo "📦 Building the project..."
 
-if pnpm build >> .husky/pre-push.log 2>&1; then
-    echo "✅ Build succeeded! Push is allowed to continue." >> .husky/pre-push.log
+if pnpm build 2>&1; then
+    echo "✅ Build succeeded! Push is allowed to continue."
     exit 0
 else
-    echo "❌ Build failed! Push has been blocked." >> .husky/pre-push.log
-    echo "💡 Please fix the build errors before pushing." >> .husky/pre-push.log
+    echo "❌ Build failed! Push has been blocked."
+    echo "💡 Please fix the build errors before pushing."
     exit 1
 fi

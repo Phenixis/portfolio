@@ -8,19 +8,19 @@ echo "=============================="
 
 # Define commit types
 declare -A commit_types=(
-    ["1"]="feat(minor):New feature"
-    ["2"]="fix(patch):Bug fix"
-    ["3"]="docs(patch):Documentation change"
-    ["4"]="style(patch):Code style change"
-    ["5"]="refactor(patch):Code refactoring"
-    ["6"]="perf(patch):Performance improvement"
-    ["7"]="test(patch):Test changes"
-    ["8"]="chore(patch):Non-functional change"
-    ["9"]="security(patch):Security fix"
-    ["10"]="revert(patch):Revert changes"
-    ["11"]="done(patch):Completed tasks"
-    ["12"]="wip(patch):Work in progress"
-    ["13"]="started(patch):New tasks"
+    ["1"]="feat:New feature - minor"
+    ["2"]="fix:Bug fix - patch"
+    ["3"]="docs:Documentation change - patch"
+    ["4"]="style:Code style change - patch"
+    ["5"]="refactor:Code refactoring - patch"
+    ["6"]="perf:Performance improvement - patch"
+    ["7"]="test:Test changes - patch"
+    ["8"]="chore:Non-functional change - patch"
+    ["9"]="security:Security fix - patch"
+    ["10"]="revert:Revert changes - patch"
+    ["11"]="done:Completed tasks - patch"
+    ["12"]="wip:Work in progress - patch"
+    ["13"]="started:New tasks - patch"
 )
 
 echo "Select commit type:"
@@ -95,4 +95,36 @@ fi
 git add -A
 git commit -m "$commit_msg"
 
+# Run local semantic release to update version and changelog
+echo ""
+echo "🔄 Running local version bump..."
+
+# Check current branch
+current_branch=$(git branch --show-current)
+valid_branches=("main" "dev")
+
+if [[ " ${valid_branches[@]} " =~ " ${current_branch} " ]]; then
+    # Run local version bump script
+    if ./scripts/local-version-bump.sh; then
+        echo "✅ Local version bump completed"
+        
+        # Show what was updated
+        echo ""
+        echo "📋 Changes made:"
+        echo "  • Version in package.json: $(grep '"version":' package.json | cut -d'"' -f4)"
+        echo "  • CHANGELOG.md updated"
+        echo ""
+        echo "💡 Push your changes to trigger remote release workflow"
+    else
+        echo "ℹ️  No version bump needed (no releasable changes)"
+    fi
+else
+    echo "⚠️  Skipping version bump - not on release branch (current: $current_branch)"
+    echo "   Version bumps only run on: ${valid_branches[*]}"
+fi
+
+git add .
+git commit -m "chore: update version and changelog after commit"
+
+echo ""
 echo "✅ Commit created successfully!"

@@ -1,6 +1,6 @@
 {
   "name": "life-os",
-  "version": "1.0.0",
+  "version": "1.1.0-dev.1748602143",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -10,12 +10,15 @@
     "db:migrate": "npx tsx lib/db/migrate.ts",
     "prepare": "husky",
     "semantic-release": "semantic-release",
+    "semantic-release:local": "semantic-release --config-file ./.releaserc.local.json",
+    "version-bump": "./scripts/local-version-bump.sh",
     "update-version": "./scripts/update-readme-version.sh",
     "test": "echo \"No tests specified\" && exit 0",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "commitlint": "commitlint",
-    "commit": "./scripts/commit.sh"
+    "commit": "./scripts/commit.sh",
+    "promote": "./scripts/promote-release.sh"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
@@ -82,7 +85,6 @@
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
     "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/exec": "^7.1.0",
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^11.0.3",
     "@types/bcryptjs": "^3.0.0",
