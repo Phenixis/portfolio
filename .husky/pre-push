@@ -2,9 +2,17 @@
 
 date '+%Y-%m-%d %H:%M:%S' >> .husky/pre-push.log
 echo "🚀 Running pre-push checks..." >> .husky/pre-push.log
+
+# Check if .env file exists
+if [ ! -f ".env" ]; then
+    echo "⚠️  No .env file found, skipping build check (likely CI/release environment)" >> .husky/pre-push.log
+    echo "✅ Push is allowed to continue without build check." >> .husky/pre-push.log
+    exit 0
+fi
+
 echo "📦 Building the project..." >> .husky/pre-push.log
 
-if pnpm build >> .husky/pre-push.log; then
+if pnpm build >> .husky/pre-push.log 2>&1; then
     echo "✅ Build succeeded! Push is allowed to continue." >> .husky/pre-push.log
     exit 0
 else

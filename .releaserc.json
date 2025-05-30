@@ -16,6 +16,7 @@
         }
     ],
     "repositoryUrl": "https://github.com/Phenixis/life_os",
+    "tagFormat": "v${version}",
     "plugins": [
         [
             "@semantic-release/commit-analyzer",
@@ -108,6 +109,20 @@
                             "hidden": true
                         }
                     ]
+                },
+                "writerOpts": {
+                    "commitLimit": 25,
+                    "commitGroupsSort": "title",
+                    "commitsSort": ["scope", "subject"],
+                    "noteGroupsSort": "title",
+                    "maxSubjectLength": 80,
+                    "breakingChangeTitle": "💥 BREAKING CHANGES",
+                    "groupBy": "type",
+                    "transform": {
+                        "truncateSubject": true,
+                        "truncateBody": true,
+                        "maxBodyLength": 500
+                    }
                 }
             }
         ],
@@ -131,13 +146,13 @@
                     "CHANGELOG.md",
                     "package.json"
                 ],
-                "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+                "message": "chore(release): ${nextRelease.version} [skip ci]"
             }
         ],
         [
             "@semantic-release/github",
             {
-                "successComment": "🎉 This ${issue.pull_request ? 'PR is included' : 'issue has been resolved'} in version ${nextRelease.version} :tada:",
+                "successComment": "🎉 This has been resolved in version ${nextRelease.version} :tada:",
                 "failComment": false,
                 "failTitle": false,
                 "labels": false,
