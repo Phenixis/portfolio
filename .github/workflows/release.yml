@@ -73,6 +73,10 @@ jobs:
               run: |
                   echo "Promoting from ${{ needs.check-promotion.outputs.from-branch }} to ${{ needs.check-promotion.outputs.to-branch }}"
                   
+                  # Install Node.js for package.json operations
+                  curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+                  sudo apt-get install -y nodejs
+                  
                   # Switch to main branch
                   git checkout main
                   git pull origin main
@@ -80,10 +84,35 @@ jobs:
                   # Merge dev into main
                   git merge origin/dev --no-ff -m "chore: promote dev to main [skip ci]"
                   
+                  # Clean up version number (remove -dev suffix)
+                  current_version=$(node -p "require('./package.json').version")
+                  clean_version=$(echo "$current_version" | sed 's/-dev\.[0-9]*$//')
+                  
+                  echo "Current version: $current_version"
+                  echo "Clean version: $clean_version"
+                  
+                  # Update package.json with clean version
+                  node -e "
+                    const fs = require('fs');
+                    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+                    pkg.version = '$clean_version';
+                    fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+                  "
+                  
+                  # Update README with new version
+                  if [ -f "scripts/update-readme-version.sh" ]; then
+                      chmod +x scripts/update-readme-version.sh
+                      ./scripts/update-readme-version.sh "$clean_version"
+                  fi
+                  
+                  # Commit the cleaned version
+                  git add package.json README.md
+                  git commit -m "chore: clean version to $clean_version for main release [skip ci]" || echo "No changes to commit"
+                  
                   # Push to main
                   git push origin main
                   
-                  echo "✅ Successfully promoted to main branch"
+                  echo "✅ Successfully promoted to main branch with clean version $clean_version"
     
     publish-release:
         needs: [check-promotion, promote]
