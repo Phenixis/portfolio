@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { MovieCard } from './movie-card';
 import { useMovies } from '@/hooks/use-movies';
 import { useDebounce } from 'use-debounce';
-import { Search, SortAsc, SortDesc, Star } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, SortAsc, SortDesc, Star } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -30,7 +30,7 @@ type SortBy = 'updated' | 'title' | 'vote_average' | 'date_added';
 type SortOrder = 'asc' | 'desc';
 type RatingFilter = 'all' | '1' | '2' | '3' | '4' | '5' | 'no_rating';
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 30;
 
 interface MovieListProps {
     status?: 'watched';
@@ -112,10 +112,10 @@ export function MovieList({ status }: MovieListProps) {
         if (ratingFilter === 'no_rating') {
             return !movie.user_rating || movie.user_rating === 0;
         }
-        
+
         const rating = movie.user_rating;
         if (!rating) return false;
-        
+
         const filterRating = parseInt(ratingFilter);
         return Math.floor(rating) === filterRating;
     });
@@ -159,6 +159,13 @@ export function MovieList({ status }: MovieListProps) {
         { value: 'vote_average', label: 'Rating' },
     ];
 
+    // Handle page changes
+    const handlePageChange = useCallback((page: number) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    }, [totalPages]);
+
     return (
         <div className="space-y-6">
             {/* Filters and Search */}
@@ -179,9 +186,9 @@ export function MovieList({ status }: MovieListProps) {
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="gap-2">
                             <Star className="w-4 h-4" />
-                            {ratingFilter === 'all' ? 'All Ratings' : 
-                             ratingFilter === 'no_rating' ? 'No Rating' : 
-                             `${ratingFilter} Star${ratingFilter !== '1' ? 's' : ''}`}
+                            {ratingFilter === 'all' ? 'All Ratings' :
+                                ratingFilter === 'no_rating' ? 'No Rating' :
+                                    `${ratingFilter} Star${ratingFilter !== '1' ? 's' : ''}`}
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
@@ -257,19 +264,61 @@ export function MovieList({ status }: MovieListProps) {
                 </div>
             ) : paginatedMovies.length > 0 ? (
                 <>
+                    {/* Pagination */}
+                    {!isLoading && (
+                        <div className="flex items-center justify-between">
+                            <p className="text-sm text-muted-foreground">
+                                {totalItems} {totalItems === 1 ? 'item' : 'items'} in your watchlist
+                                {totalPages > 1 && (
+                                    <span className="ml-2">
+                                        (Page {currentPage} of {totalPages})
+                                    </span>
+                                )}
+                            </p>
+                            {totalPages > 1 && (
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                        className="gap-1"
+                                    >
+                                        <ChevronLeft className="w-4 h-4" />
+                                        Previous
+                                    </Button>
+                                    <span className="text-sm text-muted-foreground">
+                                        {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems}
+                                    </span>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        disabled={currentPage === totalPages}
+                                        className="gap-1"
+                                    >
+                                        Next
+                                        <ChevronRight className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Movie Cards */}
                     <div className="space-y-3 grid grid-cols-1 md:grid-cols-2">
                         {paginatedMovies.map((movie) => (
                             <MovieCard key={movie.id} movie={movie} />
                         ))}
                     </div>
-                    
+
                     {/* Pagination */}
                     {totalPages > 1 && (
                         <div className="flex justify-center">
                             <Pagination>
                                 <PaginationContent>
                                     <PaginationItem>
-                                        <PaginationPrevious 
+                                        <PaginationPrevious
                                             href="#"
                                             onClick={(e) => {
                                                 e.preventDefault();
@@ -280,18 +329,18 @@ export function MovieList({ status }: MovieListProps) {
                                             className={currentPage <= 1 ? 'pointer-events-none opacity-50' : ''}
                                         />
                                     </PaginationItem>
-                                    
+
                                     {Array.from({ length: totalPages }, (_, i) => i + 1)
                                         .filter(page => {
                                             // Show first page, last page, current page, and pages around current
-                                            return page === 1 || 
-                                                   page === totalPages || 
-                                                   Math.abs(page - currentPage) <= 1;
+                                            return page === 1 ||
+                                                page === totalPages ||
+                                                Math.abs(page - currentPage) <= 1;
                                         })
                                         .map((page, index, array) => {
                                             const prevPage = array[index - 1];
                                             const showEllipsis = prevPage && page - prevPage > 1;
-                                            
+
                                             return (
                                                 <PaginationItem key={page}>
                                                     {showEllipsis && (
@@ -310,9 +359,9 @@ export function MovieList({ status }: MovieListProps) {
                                                 </PaginationItem>
                                             );
                                         })}
-                                    
+
                                     <PaginationItem>
-                                        <PaginationNext 
+                                        <PaginationNext
                                             href="#"
                                             onClick={(e) => {
                                                 e.preventDefault();
