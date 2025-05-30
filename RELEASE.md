@@ -95,6 +95,10 @@ Husky runs these checks before each commit:
 # Create a release from current branch
 pnpm semantic-release --dry-run  # Preview release
 pnpm semantic-release             # Create release
+
+# Update README version manually (if needed)
+pnpm update-version               # Updates from package.json version
+pnpm update-version 1.2.3        # Updates to specific version
 ```
 
 ## 🎯 Best Practices
