@@ -1,6 +1,6 @@
 # Life OS
 
-Current Version: **V0.2.0-canary.2**
+Current Version: **V1.0.0**
 
 ## Your life, all in one place.
 
