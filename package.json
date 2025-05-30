@@ -6,7 +6,13 @@
     "start": "next start",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "npx tsx lib/db/migrate.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "semantic-release": "semantic-release",
+    "test": "echo \"No tests specified\" && exit 0",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "commitlint": "commitlint",
+    "commit": "./scripts/commit.sh"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
@@ -70,11 +76,19 @@
     }
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/exec": "^7.1.0",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.3",
     "@types/bcryptjs": "^3.0.0",
+    "conventional-changelog-conventionalcommits": "^9.0.0",
     "drizzle-kit": "^0.27.2",
     "eslint": "^9.27.0",
     "eslint-config-next": "15.3.2",
     "husky": "^9.1.7",
+    "semantic-release": "^24.2.5",
     "typescript": "5.8.3"
   }
 }
