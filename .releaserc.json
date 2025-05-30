@@ -11,7 +11,7 @@
         },
         {
             "name": "V*.*.*",
-            "prerelease": "dev",
+            "prerelease": true,
             "channel": "dev"
         }
     ],
