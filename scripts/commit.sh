@@ -18,6 +18,9 @@ declare -A commit_types=(
     ["8"]="chore:Non-functional change"
     ["9"]="security:Security fix"
     ["10"]="revert:Revert changes"
+    ["11"]="done:Completed tasks"
+    ["12"]="wip:Work in progress"
+    ["13"]="started:New tasks"
 )
 
 echo "Select commit type:"
@@ -26,7 +29,7 @@ for key in $(echo ${!commit_types[@]} | tr ' ' '\n' | sort -n); do
     echo "  $key) $type ($desc)"
 done
 
-read -p "Enter choice (1-10): " choice
+read -p "Enter choice (1-13): " choice
 
 if [[ ! ${commit_types[$choice]} ]]; then
     echo "❌ Invalid choice"

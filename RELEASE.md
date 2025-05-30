@@ -88,7 +88,6 @@ See migration guide in docs/MIGRATION.md
 Husky runs these checks before each commit:
 - Type checking (`pnpm type-check`)
 - Linting (`pnpm lint`) 
-- Build validation (`pnpm build`)
 - Commit message validation (commitlint)
 
 ### Manual Release (if needed)
