@@ -1,0 +1,45 @@
+name: PR Validation
+
+on:
+    pull_request:
+        branches:
+            - main
+            - canary
+            - 'V*.*.*'
+
+jobs:
+    validate:
+        runs-on: ubuntu-latest
+        
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+            
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 'lts/*'
+                  cache: 'pnpm'
+            
+            - name: Install pnpm
+              uses: pnpm/action-setup@v2
+              with:
+                  version: latest
+            
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+            
+            - name: Type check
+              run: pnpm type-check
+            
+            - name: Lint
+              run: pnpm lint
+            
+            - name: Build
+              run: pnpm build
+            
+            - name: Validate commit messages
+              run: |
+                  pnpm commitlint --from=origin/${{ github.base_ref }} --to=HEAD --verbose

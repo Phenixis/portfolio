@@ -1,0 +1,66 @@
+name: Release
+
+on:
+    push:
+        branches:
+            - main
+            - canary
+            - 'V*.*.*'
+
+permissions:
+    contents: write
+    issues: write
+    pull-requests: write
+    packages: write
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  token: ${{ secrets.GITHUB_TOKEN }}
+            
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 'lts/*'
+                  cache: 'pnpm'
+            
+            - name: Install pnpm
+              uses: pnpm/action-setup@v2
+              with:
+                  version: latest
+            
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+            
+            - name: Type check
+              run: pnpm type-check
+            
+            - name: Lint
+              run: pnpm lint
+            
+            - name: Build
+              run: pnpm build
+            
+            - name: Release
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  # NPM_TOKEN: ${{ secrets.NPM_TOKEN }}  # Uncomment if publishing to npm
+                  # VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}  # Uncomment for Vercel deployment
+              run: pnpm semantic-release
+            
+            # Optional: Deploy to Vercel after successful release
+            # Uncomment the step below if you want automatic deployment
+            # - name: Deploy to Vercel
+            #   if: github.ref == 'refs/heads/main'
+            #   env:
+            #       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+            #       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+            #       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+            #   run: |
+            #       npx vercel --prod --token $VERCEL_TOKEN

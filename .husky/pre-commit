@@ -1,3 +1,17 @@
 #!/usr/bin/env sh
 # Add any pre-commit checks here
-echo "Running pre-commit checks..."
+echo "🔍 Running pre-commit checks..."
+
+# Run type checking
+echo "📝 Type checking..."
+pnpm type-check
+
+# Run linting
+echo "🧹 Linting code..."
+pnpm lint
+
+# Run build to ensure no build errors
+echo "🏗️ Building project..."
+pnpm build
+
+echo "✅ Pre-commit checks passed!"
