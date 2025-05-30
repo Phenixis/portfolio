@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,6 +28,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { StarRating } from '@/components/ui/star-rating';
+import { getClientDiscoverFilterCookie, updateClientDiscoverFilterCookie } from '@/lib/utils/client-cookies';
 
 interface DiscoverMoviesProps {
     className?: string;
@@ -99,8 +99,8 @@ function MovieCardItem({
 
     return (
         <Card className="group/Card overflow-hidden hover:shadow-md transition-all duration-200">
-            <CardContent fullPadding>
-                <div className="group/Poster relative">
+            <CardContent fullPadding className="flex md:flex-col items-start gap-4">
+                <div className="group/Poster relative min-w-[140px] w-[40%] md:w-full">
                     {posterUrl ? (
                         <img
                             src={posterUrl}
@@ -156,7 +156,7 @@ function MovieCardItem({
 
                     {/* Source badge */}
                     <div className="absolute bottom-2 right-2">
-                        <Badge variant="secondary" className="text-xs gap-1 bg-black/70 text-white border-0">
+                        <Badge variant="secondary" className="text-xs gap-1 bg-black/70 lg:hover:bg-black/70 text-white border-0">
                             <span className="lg:hidden lg:group-hover/Poster:inline-block">
                                 {getSourceLabel('recommendation_source' in item && item.recommendation_source ? item.recommendation_source : 'trending')}
                             </span>
@@ -167,7 +167,7 @@ function MovieCardItem({
                     {/* Rating badge */}
                     {item.vote_average > 0 && (
                         <div className="absolute top-2 right-2">
-                            <Badge variant="secondary" className="text-xs bg-black/70 text-white border-0">
+                            <Badge variant="secondary" className="text-xs bg-black/70 lg:hover:bg-black/70 text-white border-0">
                                 ★ {item.vote_average.toFixed(1)}
                             </Badge>
                         </div>
@@ -191,11 +191,10 @@ function MovieCardItem({
                                     Add to Watchlist
                                 </DropdownMenuItem>
                                 <div className="px-2 py-1.5">
-                                    <p className="text-xs text-muted-foreground mb-1 font-medium">Rate & Add to Watched</p>
                                     <StarRating
                                         rating={null}
                                         onRatingChange={(rating) => onRateMovie(item.id, item.media_type || 'movie', rating)}
-                                        size="sm"
+                                        size="md"
                                         className="justify-start"
                                     />
                                 </div>
@@ -217,7 +216,7 @@ function MovieCardItem({
                     </div>
                 </div>
 
-                <div className="p-4">
+                <div className="w-full h-full">
                     <div className="flex items-start gap-2 mb-2">
                         <Badge variant="outline" className="text-xs h-5 flex-shrink-0">
                             {item.media_type === 'tv' ? 'TV' : 'Movie'}
@@ -240,7 +239,7 @@ function MovieCardItem({
                         <div className="space-y-1">
                             <p
                                 ref={overviewRef}
-                                className={`text-xs text-muted-foreground leading-relaxed transition-all duration-200 ${isOverviewExpanded ? '' : 'line-clamp-3'
+                                className={`text-xs text-muted-foreground leading-relaxed transition-all duration-200 ${isOverviewExpanded ? '' : 'line-clamp-6 md:line-clamp-3'
                                     }`}
                             >
                                 {item.overview}
@@ -262,41 +261,30 @@ function MovieCardItem({
 }
 
 export function DiscoverMovies({ className }: DiscoverMoviesProps) {
-    const searchParams = useSearchParams();
-    const router = useRouter();
-    const pathname = usePathname();
-
-    // Initialize media filter from search params
-    const [mediaFilter, setMediaFilter] = useState<'all' | 'movie' | 'tv'>(
-        (searchParams.get('discover_filter') as 'all' | 'movie' | 'tv') || 'all'
-    );
+    // Initialize media filter from cookies
+    const [isClient, setIsClient] = useState(false);
+    const [mediaFilter, setMediaFilter] = useState<'all' | 'movie' | 'tv'>('all');
 
     const { recommendations, isLoading, error, refresh, replaceRecommendation } = useMovieRecommendations(mediaFilter);
     const { addMovie, markAsNotInterested } = useMovieActions();
     const [addingIds, setAddingIds] = useState<Set<number>>(new Set());
     const [isRefreshing, setIsRefreshing] = useState(false);
 
-    // Update search params when media filter changes
-    const updateMediaFilter = (newFilter: 'all' | 'movie' | 'tv') => {
-        setMediaFilter(newFilter);
-        const params = new URLSearchParams(searchParams.toString());
-
-        if (newFilter === 'all') {
-            params.delete('discover_filter');
-        } else {
-            params.set('discover_filter', newFilter);
-        }
-
-        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    };
-
-    // Update state when search params change (browser back/forward)
+    // Set client flag on mount to prevent hydration mismatch
     useEffect(() => {
-        const filterFromParams = (searchParams.get('discover_filter') as 'all' | 'movie' | 'tv') || 'all';
-        if (filterFromParams !== mediaFilter) {
-            setMediaFilter(filterFromParams);
-        }
-    }, [searchParams, mediaFilter]);
+        setIsClient(true);
+        // Load filters from cookies on client
+        const cookieFilters = getClientDiscoverFilterCookie();
+        setMediaFilter(cookieFilters.filter || 'all');
+    }, []);
+
+    // Update media filter and save to cookies
+    const updateMediaFilter = (newFilter: 'all' | 'movie' | 'tv') => {
+        if (!isClient) return;
+        
+        setMediaFilter(newFilter);
+        updateClientDiscoverFilterCookie({ filter: newFilter });
+    };
 
     const handleAddToWatchlist = async (tmdbId: number, mediaType: 'movie' | 'tv') => {
         // First try optimistic update (immediate replacement if buffer available)
@@ -348,6 +336,8 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
         }
 
         try {
+            toast.success(`Rated ${rating}/5 and added to watched movies!`);
+
             // Add movie with rating and watch status
             await addMovie(tmdbId, mediaType, 'watched', { 
                 optimizeRecommendations: true,
@@ -359,7 +349,6 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                 await replaceRecommendation(tmdbId);
             }
 
-            toast.success(`Rated ${rating}/5 and added to watched movies!`);
         } catch (error: unknown) {
             // If optimistic update failed, revert it by refreshing
             if (replacedMovie) {

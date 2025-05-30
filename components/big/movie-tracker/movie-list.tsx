@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MovieCard } from './movie-card';
 import { useMovies } from '@/hooks/use-movies';
 import { useDebounce } from 'use-debounce';
-import { Search, SortAsc, SortDesc } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, SortAsc, SortDesc, Star } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -24,75 +23,75 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from '@/components/ui/pagination';
+import { getClientMoviesFilterCookie, updateClientMoviesFilterCookie } from '@/lib/utils/client-cookies';
+import type { MoviesFilterCookie } from '@/lib/types/watchlist';
 
-type SortBy = 'updated' | 'title' | 'rating' | 'date_added';
+type SortBy = 'updated' | 'title' | 'vote_average' | 'date_added';
 type SortOrder = 'asc' | 'desc';
+type RatingFilter = 'all' | '1' | '2' | '3' | '4' | '5' | 'no_rating';
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 30;
 
 interface MovieListProps {
     status?: 'watched';
 }
 
 export function MovieList({ status }: MovieListProps) {
-    const searchParams = useSearchParams();
-    const router = useRouter();
-    const pathname = usePathname();
-    
-    // Initialize states from search params
-    const [searchQuery, setSearchQuery] = useState(searchParams.get('movies_search') || '');
-    const [sortBy, setSortBy] = useState<SortBy>((searchParams.get('movies_sort') as SortBy) || 'updated');
-    const [sortOrder, setSortOrder] = useState<SortOrder>((searchParams.get('movies_order') as SortOrder) || 'desc');
-    const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('movies_page') || '1'));
+    // Initialize states from cookies
+    const [isClient, setIsClient] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [sortBy, setSortBy] = useState<SortBy>('updated');
+    const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+    const [ratingFilter, setRatingFilter] = useState<RatingFilter>('all');
+    const [currentPage, setCurrentPage] = useState(1);
     const [debouncedQuery] = useDebounce(searchQuery, 300);
 
-    // Update search params when states change
-    const updateSearchParams = useCallback((updates: Record<string, string | number>) => {
-        const params = new URLSearchParams(searchParams.toString());
-        
-        Object.entries(updates).forEach(([key, value]) => {
-            if (value === '' || value === null || value === undefined) {
-                params.delete(key);
-            } else {
-                params.set(key, value.toString());
-            }
-        });
-        
-        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    }, [searchParams, router, pathname]);
-
-    // Update URL when search query changes
+    // Set client flag on mount to prevent hydration mismatch
     useEffect(() => {
-        updateSearchParams({ movies_search: searchQuery });
-    }, [searchQuery, updateSearchParams]);
+        setIsClient(true);
+        // Load filters from cookies on client
+        const cookieFilters = getClientMoviesFilterCookie();
+        setSearchQuery(cookieFilters.search || '');
+        setSortBy(cookieFilters.sortBy || 'updated');
+        setSortOrder(cookieFilters.sortOrder || 'desc');
+        setRatingFilter(cookieFilters.ratingFilter || 'all');
+        setCurrentPage(cookieFilters.currentPage || 1);
+    }, []);
 
-    // Update URL when sort changes
-    useEffect(() => {
-        updateSearchParams({ movies_sort: sortBy });
-    }, [sortBy, updateSearchParams]);
+    // Update cookies when filters change
+    const updateFilters = useCallback((updates: Partial<MoviesFilterCookie>) => {
+        if (!isClient) return;
+        updateClientMoviesFilterCookie(updates);
+    }, [isClient]);
 
-    // Update URL when sort order changes
+    // Update cookies when individual states change
     useEffect(() => {
-        updateSearchParams({ movies_order: sortOrder });
-    }, [sortOrder, updateSearchParams]);
+        if (!isClient) return;
+        updateFilters({ search: searchQuery });
+    }, [searchQuery, updateFilters, isClient]);
 
-    // Update URL when page changes
     useEffect(() => {
-        updateSearchParams({ movies_page: currentPage });
-    }, [currentPage, updateSearchParams]);
+        if (!isClient) return;
+        updateFilters({ sortBy });
+        setCurrentPage(1); // Reset to first page when sorting changes
+    }, [sortBy, updateFilters, isClient]);
 
-    // Update states when search params change (browser back/forward)
     useEffect(() => {
-        const searchFromParams = searchParams.get('movies_search') || '';
-        const sortFromParams = (searchParams.get('movies_sort') as SortBy) || 'updated';
-        const orderFromParams = (searchParams.get('movies_order') as SortOrder) || 'desc';
-        const pageFromParams = parseInt(searchParams.get('movies_page') || '1');
-        
-        if (searchFromParams !== searchQuery) setSearchQuery(searchFromParams);
-        if (sortFromParams !== sortBy) setSortBy(sortFromParams);
-        if (orderFromParams !== sortOrder) setSortOrder(orderFromParams);
-        if (pageFromParams !== currentPage) setCurrentPage(pageFromParams);
-    }, [searchParams, searchQuery, sortBy, sortOrder, currentPage]);
+        if (!isClient) return;
+        updateFilters({ sortOrder });
+        setCurrentPage(1); // Reset to first page when sort order changes
+    }, [sortOrder, updateFilters, isClient]);
+
+    useEffect(() => {
+        if (!isClient) return;
+        updateFilters({ ratingFilter });
+        setCurrentPage(1); // Reset to first page when rating filter changes
+    }, [ratingFilter, updateFilters, isClient]);
+
+    useEffect(() => {
+        if (!isClient) return;
+        updateFilters({ currentPage });
+    }, [currentPage, updateFilters, isClient]);
 
     // Since this component is only used for watched movies, we only need the watched movies
     const { movies: watchedMovies, isLoading } = useMovies(status || 'watched');
@@ -107,15 +106,29 @@ export function MovieList({ status }: MovieListProps) {
         setCurrentPage(1);
     }, [debouncedQuery]);
 
+    // Filter movies by rating
+    const filteredMovies = movies.filter((movie) => {
+        if (ratingFilter === 'all') return true;
+        if (ratingFilter === 'no_rating') {
+            return !movie.user_rating || movie.user_rating === 0;
+        }
+
+        const rating = movie.user_rating;
+        if (!rating) return false;
+
+        const filterRating = parseInt(ratingFilter);
+        return Math.floor(rating) === filterRating;
+    });
+
     // Sort movies
-    const sortedMovies = [...movies].sort((a, b) => {
+    const sortedMovies = [...filteredMovies].sort((a, b) => {
         let comparison = 0;
 
         switch (sortBy) {
             case 'title':
                 comparison = a.title.localeCompare(b.title);
                 break;
-            case 'rating':
+            case 'vote_average':
                 const ratingA = a.user_rating || 0;
                 const ratingB = b.user_rating || 0;
                 comparison = ratingA - ratingB;
@@ -143,8 +156,15 @@ export function MovieList({ status }: MovieListProps) {
         { value: 'updated', label: 'Recently Updated' },
         { value: 'date_added', label: 'Date Added' },
         { value: 'title', label: 'Title' },
-        { value: 'rating', label: 'Rating' },
+        { value: 'vote_average', label: 'Rating' },
     ];
+
+    // Handle page changes
+    const handlePageChange = useCallback((page: number) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    }, [totalPages]);
 
     return (
         <div className="space-y-6">
@@ -160,6 +180,43 @@ export function MovieList({ status }: MovieListProps) {
                         className="pl-10"
                     />
                 </div>
+
+                {/* Rating Filter */}
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="gap-2">
+                            <Star className="w-4 h-4" />
+                            {ratingFilter === 'all' ? 'All Ratings' :
+                                ratingFilter === 'no_rating' ? 'No Rating' :
+                                    `${ratingFilter} Star${ratingFilter !== '1' ? 's' : ''}`}
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Filter by Rating</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => setRatingFilter('all')}>
+                            All Ratings
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setRatingFilter('5')}>
+                            5 Stars
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setRatingFilter('4')}>
+                            4 Stars
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setRatingFilter('3')}>
+                            3 Stars
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setRatingFilter('2')}>
+                            2 Stars
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setRatingFilter('1')}>
+                            1 Star
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setRatingFilter('no_rating')}>
+                            No Rating
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
 
                 {/* Sort */}
                 <DropdownMenu>
@@ -207,19 +264,61 @@ export function MovieList({ status }: MovieListProps) {
                 </div>
             ) : paginatedMovies.length > 0 ? (
                 <>
-                    <div className="space-y-3">
+                    {/* Pagination */}
+                    {!isLoading && (
+                        <div className="flex items-center justify-between">
+                            <p className="text-sm text-muted-foreground">
+                                {totalItems} {totalItems === 1 ? 'item' : 'items'} in your watchlist
+                                {totalPages > 1 && (
+                                    <span className="ml-2">
+                                        (Page {currentPage} of {totalPages})
+                                    </span>
+                                )}
+                            </p>
+                            {totalPages > 1 && (
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                        className="gap-1"
+                                    >
+                                        <ChevronLeft className="w-4 h-4" />
+                                        Previous
+                                    </Button>
+                                    <span className="text-sm text-muted-foreground">
+                                        {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems}
+                                    </span>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        disabled={currentPage === totalPages}
+                                        className="gap-1"
+                                    >
+                                        Next
+                                        <ChevronRight className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Movie Cards */}
+                    <div className="space-y-3 grid grid-cols-1 md:grid-cols-2">
                         {paginatedMovies.map((movie) => (
                             <MovieCard key={movie.id} movie={movie} />
                         ))}
                     </div>
-                    
+
                     {/* Pagination */}
                     {totalPages > 1 && (
                         <div className="flex justify-center">
                             <Pagination>
                                 <PaginationContent>
                                     <PaginationItem>
-                                        <PaginationPrevious 
+                                        <PaginationPrevious
                                             href="#"
                                             onClick={(e) => {
                                                 e.preventDefault();
@@ -230,18 +329,18 @@ export function MovieList({ status }: MovieListProps) {
                                             className={currentPage <= 1 ? 'pointer-events-none opacity-50' : ''}
                                         />
                                     </PaginationItem>
-                                    
+
                                     {Array.from({ length: totalPages }, (_, i) => i + 1)
                                         .filter(page => {
                                             // Show first page, last page, current page, and pages around current
-                                            return page === 1 || 
-                                                   page === totalPages || 
-                                                   Math.abs(page - currentPage) <= 1;
+                                            return page === 1 ||
+                                                page === totalPages ||
+                                                Math.abs(page - currentPage) <= 1;
                                         })
                                         .map((page, index, array) => {
                                             const prevPage = array[index - 1];
                                             const showEllipsis = prevPage && page - prevPage > 1;
-                                            
+
                                             return (
                                                 <PaginationItem key={page}>
                                                     {showEllipsis && (
@@ -260,9 +359,9 @@ export function MovieList({ status }: MovieListProps) {
                                                 </PaginationItem>
                                             );
                                         })}
-                                    
+
                                     <PaginationItem>
-                                        <PaginationNext 
+                                        <PaginationNext
                                             href="#"
                                             onClick={(e) => {
                                                 e.preventDefault();
@@ -283,11 +382,17 @@ export function MovieList({ status }: MovieListProps) {
                     <div className="text-muted-foreground">
                         {debouncedQuery ? (
                             <>No movies found for &quot;{debouncedQuery}&quot;</>
+                        ) : ratingFilter !== 'all' ? (
+                            ratingFilter === 'no_rating' ? (
+                                <>No movies without ratings found</>
+                            ) : (
+                                <>No {ratingFilter} star movies found</>
+                            )
                         ) : (
                             <>No watched movies yet</>
                         )}
                     </div>
-                    {!debouncedQuery && (
+                    {!debouncedQuery && ratingFilter === 'all' && (
                         <p className="text-sm text-muted-foreground mt-2">
                             Search for movies above to start building your collection!
                         </p>

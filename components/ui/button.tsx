@@ -15,7 +15,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground lg:hover:bg-primary/90",
+        default: "bg-primary text-primary-foreground lg:hover:bg-primary/70",
         destructive:
           "bg-destructive text-destructive-foreground lg:hover:bg-destructive/90",
         outline:

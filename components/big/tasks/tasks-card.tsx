@@ -325,7 +325,7 @@ export function TasksCard({
 		<Card
 			className={cn(`w-full md:max-w-xl group/TodoCard h-fit max-h-screen overflow-y-auto scrollbar-hide`, className)}
 		>
-			<CardHeader className="flex flex-col sticky top-0 bg-background z-10">
+			<CardHeader className="flex flex-col sticky top-0 bg-background z-10 pt-6 md:pt-6">
 				<div className="absolute top-0 left-0 w-full h-1 bg-muted" title={`${tasksCompleted} task${tasksCompleted > 1 ? 's' : ''} completed out of ${tasksTotal} task${tasksTotal > 1 ? 's' : ''}`}>
 					<div
 						className={cn(

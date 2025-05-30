@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Plus, Film, Tv } from 'lucide-react';
+import { Search, Plus, Film, Tv, ChevronDown, ChevronUp } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -18,11 +18,12 @@ interface MovieSearchProps {
 export function MovieSearch({ onMovieAdded }: MovieSearchProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedQuery] = useDebounce(searchQuery, 500);
+    const [expandedOverviews, setExpandedOverviews] = useState<Set<string>>(new Set());
     const { results, isLoading } = useMovieSearch(debouncedQuery);
     const { addMovie } = useMovieActions();
 
     const handleAddMovie = async (
-        tmdbId: number, 
+        tmdbId: number,
         mediaType: 'movie' | 'tv',
         title: string,
         watchStatus: 'will_watch' | 'watched' = 'will_watch'
@@ -51,6 +52,21 @@ export function MovieSearch({ onMovieAdded }: MovieSearchProps) {
     const getReleaseDate = (item: { release_date?: string; first_air_date?: string }) => {
         const date = item.release_date || item.first_air_date;
         return date ? new Date(date).getFullYear() : null;
+    };
+
+    const toggleOverviewExpansion = (itemId: number, mediaType: string) => {
+        const key = `${itemId}-${mediaType}`;
+        const newExpanded = new Set(expandedOverviews);
+        if (newExpanded.has(key)) {
+            newExpanded.delete(key);
+        } else {
+            newExpanded.add(key);
+        }
+        setExpandedOverviews(newExpanded);
+    };
+
+    const isOverviewExpanded = (itemId: number, mediaType: string) => {
+        return expandedOverviews.has(`${itemId}-${mediaType}`);
     };
 
     const filteredResults = results.results.filter(
@@ -105,8 +121,8 @@ export function MovieSearch({ onMovieAdded }: MovieSearchProps) {
                                         </div>
 
                                         {/* Content */}
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-start justify-between gap-2">
+                                        <div className="flex-1 min-w-0 gap-2 flex flex-col md:flex-row">
+                                            <div className="flex items-start justify-between gap-2 w-full">
                                                 <div className="flex-1">
                                                     <h3 className="font-semibold text-sm line-clamp-2">
                                                         {title}
@@ -130,32 +146,54 @@ export function MovieSearch({ onMovieAdded }: MovieSearchProps) {
                                                         )}
                                                     </div>
                                                     {item.overview && (
-                                                        <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
-                                                            {item.overview}
-                                                        </p>
+                                                        <div className="mt-2">
+                                                            <p className={`text-xs text-muted-foreground ${
+                                                                isOverviewExpanded(item.id, mediaType) ? '' : 'line-clamp-2'
+                                                            }`}>
+                                                                {item.overview}
+                                                            </p>
+                                                            {item.overview.length > 120 && (
+                                                                <button
+                                                                    onClick={() => toggleOverviewExpansion(item.id, mediaType)}
+                                                                    className="text-xs text-primary hover:text-primary/80 mt-1 flex items-center gap-1 transition-colors"
+                                                                >
+                                                                    {isOverviewExpanded(item.id, mediaType) ? (
+                                                                        <>
+                                                                            Show less
+                                                                            <ChevronUp className="w-3 h-3" />
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            Show more
+                                                                            <ChevronDown className="w-3 h-3" />
+                                                                        </>
+                                                                    )}
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     )}
                                                 </div>
+                                            </div>
 
-                                                {/* Action Buttons */}
-                                                <div className="flex flex-col gap-1 flex-shrink-0">
-                                                    <Button
-                                                        size="sm"
-                                                        onClick={() => handleAddMovie(item.id, mediaType as 'movie' | 'tv', title, 'will_watch')}
-                                                        className="text-xs px-2 py-1 h-auto"
-                                                        >
-                                                        <Plus className="w-3 h-3 mr-1" />
-                                                        Watchlist
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() => handleAddMovie(item.id, mediaType as 'movie' | 'tv', title, 'watched')}
-                                                        className="text-xs px-2 py-1 h-auto"
-                                                    >
-                                                        <Plus className="w-3 h-3 mr-1" />
-                                                        Watched
-                                                    </Button>
-                                                </div>
+                                            {/* Action Buttons */}
+                                            <div className="flex md:flex-col md:justify-between gap-1 flex-shrink-0">
+                                                <Button
+                                                    size="sm"
+                                                    onClick={() => handleAddMovie(item.id, mediaType as 'movie' | 'tv', title, 'will_watch')}
+                                                    className="text-xs px-2 py-1 h-auto w-full"
+                                                >
+                                                    <Plus className="w-3 h-3 mr-1" />
+                                                    Watchlist
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() => handleAddMovie(item.id, mediaType as 'movie' | 'tv', title, 'watched')}
+                                                    className="text-xs px-2 py-1 h-auto w-full"
+                                                >
+                                                    <Plus className="w-3 h-3 mr-1" />
+                                                    Watched
+                                                </Button>
                                             </div>
                                         </div>
                                     </div>

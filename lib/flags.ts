@@ -24,6 +24,14 @@ export interface TaskFilterCookie {
     groupByProject?: boolean
 }
 
+export interface WatchlistFilterCookie {
+    search?: string
+    sortBy?: 'updated' | 'title' | 'vote_average' | 'date_added'
+    sortOrder?: 'asc' | 'desc'
+    mediaFilter?: 'all' | 'movie' | 'tv'
+    currentPage?: number
+}
+
 export const defaultValueCookie = {
     has_jarvis_asked_dark_mode: false,
     dark_mode: false,
@@ -43,6 +51,14 @@ export const defaultTaskFilterCookie: TaskFilterCookie = {
     projects: [],
     removedProjects: [],
     groupByProject: false
+}
+
+export const defaultWatchlistFilterCookie: WatchlistFilterCookie = {
+    search: '',
+    sortBy: 'date_added',
+    sortOrder: 'desc',
+    mediaFilter: 'all',
+    currentPage: 1
 }
 
 export const darkMode = flag<boolean, DarkModeCookie>({

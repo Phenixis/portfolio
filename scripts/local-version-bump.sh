@@ -8,40 +8,26 @@ get_last_tag() {
     git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0"
 }
 
-# Function to get commits since last tag
-get_commits_since_tag() {
-    last_tag=$(get_last_tag)
-    if [ "$last_tag" = "v0.0.0" ]; then
-        # If no tags exist, get all commits
-        git log --oneline --pretty=format:"%s"
-    else
-        # Get commits since last tag
-        git log "$last_tag"..HEAD --oneline --pretty=format:"%s"
-    fi
+# Function to get the latest commit
+get_latest_commit() {
+    git log -1 --pretty=format:"%s" 2>/dev/null || echo ""
 }
 
 # Function to determine version bump type
-analyze_commits() {
-    local commits="$1"
+analyze_commit() {
+    local commit="$1"
     local bump_type="none"
     
-    while IFS= read -r commit; do
-        # Check for breaking changes
-        if [[ "$commit" =~ feat!:|fix!:|perf!:|refactor!:|style!: ]] || [[ "$commit" =~ "BREAKING CHANGE" ]]; then
-            bump_type="major"
-            break
-        # Check for features
-        elif [[ "$commit" =~ ^feat: ]] || [[ "$commit" =~ ^feat\( ]]; then
-            if [ "$bump_type" != "major" ]; then
-                bump_type="minor"
-            fi
-        # Check for fixes and other patch-level changes
-        elif [[ "$commit" =~ ^(fix|perf|refactor|style): ]] || [[ "$commit" =~ ^(fix|perf|refactor|style)\( ]]; then
-            if [ "$bump_type" != "major" ] && [ "$bump_type" != "minor" ]; then
-                bump_type="patch"
-            fi
-        fi
-    done <<< "$commits"
+    # Check for breaking changes
+    if [[ "$commit" =~ feat!:|fix!:|perf!:|refactor!:|style!: ]] || [[ "$commit" =~ "BREAKING CHANGE" ]]; then
+        bump_type="major"
+    # Check for features
+    elif [[ "$commit" =~ ^feat: ]] || [[ "$commit" =~ ^feat\( ]]; then
+        bump_type="minor"
+    # Check for fixes and other patch-level changes
+    elif [[ "$commit" =~ ^(fix|perf|refactor|style): ]] || [[ "$commit" =~ ^(fix|perf|refactor|style)\( ]]; then
+        bump_type="patch"
+    fi
     
     echo "$bump_type"
 }
@@ -106,37 +92,21 @@ update_package_json() {
 # Function to update changelog
 update_changelog() {
     local version="$1"
-    local commits="$2"
+    local commit="$2"
     local date=$(date +%Y-%m-%d)
     
     # Create changelog content
     local changelog_content="## [$version] - $date\n\n"
     
-    # Categorize commits
-    local features=""
-    local fixes=""
-    local other=""
-    
-    while IFS= read -r commit; do
-        if [[ "$commit" =~ ^feat ]]; then
-            features="$features- $commit\n"
-        elif [[ "$commit" =~ ^fix ]]; then
-            fixes="$fixes- $commit\n"
-        elif [[ "$commit" =~ ^(perf|refactor|style): ]]; then
-            other="$other- $commit\n"
-        fi
-    done <<< "$commits"
-    
-    if [ -n "$features" ]; then
-        changelog_content="$changelog_content### 🚀 Features\n$features\n"
-    fi
-    
-    if [ -n "$fixes" ]; then
-        changelog_content="$changelog_content### 🐛 Bug Fixes\n$fixes\n"
-    fi
-    
-    if [ -n "$other" ]; then
-        changelog_content="$changelog_content### 📝 Other Changes\n$other\n"
+    # Categorize commit
+    if [[ "$commit" =~ ^feat ]]; then
+        changelog_content="$changelog_content### 🚀 Features\n- $commit\n\n"
+    elif [[ "$commit" =~ ^fix ]]; then
+        changelog_content="$changelog_content### 🐛 Bug Fixes\n- $commit\n\n"
+    elif [[ "$commit" =~ ^(perf|refactor|style): ]]; then
+        changelog_content="$changelog_content### 📝 Other Changes\n- $commit\n\n"
+    else
+        changelog_content="$changelog_content### 📝 Changes\n- $commit\n\n"
     fi
     
     # Insert at the beginning of CHANGELOG.md (after the header)
@@ -169,26 +139,23 @@ main() {
     current_version=$(node -p "require('./package.json').version" 2>/dev/null || echo "0.0.0")
     echo "📦 Current version: $current_version"
     
-    # Get commits since last tag
-    commits=$(get_commits_since_tag)
+    # Get latest commit
+    latest_commit=$(get_latest_commit)
     
-    if [ -z "$commits" ]; then
-        echo "ℹ️  No new commits found since last tag"
+    if [ -z "$latest_commit" ]; then
+        echo "ℹ️  No commits found"
         return 0
     fi
     
-    echo "📝 Analyzing commits:"
-    echo "$commits" | head -5
-    if [ $(echo "$commits" | wc -l) -gt 5 ]; then
-        echo "   ... and $(( $(echo "$commits" | wc -l) - 5 )) more"
-    fi
+    echo "📝 Analyzing latest commit:"
+    echo "$latest_commit"
     echo ""
     
-    # Analyze commits to determine bump type
-    bump_type=$(analyze_commits "$commits")
+    # Analyze commit to determine bump type
+    bump_type=$(analyze_commit "$latest_commit")
     
     if [ "$bump_type" = "none" ]; then
-        echo "ℹ️  No releasable changes found"
+        echo "ℹ️  No releasable changes found in latest commit"
         return 0
     fi
     
@@ -204,7 +171,7 @@ main() {
     echo "✅ Updated package.json"
     
     # Update changelog
-    update_changelog "$new_version" "$commits"
+    update_changelog "$new_version" "$latest_commit"
     echo "✅ Updated CHANGELOG.md"
     
     # Stage the changes
