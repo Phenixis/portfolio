@@ -123,5 +123,8 @@ else
     echo "   Version bumps only run on: ${valid_branches[*]}"
 fi
 
+git add .
+git commit -m "chore: update version and changelog after commit"
+
 echo ""
 echo "✅ Commit created successfully!"
