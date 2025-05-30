@@ -8,19 +8,19 @@ echo "=============================="
 
 # Define commit types
 declare -A commit_types=(
-    ["1"]="feat:New feature"
-    ["2"]="fix:Bug fix"
-    ["3"]="docs:Documentation change"
-    ["4"]="style:Code style change"
-    ["5"]="refactor:Code refactoring"
-    ["6"]="perf:Performance improvement"
-    ["7"]="test:Test changes"
-    ["8"]="chore:Non-functional change"
-    ["9"]="security:Security fix"
-    ["10"]="revert:Revert changes"
-    ["11"]="done:Completed tasks"
-    ["12"]="wip:Work in progress"
-    ["13"]="started:New tasks"
+    ["1"]="feat(minor):New feature"
+    ["2"]="fix(patch):Bug fix"
+    ["3"]="docs(patch):Documentation change"
+    ["4"]="style(patch):Code style change"
+    ["5"]="refactor(patch):Code refactoring"
+    ["6"]="perf(patch):Performance improvement"
+    ["7"]="test(patch):Test changes"
+    ["8"]="chore(patch):Non-functional change"
+    ["9"]="security(patch):Security fix"
+    ["10"]="revert(patch):Revert changes"
+    ["11"]="done(patch):Completed tasks"
+    ["12"]="wip(patch):Work in progress"
+    ["13"]="started(patch):New tasks"
 )
 
 echo "Select commit type:"
@@ -52,7 +52,7 @@ if [[ -z "$description" ]]; then
 fi
 
 # Check for breaking change
-read -p "Is this a breaking change? (y/N): " breaking
+read -p "Is this a breaking change (major) ? (y/N): " breaking
 if [[ "$breaking" =~ ^[Yy]$ ]]; then
     type="${type}!"
 fi

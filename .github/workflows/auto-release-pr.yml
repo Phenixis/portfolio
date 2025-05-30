@@ -1,0 +1,169 @@
+name: Auto Release PR
+
+on:
+    push:
+        branches:
+            - dev
+
+permissions:
+    contents: write
+    pull-requests: write
+    issues: write
+
+jobs:
+    check-for-release:
+        runs-on: ubuntu-latest
+        
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  token: ${{ secrets.GITHUB_TOKEN }}
+            
+            - name: Install pnpm
+              uses: pnpm/action-setup@v2
+              with:
+                  version: latest
+            
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 'lts/*'
+                  cache: 'pnpm'
+            
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+            
+            - name: Check if release is needed
+              id: check-release
+              run: |
+                  # Get the last commit from main branch
+                  git fetch origin main
+                  LAST_MAIN_COMMIT=$(git rev-parse origin/main)
+                  
+                  # Get commits between main and dev
+                  COMMITS=$(git log --pretty=format:"%s" $LAST_MAIN_COMMIT..HEAD)
+                  
+                  # Check if there are commits that would trigger a release
+                  SHOULD_RELEASE=false
+                  RELEASE_TYPE="patch"
+                  
+                  echo "Checking commits for release triggers:"
+                  echo "$COMMITS"
+                  
+                  if echo "$COMMITS" | grep -q "BREAKING CHANGE:"; then
+                      SHOULD_RELEASE=true
+                      RELEASE_TYPE="major"
+                      echo "Found BREAKING CHANGE - will create major release"
+                  elif echo "$COMMITS" | grep -q "^feat"; then
+                      SHOULD_RELEASE=true
+                      RELEASE_TYPE="minor"
+                      echo "Found feat commits - will create minor release"
+                  elif echo "$COMMITS" | grep -qE "^(fix|perf|refactor|style):"; then
+                      SHOULD_RELEASE=true
+                      RELEASE_TYPE="patch"
+                      echo "Found fix/perf/refactor/style commits - will create patch release"
+                  fi
+                  
+                  echo "should_release=$SHOULD_RELEASE" >> $GITHUB_OUTPUT
+                  echo "release_type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
+            
+            - name: Create Pull Request
+              if: steps.check-release.outputs.should_release == 'true'
+              id: create-pr
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      const { data: existingPRs } = await github.rest.pulls.list({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          head: 'dev',
+                          base: 'main',
+                          state: 'open'
+                      });
+                      
+                      if (existingPRs.length > 0) {
+                          console.log('PR already exists:', existingPRs[0].html_url);
+                          return { pr_number: existingPRs[0].number, pr_url: existingPRs[0].html_url };
+                      }
+                      
+                      const releaseType = '${{ steps.check-release.outputs.release_type }}';
+                      const title = `feat: prepare ${releaseType} release`;
+                      const body = `## 🚀 Automated ${releaseType.charAt(0).toUpperCase() + releaseType.slice(1)} Release
+                      
+                      This PR contains changes that will trigger a **${releaseType}** release when merged to main.
+                      
+                      ### Changes included:
+                      - Latest commits from dev branch
+                      - Will be automatically processed by semantic-release
+                      
+                      ### Release Type: ${releaseType}
+                      
+                      This PR was automatically created by the Auto Release workflow.
+                      
+                      ---
+                      
+                      **Note**: This PR will be automatically merged if all checks pass.`;
+                      
+                      const { data: pr } = await github.rest.pulls.create({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          title: title,
+                          body: body,
+                          head: 'dev',
+                          base: 'main'
+                      });
+                      
+                      console.log('Created PR:', pr.html_url);
+                      return { pr_number: pr.number, pr_url: pr.html_url };
+            
+            - name: Wait for checks and auto-merge
+              if: steps.check-release.outputs.should_release == 'true' && steps.create-pr.outputs.result
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      const result = ${{ steps.create-pr.outputs.result }};
+                      const prNumber = result.pr_number;
+                      
+                      // Wait a bit for other checks to start
+                      await new Promise(resolve => setTimeout(resolve, 30000));
+                      
+                      // Check PR status
+                      const { data: pr } = await github.rest.pulls.get({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          pull_number: prNumber
+                      });
+                      
+                      if (pr.mergeable === false) {
+                          console.log('PR has conflicts, cannot auto-merge');
+                          return;
+                      }
+                      
+                      // Check if all checks are passing
+                      const { data: checks } = await github.rest.checks.listForRef({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          ref: pr.head.sha
+                      });
+                      
+                      const allChecksPassed = checks.check_runs.every(check => 
+                          check.status === 'completed' && check.conclusion === 'success'
+                      );
+                      
+                      if (allChecksPassed || checks.check_runs.length === 0) {
+                          // Merge the PR
+                          await github.rest.pulls.merge({
+                              owner: context.repo.owner,
+                              repo: context.repo.repo,
+                              pull_number: prNumber,
+                              commit_title: `feat: automated release merge`,
+                              commit_message: 'Automated merge for release preparation',
+                              merge_method: 'squash'
+                          });
+                          
+                          console.log('PR merged successfully');
+                      } else {
+                          console.log('Some checks are still pending or failed, skipping auto-merge');
+                      }
