@@ -162,14 +162,14 @@ export function MovieCard({ movie }: MovieCardProps) {
                         </div>
 
                         {/* Content */}
-                        <div className="flex-1 min-w-0">
+                        <div className="flex flex-col justify-between flex-1 min-w-0">
                             {/* Header */}
-                            <div className="flex items-start justify-between mb-3">
-                                <div className="flex-1 min-w-0">
-                                    <h3 className="font-medium text-sm line-clamp-2 mb-2 leading-tight underline lg:no-underline lg:group-hover:underline">
+                            <div className="flex items-start justify-between">
+                                <div className="flex flex-col items-start md:flex-row md:gap-4 md:items-center flex-1 min-w-0">
+                                    <h3 className="font-medium text-sm line-clamp-2 leading-tight underline lg:no-underline lg:group-hover:underline mt-1">
                                         <a href={`https://google.com/search?q=${movie.title}+%28${movie.media_type === 'tv' ? 'TV' : 'Movie'}${" " + movie.release_date}%29`} target='_blank' rel='noopener noreferrer'>
                                             {movie.title}
-                                            <span className="lg:hidden lg:group-hover:inline-block text-muted-foreground ml-1">
+                                            <span className="lg:opacity-0 lg:group-hover:opacity-100 text-muted-foreground">
                                                 <ExternalLink className="inline w-3 h-3" />
                                             </span>
                                         </a>
@@ -181,12 +181,6 @@ export function MovieCard({ movie }: MovieCardProps) {
                                         {releaseYear && (
                                             <span>{releaseYear}</span>
                                         )}
-                                        <Badge
-                                            variant={movie.watch_status === 'watched' ? 'default' : 'outline'}
-                                            className="text-xs h-5"
-                                        >
-                                            {movie.watch_status === 'watched' ? 'Watched' : 'Watchlist'}
-                                        </Badge>
                                     </div>
                                 </div>
 
@@ -267,35 +261,15 @@ export function MovieCard({ movie }: MovieCardProps) {
                                 <div className="space-y-2">
                                     {/* Rating Display */}
                                     <div className="flex items-center justify-between">
-                                        {movie.user_rating ? (
-                                            <StarRating
-                                                rating={movie.user_rating}
-                                                readonly
-                                                size="sm"
-                                            />
-                                        ) : (
-                                            <div className="flex items-center gap-2">
-                                                <StarRating
-                                                    rating={0}
-                                                    readonly
-                                                    size="sm"
-                                                />
-                                                <span className="text-xs text-muted-foreground">Not rated</span>
-                                            </div>
-                                        )}
-                                        <Button
-                                            variant="ghost"
+                                        <StarRating
+                                            rating={movie.user_rating}
+                                            readonly
                                             size="sm"
-                                            onClick={handleEdit}
-                                            className="h-7 px-2 text-xs lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
-                                        >
-                                            <Edit3 className="w-3 h-3 mr-1" />
-                                            Edit
-                                        </Button>
+                                        />
                                     </div>
 
                                     {/* Comment Display */}
-                                    {movie.user_comment ? (
+                                    {movie.user_comment && (
                                         <div className="space-y-1">
                                             <p
                                                 ref={commentRef}
@@ -313,19 +287,27 @@ export function MovieCard({ movie }: MovieCardProps) {
                                                 </button>
                                             )}
                                         </div>
-                                    ) : (
-                                        <p className="text-xs text-muted-foreground/60 italic">
-                                            No comment yet
-                                        </p>
                                     )}
 
-                                    {/* Metadata */}
-                                    {movie.watched_date && (
-                                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                            <Calendar className="w-3 h-3" />
-                                            {format(new Date(movie.watched_date), 'MMM dd, yyyy')}
-                                        </div>
-                                    )}
+                                    <div className="flex justify-between items-center">
+                                        {/* Metadata */}
+                                        {movie.watched_date && (
+                                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                                <Calendar className="w-3 h-3" />
+                                                {format(new Date(movie.watched_date), 'MMM dd, yyyy')}
+                                            </div>
+                                        )}
+
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={handleEdit}
+                                            className="h-7 px-2 text-xs lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <Edit3 className="w-3 h-3 mr-1" />
+                                            Edit
+                                        </Button>
+                                    </div>
                                 </div>
                             )}
                         </div>

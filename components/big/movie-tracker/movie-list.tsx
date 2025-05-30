@@ -257,7 +257,7 @@ export function MovieList({ status }: MovieListProps) {
                 </div>
             ) : paginatedMovies.length > 0 ? (
                 <>
-                    <div className="space-y-3">
+                    <div className="space-y-3 grid grid-cols-1 md:grid-cols-2">
                         {paginatedMovies.map((movie) => (
                             <MovieCard key={movie.id} movie={movie} />
                         ))}

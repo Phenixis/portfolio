@@ -11,12 +11,12 @@ interface StarRatingProps {
     className?: string;
 }
 
-export function StarRating({ 
-    rating, 
-    onRatingChange, 
-    readonly = false, 
+export function StarRating({
+    rating,
+    onRatingChange,
+    readonly = false,
     size = 'md',
-    className 
+    className
 }: StarRatingProps) {
     const sizeClasses = {
         sm: 'w-5 h-5',
@@ -33,11 +33,11 @@ export function StarRating({
     const renderStar = (starIndex: number) => {
         const starValue = starIndex + 1;
         const currentRating = rating || 0;
-        
+
         // Determine star state
         const isFull = currentRating >= starValue;
         const isHalf = currentRating >= starValue - 0.5 && currentRating < starValue;
-        
+
         return (
             <div
                 key={starIndex}
@@ -56,7 +56,7 @@ export function StarRating({
                         sizeClasses[size]
                     )}
                 />
-                
+
                 {/* Filled star overlay */}
                 {(isFull || isHalf) && (
                     <div
@@ -73,7 +73,7 @@ export function StarRating({
                         />
                     </div>
                 )}
-                
+
                 {/* Interactive overlay for editing */}
                 {!readonly && (
                     <>
@@ -100,12 +100,17 @@ export function StarRating({
 
     return (
         <div className={cn('flex items-center gap-1.5', className)}>
-            {Array.from({ length: 5 }, (_, index) => renderStar(index))}
-            {rating !== null && (
+            <div className={cn("flex items-center gap-1", className)}>
+                {Array.from({ length: 5 }, (_, index) => renderStar(index))}
+            </div>
+            {rating !== null ? (
                 <span className="ml-2 text-sm text-muted-foreground">
                     {rating.toFixed(1)}/5.0
                 </span>
+            ) : (
+                <span className="text-xs text-muted-foreground">Not rated</span>
             )}
+            
         </div>
     );
 }
