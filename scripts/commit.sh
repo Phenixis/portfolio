@@ -95,4 +95,6 @@ fi
 git add -A
 git commit -m "$commit_msg"
 
+semantic-release
+
 echo "✅ Commit created successfully!"
