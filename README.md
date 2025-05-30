@@ -10,7 +10,7 @@ Life OS is a personal knowledge management system designed to help you organize 
 - [x] Dark Mode [V0.1]
     - [x] Auto dark mode [V0.1]
         - [x] Auto update based on time [V0.1]
-        - [ ] Problem about GET/PUT requests
+        - [x] Problem about GET/PUT requests [V0.1]
 - [x] Note Taking [V0.1]
 - [ ] Mood Tracker 
     - [x] CRUD [V0.1]
