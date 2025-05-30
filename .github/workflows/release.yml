@@ -24,16 +24,16 @@ jobs:
                   fetch-depth: 0
                   token: ${{ secrets.GITHUB_TOKEN }}
             
+            - name: Install pnpm
+              uses: pnpm/action-setup@v2
+              with:
+                  version: latest
+            
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
                   node-version: 'lts/*'
                   cache: 'pnpm'
-            
-            - name: Install pnpm
-              uses: pnpm/action-setup@v2
-              with:
-                  version: latest
             
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
