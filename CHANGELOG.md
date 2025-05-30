@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0-canary.2](https://github.com/Phenixis/life_os/compare/v0.2.0-canary.1...v0.2.0-canary.2) (2025-05-30)
+
+### fix
+
+* update current version in README to V1.0.0 ([](https://github.com/Phenixis/life_os/commit/d6c3134c6b07895c1793b166492211904acee162))
+
 ## [0.2.0-canary.1](https://github.com/Phenixis/life_os/compare/v0.1.0...v0.2.0-canary.1) (2025-05-30)
 
 * Merge pull request #11 from Phenixis/V1.0.0 ([](https://github.com/Phenixis/life_os/commit/009857645cb63f8353187aad62205f413370e585)), closes [#11](https://github.com/Phenixis/life_os/issues/11)
