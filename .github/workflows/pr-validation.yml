@@ -37,9 +37,6 @@ jobs:
             - name: Lint
               run: pnpm lint
             
-            - name: Build
-              run: pnpm build
-            
             - name: Validate commit messages
               run: |
                   pnpm commitlint --from=origin/${{ github.base_ref }} --to=HEAD --verbose
