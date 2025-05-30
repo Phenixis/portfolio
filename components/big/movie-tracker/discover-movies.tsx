@@ -156,7 +156,7 @@ function MovieCardItem({
 
                     {/* Source badge */}
                     <div className="absolute bottom-2 right-2">
-                        <Badge variant="secondary" className="text-xs gap-1 bg-black/70 text-white border-0">
+                        <Badge variant="secondary" className="text-xs gap-1 bg-black/70 lg:hover:bg-black/70 text-white border-0">
                             <span className="lg:hidden lg:group-hover/Poster:inline-block">
                                 {getSourceLabel('recommendation_source' in item && item.recommendation_source ? item.recommendation_source : 'trending')}
                             </span>
@@ -167,7 +167,7 @@ function MovieCardItem({
                     {/* Rating badge */}
                     {item.vote_average > 0 && (
                         <div className="absolute top-2 right-2">
-                            <Badge variant="secondary" className="text-xs bg-black/70 text-white border-0">
+                            <Badge variant="secondary" className="text-xs bg-black/70 lg:hover:bg-black/70 text-white border-0">
                                 ★ {item.vote_average.toFixed(1)}
                             </Badge>
                         </div>
