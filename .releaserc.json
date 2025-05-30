@@ -11,7 +11,7 @@
         },
         {
             "name": "V*.*.*",
-            "prerelease": "dev",
+            "prerelease": true,
             "channel": "dev"
         }
     ],
@@ -136,7 +136,7 @@
         [
             "@semantic-release/exec",
             {
-                "prepareCmd": "echo 'Preparing release ${nextRelease.version}'"
+                "prepareCmd": "echo 'Preparing release ${nextRelease.version}' && ./scripts/update-readme-version.sh ${nextRelease.version}"
             }
         ],
         [
@@ -144,7 +144,8 @@
             {
                 "assets": [
                     "CHANGELOG.md",
-                    "package.json"
+                    "package.json",
+                    "README.md"
                 ],
                 "message": "chore(release): ${nextRelease.version} [skip ci]"
             }

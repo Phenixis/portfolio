@@ -1,4 +1,6 @@
 {
+  "name": "life-os",
+  "version": "0.1.1-dev.1",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -8,6 +10,7 @@
     "db:migrate": "npx tsx lib/db/migrate.ts",
     "prepare": "husky",
     "semantic-release": "semantic-release",
+    "update-version": "./scripts/update-readme-version.sh",
     "test": "echo \"No tests specified\" && exit 0",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
