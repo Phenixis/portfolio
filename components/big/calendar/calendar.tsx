@@ -45,6 +45,11 @@ export default function Calendar({
         enabled: showDailyMood,
     })
 
+    // Debug: Log when dailyMoods data changes
+    useEffect(() => {
+        console.log('Calendar dailyMoods data updated:', dailyMoods?.length || 0, 'moods for month', month.getMonth() + 1)
+    }, [dailyMoods, month])
+
     const { tasks, isLoading: isTaskLoading, isError: isTaskError } = useTasks({
         completed: false,
         dueBefore: date ? new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59) : undefined,
@@ -113,14 +118,13 @@ export default function Calendar({
                             </div>
                         </div>
                     </div>
-                    <DailyMoodModal />
+                    <DailyMoodModal date={date} />
                 </div>
             </div>
-            <div className="h-full flex flex-col items-start justify-between">
+            <div className="w-full h-full flex flex-col items-start justify-between">
                 <div className="w-full md:w-[299px] flex flex-col items-center justify-center">
                     {
                         !isTaskError && !isLoading ? (
-
                             <div className="flex flex-col items-start justify-center w-full">
                                 <h6>
                                     Tasks of the day
@@ -156,7 +160,11 @@ export default function Calendar({
                                     </>
                                 )}
                             </div>
-                        ) : null
+                        ) : isLoading ? (
+                            <div className="w-full">Loading tasks...</div>
+                        ) : (
+                            <div className="w-full">Error loading tasks</div>
+                        )
                     }
                 </div>
             </div>

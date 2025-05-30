@@ -47,16 +47,10 @@ function Calendar({
 
     // Function to get mood for a specific date
     const getMoodForDate = (date: Date) => {
-        // Create a normalized date string in local time (YYYY-MM-DD format)
-        const targetDateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-        
         // Find mood for this date (comparing just the date part)
         const moodData = dailyMoods.find((mood) => {
-            // Handle both string and Date types for mood.date
             const moodDate = mood.date instanceof Date ? mood.date : new Date(mood.date)
-            // Create a normalized date string in local time
-            const moodDateString = `${moodDate.getFullYear()}-${String(moodDate.getMonth() + 1).padStart(2, '0')}-${String(moodDate.getDate()).padStart(2, '0')}`
-            return moodDateString === targetDateString
+            return moodDate.toDateString() === date.toDateString()
         })
         return moodData?.mood ?? -1 // Return -1 if no mood is found
     }
