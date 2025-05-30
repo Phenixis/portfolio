@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0-canary.1](https://github.com/Phenixis/life_os/compare/v0.1.0...v0.2.0-canary.1) (2025-05-30)
+
+* Merge pull request #11 from Phenixis/V1.0.0 ([](https://github.com/Phenixis/life_os/commit/009857645cb63f8353187aad62205f413370e585)), closes [#11](https://github.com/Phenixis/life_os/issues/11)
+* Merge pull request #6 from Phenixis/V0.1 ([](https://github.com/Phenixis/life_os/commit/60b04eb164bdd521026b80600bc677af5a46fbef)), closes [#6](https://github.com/Phenixis/life_os/issues/6)
+* Merge pull request #8 from Phenixis/V0.1 ([](https://github.com/Phenixis/life_os/commit/c723bd3dc600cc9735cfe4f1629ef3a956ffa9cb)), closes [#8](https://github.com/Phenixis/life_os/issues/8)
+* Merge pull request #9 from Phenixis/V0.1.0 ([](https://github.com/Phenixis/life_os/commit/2116d1dbaaed98f46a0d64e07cb5f51a90aa3463)), closes [#9](https://github.com/Phenixis/life_os/issues/9)
+* Update package.json ([](https://github.com/Phenixis/life_os/commit/9eab926eb0230a8699ef1538c8d45b70df757a82))
+* Update README.md ([](https://github.com/Phenixis/life_os/commit/c63fb9bc0142c4897d1978785c0ec43716ed5eb6))
+* V0.1 ([](https://github.com/Phenixis/life_os/commit/85933bcf9b06f7a68d7f08252fb1342188cdda56))
+
+### chore
+
+* **release:** 0.1.1-dev.1 [skip ci] ([](https://github.com/Phenixis/life_os/commit/138e93d289e49d5728f4054d795c14696f71fa1c))
+* **release:** 0.2.0-V1.0.0.1 [skip ci] ([](https://github.com/Phenixis/life_os/commit/b29ee1c8d29b605b64fb63e7f3ba678f24fc3f6a))
+
+### feat
+
+* add automatic README version updates ([](https://github.com/Phenixis/life_os/commit/9997bb5e821c081e4d04396827468ce4e129c6b5))
+
+### fix
+
+* enhance semantic-release configuration for better commit message handling and error reporting ([](https://github.com/Phenixis/life_os/commit/96458073003e61d4e2ad4b0d978660f879fc368a))
+* optimize semantic-release configuration to handle large commit history ([](https://github.com/Phenixis/life_os/commit/766559c2ac5296e5201c56e427410b027b649704))
+* resolve semantic-release JSON syntax error and optimize release configuration ([](https://github.com/Phenixis/life_os/commit/30a7680b3c12e5949b23f86dd384c1b1b2f7d914))
+* resolve semantic-release prerelease branch conflict ([](https://github.com/Phenixis/life_os/commit/40656824d4848971bfb38c804d0df3dd4bbe7e3a))
+* update .env.example and pre-push script for improved environment handling ([](https://github.com/Phenixis/life_os/commit/7824ed3cdd4263a7a0ef526bd4e6e3d45d16df48))
+
 ## [0.2.0-V1.0.0.1](https://github.com/Phenixis/life_os/compare/v0.1.0...v0.2.0-V1.0.0.1) (2025-05-30)
 
 ### chore
