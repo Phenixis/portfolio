@@ -15,7 +15,8 @@
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "commitlint": "commitlint",
-    "commit": "./scripts/commit.sh"
+    "commit": "./scripts/commit.sh",
+    "promote": "./scripts/promote-release.sh"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
