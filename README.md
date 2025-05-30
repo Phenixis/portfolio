@@ -20,6 +20,7 @@ Life OS is a personal knowledge management system designed to help you organize 
 - [x] Weighted Multi-Criteria Decision Matrix [V0.1]
 - [x] Movie Tracker [V0.1]
     - [ ] Filter by rating
+    - [ ] Filter by type (Movie/TV show)
 - [ ] Settings Page
     - [x] Dark Mode settings [V0.1]
     - [ ] Profile settings

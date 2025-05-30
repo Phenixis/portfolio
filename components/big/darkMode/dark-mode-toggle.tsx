@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { type DarkModeCookie } from "@/lib/flags"
 import { shouldDarkModeBeEnabled } from "@/lib/utils/dark-mode"
 import { useDarkMode } from "@/hooks/use-dark-mode"
+import { useAutoDarkModeTimer } from "@/hooks/use-auto-dark-mode-timer"
 import { useSWRConfig } from "swr"
 import { useUser } from "@/hooks/use-user"
 
@@ -34,6 +35,13 @@ export default function DarkModeToggle({
 
     const { mutate } = useSWRConfig()
         const { darkMode, isLoading } = useDarkMode()
+
+    // Handle automatic dark mode timer updates
+    useAutoDarkModeTimer(cookie, async (newDarkMode: boolean, newCookie: DarkModeCookie) => {
+        setCookie(newCookie)
+        document.documentElement.classList.toggle("dark", newDarkMode)
+        await updateDarkModePreference(newCookie)
+    })
 
     const updateDarkModePreference = async (newValue: DarkModeCookie) => {
         try {
