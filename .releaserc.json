@@ -3,16 +3,6 @@
         {
             "name": "main",
             "channel": "latest"
-        },
-        {
-            "name": "canary",
-            "prerelease": "canary",
-            "channel": "canary"
-        },
-        {
-            "name": "V*.*.*",
-            "prerelease": true,
-            "channel": "dev"
         }
     ],
     "repositoryUrl": "https://github.com/Phenixis/life_os",
@@ -42,6 +32,10 @@
                     {
                         "type": "style",
                         "release": "patch"
+                    },
+                    {
+                        "breaking": true,
+                        "release": "major"
                     },
                     {
                         "type": "docs",

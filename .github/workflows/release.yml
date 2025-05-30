@@ -4,8 +4,6 @@ on:
     push:
         branches:
             - main
-            - canary
-            - 'V*.*.*'
 
 permissions:
     contents: write
