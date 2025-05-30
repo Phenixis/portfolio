@@ -111,10 +111,13 @@
                     ]
                 },
                 "writerOpts": {
-                    "commitLimit": 100,
+                    "commitLimit": 50,
                     "commitGroupsSort": "title",
                     "commitsSort": ["scope", "subject"],
-                    "noteGroupsSort": "title"
+                    "noteGroupsSort": "title",
+                    "maxSubjectLength": 100,
+                    "breakingChangeTitle": "💥 BREAKING CHANGES",
+                    "groupBy": "type"
                 }
             }
         ],
@@ -138,13 +141,13 @@
                     "CHANGELOG.md",
                     "package.json"
                 ],
-                "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes.length > 1000 ? nextRelease.notes.substring(0, 1000) + '...\n\nSee full changelog at: ${nextRelease.gitHead}' : nextRelease.notes}"
+                "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
             }
         ],
         [
             "@semantic-release/github",
             {
-                "successComment": "🎉 This ${issue.pull_request ? 'PR is included' : 'issue has been resolved'} in version ${nextRelease.version} :tada:",
+                "successComment": "🎉 This has been resolved in version ${nextRelease.version} :tada:",
                 "failComment": false,
                 "failTitle": false,
                 "labels": false,

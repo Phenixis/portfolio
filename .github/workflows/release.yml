@@ -50,12 +50,20 @@ jobs:
                   # NPM_TOKEN: ${{ secrets.NPM_TOKEN }}  # Uncomment if publishing to npm
                   # VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}  # Uncomment for Vercel deployment
               run: |
+                  # Configure git for tagging
+                  git config --global user.name "github-actions[bot]"
+                  git config --global user.email "github-actions[bot]@users.noreply.github.com"
+                  
                   # Check if this is the first release and handle accordingly
                   if ! git describe --tags --abbrev=0 2>/dev/null; then
-                    echo "No previous tags found, creating initial tag..."
-                    git tag v0.1.0
-                    git push origin v0.1.0
+                    echo "No previous tags found, creating initial baseline tag..."
+                    # Create a lightweight tag at the current commit to establish a baseline
+                    git tag v0.0.0
+                    git push origin v0.0.0
+                    echo "Baseline tag created. Semantic release will start from this point."
                   fi
+                  
+                  # Run semantic release
                   pnpm semantic-release
             
             # Optional: Deploy to Vercel after successful release
