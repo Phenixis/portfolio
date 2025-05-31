@@ -76,30 +76,60 @@ update_changelog() {
     
     echo "Updating CHANGELOG.md..."
     
-    # Create backup
-    cp CHANGELOG.md CHANGELOG.md.backup
+    # Create backup with error handling
+    if ! cp CHANGELOG.md CHANGELOG.md.backup; then
+        echo "❌ Failed to create backup of CHANGELOG.md"
+        return 1
+    fi
     
     if [[ "$is_release" == "true" && -n "$version" ]]; then
         # Replace [NOT RELEASED] with version for promotion
-        # Use a different delimiter (|) to avoid conflicts with version format
-        if ! sed -i "s|\[NOT RELEASED\]|## [$version] - $(date +"%Y-%m-%d")|g" CHANGELOG.md; then
+        # Pre-calculate the date to avoid command substitution issues in sed
+        local release_date
+        release_date=$(date +"%Y-%m-%d")
+        local replacement_text="## [$version] - $release_date"
+        
+        # Use awk instead of sed for more reliable text replacement
+        if ! awk -v replacement="$replacement_text" '
+            /\[NOT RELEASED\]/ { 
+                gsub(/\[NOT RELEASED\]/, replacement)
+            } 
+            { print }
+        ' CHANGELOG.md > CHANGELOG.md.tmp; then
             echo "❌ Failed to update CHANGELOG.md for release"
             mv CHANGELOG.md.backup CHANGELOG.md
             return 1
         fi
+        
+        # Move the temporary file to replace the original
+        if ! mv CHANGELOG.md.tmp CHANGELOG.md; then
+            echo "❌ Failed to finalize CHANGELOG.md update"
+            mv CHANGELOG.md.backup CHANGELOG.md
+            return 1
+        fi
+        
         echo "✅ Updated CHANGELOG.md with release version: $version"
     else
         # Add regular commit to [NOT RELEASED] section
         if ! grep -q "\[NOT RELEASED\]" CHANGELOG.md; then
             # Insert [NOT RELEASED] section after the third line
-            sed -i '3a\\n## [NOT RELEASED]\n' CHANGELOG.md
+            if ! sed -i '3a\\n## [NOT RELEASED]\n' CHANGELOG.md; then
+                echo "❌ Failed to insert [NOT RELEASED] section"
+                mv CHANGELOG.md.backup CHANGELOG.md
+                return 1
+            fi
         fi
         
         # Get current date and time in ISO 8601 format
         local datetime
         datetime=$(date +"%Y-%m-%d %H:%M:%S")
+        
+        # Escape special characters in commit message for sed
+        local escaped_commit_message
+        escaped_commit_message=$(printf '%s\n' "$commit_message" | sed 's/[[\.*^$()+?{|]/\\&/g')
+        
         # Insert commit message with date and time under [NOT RELEASED] section
-        if ! sed -i "/## \[NOT RELEASED\]/a - [$datetime] $commit_message" CHANGELOG.md; then
+        if ! sed -i "/## \[NOT RELEASED\]/a - [$datetime] $escaped_commit_message" CHANGELOG.md; then
             echo "❌ Failed to update CHANGELOG.md"
             mv CHANGELOG.md.backup CHANGELOG.md
             return 1
@@ -107,6 +137,7 @@ update_changelog() {
         echo "✅ Added commit to CHANGELOG.md under [NOT RELEASED] section"
     fi
     
+    # Clean up backup file
     rm CHANGELOG.md.backup
     return 0
 }

@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 
 ## [NOT RELEASED]
+- [2025-05-31 10:32:38] fix: second attempt to fix the error of update_changelog
 - [2025-05-31 10:29:06] fix: problem in the update_changelog function fixed
 - [2025-05-31 10:25:50] chore: make all the scripts executable
 - [2025-05-31 10:24:50] chore: improve commit and functions scripts
