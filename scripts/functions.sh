@@ -81,11 +81,13 @@ update_changelog() {
     
     if [[ "$is_release" == "true" && -n "$version" ]]; then
         # Replace [NOT RELEASED] with version for promotion
-        if ! sed -i "s/\[NOT RELEASED\]/$version/g" CHANGELOG.md; then
+        # Use a different delimiter (|) to avoid conflicts with version format
+        if ! sed -i "s|\[NOT RELEASED\]|## [$version] - $(date +"%Y-%m-%d")|g" CHANGELOG.md; then
             echo "❌ Failed to update CHANGELOG.md for release"
             mv CHANGELOG.md.backup CHANGELOG.md
             return 1
         fi
+        echo "✅ Updated CHANGELOG.md with release version: $version"
     else
         # Add regular commit to [NOT RELEASED] section
         if ! grep -q "\[NOT RELEASED\]" CHANGELOG.md; then
@@ -102,6 +104,7 @@ update_changelog() {
             mv CHANGELOG.md.backup CHANGELOG.md
             return 1
         fi
+        echo "✅ Added commit to CHANGELOG.md under [NOT RELEASED] section"
     fi
     
     rm CHANGELOG.md.backup
