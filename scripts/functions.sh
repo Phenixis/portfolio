@@ -89,11 +89,15 @@ update_changelog() {
     else
         # Add regular commit to [NOT RELEASED] section
         if ! grep -q "\[NOT RELEASED\]" CHANGELOG.md; then
-            # Insert [NOT RELEASED] section after the fourth line
-            sed -i '4a\\n## [NOT RELEASED]\n' CHANGELOG.md
+            # Insert [NOT RELEASED] section after the third line
+            sed -i '3a\\n## [NOT RELEASED]\n' CHANGELOG.md
         fi
         
-        if ! sed -i "/## \[NOT RELEASED\]/a - $commit_message" CHANGELOG.md; then
+        # Get current date and time in ISO 8601 format
+        local datetime
+        datetime=$(date +"%Y-%m-%d %H:%M:%S")
+        # Insert commit message with date and time under [NOT RELEASED] section
+        if ! sed -i "/## \[NOT RELEASED\]/a - [$datetime] $commit_message" CHANGELOG.md; then
             echo "❌ Failed to update CHANGELOG.md"
             mv CHANGELOG.md.backup CHANGELOG.md
             return 1

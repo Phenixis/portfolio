@@ -123,3 +123,6 @@ fi
 
 echo ""
 echo "✅ Commit created successfully!"
+
+# Run promotion script
+./scripts/promote.sh

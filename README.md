@@ -1,6 +1,6 @@
 # Life OS
 
-Current Version: **V1.1.3**
+Current Version: **V1.1.4**
 
 ## Your life, all in one place.
 
