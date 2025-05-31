@@ -94,7 +94,7 @@ function Calendar({
                 caption_label: "text-sm font-medium",
                 nav: "space-x-1 flex items-center",
                 nav_button: cn(
-                    buttonVariants({ variant: "outline" }),
+                    buttonVariants({ variant: "outline-solid" }),
                     "h-7 w-7 bg-transparent p-0 opacity-50 lg:hover:opacity-100",
                 ),
                 nav_button_previous: "absolute left-1",
@@ -140,7 +140,7 @@ function Calendar({
                             {/* Mood indicator as background */}
                             {mood !== -1 && (
                                 <div
-                                    className={`absolute inset-0.5 rounded-sm opacity-30 ${moodColorClass}`}
+                                    className={`absolute inset-0.5 rounded-xs opacity-30 ${moodColorClass}`}
                                     aria-hidden="true"
                                     style={{ pointerEvents: "none" }}
                                 />

@@ -105,10 +105,10 @@ export function WatchlistCard({ movie }: WatchlistCardProps) {
                             <img
                                 src={posterUrl}
                                 alt={movie.title}
-                                className="w-full aspect-[2/3] object-cover"
+                                className="w-full aspect-2/3 object-cover"
                             />
                         ) : (
-                            <div className="w-full aspect-[2/3] bg-muted flex items-center justify-center">
+                            <div className="w-full aspect-2/3 bg-muted flex items-center justify-center">
                                 {movie.media_type === 'tv' ? (
                                     <Tv className="w-8 h-8 text-muted-foreground" />
                                 ) : (
@@ -168,7 +168,7 @@ export function WatchlistCard({ movie }: WatchlistCardProps) {
                     <div className="p-4">
                         {/* Header with badges */}
                         <div className="flex items-start gap-2 mb-2">
-                            <Badge variant="outline" className="text-xs h-5 flex-shrink-0">
+                            <Badge variant="outline" className="text-xs h-5 shrink-0">
                                 {movie.media_type === 'tv' ? 'TV' : 'Movie'}
                             </Badge>
                             {releaseYear && (

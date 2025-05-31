@@ -6,7 +6,7 @@ const ToolCard: React.FC<ToolCardProps> = ({ name, description, icon, href }) =>
     return (
         <Link
             href={href}
-            className="block p-6 bg-card border rounded-lg shadow hover:bg-accent/10 transition-colors duration-300 cursor-pointer"
+            className="block p-6 bg-card border rounded-lg shadow-sm hover:bg-accent/10 transition-colors duration-300 cursor-pointer"
         >
             <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold">{name}</h2>

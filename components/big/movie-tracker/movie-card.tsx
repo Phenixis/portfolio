@@ -138,7 +138,7 @@ export function MovieCard({ movie }: MovieCardProps) {
                         {/* Poster */}
                         {/* Poster - slides out when editing */}
                         <div
-                            className={`flex-shrink-0 flex justify-center items-center transition-all duration-200
+                            className={`shrink-0 flex justify-center items-center transition-all duration-200
                                 ${isEditing ? '-translate-x-24 opacity-0 pointer-events-none w-0' : 'translate-x-0 opacity-100 w-16'}
                             `}
                             style={{ minWidth: isEditing ? 0 : '4rem', width: isEditing ? 0 : '4rem' }}
@@ -148,7 +148,7 @@ export function MovieCard({ movie }: MovieCardProps) {
                                 <img
                                     src={posterUrl}
                                     alt={movie.title}
-                                    className="w-16 h-24 object-cover rounded-md shadow-sm transition-transform lg:group-hover:scale-105"
+                                    className="w-16 h-24 object-cover rounded-md shadow-xs transition-transform lg:group-hover:scale-105"
                                 />
                             ) : (
                                 <div className="w-16 h-24 bg-muted rounded-md flex items-center justify-center transition-colors lg:group-hover:bg-muted/80">

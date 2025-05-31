@@ -12,7 +12,7 @@ export default async function DashboardPage() {
             <h1 className="w-full text-3xl text-center p-2 md:hidden">
                 Life OS
             </h1>
-            <div className="flex flex-col order-2 md:order-none md:max-h-screen w-full h-full lg:w-1/3">
+            <div className="flex flex-col order-2 md:order-0 md:max-h-screen w-full h-full lg:w-1/3">
                 <TasksCard 
                     className="w-full lg:m-4" 
                     limit={5} 
@@ -20,7 +20,7 @@ export default async function DashboardPage() {
                 />
                 <NotesCard className="w-full lg:m-4" limit={5} />
             </div>
-            <Calendar className="order-1 md:order-none" />
+            <Calendar className="order-1 md:order-0" />
         </div>
     )
 }

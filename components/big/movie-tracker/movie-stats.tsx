@@ -14,8 +14,8 @@ export function MovieStats() {
                     <Card key={i}>
                         <CardContent fullPadding>
                             <div className="animate-pulse">
-                                <div className="h-4 bg-muted rounded mb-2"></div>
-                                <div className="h-8 bg-muted rounded"></div>
+                                <div className="h-4 bg-muted rounded-sm mb-2"></div>
+                                <div className="h-8 bg-muted rounded-sm"></div>
                             </div>
                         </CardContent>
                     </Card>

@@ -184,7 +184,7 @@ export function WatchlistGrid() {
                 {/* Media Type Filter */}
                 <div className="flex gap-1">
                     <Button
-                        variant={mediaFilter === 'all' ? 'default' : 'outline'}
+                        variant={mediaFilter === 'all' ? 'default' : 'outline-solid'}
                         size="sm"
                         onClick={() => setMediaFilter('all')}
                         className="h-10 px-3"
@@ -192,7 +192,7 @@ export function WatchlistGrid() {
                         All
                     </Button>
                     <Button
-                        variant={mediaFilter === 'movie' ? 'default' : 'outline'}
+                        variant={mediaFilter === 'movie' ? 'default' : 'outline-solid'}
                         size="sm"
                         onClick={() => setMediaFilter('movie')}
                         className="h-10 px-3 gap-1"
@@ -201,7 +201,7 @@ export function WatchlistGrid() {
                         Movies
                     </Button>
                     <Button
-                        variant={mediaFilter === 'tv' ? 'default' : 'outline'}
+                        variant={mediaFilter === 'tv' ? 'default' : 'outline-solid'}
                         size="sm"
                         onClick={() => setMediaFilter('tv')}
                         className="h-10 px-3 gap-1"
@@ -298,7 +298,7 @@ export function WatchlistGrid() {
             {isLoading ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                     {Array.from({ length: 12 }).map((_, i) => (
-                        <div key={i} className="aspect-[2/3] bg-muted rounded-lg animate-pulse"></div>
+                        <div key={i} className="aspect-2/3 bg-muted rounded-lg animate-pulse"></div>
                     ))}
                 </div>
             ) : paginatedMovies.length > 0 ? (
@@ -365,7 +365,7 @@ export function WatchlistGrid() {
                             return (
                                 <Button
                                     key={pageNumber}
-                                    variant={currentPage === pageNumber ? "default" : "outline"}
+                                    variant={currentPage === pageNumber ? "default" : "outline-solid"}
                                     size="sm"
                                     onClick={() => handlePageChange(pageNumber)}
                                     className="w-10"

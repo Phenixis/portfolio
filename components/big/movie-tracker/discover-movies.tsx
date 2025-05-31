@@ -105,10 +105,10 @@ function MovieCardItem({
                         <img
                             src={posterUrl}
                             alt={title}
-                            className="w-full aspect-[2/3] object-cover"
+                            className="w-full aspect-2/3 object-cover"
                         />
                     ) : (
-                        <div className="w-full aspect-[2/3] bg-muted flex items-center justify-center">
+                        <div className="w-full aspect-2/3 bg-muted flex items-center justify-center">
                             {item.media_type === 'tv' ? (
                                 <Tv className="w-8 h-8 text-muted-foreground" />
                             ) : (
@@ -132,7 +132,7 @@ function MovieCardItem({
                                         <Plus className="w-3 h-3" />
                                         Add to Watchlist
                                     </Button>
-                                    <div className="w-full max-w-[200px] bg-primary/90 backdrop-blur-sm p-3 rounded-md">
+                                    <div className="w-full max-w-[200px] bg-primary/90 backdrop-blur-xs p-3 rounded-md">
                                         <StarRating
                                             rating={null}
                                             onRatingChange={(rating) => onRateMovie(item.id, item.media_type || 'movie', rating)}
@@ -218,7 +218,7 @@ function MovieCardItem({
 
                 <div className="w-full h-full">
                     <div className="flex items-start gap-2 mb-2">
-                        <Badge variant="outline" className="text-xs h-5 flex-shrink-0">
+                        <Badge variant="outline" className="text-xs h-5 shrink-0">
                             {item.media_type === 'tv' ? 'TV' : 'Movie'}
                         </Badge>
                         {year && (
@@ -500,7 +500,7 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                             {/* Media Filter Buttons */}
                             <div className="flex gap-1">
                                 <Button
-                                    variant={mediaFilter === 'all' ? 'default' : 'outline'}
+                                    variant={mediaFilter === 'all' ? 'default' : 'outline-solid'}
                                     size="sm"
                                     onClick={() => updateMediaFilter('all')}
                                     className="h-8 px-3"
@@ -508,7 +508,7 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                                     All
                                 </Button>
                                 <Button
-                                    variant={mediaFilter === 'movie' ? 'default' : 'outline'}
+                                    variant={mediaFilter === 'movie' ? 'default' : 'outline-solid'}
                                     size="sm"
                                     onClick={() => updateMediaFilter('movie')}
                                     className="h-8 px-3"
@@ -517,7 +517,7 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                                     Movies
                                 </Button>
                                 <Button
-                                    variant={mediaFilter === 'tv' ? 'default' : 'outline'}
+                                    variant={mediaFilter === 'tv' ? 'default' : 'outline-solid'}
                                     size="sm"
                                     onClick={() => updateMediaFilter('tv')}
                                     className="h-8 px-3"

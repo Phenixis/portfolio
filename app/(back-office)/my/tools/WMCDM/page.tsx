@@ -619,7 +619,7 @@ export default function Page() {
                                                     variant="ghost"
                                                     size="sm"
                                                     onClick={() => removeOption(option.id)}
-                                                    className="h-7 w-7 p-0 lg:opacity-0 lg:group-hover/Option:opacity-100 transition-opacity duration-200 flex-shrink-0"
+                                                    className="h-7 w-7 p-0 lg:opacity-0 lg:group-hover/Option:opacity-100 transition-opacity duration-200 shrink-0"
                                                     aria-label={`Remove ${option.name}`}
                                                 >
                                                     <Trash className="h-3.5 w-3.5 text-destructive" />

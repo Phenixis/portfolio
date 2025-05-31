@@ -106,7 +106,7 @@ export default function DarkModeToggle({
                 role="button"
                 aria-label={cookie.dark_mode ? "Switch to light mode" : "Switch to dark mode"}
                 className={cn(
-                    "lg:hover:rotate-[46deg] duration-1000 flex align-middle relative transition-all text-neutral-800 lg:hover:text-neutral-500 dark:text-neutral-200 dark:lg:hover:text-neutral-500 cursor-pointer",
+                    "lg:hover:rotate-46 duration-1000 flex align-middle relative transition-all text-neutral-800 lg:hover:text-neutral-500 dark:text-neutral-200 dark:lg:hover:text-neutral-500 cursor-pointer",
                     className,
                 )}
             >

@@ -200,7 +200,7 @@ export function NotesCard({
                     </CardTitle>
                     <div className="flex gap-2 xl:opacity-0 duration-300 lg:group-hover/NoteCard:opacity-100">
                         <Button
-                            variant={isFilterOpen ? "default" : "outline"}
+                            variant={isFilterOpen ? "default" : "outline-solid"}
                             size="sm"
                             onClick={() => setIsFilterOpen((prev) => !prev)}
                             disabled={isPending || isLoading}
@@ -216,7 +216,7 @@ export function NotesCard({
                     <div className="flex flex-row justify-between items-end gap-6 flex-wrap">
                         <div className="flex flex-row items-center gap-2">
                             <Button
-                                variant={limit === 5 ? "default" : "outline"}
+                                variant={limit === 5 ? "default" : "outline-solid"}
                                 size="sm"
                                 onClick={() => setLimit(5)}
                                 disabled={isPending || isLoading}
@@ -225,7 +225,7 @@ export function NotesCard({
                                 5
                             </Button>
                             <Button
-                                variant={limit === 10 ? "default" : "outline"}
+                                variant={limit === 10 ? "default" : "outline-solid"}
                                 size="sm"
                                 onClick={() => setLimit(10)}
                                 disabled={isPending || isLoading}
@@ -234,7 +234,7 @@ export function NotesCard({
                                 10
                             </Button>
                             <Button
-                                variant={limit === 25 ? "default" : "outline"}
+                                variant={limit === 25 ? "default" : "outline-solid"}
                                 size="sm"
                                 onClick={() => setLimit(25)}
                                 disabled={isPending || isLoading}
@@ -243,7 +243,7 @@ export function NotesCard({
                                 25
                             </Button>
                             <Button
-                                variant={limit === 50 ? "default" : "outline"}
+                                variant={limit === 50 ? "default" : "outline-solid"}
                                 size="sm"
                                 onClick={() => setLimit(50)}
                                 disabled={isPending || isLoading}
@@ -260,7 +260,7 @@ export function NotesCard({
                             label="Search notes by title"
                         />
                         <Button
-                            variant={groupByProject ? "default" : "outline"}
+                            variant={groupByProject ? "default" : "outline-solid"}
                             size="sm"
                             onClick={() => setGroupByProject(!groupByProject)}
                             disabled={isPending || isLoading}

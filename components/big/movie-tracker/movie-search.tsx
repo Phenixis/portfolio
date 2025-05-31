@@ -106,7 +106,7 @@ export function MovieSearch({ onMovieAdded }: MovieSearchProps) {
                                 <CardContent fullPadding>
                                     <div className="flex gap-4">
                                         {/* Poster */}
-                                        <div className="flex-shrink-0">
+                                        <div className="shrink-0">
                                             {posterUrl ? (
                                                 <img
                                                     src={posterUrl}
@@ -176,7 +176,7 @@ export function MovieSearch({ onMovieAdded }: MovieSearchProps) {
                                             </div>
 
                                             {/* Action Buttons */}
-                                            <div className="flex md:flex-col md:justify-between gap-1 flex-shrink-0">
+                                            <div className="flex md:flex-col md:justify-between gap-1 shrink-0">
                                                 <Button
                                                     size="sm"
                                                     onClick={() => handleAddMovie(item.id, mediaType as 'movie' | 'tv', title, 'will_watch')}
