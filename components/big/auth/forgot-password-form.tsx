@@ -76,7 +76,7 @@ export function ForgotPasswordForm() {
                         Reset Password
                     </DialogTitle>
                     <DialogDescription>
-                        Enter your email and we'll send you a new password.
+                        Enter your email and we&apos;ll send you a new password.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handlePasswordReset}>
@@ -96,7 +96,7 @@ export function ForgotPasswordForm() {
                         <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                             <p className="text-sm text-blue-700 dark:text-blue-300">
                                 A new 8-digit password will be generated and sent to your email address.
-                                You'll need to use this new password to log in.
+                                You&apos;ll need to use this new password to log in.
                             </p>
                         </div>
                     </div>

@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [NOT RELEASED]
+- [2025-05-31 16:23:56] fix: fix linting and type checking
+- [2025-05-31 16:16:53] fix: remove unescaped entities
 - [2025-05-31 16:12:49] feat: add a forgot password flow to login
 - [2025-05-31 15:33:26] feat: add the feature to reset the password
 - [2025-05-31 14:55:12] fix: remove unused vars and fix commit description length

@@ -164,7 +164,7 @@ export function PasswordResetForm({ user }: PasswordResetFormProps) {
                                         Make sure you have access to this email address.
                                     </span>
                                     <span className="block text-sm text-muted-foreground">
-                                        Click "Reset Now" to proceed with the password reset.
+                                        Click &quot;Reset Now&quot; to proceed with the password reset.
                                     </span>
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
