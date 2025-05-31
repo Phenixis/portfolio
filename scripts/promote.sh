@@ -88,6 +88,6 @@ if [[ "$is_promotion" =~ ^[Yy]$ ]]; then
         echo "⚠️  Warning: Failed to return to dev branch"
     fi
 else 
-    echo "Promotion cancelled."
+    echo "Promotion refused."
     exit 0
 fi
