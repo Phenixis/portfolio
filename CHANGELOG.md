@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 
 ## [NOT RELEASED]
+- [2025-05-31 10:25:50] chore: make all the scripts executable
 - [2025-05-31 10:24:50] chore: improve commit and functions scripts
 - chore: remove old versionning system for a simple, local method
 - chore: Remove old versionning for a simpler local version
