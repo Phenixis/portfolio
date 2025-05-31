@@ -17,6 +17,17 @@ if [[ "$current_branch" != "dev" ]]; then
     exit 1
 fi
 
+# Check if dev is up to date with main
+if ! git fetch origin main; then
+    echo "❌ Failed to fetch latest changes from main"
+    exit 1
+fi
+
+if ! git diff --quiet origin/main..dev; then
+    echo "❌ Your dev branch is not up to date with main. Please merge main into dev first."
+    exit 1
+fi
+
 # Ask for promotion to main branch
 read -p "Do you want to promote your changes to the main branch (y/N): " is_promotion
 

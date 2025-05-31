@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0] - 2025-05-31
+- [2025-05-31 11:40:17] feat: improve wmcdm display
+
 ## [1.3.1] - 2025-05-31
 - [2025-05-31 11:19:56] docs: added the vocal assistant device to the roadmap (test fix branch)
 

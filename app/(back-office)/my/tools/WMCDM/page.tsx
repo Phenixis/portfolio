@@ -316,6 +316,11 @@ export default function Page() {
 
     // Export matrix as JSON file
     const exportMatrix = () => {
+        // Prevent export if the matrix is empty (no criteria or options)
+        if (matrix.criteria.length === 0 && matrix.options.length === 0) {
+            toast.error("Cannot export an empty matrix. Please add criteria or options first.");
+            return;
+        }
         const dataStr = JSON.stringify(matrix, null, 2);
         const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
 
@@ -596,7 +601,7 @@ export default function Page() {
                             Score each option against each criterion (0-10). Options are sorted from least to most interesting based on weighted scores.
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="overflow-x-auto">
+                    <CardContent className="overflow-x-auto" fullPadding>
                         <Table className="mx-auto">
                             <TableHeader>
                                 <TableRow>
@@ -692,7 +697,9 @@ export default function Page() {
                                                         <div className="flex flex-col items-center">
                                                             <Select
                                                                 value={score.toString()}
-                                                                onValueChange={(value) => updateScore(option.id, criterion.id, parseInt(value))}
+                                                                onValueChange={(value) => {
+                                                                    updateScore(option.id, criterion.id, parseInt(value))
+                                                                }}
                                                             >
                                                                 <SelectTrigger className="h-8 w-14">
                                                                     <SelectValue placeholder="0" />
@@ -754,7 +761,7 @@ export default function Page() {
 
                                 {/* Normalized score row */}
                                 <TableRow>
-                                    <TableCell className="font-medium">Score (0-10)</TableCell>
+                                    <TableCell className="font-medium">Score (0-100)</TableCell>
                                     <TableCell></TableCell>
 
                                     {sortedOptions.map((option) => (
@@ -784,7 +791,7 @@ export default function Page() {
                 </Card>
             ) : (
                 <Card className="w-full">
-                    <CardContent className="p-8">
+                    <CardContent fullPadding>
                         <div className="text-center space-y-4">
                             <h3 className="text-lg font-semibold">No criteria or options yet</h3>
                             <p className="text-muted-foreground">Add criteria and options to build your decision matrix.</p>
