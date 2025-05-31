@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [NOT RELEASED]
+- [2025-05-31 14:55:12] fix: remove unused vars and fix commit description length
 - [2025-05-31 14:47:49] feat: changed the settings link appearance condition in the header and every sidebar is now always closed
 - [2025-05-31 14:44:11] feat: improve settings with profile, ui, ...
 - [2025-05-31 12:50:21] refactor: improve promote script that wasn't working

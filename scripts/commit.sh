@@ -100,12 +100,11 @@ if [[ ${#description} -lt 5 ]]; then
 fi
 
 if [[ ${#description} -gt 100 ]]; then
-    echo "⚠️  Warning: Description is quite long (${#description} characters)"
-    read -p "Continue anyway? (y/N): " continue_long_desc
-    if [[ ! "$continue_long_desc" =~ ^[Yy]$ ]]; then
-        echo "❌ Cancelled"
-        exit 1
-    fi
+    echo "⚠️  Warning: Description is too long (${#description} characters). It will be truncated to 100 characters."
+    truncated_desc="${description:0:100}"
+    echo "Truncated commit description:"
+    echo "  $truncated_desc"
+    description="$truncated_desc"
 fi
 
 # Construct commit message
