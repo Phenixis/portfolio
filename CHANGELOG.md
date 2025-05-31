@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [NOT RELEASED]
+- [V1.4.12 - 2025-05-31 18:25:33] docs: improve commit and changelog functions
 - [2025-05-31 17:42:04] feat: added the possibility to open the sidebar on mobile
 - [2025-05-31 16:23:56] fix: fix linting and type checking
 - [2025-05-31 16:16:53] fix: remove unescaped entities

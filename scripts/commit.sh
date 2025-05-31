@@ -54,6 +54,12 @@ done
 
 echo ""
 
+read -p "Did you update the documentation to reflect these changes (y/N)? " update_docs
+if [[ ! "$update_docs" =~ ^[Yy]$ ]]; then
+    echo "❌ Commit cancelled"
+    exit 1
+fi
+
 # Define commit types
 declare -A commit_types=(
     ["1"]="feat:New feature"

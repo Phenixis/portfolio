@@ -1,6 +1,6 @@
 # Life OS
 
-Current Version: **V1.4.11**
+Current Version: **V1.4.12**
 
 ## Your life, all in one place.
 
@@ -21,6 +21,7 @@ Life OS is a personal knowledge management system designed to help you organize 
     - [x] Improved Display [V1.1.0]
 - [x] Tools Page [V1.0.0]
 - [x] Weighted Multi-Criteria Decision Matrix [V1.0.0]
+    - [ ] Save in the database
 - [x] Movie Tracker [V1.0.0]
     - [x] Filter by rating [V1.1.0]
     - [x] Filter by type (Movie/TV show) [V1.1.0]
