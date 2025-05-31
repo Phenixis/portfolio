@@ -1,0 +1,87 @@
+#!/bin/bash
+
+# import functions from functions.sh
+source "$(dirname "$0")/functions.sh"
+
+if ! validate_git_repo; then
+    echo "❌ Invalid git repository or missing required tools"
+    return 1
+fi
+
+# Ask for promotion to main branch
+read -p "Do you want to promote your changes to the main branch (y/N): " is_promotion
+
+if [[ "$is_promotion" =~ ^[Yy]$ ]]; then
+    # Ask the level of promotion (minor/major)
+    read -p "Is this a minor or major promotion? (0:major, 1:minor, other:cancel): " promotion_level
+
+    if [[ "$promotion_level" != "0" && "$promotion_level" != "1" ]]; then
+        echo "Promotion cancelled."
+        exit 0
+    fi
+
+    # Update package.json version for promotion
+    new_version=$(update_package_version "$([ "$promotion_level" == "0" ] && echo "major" || echo "minor")")
+    if [[ $? -ne 0 ]]; then
+        exit 1
+    fi
+
+    # Update CHANGELOG.md for promotion
+    # Replace [NOT RELEASED] with the new version
+    if ! update_changelog "" "true" "$new_version"; then
+        echo "❌ Failed to update CHANGELOG.md for promotion"
+        exit 1
+    fi
+
+    # Commit promotion changes
+    echo "Pushing to changes to dev branch..."
+    git add -A
+
+    if ! git commit -m "chore: bump version to $new_version"; then
+        echo "❌ Failed to commit promotion changes"
+        exit 1
+    fi
+
+    if ! git push origin dev; then
+        echo "❌ Failed to push promotion changes to dev"
+        exit 1
+    fi
+
+    echo "Merging changes to main branch..."
+
+    if ! git checkout main; then
+        echo "❌ Failed to checkout main branch"
+        exit 1
+    fi
+
+    if ! git pull origin main; then
+        echo "❌ Failed to pull latest changes from main. Returning to dev branch."
+        if ! git checkout dev; then
+            echo "⚠️  Warning: Failed to return to dev branch"
+        fi
+        exit 1
+    fi
+
+    if ! git merge dev; then
+        echo "❌ Failed to merge dev into main. Returning to dev branch."
+        if ! git checkout dev; then
+            echo "⚠️  Warning: Failed to return to dev branch"
+        fi
+        exit 1
+    fi
+
+    if ! git push origin main; then
+        echo "❌ Failed to push to main branch. Returning to dev branch."
+        if ! git checkout dev; then
+            echo "⚠️  Warning: Failed to return to dev branch"
+        fi
+        exit 1
+    fi
+
+    if ! git checkout dev; then
+        echo "⚠️  Warning: Failed to return to dev branch"
+    fi
+else 
+    echo "Promotion cancelled."
+    exit 0
+fi

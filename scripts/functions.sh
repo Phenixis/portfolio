@@ -1,0 +1,125 @@
+# Function to update package.json version
+update_package_version() {
+    if ! validate_git_repo; then
+        echo "❌ Invalid git repository or missing required tools"
+        return 1
+    fi
+
+    local version_type="$1"  # "patch", "minor", or "major"
+    local current_version version_parts major minor patch new_version
+    
+    if [[ ! -f "package.json" ]]; then
+        echo "❌ No package.json found"
+        return 1
+    fi
+    
+    echo "Updating package.json version ($version_type)..."
+    current_version=$(jq -r '.version' package.json)
+    
+    if [[ -z "$current_version" || "$current_version" == "null" ]]; then
+        echo "❌ Failed to read version from package.json"
+        return 1
+    fi
+    
+    IFS='.' read -r major minor patch <<< "$current_version"
+    
+    case $version_type in
+        "patch")
+            new_version="$major.$minor.$((patch + 1))"
+            ;;
+        "minor")
+            new_version="$major.$((minor + 1)).0"
+            ;;
+        "major")
+            new_version="$((major + 1)).0.0"
+            ;;
+        *)
+            echo "❌ Invalid version type: $version_type"
+            return 1
+            ;;
+    esac
+    
+    if ! jq --arg new_version "$new_version" '.version = $new_version' package.json > package.json.tmp; then
+        echo "❌ Failed to update package.json"
+        return 1
+    fi
+    
+    mv package.json.tmp package.json
+    echo "Updated package.json version from $current_version to $new_version"
+
+    # Update readme file with new version
+    # Update the line "Current Version: **Vx.x.x**"
+    if ! sed -i "s/Current Version: \*\*V[0-9]\+\.[0-9]\+\.[0-9]\+\*\*/Current Version: **V$new_version**/" README.md; then
+        echo "❌ Failed to update README.md with new version"
+        return 1
+    fi
+    echo "Updated README.md with new version: $new_version"
+
+    echo "$new_version"  # Return the new version
+}
+
+# Function to update CHANGELOG.md
+update_changelog() {
+    if ! validate_git_repo; then
+        echo "❌ Invalid git repository or missing required tools"
+        return 1
+    fi
+
+    local commit_message="$1"
+    local is_release="${2:-false}"
+    local version="$3"
+    
+    if [[ ! -f "CHANGELOG.md" ]]; then
+        echo "No CHANGELOG.md found, skipping update."
+        return 0
+    fi
+    
+    echo "Updating CHANGELOG.md..."
+    
+    # Create backup
+    cp CHANGELOG.md CHANGELOG.md.backup
+    
+    if [[ "$is_release" == "true" && -n "$version" ]]; then
+        # Replace [NOT RELEASED] with version for promotion
+        if ! sed -i "s/\[NOT RELEASED\]/$version/g" CHANGELOG.md; then
+            echo "❌ Failed to update CHANGELOG.md for release"
+            mv CHANGELOG.md.backup CHANGELOG.md
+            return 1
+        fi
+    else
+        # Add regular commit to [NOT RELEASED] section
+        if ! grep -q "\[NOT RELEASED\]" CHANGELOG.md; then
+            # Insert [NOT RELEASED] section after the fourth line
+            sed -i '4a\\n## [NOT RELEASED]\n' CHANGELOG.md
+        fi
+        
+        if ! sed -i "/## \[NOT RELEASED\]/a - $commit_message" CHANGELOG.md; then
+            echo "❌ Failed to update CHANGELOG.md"
+            mv CHANGELOG.md.backup CHANGELOG.md
+            return 1
+        fi
+    fi
+    
+    rm CHANGELOG.md.backup
+    return 0
+}
+
+# Function to validate git repository and required tools
+validate_git_repo() {
+    if ! git rev-parse --is-inside-work-tree &>/dev/null; then
+        echo "❌ Not a valid git repository"
+        return 1
+    fi
+    
+    if ! command -v jq &>/dev/null; then
+        echo "❌ jq is required but not installed"
+        return 1
+    fi
+    
+    if ! command -v sed &>/dev/null; then
+        echo "❌ sed is required but not installed"
+        return 1
+    fi
+    
+    return 0
+}

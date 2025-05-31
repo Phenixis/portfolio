@@ -1,6 +1,12 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+
+
+## [NOT RELEASED]
+- chore: remove old versionning system for a simple, local method
+- chore: Remove old versionning for a simpler local version
+
 ## [1.0.1-dev.1748611088] - 2025-05-30
 
 ### 📝 Other Changes

@@ -1,6 +1,6 @@
 {
   "name": "life-os",
-  "version": "1.1.1-dev.1748611200",
+  "version": "1.1.3",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -9,16 +9,11 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "npx tsx lib/db/migrate.ts",
     "prepare": "husky",
-    "semantic-release": "semantic-release",
-    "semantic-release:local": "semantic-release --config-file ./.releaserc.local.json",
-    "version-bump": "./scripts/local-version-bump.sh",
-    "update-version": "./scripts/update-readme-version.sh",
-    "test": "echo \"No tests specified\" && exit 0",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "commitlint": "commitlint",
     "commit": "./scripts/commit.sh",
-    "promote": "./scripts/promote-release.sh"
+    "promote": "./scripts/promote.sh"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
