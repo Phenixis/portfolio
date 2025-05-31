@@ -1,14 +1,14 @@
-"use client"
-
 import {
     Sidebar,
     SidebarContent,
+    SidebarFooter,
     SidebarGroup,
     SidebarGroupContent,
     SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarTrigger,
 } from "@/components/ui/sidebar"
 import Link from "next/link"
 import { User, Palette, Shield } from "lucide-react"
@@ -60,6 +60,12 @@ export function SettingsSidebar() {
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
+            <SidebarFooter className="flex-row md:hidden items-center justify-center">
+                <SidebarTrigger />
+                <div className="font-semibold">
+                    Close Sidebar
+                </div>
+            </SidebarFooter>
         </Sidebar>
     )
 }
