@@ -270,6 +270,65 @@ export const notInterestedMovie = pgTable('not_interested_movie', {
     uniqueUserMovie: sql`UNIQUE (${table.user_id}, ${table.tmdb_id}, ${table.media_type})`
 }));
 
+
+// WMCDM (Weighted Multi-Criteria Decision Matrix) Tables
+export const wmcdmMatrix = pgTable('wmcdm_matrix', {
+    id: serial('id').primaryKey(),
+    user_id: char('user_id', { length: 8 })
+        .notNull()
+        .references(() => user.id),
+    name: varchar('name', { length: 255 }).notNull(),
+    description: text('description'),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow(),
+    deleted_at: timestamp('deleted_at')
+});
+
+export const wmcdmCriterion = pgTable('wmcdm_criterion', {
+    id: serial('id').primaryKey(),
+    matrix_id: integer('matrix_id')
+        .notNull()
+        .references(() => wmcdmMatrix.id, { onDelete: 'cascade' }),
+    name: varchar('name', { length: 255 }).notNull(),
+    weight: integer('weight').notNull().default(1),
+    description: text('description'),
+    position: integer('position').notNull(),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow(),
+    deleted_at: timestamp('deleted_at')
+});
+
+export const wmcdmOption = pgTable('wmcdm_option', {
+    id: serial('id').primaryKey(),
+    matrix_id: integer('matrix_id')
+        .notNull()
+        .references(() => wmcdmMatrix.id, { onDelete: 'cascade' }),
+    name: varchar('name', { length: 255 }).notNull(),
+    position: integer('position').notNull(),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow(),
+    deleted_at: timestamp('deleted_at')
+});
+
+export const wmcdmScore = pgTable('wmcdm_score', {
+    id: serial('id').primaryKey(),
+    matrix_id: integer('matrix_id')
+        .notNull()
+        .references(() => wmcdmMatrix.id, { onDelete: 'cascade' }),
+    option_id: integer('option_id')
+        .notNull()
+        .references(() => wmcdmOption.id, { onDelete: 'cascade' }),
+    criterion_id: integer('criterion_id')
+        .notNull()
+        .references(() => wmcdmCriterion.id, { onDelete: 'cascade' }),
+    score: integer('score').notNull().default(0),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow()
+}, (table) => ({
+    // Unique constraint to prevent duplicate scores for the same option-criterion pair
+    uniqueOptionCriterion: sql`UNIQUE (${table.option_id}, ${table.criterion_id})`
+}));
+
 // Relations
 export const userRelations = relations(user, ({ many }) => ({
     tasks: many(task),
@@ -285,6 +344,7 @@ export const userRelations = relations(user, ({ many }) => ({
     seanceExercices: many(seanceExercice),
     movies: many(movie),
     notInterestedMovies: many(notInterestedMovie),
+    wmcdmMatrices: many(wmcdmMatrix),
 }));
 
 export const projectRelations = relations(project, ({ one, many }) => ({
@@ -400,6 +460,48 @@ export const notInterestedMovieRelations = relations(notInterestedMovie, ({ one 
     })
 }));
 
+// WMCDM Relations
+export const wmcdmMatrixRelations = relations(wmcdmMatrix, ({ one, many }) => ({
+    user: one(user, {
+        fields: [wmcdmMatrix.user_id],
+        references: [user.id]
+    }),
+    criteria: many(wmcdmCriterion),
+    options: many(wmcdmOption),
+    scores: many(wmcdmScore)
+}));
+
+export const wmcdmCriterionRelations = relations(wmcdmCriterion, ({ one, many }) => ({
+    matrix: one(wmcdmMatrix, {
+        fields: [wmcdmCriterion.matrix_id],
+        references: [wmcdmMatrix.id]
+    }),
+    scores: many(wmcdmScore)
+}));
+
+export const wmcdmOptionRelations = relations(wmcdmOption, ({ one, many }) => ({
+    matrix: one(wmcdmMatrix, {
+        fields: [wmcdmOption.matrix_id],
+        references: [wmcdmMatrix.id]
+    }),
+    scores: many(wmcdmScore)
+}));
+
+export const wmcdmScoreRelations = relations(wmcdmScore, ({ one }) => ({
+    matrix: one(wmcdmMatrix, {
+        fields: [wmcdmScore.matrix_id],
+        references: [wmcdmMatrix.id]
+    }),
+    option: one(wmcdmOption, {
+        fields: [wmcdmScore.option_id],
+        references: [wmcdmOption.id]
+    }),
+    criterion: one(wmcdmCriterion, {
+        fields: [wmcdmScore.criterion_id],
+        references: [wmcdmCriterion.id]
+    })
+}));
+
 export type User = typeof user.$inferSelect;
 export type NewUser = typeof user.$inferInsert;
 export type Task = typeof task.$inferSelect;
@@ -436,3 +538,11 @@ export type Movie = typeof movie.$inferSelect;
 export type NewMovie = typeof movie.$inferInsert;
 export type NotInterestedMovie = typeof notInterestedMovie.$inferSelect;
 export type NewNotInterestedMovie = typeof notInterestedMovie.$inferInsert;
+export type WmcdmMatrix = typeof wmcdmMatrix.$inferSelect;
+export type NewWmcdmMatrix = typeof wmcdmMatrix.$inferInsert;
+export type WmcdmCriterion = typeof wmcdmCriterion.$inferSelect;
+export type NewWmcdmCriterion = typeof wmcdmCriterion.$inferInsert;
+export type WmcdmOption = typeof wmcdmOption.$inferSelect;
+export type NewWmcdmOption = typeof wmcdmOption.$inferInsert;
+export type WmcdmScore = typeof wmcdmScore.$inferSelect;
+export type NewWmcdmScore = typeof wmcdmScore.$inferInsert;

@@ -1,6 +1,6 @@
 {
   "name": "life-os",
-  "version": "1.4.15",
+  "version": "1.4.17",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",

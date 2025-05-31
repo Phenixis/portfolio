@@ -51,11 +51,11 @@ rollback_changes() {
     echo ""
     echo "🔄 Rolling back changes due to: $reason"
     echo "========================================="
-    
-    # Reset any staged changes if they were staged by this script
-    if [[ "$CHANGES_STAGED" == "true" ]]; then
-        echo "🔙 Resetting staged changes..."
-        git reset HEAD --quiet 2>/dev/null || true
+
+    # Remove staged changes
+    if [[ "$CHANGES_STAGED" == true ]]; then
+        echo "🚫 Unstaging changes..."
+        git restore --staged .
     fi
     
     # Restore original package.json version if it was changed
@@ -84,9 +84,6 @@ rollback_changes() {
             git checkout "$ORIGINAL_BRANCH" --quiet 2>/dev/null || true
         fi
     fi
-    
-    # Clean up any temporary files or uncommitted changes
-    git checkout -- . 2>/dev/null || true
     
     echo "✅ Rollback completed successfully"
     echo ""
