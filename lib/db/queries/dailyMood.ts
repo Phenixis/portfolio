@@ -71,12 +71,16 @@ export async function getDailyMood(
             new Date(date.getFullYear(), date.getMonth(), date.getDate()),
             new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1)
         );
+
+        return dailyMood[0]
     } catch (error) {
+        if (error instanceof Error && error.message === "No mood found for this period") {
+            return null
+        }
         console.error("Error fetching daily mood:", error);
         return null
     }
 
-    return (dailyMood && dailyMood.length > 0) ? dailyMood[0] : null;
 }
 
 export async function updateDailyMood(
