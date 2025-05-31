@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [NOT RELEASED]
+- [V1.4.15 - 2025-05-31 19:17:53] chore: add a rollback function in commit script
 - [V1.4.14 - 2025-05-31 19:12:05] fix: fix esling error
 - [V1.4.13 - 2025-05-31 19:10:16] fix: remove logging from getdailymood and better logic
 - [V1.4.12 - 2025-05-31 18:25:33] docs: improve commit and changelog functions
