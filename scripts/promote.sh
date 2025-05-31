@@ -5,7 +5,16 @@ source "$(dirname "$0")/functions.sh"
 
 if ! validate_git_repo; then
     echo "❌ Invalid git repository or missing required tools"
-    return 1
+    exit 1
+fi
+
+# Check if we're on the dev branch
+current_branch=$(git branch --show-current)
+if [[ "$current_branch" != "dev" ]]; then
+    echo "❌ Promotion script can only be run from the 'dev' branch"
+    echo "   Current branch: $current_branch"
+    echo "   Please switch to 'dev' branch first: git checkout dev"
+    exit 1
 fi
 
 # Ask for promotion to main branch

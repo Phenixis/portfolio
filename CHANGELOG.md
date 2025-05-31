@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [NOT RELEASED]
+- [2025-05-31 11:13:06] chore: improve versionning for fix branch
 - [2025-05-31 10:55:32] docs: removed useless files
 - [2025-05-31 10:53:55] refactor: changed "promotion cancelled" to "refused"
 - [2025-05-31 10:51:50] docs: create local release guide and improve commit script

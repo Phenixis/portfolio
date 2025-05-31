@@ -32,6 +32,20 @@ if [[ "$current_branch" != "dev" && "$current_branch" != "fix" ]]; then
     fi
 fi
 
+# Display branch-specific workflow info
+if [[ "$current_branch" == "fix" ]]; then
+    echo ""
+    echo "🔧 Fix branch detected - Hotfix workflow will be used"
+    echo "   → Patch version bump → Push to fix → Merge to main"
+    echo "   ⚠️  This will immediately deploy to production!"
+    echo ""
+elif [[ "$current_branch" == "dev" ]]; then
+    echo ""
+    echo "🚀 Dev branch detected - Development workflow will be used"
+    echo "   → Patch version bump → Option to promote to main"
+    echo ""
+fi
+
 # Display the modified files
 echo "Modified files:"
 git diff --name-only | while read -r file; do
@@ -110,27 +124,53 @@ if [[ "$proceed" =~ ^[Nn]$ ]]; then
     exit 1
 fi
 
-# Update package.json version / always a patch version
-new_version=$(update_package_version "patch")
-if [[ $? -ne 0 ]]; then
-    exit 1
+# Branch-specific workflow
+if [[ "$current_branch" == "fix" ]]; then
+    # Hotfix workflow: auto-bump version, commit, push to fix, merge to main
+    echo ""
+    echo "🔧 Executing hotfix workflow..."
+    echo "⚠️  WARNING: This will immediately deploy to production!"
+    echo ""
+    read -p "Are you sure you want to proceed with the hotfix? (y/N): " confirm_hotfix
+    if [[ ! "$confirm_hotfix" =~ ^[Yy]$ ]]; then
+        echo "❌ Hotfix cancelled"
+        exit 1
+    fi
+    
+    if ! handle_hotfix_workflow "$commit_msg"; then
+        echo "❌ Hotfix workflow failed"
+        exit 1
+    fi
+    
+    echo ""
+    echo "✅ Hotfix completed successfully!"
+    echo "🎯 The fix has been deployed to main branch"
+    
+else
+    # Development workflow: bump version, update changelog, commit, offer promotion
+    
+    # Update package.json version / always a patch version
+    new_version=$(update_package_version "patch")
+    if [[ $? -ne 0 ]]; then
+        exit 1
+    fi
+
+    # Update CHANGELOG.md
+    if ! update_changelog "$commit_msg"; then
+        echo "❌ Failed to update CHANGELOG.md"
+        exit 1
+    fi
+
+    # Execute commit
+    git add -A
+    if ! git commit -m "$commit_msg"; then
+        echo "❌ Failed to create commit"
+        exit 1
+    fi
+
+    echo ""
+    echo "✅ Commit created successfully!"
+
+    # Run promotion script
+    ./scripts/promote.sh
 fi
-
-# Update CHANGELOG.md
-if ! update_changelog "$commit_msg"; then
-    echo "❌ Failed to update CHANGELOG.md"
-    exit 1
-fi
-
-# Execute commit
-git add -A
-if ! git commit -m "$commit_msg"; then
-    echo "❌ Failed to create commit"
-    exit 1
-fi
-
-echo ""
-echo "✅ Commit created successfully!"
-
-# Run promotion script
-./scripts/promote.sh

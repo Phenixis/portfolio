@@ -66,9 +66,9 @@ Utility functions shared between scripts.
 
 ## Workflow
 
-### Daily Development Workflow
+### Development Workflow (dev branch)
 
-1. **Make changes** on `dev` or `fix` branch
+1. **Make changes** on `dev` branch
 2. **Commit changes** using the commit script:
    ```bash
    pnpm commit
@@ -76,9 +76,29 @@ Utility functions shared between scripts.
 3. **Choose commit type** from the interactive menu
 4. **Enter description** for your changes
 5. **Review and confirm** the commit message
-6. **Decide on promotion** when prompted
+6. **Decide on promotion** when prompted (optional)
 
-### Release Workflow
+### Hotfix Workflow (fix branch)
+
+1. **Switch to fix branch**:
+   ```bash
+   git checkout fix
+   ```
+2. **Make critical fixes** 
+3. **Commit changes** using the commit script:
+   ```bash
+   pnpm commit
+   ```
+4. **The system automatically**:
+   - Bumps patch version (e.g., 1.2.0 → 1.2.1)
+   - Updates CHANGELOG.md with new release section
+   - Pushes to fix branch
+   - Merges to main branch
+   - Deploys fix to production
+
+⚠️ **Warning**: Fix branch commits are immediately deployed to production!
+
+### Release Workflow (dev → main promotion)
 
 1. **Complete development** on dev branch
 2. **Run promotion script**:
@@ -135,9 +155,40 @@ pnpm promote         # Branch promotion helper
 - Pattern: `Current Version: **VX.X.X**`
 
 ### CHANGELOG.md
-- **Regular commits**: Added under `[NOT RELEASED]` section with timestamp
-- **Promotions**: `[NOT RELEASED]` replaced with version and release date
+- **Regular commits (dev)**: Added under `[NOT RELEASED]` section with timestamp
+- **Promotions (dev → main)**: `[NOT RELEASED]` replaced with version and release date
+- **Hotfixes (fix → main)**: New section created above existing versions
 - Format: `[VERSION] - YYYY-MM-DD`
+
+#### Changelog Ordering
+When hotfixes are deployed, the changelog maintains proper version ordering:
+
+```markdown
+## [1.3.0] - 2025-06-01  # ← New dev release (higher version)
+- [2025-06-01 10:30:00] feat: new dashboard feature
+
+## [1.2.1] - 2025-05-31  # ← Previous hotfix (lower version)
+- [2025-05-31 15:45:12] fix: critical security issue
+
+## [1.2.0] - 2025-05-30  # ← Original release
+- [2025-05-30 14:20:30] feat: user authentication
+```
+
+## Branch-Specific Workflows
+
+### Dev Branch Workflow
+1. **Purpose**: Feature development and non-critical fixes
+2. **Version Impact**: Patch increment per commit
+3. **Deployment**: Manual promotion to main via `pnpm promote`
+4. **Changelog**: Entries added to `[NOT RELEASED]` section
+
+### Fix Branch Workflow  
+1. **Purpose**: Critical bug fixes requiring immediate deployment
+2. **Version Impact**: Automatic patch increment (e.g., 1.2.0 → 1.2.1)
+3. **Deployment**: Automatic deployment to main branch
+4. **Changelog**: New versioned section created above existing entries
+
+⚠️ **Important**: Fix branch commits bypass the normal promotion process and deploy immediately to production!
 
 ## Best Practices
 

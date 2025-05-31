@@ -1,3 +1,14 @@
 #!/usr/bin/env sh
 echo "🔍 Validating commit message..."
+
+# Get current branch
+current_branch=$(git branch --show-current)
+
+# Show branch-specific workflow info
+if [ "$current_branch" = "fix" ]; then
+    echo "🔧 Fix branch detected - Hotfix workflow will be triggered"
+elif [ "$current_branch" = "dev" ]; then
+    echo "🚀 Dev branch detected - Development workflow will be triggered"
+fi
+
 pnpm commitlint --edit $1
