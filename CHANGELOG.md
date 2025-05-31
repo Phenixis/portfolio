@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [NOT RELEASED]
+- [2025-05-31 12:46:44] style: switched to tailwindcss v4 and modiied outline-solid to outline
 - [2025-05-31 12:17:05] refactor: updates to tailwind v4
 
 

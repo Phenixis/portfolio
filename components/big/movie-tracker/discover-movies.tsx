@@ -500,7 +500,7 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                             {/* Media Filter Buttons */}
                             <div className="flex gap-1">
                                 <Button
-                                    variant={mediaFilter === 'all' ? 'default' : 'outline-solid'}
+                                    variant={mediaFilter === 'all' ? 'default' : 'outline'}
                                     size="sm"
                                     onClick={() => updateMediaFilter('all')}
                                     className="h-8 px-3"
@@ -508,7 +508,7 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                                     All
                                 </Button>
                                 <Button
-                                    variant={mediaFilter === 'movie' ? 'default' : 'outline-solid'}
+                                    variant={mediaFilter === 'movie' ? 'default' : 'outline'}
                                     size="sm"
                                     onClick={() => updateMediaFilter('movie')}
                                     className="h-8 px-3"
@@ -517,7 +517,7 @@ export function DiscoverMovies({ className }: DiscoverMoviesProps) {
                                     Movies
                                 </Button>
                                 <Button
-                                    variant={mediaFilter === 'tv' ? 'default' : 'outline-solid'}
+                                    variant={mediaFilter === 'tv' ? 'default' : 'outline'}
                                     size="sm"
                                     onClick={() => updateMediaFilter('tv')}
                                     className="h-8 px-3"

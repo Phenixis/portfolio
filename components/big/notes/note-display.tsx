@@ -114,7 +114,7 @@ export default function NoteDisplay({ note, className }: { note?: Note, classNam
     return (
         <>
             <Card className={cn(`h-fit group/Note`, className)}>
-                <CardHeader className={`flex flex-row justify-between items-center space-y-0 px-2 pt-2 pb-2 md:px-4 md:pt-2 md:pb-2 xl:px-6 xl:pt-2 ${!note && "h-12 w-full animate-pulse bg-muted"}`}>
+                <CardHeader className={`flex flex-row justify-between items-center space-y-0 px-2 pt-2 pb-2 md:px-4 md:pt-2 md:pb-2 xl:px-6 xl:pt-2 ${note === undefined && "h-12 w-full bg-accent animate-pulse rounded-md"}`}>
                     {
                         note && (
                             <div className="w-full" onClick={() => {

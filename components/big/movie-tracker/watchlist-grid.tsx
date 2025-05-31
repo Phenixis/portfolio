@@ -184,7 +184,7 @@ export function WatchlistGrid() {
                 {/* Media Type Filter */}
                 <div className="flex gap-1">
                     <Button
-                        variant={mediaFilter === 'all' ? 'default' : 'outline-solid'}
+                        variant={mediaFilter === 'all' ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => setMediaFilter('all')}
                         className="h-10 px-3"
@@ -192,7 +192,7 @@ export function WatchlistGrid() {
                         All
                     </Button>
                     <Button
-                        variant={mediaFilter === 'movie' ? 'default' : 'outline-solid'}
+                        variant={mediaFilter === 'movie' ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => setMediaFilter('movie')}
                         className="h-10 px-3 gap-1"
@@ -201,7 +201,7 @@ export function WatchlistGrid() {
                         Movies
                     </Button>
                     <Button
-                        variant={mediaFilter === 'tv' ? 'default' : 'outline-solid'}
+                        variant={mediaFilter === 'tv' ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => setMediaFilter('tv')}
                         className="h-10 px-3 gap-1"
@@ -365,7 +365,7 @@ export function WatchlistGrid() {
                             return (
                                 <Button
                                     key={pageNumber}
-                                    variant={currentPage === pageNumber ? "default" : "outline-solid"}
+                                    variant={currentPage === pageNumber ? "default" : "outline"}
                                     size="sm"
                                     onClick={() => handlePageChange(pageNumber)}
                                     className="w-10"

@@ -353,7 +353,7 @@ export function TasksCard({
 					</CardTitle>
 					<div className="flex gap-2 xl:opacity-0 duration-300 lg:group-hover/TodoCard:opacity-100">
 						<Button
-							variant={isFilterOpen ? "default" : "outline-solid"}
+							variant={isFilterOpen ? "default" : "outline"}
 							size="sm"
 							onClick={() => setIsFilterOpen((prev) => !prev)}
 							disabled={isPending || isLoading}
@@ -371,7 +371,7 @@ export function TasksCard({
 						<Popover>
 							<PopoverTrigger asChild>
 								<Button
-									variant={dueBeforeDate ? "default" : "outline-solid"}
+									variant={dueBeforeDate ? "default" : "outline"}
 									size="sm"
 									disabled={isPending || isLoading}
 									tooltip="Filter by due date"
@@ -414,7 +414,7 @@ export function TasksCard({
 						</div>
 						<div className="flex flex-row items-center gap-2">
 							<Button
-								variant={limit === 5 ? "default" : "outline-solid"}
+								variant={limit === 5 ? "default" : "outline"}
 								size="sm"
 								onClick={() => setLimit(5)}
 								disabled={isPending || isLoading}
@@ -423,7 +423,7 @@ export function TasksCard({
 								5
 							</Button>
 							<Button
-								variant={limit === 10 ? "default" : "outline-solid"}
+								variant={limit === 10 ? "default" : "outline"}
 								size="sm"
 								onClick={() => setLimit(10)}
 								disabled={isPending || isLoading}
@@ -432,7 +432,7 @@ export function TasksCard({
 								10
 							</Button>
 							<Button
-								variant={limit === 25 ? "default" : "outline-solid"}
+								variant={limit === 25 ? "default" : "outline"}
 								size="sm"
 								onClick={() => setLimit(25)}
 								disabled={isPending || isLoading}
@@ -441,7 +441,7 @@ export function TasksCard({
 								25
 							</Button>
 							<Button
-								variant={limit === 50 ? "default" : "outline-solid"}
+								variant={limit === 50 ? "default" : "outline"}
 								size="sm"
 								onClick={() => setLimit(50)}
 								disabled={isPending || isLoading}
@@ -451,7 +451,7 @@ export function TasksCard({
 							</Button>
 						</div>
 						<Button
-							variant={groupByProject ? "default" : "outline-solid"}
+							variant={groupByProject ? "default" : "outline"}
 							size="sm"
 							onClick={() => setGroupByProject(!groupByProject)}
 							disabled={isPending || isLoading}

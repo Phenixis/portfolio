@@ -184,7 +184,7 @@ export default function NotesPage() {
                             }
                             {
                                 Array.from({ length: 3 }).map((_, index) => (
-                                    <div className="hidden flex-col gap-4 w-full lg:flex" key={index}>
+                                    <div className="hidden md:flex flex-col gap-4 w-full lg:hidden" key={index}>
                                         {Array.from({ length: 3 }).map((_, index) => (
                                             <NoteDisplay
                                                 key={index}
