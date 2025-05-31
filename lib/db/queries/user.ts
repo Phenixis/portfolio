@@ -263,3 +263,32 @@ export async function updateUserDraftNote({
         return { success: false, error: "Failed to update draft" }
     }
 }
+
+export async function updateUserProfile({
+    userId,
+    first_name,
+    last_name,
+    email
+}: {
+    userId: string
+    first_name: string
+    last_name: string
+    email: string
+}) {
+    try {
+        await db
+            .update(Schema.user)
+            .set({
+                first_name: first_name,
+                last_name: last_name,
+                email: email,
+                updated_at: new Date(),
+            })
+            .where(eq(Schema.user.id, userId))
+
+        return { success: true }
+    } catch (error) {
+        console.error("Failed to update user profile:", error)
+        return { success: false, error: "Failed to update profile" }
+    }
+}

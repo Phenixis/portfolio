@@ -1,6 +1,6 @@
 # Life OS
 
-Current Version: **V1.4.3**
+Current Version: **V1.4.4**
 
 ## Your life, all in one place.
 
@@ -26,8 +26,8 @@ Life OS is a personal knowledge management system designed to help you organize 
     - [x] Filter by type (Movie/TV show) [V1.1.0]
 - [ ] Settings Page
     - [x] Dark Mode settings [V1.0.0]
-    - [ ] Profile settings
-    - [ ] UI
+    - [x] Profile settings [V1.4.4]
+    - [x] UI [V1.4.4]
     - [ ] Password reset
 - [ ] Habit Tracker
 - [ ] Workout Tracker
