@@ -21,8 +21,14 @@ if [[ "$is_promotion" =~ ^[Yy]$ ]]; then
     fi
 
     # Update package.json version for promotion
-    new_version=$(update_package_version "$([ "$promotion_level" == "0" ] && echo "major" || echo "minor")")
+    if [[ "$promotion_level" == "0" ]]; then
+        new_version=$(update_package_version "major")
+    else
+        new_version=$(update_package_version "minor")
+    fi
+    
     if [[ $? -ne 0 ]]; then
+        echo "❌ Failed to update package.json version"
         exit 1
     fi
 

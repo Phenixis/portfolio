@@ -1,7 +1,7 @@
 # Function to update package.json version
 update_package_version() {
     if ! validate_git_repo; then
-        echo "❌ Invalid git repository or missing required tools"
+        echo "❌ Invalid git repository or missing required tools" >&2
         return 1
     fi
 
@@ -9,15 +9,15 @@ update_package_version() {
     local current_version version_parts major minor patch new_version
     
     if [[ ! -f "package.json" ]]; then
-        echo "❌ No package.json found"
+        echo "❌ No package.json found" >&2
         return 1
     fi
     
-    echo "Updating package.json version ($version_type)..."
+    echo "Updating package.json version ($version_type)..." >&2
     current_version=$(jq -r '.version' package.json)
     
     if [[ -z "$current_version" || "$current_version" == "null" ]]; then
-        echo "❌ Failed to read version from package.json"
+        echo "❌ Failed to read version from package.json" >&2
         return 1
     fi
     
@@ -34,28 +34,28 @@ update_package_version() {
             new_version="$((major + 1)).0.0"
             ;;
         *)
-            echo "❌ Invalid version type: $version_type"
+            echo "❌ Invalid version type: $version_type" >&2
             return 1
             ;;
     esac
     
     if ! jq --arg new_version "$new_version" '.version = $new_version' package.json > package.json.tmp; then
-        echo "❌ Failed to update package.json"
+        echo "❌ Failed to update package.json" >&2
         return 1
     fi
     
     mv package.json.tmp package.json
-    echo "Updated package.json version from $current_version to $new_version"
+    echo "Updated package.json version from $current_version to $new_version" >&2
 
     # Update readme file with new version
     # Update the line "Current Version: **Vx.x.x**"
     if ! sed -i "s/Current Version: \*\*V[0-9]\+\.[0-9]\+\.[0-9]\+\*\*/Current Version: **V$new_version**/" README.md; then
-        echo "❌ Failed to update README.md with new version"
+        echo "❌ Failed to update README.md with new version" >&2
         return 1
     fi
-    echo "Updated README.md with new version: $new_version"
+    echo "Updated README.md with new version: $new_version" >&2
 
-    echo "$new_version"  # Return the new version
+    echo "$new_version"  # Return only the new version to stdout
 }
 
 # Function to update CHANGELOG.md
