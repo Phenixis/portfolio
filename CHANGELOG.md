@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [NOT RELEASED]
+## [1.4.0] - 2025-05-31
 - [2025-05-31 11:40:17] feat: improve wmcdm display
 
 
