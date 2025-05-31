@@ -41,9 +41,6 @@ export function ToolsSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <SidebarTrigger className="w-full [&_svg]:size-4" />
-      </SidebarFooter>
     </Sidebar>
   )
 }

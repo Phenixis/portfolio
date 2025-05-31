@@ -112,7 +112,7 @@ export default function Header({
                                 )
                             }
                             {
-                                pathname !== "/my/settings" && (
+                                pathname.startsWith("/my/settings") === false && (
                                     <DropdownMenuItem
                                         onClick={() => {
                                             setIsOpen(false)
