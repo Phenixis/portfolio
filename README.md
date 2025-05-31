@@ -1,6 +1,6 @@
 # Life OS
 
-Current Version: **V1.3.0**
+Current Version: **V1.3.1**
 
 ## Your life, all in one place.
 
@@ -39,3 +39,9 @@ Life OS is a personal knowledge management system designed to help you organize 
     - [ ] UI adaptation
 - [ ] Landing Page
 - [ ] Book Tracker
+- [ ] Vocal Assistant Device
+    - [ ] Voice Recognition
+    - [ ] Text to speech
+    - [ ] Commands recognition
+    - [ ] Integration with Life OS
+    - [ ] Naming
