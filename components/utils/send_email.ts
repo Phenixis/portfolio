@@ -207,3 +207,120 @@ export async function sendWelcomeEmail(user: User, password: string) {
     
     sendEmail("max@maximeduhamel.com", "Someone created an account on your portfolio !", emailContent2);
 }
+
+export async function sendPasswordResetEmail(user: User, newPassword: string) {
+    const emailContent = `
+            <html>
+            <head>
+            <style>
+            body {
+                background-color: #f3f4f6;
+                margin: 0;
+                font-family: Arial, sans-serif;
+            }
+            main {
+                max-width: 768px;
+                width: 100%;
+                margin: 20px auto;
+                padding: 20px;
+                background-color: #ffffff;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            h1 {
+                font-size: 1.5rem;
+                font-weight: bold;
+                color: #000000;
+                margin-bottom: 16px;
+                text-align: center;
+            }
+            h2 {
+                font-size: 1.25rem;
+                font-weight: 600;
+                color: #374151;
+                margin-top: 16px;
+            }
+            h3 {
+                font-size: 1.125rem;
+                font-weight: 500;
+                color: #4b5563;
+                margin-top: 8px;
+            }
+            ul {
+                list-style-type: disc;
+                padding-left: 20px;
+                margin: 0;
+            }
+            li {
+                color: #1f2937;
+                margin-bottom: 8px;
+            }
+            .warning {
+                background-color: #fef3c7;
+                border: 1px solid #f59e0b;
+                border-radius: 8px;
+                padding: 16px;
+                margin: 16px 0;
+            }
+            .warning h3 {
+                color: #92400e;
+                margin-top: 0;
+            }
+            .warning p {
+                color: #92400e;
+            }
+            @media (max-width: 600px) {
+                main {
+                    padding: 10px;
+                }
+                h1 {
+                    font-size: 1.25rem;
+                }
+                h2 {
+                    font-size: 1rem;
+                }
+                h3 {
+                    font-size: 0.875rem;
+                }
+                ul {
+                    padding-left: 15px;
+                }
+                li {
+                    font-size: 0.875rem;
+                }
+            }
+            </style>
+            </head>
+            <body>
+            <main>
+            <h1>Password Reset Successful</h1>
+            <h2>Your password has been reset</h2>
+            <p>Hi ${user.first_name},</p>
+            <p>Your password has been successfully reset as requested. Here are your new login credentials:</p>
+            
+            <div class="warning">
+                <h3>⚠️ Important Security Information</h3>
+                <p><strong>Identifier:</strong> ${user.id}</p>
+                <p><strong>New Password:</strong> ${newPassword}</p>
+                <p>This is the only time you will see your new password. Please save it in a secure location immediately.</p>
+            </div>
+            
+            <p>For your security, please:</p>
+            <ul>
+                <li>Log in with your new credentials as soon as possible</li>
+                <li>Store your password in a secure password manager</li>
+                <li>Never share your credentials with anyone</li>
+                <li>Contact us immediately if you did not request this password reset</li>
+            </ul>
+            
+            <p>You can log in to your account <a href="${process.env.NEXT_PUBLIC_APP_URL}/login">here</a></p>
+            <p>If you have any questions or concerns, please contact us at <a href="mailto:max@maximeduhamel.com">max@maximeduhamel.com</a></p>
+            <p>Best regards,</p>
+            <p>Maxime Duhamel</p>
+            </main>
+            </body>
+            </html>
+        `;
+
+    await sendEmail(user.email, "Password Reset - New Credentials", emailContent);
+}

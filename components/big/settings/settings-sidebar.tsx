@@ -37,12 +37,6 @@ const settingsItems = [
         href: "/my/settings/notifications",
         icon: <Bell className="size-4" />,
         description: "Manage your notification preferences"
-    },
-    {
-        name: "General",
-        href: "/my/settings/general",
-        icon: <Globe className="size-4" />,
-        description: "Language and region settings"
     }
 ]
 

@@ -1,4 +1,20 @@
+import { getUser } from "@/lib/db/queries/user"
+import { PasswordResetForm } from "@/components/big/settings/password-reset-form"
+
 export default async function SecuritySettingsPage() {
+    const user = await getUser()
+
+    if (!user) {
+        return (
+            <section className="page">
+                <h1 className="page-title">Security</h1>
+                <p className="page-description">
+                    Unable to load user information. Please try refreshing the page.
+                </p>
+            </section>
+        )
+    }
+
     return (
         <section className="page">
             <h1 className="page-title">Security</h1>
@@ -6,16 +22,7 @@ export default async function SecuritySettingsPage() {
                 Manage your password and security settings to keep your account safe.
             </p>
             <div className="mt-8">
-                <div className="max-w-2xl">
-                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                        <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200 mb-2">
-                            Security Settings Coming Soon
-                        </h3>
-                        <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                            Password change functionality and additional security features will be available in a future update.
-                        </p>
-                    </div>
-                </div>
+                <PasswordResetForm user={user} />
             </div>
         </section>
     )

@@ -292,3 +292,28 @@ export async function updateUserProfile({
         return { success: false, error: "Failed to update profile" }
     }
 }
+
+export async function updateUserPassword({
+    userId,
+    newPassword
+}: {
+    userId: string
+    newPassword: string
+}) {
+    try {
+        const hashedPassword = await hashPassword(newPassword)
+        
+        await db
+            .update(Schema.user)
+            .set({
+                password: hashedPassword,
+                updated_at: new Date(),
+            })
+            .where(eq(Schema.user.id, userId))
+
+        return { success: true }
+    } catch (error) {
+        console.error("Failed to update user password:", error)
+        return { success: false, error: "Failed to update password" }
+    }
+}
