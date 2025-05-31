@@ -3,7 +3,10 @@
 All notable changes to this project will be documented in this file.
 
 
-## [NOT RELEASED]
+## ## [Updating package.json version (minor)...
+Updated package.json version from 1.1.1 to 1.2.0
+Updated README.md with new version: 1.2.0
+1.2.0] - 2025-05-31
 - [2025-05-31 10:32:38] fix: second attempt to fix the error of update_changelog
 - [2025-05-31 10:29:06] fix: problem in the update_changelog function fixed
 - [2025-05-31 10:25:50] chore: make all the scripts executable
