@@ -87,7 +87,7 @@ update_changelog() {
         # Pre-calculate the date to avoid command substitution issues in sed
         local release_date
         release_date=$(date +"%Y-%m-%d")
-        local replacement_text="## [$version] - $release_date"
+        local replacement_text="[$version] - $release_date"
         
         # Use awk instead of sed for more reliable text replacement
         if ! awk -v replacement="$replacement_text" '
