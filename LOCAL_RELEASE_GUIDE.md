@@ -1,107 +1,268 @@
-# Local Version Management Setup Guide
+# Local Versioning and Release Guide
 
-This project uses a **local version management** system where versions are updated locally on every commit, and GitHub Actions handle promotion and publishing.
+**Current Version: V1.2.0**
 
-## 🚀 How It Works
+This guide explains the local versioning system used in the Life OS project, which follows semantic versioning (SemVer) and conventional commits.
 
-### 1. **Local Development**
-- Use `pnpm commit` for all commits
-- A local script analyzes conventional commits and updates `package.json` version + `CHANGELOG.md`
-- No GitHub releases are created locally
+## Table of Contents
 
-### 2. **Promotion to Main**
-- When ready to release, use `pnpm promote` 
-- This adds `[promote]` flag to a commit
-- GitHub Actions detects the flag and automatically:
-  - Merges `dev` → `main`
-  - Creates GitHub release from the version in `package.json`
-  - Syncs changes back to `dev`
+1. [Overview](#overview)
+2. [Version Structure](#version-structure)
+3. [Scripts Overview](#scripts-overview)
+4. [Workflow](#workflow)
+5. [Commands Reference](#commands-reference)
+6. [Automated Updates](#automated-updates)
+7. [Best Practices](#best-practices)
+8. [Troubleshooting](#troubleshooting)
 
-## 📋 Usage
+## Overview
 
-### Daily Development
-```bash
-# Make your changes
-# Use the interactive commit helper
-pnpm commit
+The project uses an automated versioning system with three main scripts:
+- `commit.sh` - Interactive commit helper with automatic patch version bumping
+- `promote.sh` - Branch promotion with minor/major version bumping
+- `functions.sh` - Shared utility functions for version management
 
-# The script will:
-# 1. Guide you through conventional commit format
-# 2. Create the commit
-# 3. Analyze commits and update version locally
-# 4. Update package.json version and CHANGELOG.md
+## Version Structure
+
+The project follows [Semantic Versioning (SemVer)](https://semver.org/):
+
+```
+MAJOR.MINOR.PATCH
 ```
 
-### Manual Version Bump
+- **MAJOR** (X.0.0): Breaking changes or significant feature releases
+- **MINOR** (0.X.0): New features that are backward compatible
+- **PATCH** (0.0.X): Bug fixes and small improvements
+
+## Scripts Overview
+
+### 1. commit.sh
+Interactive script for creating conventional commits with automatic patch version bumping.
+
+**Features:**
+- Validates git repository and required tools
+- Ensures you're on `dev` or `fix` branch
+- Provides interactive commit type selection
+- Automatically bumps patch version
+- Updates CHANGELOG.md
+- Offers branch promotion after commit
+
+### 2. promote.sh
+Script for promoting changes from development to main branch with version bumping.
+
+**Features:**
+- Supports minor and major version bumps
+- Updates CHANGELOG.md with release version
+- Merges dev branch to main
+- Automatically returns to dev branch
+
+### 3. functions.sh
+Utility functions shared between scripts.
+
+**Functions:**
+- `update_package_version()` - Updates package.json version
+- `update_changelog()` - Manages CHANGELOG.md entries
+- `validate_git_repo()` - Validates environment and tools
+
+## Workflow
+
+### Daily Development Workflow
+
+1. **Make changes** on `dev` or `fix` branch
+2. **Commit changes** using the commit script:
+   ```bash
+   pnpm commit
+   ```
+3. **Choose commit type** from the interactive menu
+4. **Enter description** for your changes
+5. **Review and confirm** the commit message
+6. **Decide on promotion** when prompted
+
+### Release Workflow
+
+1. **Complete development** on dev branch
+2. **Run promotion script**:
+   ```bash
+   pnpm promote
+   ```
+3. **Choose promotion level**:
+   - `0` for major release (X.0.0)
+   - `1` for minor release (0.X.0)
+4. **Automatic merge** to main branch
+5. **Return to dev** for continued development
+
+## Commands Reference
+
+### Available Scripts
+
 ```bash
-# Run version bump separately
-pnpm version-bump
+# Development workflow
+pnpm commit          # Interactive commit helper
+pnpm promote         # Branch promotion helper
+
+# Alternative direct execution
+./scripts/commit.sh
+./scripts/promote.sh
 ```
 
-### When Ready to Release
-```bash
-# Promote the current dev version to main
-pnpm promote
+### Commit Types
 
-# This will:
-# 1. Show current versions
-# 2. Allow you to add [promote] flag
-# 3. Trigger GitHub Actions workflow
+| Choice | Type | Description |
+|--------|------|-------------|
+| 1 | `feat:` | New feature |
+| 2 | `fix:` | Bug fix |
+| 3 | `docs:` | Documentation change |
+| 4 | `style:` | Code style change |
+| 5 | `refactor:` | Code refactoring |
+| 6 | `perf:` | Performance improvement |
+| 7 | `test:` | Test changes |
+| 8 | `chore:` | Non-functional change |
+| 9 | `security:` | Security fix |
+| 10 | `revert:` | Revert changes |
+| 11 | `done:` | Completed tasks |
+| 12 | `wip:` | Work in progress |
+| 13 | `started:` | New tasks |
+
+## Automated Updates
+
+### Package.json
+- **Patch**: Automatically incremented with each commit
+- **Minor**: Incremented during minor promotions (resets patch to 0)
+- **Major**: Incremented during major promotions (resets minor and patch to 0)
+
+### README.md
+- Version badge automatically updated with new version
+- Pattern: `Current Version: **VX.X.X**`
+
+### CHANGELOG.md
+- **Regular commits**: Added under `[NOT RELEASED]` section with timestamp
+- **Promotions**: `[NOT RELEASED]` replaced with version and release date
+- Format: `[VERSION] - YYYY-MM-DD`
+
+## Best Practices
+
+### Branch Management
+- Work on `dev` branch for features and improvements
+- Use `fix` branch for urgent bug fixes
+- Only promote stable, tested code to `main`
+
+### Commit Messages
+- Use descriptive, clear commit messages
+- Keep descriptions between 5-100 characters
+- Use lowercase for consistency
+- Be specific about what changed
+
+### Version Bumping
+- **Patch**: Small fixes, typos, minor improvements
+- **Minor**: New features, significant improvements
+- **Major**: Breaking changes, major feature releases
+
+### Pre-commit Checklist
+- [ ] Code is tested and working
+- [ ] Documentation is updated if needed
+- [ ] No breaking changes (unless major release)
+- [ ] Commit message is clear and descriptive
+
+## Troubleshooting
+
+### Common Issues
+
+#### "Not a valid git repository"
+```bash
+# Ensure you're in the project root
+cd /home/etudiant/Documents/life_os
+git status
 ```
 
-## 🔧 Configuration Files
-
-- **`scripts/local-version-bump.sh`** - Local version analysis and bump script
-- **`.releaserc.json`** - CI semantic-release config (GitHub publishing)
-- **`scripts/commit.sh`** - Interactive commit helper with local version bump
-- **`scripts/promote-release.sh`** - Promotion helper
-- **`.github/workflows/release.yml`** - GitHub Actions for promotion and publishing
-
-## 🌟 Benefits
-
-- **Immediate feedback** - Version updates happen instantly
-- **No external dependencies** - Works completely offline
-- **Simple and reliable** - No complex semantic-release configuration
-- **Controlled releases** - Manual promotion to production
-
-## 🔍 Troubleshooting
-
-### If local version bump fails:
+#### "jq is required but not installed"
 ```bash
-# Check if you're on a valid branch
-git branch --show-current  # Should be 'main' or 'dev'
+# Install jq on Ubuntu/Debian
+sudo apt-get install jq
 
-# Check recent commits
-git log --oneline -5
-
-# Run version bump manually
-pnpm version-bump
+# Install jq on other systems
+# Check https://stedolan.github.io/jq/download/
 ```
 
-### If promotion fails:
-- Check GitHub Actions logs
-- Ensure `[promote]` is in the commit message
-- Verify you're on the `dev` branch
-- Make sure there are no merge conflicts
+#### "Failed to update package.json"
+- Check file permissions
+- Ensure package.json exists and is valid JSON
+- Verify jq is working: `jq '.version' package.json`
 
-## 📝 Commit Types
+#### "Failed to checkout main branch"
+- Ensure main branch exists: `git branch -a`
+- Check for uncommitted changes: `git status`
+- Ensure remote is properly configured: `git remote -v`
 
-- **feat:** new features (minor version)
-- **fix:** bug fixes (patch version)
-- **perf:** performance improvements (patch)
-- **refactor:** code refactoring (patch)
-- **style:** code style changes (patch)
-- **docs:** documentation (no release)
-- **test:** tests (no release)
-- **chore:** maintenance (no release)
+### Recovery Commands
 
-## 🔄 Branch Strategy
+#### Reset version manually
+```bash
+# Edit package.json manually
+nano package.json
 
-- **`dev`** - Development branch (pre-releases with timestamps)
-- **`main`** - Production branch (stable releases)
-- Use `[promote]` to move from dev → main
+# Update README.md
+sed -i 's/Current Version: \*\*V[0-9]\+\.[0-9]\+\.[0-9]\+\*\*/Current Version: **V1.2.0**/' README.md
+```
 
-## 📊 Version Format
+#### Force branch sync
+```bash
+# Reset dev to match main
+git checkout dev
+git reset --hard origin/main
+git push --force-with-lease origin dev
+```
 
-- **Main branch**: `1.2.3` (standard semver)
-- **Dev branch**: `1.2.3-dev.1620000000` (with timestamp suffix)
+## Dependencies
+
+### Required Tools
+- `git` - Version control
+- `jq` - JSON processor for package.json manipulation
+- `sed` - Stream editor for file modifications
+- `bash` - Shell for script execution
+
+### Optional Tools
+- `husky` - Git hooks (configured in package.json)
+- `commitlint` - Commit message linting
+
+## Configuration Files
+
+### package.json Scripts
+```json
+{
+    "commit": "./scripts/commit.sh",
+    "promote": "./scripts/promote.sh"
+}
+```
+
+### Commitlint Integration
+The project includes commitlint configuration for enforcing conventional commits.
+
+---
+
+## Quick Reference
+
+### Typical Development Session
+```bash
+# 1. Start development
+git checkout dev
+git pull origin dev
+
+# 2. Make changes
+# ... code changes ...
+
+# 3. Commit with version bump
+./scripts/commit.sh
+
+# 4. Optional: Promote to main
+# (during commit process or separately)
+./scripts/promote.sh
+```
+
+### Version Examples
+- `1.2.3` → `1.2.4` (patch via commit)
+- `1.2.4` → `1.3.0` (minor via promotion)
+- `1.3.0` → `2.0.0` (major via promotion)
+
+---
+
+*Last updated: 2025-05-31*

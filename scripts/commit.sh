@@ -32,6 +32,14 @@ if [[ "$current_branch" != "dev" && "$current_branch" != "fix" ]]; then
     fi
 fi
 
+# Display the modified files
+echo "Modified files:"
+git diff --name-only | while read -r file; do
+    echo "  - $file"
+done
+
+echo ""
+
 # Define commit types
 declare -A commit_types=(
     ["1"]="feat:New feature"
