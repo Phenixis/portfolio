@@ -106,7 +106,7 @@ export function PasswordResetForm({ user }: PasswordResetFormProps) {
                     </div>
                 </div>
 
-                <div className="pt-4">
+                <div className="pt-4 flex justify-end">
                     <AlertDialog open={showSecondConfirm} onOpenChange={setShowSecondConfirm}>
                         <AlertDialog>
                             <AlertDialogTrigger asChild>

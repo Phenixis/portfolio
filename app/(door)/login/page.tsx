@@ -23,6 +23,7 @@ import {
 } from "input-otp"
 import Link from "next/link"
 import { toast } from "sonner"
+import { ForgotPasswordForm } from "@/components/big/auth/forgot-password-form"
 
 export default function Login() {
     const [redirectTo, setRedirectTo] = useState("/my")
@@ -172,7 +173,9 @@ export default function Login() {
                         disabled={pending}
                     >Login</Button>
                 </CardFooter>
-            </Card>                <Link href="/sign-up" className="text-sm text-gray-300 lg:text-gray-500 lg:hover:text-gray-300 underline lg:no-underline lg:hover:underline">Don&apos;t have an account?</Link>
+            </Card>
+            <Link href="/sign-up" className="text-sm text-gray-300 lg:text-gray-500 lg:hover:text-gray-300 underline lg:no-underline lg:hover:underline">Don&apos;t have an account?</Link>
+            <ForgotPasswordForm />
         </form>
     )
 }

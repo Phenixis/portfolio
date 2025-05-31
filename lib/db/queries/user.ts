@@ -145,6 +145,24 @@ export async function getUser(id?: string) {
     return user[0]
 }
 
+export async function getUserByEmail(email: string) {
+    const user = await db.select()
+        .from(Schema.user)
+        .where(eq(Schema.user.email, email))
+        .limit(1)
+
+    return user.length > 0 ? user[0] : null
+}
+
+export async function getUserByApiKey(apiKey: string) {
+    const user = await db.select()
+        .from(Schema.user)
+        .where(eq(Schema.user.api_key, apiKey))
+        .limit(1)
+
+    return user.length > 0 ? user[0] : null
+}
+
 export async function getUserPreferences(id?: string) {
     const userId = id || await getUserId();
 

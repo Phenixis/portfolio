@@ -1,6 +1,6 @@
 # Life OS
 
-Current Version: **V1.4.7**
+Current Version: **V1.4.8**
 
 ## Your life, all in one place.
 
@@ -24,11 +24,12 @@ Life OS is a personal knowledge management system designed to help you organize 
 - [x] Movie Tracker [V1.0.0]
     - [x] Filter by rating [V1.1.0]
     - [x] Filter by type (Movie/TV show) [V1.1.0]
-- [ ] Settings Page
+- [x] Settings Page
     - [x] Dark Mode settings [V1.0.0]
     - [x] Profile settings [V1.4.4]
     - [x] UI [V1.4.4]
-    - [ ] Password reset
+    - [x] Password reset [V1.4.7]
+    - [x] Forgot Password [V1.4.8]
 - [ ] Habit Tracker
 - [ ] Workout Tracker
 - [ ] Google Calendar Integration

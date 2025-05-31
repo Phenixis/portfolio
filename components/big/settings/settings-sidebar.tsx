@@ -11,7 +11,7 @@ import {
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import Link from "next/link"
-import { User, Palette, Shield, Bell, Globe } from "lucide-react"
+import { User, Palette, Shield } from "lucide-react"
 
 const settingsItems = [
     {
@@ -31,12 +31,6 @@ const settingsItems = [
         href: "/my/settings/security",
         icon: <Shield className="size-4" />,
         description: "Password and security settings"
-    },
-    {
-        name: "Notifications",
-        href: "/my/settings/notifications",
-        icon: <Bell className="size-4" />,
-        description: "Manage your notification preferences"
     }
 ]
 

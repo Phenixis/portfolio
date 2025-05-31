@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [NOT RELEASED]
+- [2025-05-31 16:12:49] feat: add a forgot password flow to login
 - [2025-05-31 15:33:26] feat: add the feature to reset the password
 - [2025-05-31 14:55:12] fix: remove unused vars and fix commit description length
 - [2025-05-31 14:47:49] feat: changed the settings link appearance condition in the header and every sidebar is now always closed

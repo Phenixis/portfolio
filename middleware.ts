@@ -11,12 +11,17 @@ export type ActionState = {
 const protectedRoutes = ["/my"]
 const unaccessibleWhenLoggedIn = ["/login", "/"]
 const apiRoutes = ["/api"]
+const apiRoutesWithoutAPIKey = ["/api/auth/forgot-password"]
 
 export async function middleware(request: NextRequest) {
 	const { pathname } = request.nextUrl
 
 	// Handle API routes
 	if (apiRoutes.some(route => pathname.startsWith(route))) {
+		if (apiRoutesWithoutAPIKey.some(route => pathname.startsWith(route))) {
+			// If the route does not require an API key, let it pass
+			return NextResponse.next()
+		}
 		const apiKey = request.headers.get('Authorization')?.replace('Bearer ', '')
 		
 		if (!apiKey) {
