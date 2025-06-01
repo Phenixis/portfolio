@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [NOT RELEASED]
+- [V1.4.18 - 2025-06-01 17:53:35] docs: added marketing documents
 - [V1.4.17 - 2025-05-31 20:59:53] feat: save matrices in the db
 - [V1.4.15 - 2025-05-31 19:17:53] chore: add a rollback function in commit script
 - [V1.4.14 - 2025-05-31 19:12:05] fix: fix esling error
