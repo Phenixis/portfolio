@@ -1,6 +1,6 @@
 # Life OS
 
-Current Version: **V1.4.18**
+Current Version: **V1.4.19**
 
 ## Your life, all in one place.
 
@@ -36,10 +36,11 @@ Life OS is a personal knowledge management system designed to help you organize 
 - [ ] Google Calendar Integration
 - [ ] Branding
     - [ ] Logo
-    - [ ] Colors
-    - [ ] Fonts
+    - [x] Colors [V1.4.19]
+    - [x] Fonts [V1.4.19]
     - [ ] UI adaptation
 - [ ] Landing Page
+    - [x] V1 [V1.4.19]
 - [ ] Book Tracker
 - [ ] Grocery List Maker
 - [ ] Vocal Assistant Device

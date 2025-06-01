@@ -1,6 +1,6 @@
 import './globals.css'
 import type { Metadata } from 'next'
-import { Domine, Geist_Mono, Ubuntu_Sans_Mono } from 'next/font/google';
+import { Space_Grotesk, Inter } from 'next/font/google';
 import {
     TooltipProvider
 } from "@/components/ui/tooltip"
@@ -9,16 +9,16 @@ import { Analytics } from '@vercel/analytics/next';
 import { Toaster } from "@/components/ui/sonner"
 import { darkMode } from "@/lib/flags"
 
-const domine = Domine({
+const spaceGrotesk = Space_Grotesk({
     subsets: ['latin'],
+    variable: '--font-space-grotesk',
+    display: 'swap',
 })
 
-const geistMono = Geist_Mono({
+const inter = Inter({
     subsets: ['latin'],
-})
-
-const ubuntuSansMono = Ubuntu_Sans_Mono({
-    subsets: ['latin'],
+    variable: '--font-inter',
+    display: 'swap',
 })
 
 export const metadata: Metadata = {
@@ -69,9 +69,9 @@ export default async function RootLayout({
             </head>
             <body className={cx(
                 'antialiased text-black bg-white dark:text-white dark:bg-black h-full min-h-screen w-full min-w-screen max-w-screen',
-                domine.className,
-                geistMono.className,
-                ubuntuSansMono.className,
+                spaceGrotesk.variable,
+                inter.variable,
+                inter.className, // Set Inter as default body font
             )}>
                 <TooltipProvider>
                     {children}
