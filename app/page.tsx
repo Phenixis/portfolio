@@ -1,19 +1,32 @@
-'use client';
+'use client'
 
+import React, { useState, useRef } from 'react'
+import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { CheckCircle, Zap, Shield, Target, Users, Sparkles, ArrowRight, Menu, X } from "lucide-react"
 import Link from "next/link"
-import { motion, useScroll, useTransform, useInView } from 'framer-motion'
-import { useRef, useState } from 'react'
-import React from 'react'
+
+// Type-safe motion components
+const MotionDiv = motion.div as any
+const MotionA = motion.a as any
+const MotionButton = motion.button as any
+const MotionH1 = motion.h1 as any
+const MotionH2 = motion.h2 as any
+const MotionP = motion.p as any
+const MotionSpan = motion.span as any
+// const MotionNav = motion.nav as any
+const MotionUl = motion.ul as any
+const MotionLi = motion.li as any
+const MotionSection = motion.section as any
+const MotionFooter = motion.footer as any
 
 export default function LandingPage() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-    const containerRef = useRef(null)
+    const containerRef = useRef<HTMLDivElement>(null)
     const { scrollYProgress } = useScroll({
-        target: containerRef,
+        target: containerRef as React.RefObject<HTMLElement>,
         offset: ["start start", "end start"]
     })
     
@@ -21,12 +34,6 @@ export default function LandingPage() {
     const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
 
     // Animation variants
-    // const fadeInUp = {
-    //     initial: { opacity: 0, y: 30 },
-    //     animate: { opacity: 1, y: 0 },
-    //     transition: { duration: 0.6, ease: "easeOut" }
-    // }
-
     const staggerContainer = {
         initial: {},
         animate: {
@@ -46,191 +53,170 @@ export default function LandingPage() {
         }
     }
 
-    // const scaleIn = {
-    //     initial: { opacity: 0, scale: 0.9 },
-    //     animate: { 
-    //         opacity: 1, 
-    //         scale: 1,
-    //         transition: { duration: 0.6, ease: "easeOut" }
-    //     }
-    // }
+    const navigationItems = [
+        { name: 'Problems', href: '#problems' },
+        { name: 'Features', href: '#features' },
+        { name: 'Benefits', href: '#benefits' },
+        { name: 'Pricing', href: '#pricing' }
+    ]
+
+    const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+        e.preventDefault()
+        const element = document.querySelector(href) as HTMLElement
+        if (element) {
+            const offsetTop = element.offsetTop - 80 // Account for sticky nav
+            window.scrollTo({ top: offsetTop, behavior: 'smooth' })
+        }
+    }
 
     return (
         <div ref={containerRef} className="min-h-screen bg-white dark:bg-black text-black dark:text-white">
             {/* Navigation */}
-            <motion.nav 
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-                className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800 backdrop-blur-sm bg-white/80 dark:bg-black/80 sticky top-0 z-50"
-            >
-                <motion.div 
+            <nav className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800 backdrop-blur-sm bg-white/80 dark:bg-black/80 sticky top-0 z-50">
+                <MotionDiv 
                     className="flex items-center space-x-2"
                     whileHover={{ scale: 1.02 }}
                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 >
-                    <motion.div 
+                    <MotionDiv 
                         className="w-8 h-8 bg-black dark:bg-white rounded-sm"
                         whileHover={{ rotate: 5 }}
                         transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                    ></motion.div>
+                    />
                     <button 
                         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                         className="text-xl font-medium tracking-wide font-heading lg:hover:text-gray-600 dark:lg:hover:text-gray-300 transition-colors"
                     >
                         Life OS
                     </button>
-                </motion.div>
+                </MotionDiv>
                 
                 {/* Desktop Navigation Links */}
-                <motion.div 
+                <MotionDiv 
                     className="hidden md:flex items-center space-x-8"
                     variants={staggerContainer}
                     initial="initial"
                     animate="animate"
                 >
-                    {[
-                        { name: 'Problems', href: '#problems' },
-                        { name: 'Features', href: '#features' },
-                        { name: 'Benefits', href: '#benefits' },
-                        { name: 'Pricing', href: '#pricing' }
-                    ].map((item) => (
-                        <motion.a
+                    {navigationItems.map((item) => (
+                        <MotionA
                             key={item.name}
                             href={item.href}
                             variants={staggerItem}
                             className="text-sm text-gray-600 dark:text-gray-400 lg:hover:text-black dark:lg:hover:text-white transition-colors relative group"
-                            onClick={(e) => {
-                                e.preventDefault()
-                                const element = document.querySelector(item.href) as HTMLElement
-                                if (element) {
-                                    const offsetTop = element.offsetTop - 80 // Account for sticky nav
-                                    window.scrollTo({ top: offsetTop, behavior: 'smooth' })
-                                }
-                            }}
+                            onClick={(e: React.MouseEvent<HTMLAnchorElement>) => handleNavClick(e, item.href)}
                             whileHover={{ y: -2 }}
                             transition={{ type: "spring", stiffness: 400, damping: 17 }}
                         >
                             {item.name}
-                            <motion.div 
+                            <MotionDiv 
                                 className="absolute -bottom-1 left-0 right-0 h-0.5 bg-black dark:bg-white"
                                 initial={{ scaleX: 0 }}
                                 whileHover={{ scaleX: 1 }}
                                 transition={{ duration: 0.2 }}
                             />
-                        </motion.a>
+                        </MotionA>
                     ))}
-                </motion.div>
+                </MotionDiv>
 
                 {/* Desktop CTA Buttons */}
                 <div className="hidden md:flex items-center space-x-4">
-                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <MotionDiv whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                         <Link href="/login" className="text-sm lg:hover:underline">Sign In</Link>
-                    </motion.div>
-                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    </MotionDiv>
+                    <MotionDiv whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                         <Button size="sm" className="bg-black dark:bg-white text-white dark:text-black lg:hover:bg-gray-800 dark:lg:hover:bg-gray-200">
                             Get Started
                         </Button>
-                    </motion.div>
+                    </MotionDiv>
                 </div>
 
                 {/* Mobile Menu Button */}
-                <motion.button
+                <MotionButton
                     className="md:hidden p-2"
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                 >
-                    <motion.div
+                    <MotionDiv
                         animate={{ rotate: isMobileMenuOpen ? 180 : 0 }}
                         transition={{ duration: 0.3 }}
                     >
                         {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-                    </motion.div>
-                </motion.button>
-            </motion.nav>
+                    </MotionDiv>
+                </MotionButton>
+            </nav>
 
             {/* Mobile Menu Overlay */}
-            <motion.div
-                className="md:hidden fixed inset-0 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-sm"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ 
-                    opacity: isMobileMenuOpen ? 1 : 0,
-                    y: isMobileMenuOpen ? 0 : -20,
-                    pointerEvents: isMobileMenuOpen ? 'auto' : 'none'
-                }}
-                transition={{ duration: 0.3 }}
-            >
-                <div className="flex flex-col items-center justify-center h-full space-y-8">
-                    <motion.div 
-                        className="flex flex-col items-center space-y-6"
-                        variants={staggerContainer}
-                        initial="initial"
-                        animate={isMobileMenuOpen ? "animate" : "initial"}
-                    >
-                        {[
-                            { name: 'Problems', href: '#problems' },
-                            { name: 'Features', href: '#features' },
-                            { name: 'Benefits', href: '#benefits' },
-                            { name: 'Pricing', href: '#pricing' }
-                        ].map((item) => (
-                            <motion.a
-                                key={item.name}
-                                href={item.href}
-                                variants={staggerItem}
-                                className="text-2xl font-medium text-gray-600 dark:text-gray-400 lg:hover:text-black dark:lg:hover:text-white transition-colors"
-                                onClick={(e) => {
-                                    e.preventDefault()
-                                    const element = document.querySelector(item.href) as HTMLElement
-                                    if (element) {
-                                        const offsetTop = element.offsetTop - 80
-                                        window.scrollTo({ top: offsetTop, behavior: 'smooth' })
+            {isMobileMenuOpen && (
+                <MotionDiv
+                    className="md:hidden fixed inset-0 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-sm"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    <div className="flex flex-col items-center justify-center h-full space-y-8">
+                        <MotionDiv 
+                            className="flex flex-col items-center space-y-6"
+                            variants={staggerContainer}
+                            initial="initial"
+                            animate="animate"
+                        >
+                            {navigationItems.map((item) => (
+                                <MotionA
+                                    key={item.name}
+                                    href={item.href}
+                                    variants={staggerItem}
+                                    className="text-2xl font-medium text-gray-600 dark:text-gray-400 lg:hover:text-black dark:lg:hover:text-white transition-colors"
+                                    onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                                        handleNavClick(e, item.href)
                                         setIsMobileMenuOpen(false)
-                                    }
-                                }}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                            >
-                                {item.name}
-                            </motion.a>
-                        ))}
-                    </motion.div>
-                    
-                    <motion.div 
-                        className="flex flex-col items-center space-y-4"
-                        variants={staggerContainer}
-                        initial="initial"
-                        animate={isMobileMenuOpen ? "animate" : "initial"}
-                    >
-                        <motion.div variants={staggerItem}>
-                            <Link 
-                                href="/login" 
-                                className="text-lg lg:hover:underline"
-                                onClick={() => setIsMobileMenuOpen(false)}
-                            >
-                                Sign In
-                            </Link>
-                        </motion.div>
-                        <motion.div variants={staggerItem}>
-                            <Button 
-                                size="lg" 
-                                className="bg-black dark:bg-white text-white dark:text-black lg:hover:bg-gray-800 dark:lg:hover:bg-gray-200"
-                                onClick={() => setIsMobileMenuOpen(false)}
-                            >
-                                Get Started
-                            </Button>
-                        </motion.div>
-                    </motion.div>
-                </div>
-            </motion.div>
+                                    }}
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                >
+                                    {item.name}
+                                </MotionA>
+                            ))}
+                        </MotionDiv>
+                        
+                        <MotionDiv 
+                            className="flex flex-col items-center space-y-4"
+                            variants={staggerContainer}
+                            initial="initial"
+                            animate="animate"
+                        >
+                            <MotionDiv variants={staggerItem}>
+                                <Link 
+                                    href="/login" 
+                                    className="text-lg lg:hover:underline"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    Sign In
+                                </Link>
+                            </MotionDiv>
+                            <MotionDiv variants={staggerItem}>
+                                <Button 
+                                    size="lg" 
+                                    className="bg-black dark:bg-white text-white dark:text-black lg:hover:bg-gray-800 dark:lg:hover:bg-gray-200"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    Get Started
+                                </Button>
+                            </MotionDiv>
+                        </MotionDiv>
+                    </div>
+                </MotionDiv>
+            )}
 
             {/* Hero Section */}
-            <motion.section 
+            <MotionSection 
                 className="px-6 py-20 text-center max-w-6xl mx-auto relative overflow-hidden"
                 style={{ y, opacity }}
             >
                 {/* Floating background elements */}
-                <motion.div 
+                <MotionDiv 
                     className="absolute top-20 left-10 w-20 h-20 bg-gradient-to-r from-red-500/10 to-blue-500/10 rounded-full blur-xl"
                     animate={{ 
                         y: [-20, 20, -20],
@@ -243,7 +229,7 @@ export default function LandingPage() {
                         ease: "easeInOut"
                     }}
                 />
-                <motion.div 
+                <MotionDiv 
                     className="absolute top-40 right-20 w-32 h-32 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-full blur-xl"
                     animate={{ 
                         y: [20, -20, 20],
@@ -257,24 +243,24 @@ export default function LandingPage() {
                     }}
                 />
 
-                <motion.div
+                <MotionDiv
                     variants={staggerContainer}
                     initial="initial"
                     animate="animate"
                     className="relative z-10"
                 >
-                    <motion.div variants={staggerItem}>
+                    <MotionDiv variants={staggerItem}>
                         <Badge variant="outline" className="mb-6 border-gray-300 dark:border-gray-700">
                             Your Personal Command Center
                         </Badge>
-                    </motion.div>
+                    </MotionDiv>
                     
-                    <motion.h1 
+                    <MotionH1 
                         variants={staggerItem}
                         className="w-full text-4xl md:text-6xl font-medium tracking-wide mb-6 leading-tight font-heading"
                     >
                         Life OS is your
-                        <motion.span 
+                        <MotionSpan 
                             className="bg-gradient-to-r from-red-500 to-blue-500 bg-clip-text text-transparent"
                             animate={{ 
                                 backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
@@ -284,29 +270,29 @@ export default function LandingPage() {
                                 repeat: Infinity,
                                 ease: "linear"
                             }}
-                        > operating system</motion.span>
+                        > operating system</MotionSpan>
                         <br />for a cluttered life
-                    </motion.h1>
+                    </MotionH1>
                     
-                    <motion.p 
+                    <MotionP 
                         variants={staggerItem}
                         className="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto leading-relaxed"
                     >
                         Built for ambitious students and side-hustlers who juggle classes, internships, and creative projects. 
                         No more app-hopping or sticky notes—just clarity, focus, and forward momentum in one minimal interface.
-                    </motion.p>
+                    </MotionP>
                     
-                    <motion.div 
+                    <MotionDiv 
                         variants={staggerItem}
                         className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12"
                     >
-                        <motion.div
+                        <MotionDiv
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                         >
                             <Button size="lg" className="bg-black dark:bg-white text-white dark:text-black lg:hover:bg-gray-800 dark:lg:hover:bg-gray-200 px-8">
                                 Start Your Free Trial
-                                <motion.div
+                                <MotionDiv
                                     className="ml-2"
                                     animate={{ x: [0, 4, 0] }}
                                     transition={{ 
@@ -316,30 +302,30 @@ export default function LandingPage() {
                                     }}
                                 >
                                     <ArrowRight className="h-4 w-4" />
-                                </motion.div>
+                                </MotionDiv>
                             </Button>
-                        </motion.div>
-                        <motion.div
+                        </MotionDiv>
+                        <MotionDiv
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                         >
                             <Button variant="outline" size="lg" className="border-gray-300 dark:border-gray-700">
                                 Watch Demo
                             </Button>
-                        </motion.div>
-                    </motion.div>
+                        </MotionDiv>
+                    </MotionDiv>
                     
-                    <motion.div 
+                    <MotionDiv 
                         variants={staggerItem}
                         className="flex items-center justify-center space-x-2 text-sm text-gray-500 dark:text-gray-500"
                     >
                         <span>Join the growing community of organized achievers</span>
-                    </motion.div>
-                </motion.div>
-            </motion.section>
+                    </MotionDiv>
+                </MotionDiv>
+            </MotionSection>
 
             {/* Problem Section */}
-            <motion.section 
+            <MotionSection 
                 id="problems"
                 className="px-6 py-16 bg-gray-50 dark:bg-gray-950"
                 initial={{ opacity: 0 }}
@@ -348,7 +334,7 @@ export default function LandingPage() {
                 viewport={{ once: true, margin: "-100px" }}
             >
                 <div className="max-w-4xl mx-auto text-center">
-                    <motion.h2 
+                    <MotionH2 
                         className="text-3xl font-medium tracking-wide mb-6 font-heading"
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -356,8 +342,8 @@ export default function LandingPage() {
                         viewport={{ once: true }}
                     >
                         Stop juggling scattered workflows
-                    </motion.h2>
-                    <motion.p 
+                    </MotionH2>
+                    <MotionP 
                         className="text-lg text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto"
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -366,8 +352,8 @@ export default function LandingPage() {
                     >
                         You&apos;re ambitious. You&apos;ve got classes, internships, side projects, and big dreams. 
                         But your productivity setup is scattered across apps, notebooks, and sticky notes.
-                    </motion.p>
-                    <motion.div 
+                    </MotionP>
+                    <MotionDiv 
                         className="grid md:grid-cols-3 gap-8"
                         variants={staggerContainer}
                         initial="initial"
@@ -392,12 +378,12 @@ export default function LandingPage() {
                             description="Mental fatigue from reactive firefighting instead of proactive progress"
                             delay={0.2}
                         />
-                    </motion.div>
+                    </MotionDiv>
                 </div>
-            </motion.section>
+            </MotionSection>
 
             {/* Solution Section */}
-            <motion.section 
+            <MotionSection 
                 id="features"
                 className="px-6 py-16"
                 initial={{ opacity: 0 }}
@@ -406,7 +392,7 @@ export default function LandingPage() {
                 viewport={{ once: true, margin: "-100px" }}
             >
                 <div className="max-w-6xl mx-auto">
-                    <motion.div 
+                    <MotionDiv 
                         className="text-center mb-16"
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -418,7 +404,7 @@ export default function LandingPage() {
                             Life OS transforms scattered workflows into a seamless life dashboard. 
                             Cut context-switching by half and gain calm confidence knowing nothing slips through the cracks.
                         </p>
-                    </motion.div>
+                    </MotionDiv>
                     
                     {/* Feature Cards */}
                     <FeatureCard
@@ -496,12 +482,10 @@ export default function LandingPage() {
                         delay={1.0}
                     />
                 </div>
-            </motion.section>
-
-            {/* Testimonial Section - Removed as requested */}
+            </MotionSection>
 
             {/* Benefits & Transformation Section */}
-            <motion.section 
+            <MotionSection 
                 id="benefits"
                 className="px-6 py-16 bg-gray-50 dark:bg-gray-950"
                 initial={{ opacity: 0 }}
@@ -510,7 +494,7 @@ export default function LandingPage() {
                 viewport={{ once: true, margin: "-100px" }}
             >
                 <div className="max-w-6xl mx-auto">
-                    <motion.div 
+                    <MotionDiv 
                         className="text-center mb-16"
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -521,23 +505,23 @@ export default function LandingPage() {
                         <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
                             See how Life OS shifts you from reactive firefighting to proactive, goal-driven progress.
                         </p>
-                    </motion.div>
+                    </MotionDiv>
                     
-                    <motion.div 
+                    <MotionDiv 
                         className="grid md:grid-cols-3 gap-8 mb-16"
                         variants={staggerContainer}
                         initial="initial"
                         whileInView="animate"
                         viewport={{ once: true, margin: "-50px" }}
                     >
-                        <motion.div variants={staggerItem} className="text-center">
-                            <motion.div 
+                        <MotionDiv variants={staggerItem} className="text-center">
+                            <MotionDiv 
                                 className="bg-red-50 dark:bg-red-900/10 p-6 rounded-lg mb-6"
                                 whileHover={{ scale: 1.02, y: -5 }}
                                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                             >
                                 <h4 className="font-medium font-heading text-red-700 dark:text-red-400 mb-3">Before Life OS</h4>
-                                <motion.ul 
+                                <MotionUl 
                                     className="space-y-2 text-sm text-gray-600 dark:text-gray-400"
                                     variants={staggerContainer}
                                     initial="initial"
@@ -545,40 +529,40 @@ export default function LandingPage() {
                                     viewport={{ once: true }}
                                 >
                                     {['📱 App-hopping between tools', '📝 Scattered sticky notes', '😰 Missed deadlines', '🧠 Mental overload', '⏰ Wasted time searching'].map((item, index) => (
-                                        <motion.li key={index} variants={staggerItem}>{item}</motion.li>
+                                        <MotionLi key={index} variants={staggerItem}>{item}</MotionLi>
                                     ))}
-                                </motion.ul>
-                            </motion.div>
-                        </motion.div>
+                                </MotionUl>
+                            </MotionDiv>
+                        </MotionDiv>
                         
-                        <motion.div variants={staggerItem} className="text-center">
-                            <motion.div 
+                        <MotionDiv variants={staggerItem} className="text-center">
+                            <MotionDiv 
                                 className="bg-yellow-50 dark:bg-yellow-900/10 p-6 rounded-lg mb-6"
                                 whileHover={{ scale: 1.02, y: -5 }}
                                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                             >
                                 <h4 className="font-medium font-heading text-yellow-700 dark:text-yellow-400 mb-3">The Transition</h4>
-                                <motion.div 
+                                <MotionDiv 
                                     className="text-4xl mb-4"
                                     animate={{ rotate: [0, 10, 0] }}
                                     transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                                 >
                                     →
-                                </motion.div>
+                                </MotionDiv>
                                 <p className="text-sm text-gray-600 dark:text-gray-400">
                                     Simple setup, intuitive interface, and immediate organization of your existing chaos.
                                 </p>
-                            </motion.div>
-                        </motion.div>
+                            </MotionDiv>
+                        </MotionDiv>
                         
-                        <motion.div variants={staggerItem} className="text-center">
-                            <motion.div 
+                        <MotionDiv variants={staggerItem} className="text-center">
+                            <MotionDiv 
                                 className="bg-green-50 dark:bg-green-900/10 p-6 rounded-lg mb-6"
                                 whileHover={{ scale: 1.02, y: -5 }}
                                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                             >
                                 <h4 className="font-medium font-heading text-green-700 dark:text-green-400 mb-3">After Life OS</h4>
-                                <motion.ul 
+                                <MotionUl 
                                     className="space-y-2 text-sm text-gray-600 dark:text-gray-400"
                                     variants={staggerContainer}
                                     initial="initial"
@@ -586,12 +570,12 @@ export default function LandingPage() {
                                     viewport={{ once: true }}
                                 >
                                     {['✨ Single source of truth', '🎯 Clear daily priorities', '📈 Consistent progress', '😌 Mental clarity', '🚀 Confident execution'].map((item, index) => (
-                                        <motion.li key={index} variants={staggerItem}>{item}</motion.li>
+                                        <MotionLi key={index} variants={staggerItem}>{item}</MotionLi>
                                     ))}
-                                </motion.ul>
-                            </motion.div>
-                        </motion.div>
-                    </motion.div>
+                                </MotionUl>
+                            </MotionDiv>
+                        </MotionDiv>
+                    </MotionDiv>
                     
                     <div className="grid md:grid-cols-2 gap-12 items-center">
                         <div>
@@ -661,10 +645,10 @@ export default function LandingPage() {
                         </div>
                     </div>
                 </div>
-            </motion.section>
+            </MotionSection>
 
             {/* Pricing Section */}
-            <motion.section 
+            <MotionSection 
                 id="pricing"
                 className="px-6 py-16"
                 initial={{ opacity: 0 }}
@@ -673,7 +657,7 @@ export default function LandingPage() {
                 viewport={{ once: true, margin: "-100px" }}
             >
                 <div className="max-w-4xl mx-auto text-center">
-                    <motion.h2 
+                    <MotionH2 
                         className="text-3xl font-medium tracking-wide mb-6 font-heading"
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -681,8 +665,8 @@ export default function LandingPage() {
                         viewport={{ once: true }}
                     >
                         Choose your operating system
-                    </motion.h2>
-                    <motion.p 
+                    </MotionH2>
+                    <MotionP 
                         className="text-lg text-gray-600 dark:text-gray-400 mb-12"
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -690,9 +674,9 @@ export default function LandingPage() {
                         viewport={{ once: true }}
                     >
                         Start free, upgrade when you&apos;re ready to unlock your full potential
-                    </motion.p>
+                    </MotionP>
                     
-                    <motion.div 
+                    <MotionDiv 
                         className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto"
                         variants={staggerContainer}
                         initial="initial"
@@ -700,8 +684,8 @@ export default function LandingPage() {
                         viewport={{ once: true, margin: "-50px" }}
                     >
                         {/* Free Plan */}
-                        <motion.div variants={staggerItem}>
-                            <motion.div
+                        <MotionDiv variants={staggerItem}>
+                            <MotionDiv
                                 whileHover={{ scale: 1.03, y: -10 }}
                                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                             >
@@ -709,7 +693,7 @@ export default function LandingPage() {
                                     <CardHeader className="text-center">
                                         <CardTitle className="text-2xl font-heading">Free</CardTitle>
                                         <div className="mt-4">
-                                            <motion.span 
+                                            <MotionSpan 
                                                 className="text-4xl font-bold"
                                                 initial={{ scale: 0.8 }}
                                                 whileInView={{ scale: 1 }}
@@ -717,7 +701,7 @@ export default function LandingPage() {
                                                 viewport={{ once: true }}
                                             >
                                                 €0
-                                            </motion.span>
+                                            </MotionSpan>
                                             <span className="text-gray-600 dark:text-gray-400">/forever</span>
                                         </div>
                                         <CardDescription className="mt-2">
@@ -732,7 +716,7 @@ export default function LandingPage() {
                                             'Movie tracking (10 items)',
                                             'Mobile & web sync'
                                         ].map((feature, index) => (
-                                            <motion.div 
+                                            <MotionDiv 
                                                 key={index}
                                                 className="flex items-center space-x-3 text-left"
                                                 initial={{ opacity: 0, x: -20 }}
@@ -742,36 +726,36 @@ export default function LandingPage() {
                                             >
                                                 <CheckCircle className="h-5 w-5 text-green-500" />
                                                 <span>{feature}</span>
-                                            </motion.div>
+                                            </MotionDiv>
                                         ))}
-                                        <motion.div
+                                        <MotionDiv
                                             initial={{ opacity: 0, y: 20 }}
                                             whileInView={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.5, delay: 1.0 }}
                                             viewport={{ once: true }}
                                         >
-                                            <motion.div
+                                            <MotionDiv
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}
                                             >
                                                 <Button variant="outline" className="w-full mt-6 border-gray-300 dark:border-gray-700">
                                                     Start Free
                                                 </Button>
-                                            </motion.div>
-                                        </motion.div>
+                                            </MotionDiv>
+                                        </MotionDiv>
                                     </CardContent>
                                 </Card>
-                            </motion.div>
-                        </motion.div>
+                            </MotionDiv>
+                        </MotionDiv>
                         
                         {/* Basic Plan */}
-                        <motion.div variants={staggerItem}>
-                            <motion.div
+                        <MotionDiv variants={staggerItem}>
+                            <MotionDiv
                                 whileHover={{ scale: 1.03, y: -10 }}
                                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                             >
                                 <Card className="border-blue-500 dark:border-blue-400 relative h-full">
-                                    <motion.div
+                                    <MotionDiv
                                         className="absolute -top-3 left-1/2 transform -translate-x-1/2"
                                         initial={{ opacity: 0, y: -10 }}
                                         whileInView={{ opacity: 1, y: 0 }}
@@ -781,11 +765,11 @@ export default function LandingPage() {
                                         <Badge className="bg-blue-500 text-white">
                                             Most Popular
                                         </Badge>
-                                    </motion.div>
+                                    </MotionDiv>
                                     <CardHeader className="text-center">
                                         <CardTitle className="text-2xl font-heading">Basic</CardTitle>
                                         <div className="mt-4">
-                                            <motion.span 
+                                            <MotionSpan 
                                                 className="text-4xl font-bold"
                                                 initial={{ scale: 0.8 }}
                                                 whileInView={{ scale: 1 }}
@@ -793,7 +777,7 @@ export default function LandingPage() {
                                                 viewport={{ once: true }}
                                             >
                                                 €20
-                                            </motion.span>
+                                            </MotionSpan>
                                             <span className="text-gray-600 dark:text-gray-400">/month</span>
                                         </div>
                                         <CardDescription className="mt-2">
@@ -807,7 +791,7 @@ export default function LandingPage() {
                                             'Movie & media tracking',
                                             'All sync features'
                                         ].map((feature, index) => (
-                                            <motion.div 
+                                            <MotionDiv 
                                                 key={index}
                                                 className="flex items-center space-x-3 text-left"
                                                 initial={{ opacity: 0, x: -20 }}
@@ -817,31 +801,31 @@ export default function LandingPage() {
                                             >
                                                 <CheckCircle className="h-5 w-5 text-green-500" />
                                                 <span>{feature}</span>
-                                            </motion.div>
+                                            </MotionDiv>
                                         ))}
-                                        <motion.div
+                                        <MotionDiv
                                             initial={{ opacity: 0, y: 20 }}
                                             whileInView={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.5, delay: 1.0 }}
                                             viewport={{ once: true }}
                                         >
-                                            <motion.div
+                                            <MotionDiv
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}
                                             >
                                                 <Button className="w-full mt-6 dark:text-black bg-blue-500 text-white lg:hover:bg-blue-600">
                                                     Start Free Trial
                                                 </Button>
-                                            </motion.div>
-                                        </motion.div>
+                                            </MotionDiv>
+                                        </MotionDiv>
                                     </CardContent>
                                 </Card>
-                            </motion.div>
-                        </motion.div>
+                            </MotionDiv>
+                        </MotionDiv>
                         
                         {/* Pro Plan */}
-                        <motion.div variants={staggerItem}>
-                            <motion.div
+                        <MotionDiv variants={staggerItem}>
+                            <MotionDiv
                                 whileHover={{ scale: 1.03, y: -10 }}
                                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                             >
@@ -849,7 +833,7 @@ export default function LandingPage() {
                                     <CardHeader className="text-center">
                                         <CardTitle className="text-2xl font-heading">Pro</CardTitle>
                                         <div className="mt-4">
-                                            <motion.span 
+                                            <MotionSpan 
                                                 className="text-4xl font-bold"
                                                 initial={{ scale: 0.8 }}
                                                 whileInView={{ scale: 1 }}
@@ -857,7 +841,7 @@ export default function LandingPage() {
                                                 viewport={{ once: true }}
                                             >
                                                 €250
-                                            </motion.span>
+                                            </MotionSpan>
                                             <span className="text-gray-600 dark:text-gray-400">/month</span>
                                         </div>
                                         <CardDescription className="mt-2">
@@ -866,13 +850,13 @@ export default function LandingPage() {
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         {[
-                                            { text: 'Everything in Basic', color: 'green' },
-                                            { text: 'Exclusive community access', color: 'blue' },
-                                            { text: 'Beta features first', color: 'blue' },
-                                            { text: 'Priority support', color: 'blue' },
-                                            { text: 'Monthly strategy calls', color: 'blue' }
+                                            'Everything in Basic',
+                                            'Exclusive community access',
+                                            'Beta features first',
+                                            'Priority support',
+                                            'Monthly strategy calls'
                                         ].map((feature, index) => (
-                                            <motion.div 
+                                            <MotionDiv 
                                                 key={index}
                                                 className="flex items-center space-x-3 text-left"
                                                 initial={{ opacity: 0, x: -20 }}
@@ -880,39 +864,39 @@ export default function LandingPage() {
                                                 transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
                                                 viewport={{ once: true }}
                                             >
-                                                <CheckCircle className={`h-5 w-5 text-${feature.color}-500`} />
-                                                <span>{feature.text}</span>
-                                            </motion.div>
+                                                <CheckCircle className="h-5 w-5 text-green-500" />
+                                                <span>{feature}</span>
+                                            </MotionDiv>
                                         ))}
-                                        <motion.div
+                                        <MotionDiv
                                             initial={{ opacity: 0, y: 20 }}
                                             whileInView={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.5, delay: 1.1 }}
                                             viewport={{ once: true }}
                                         >
-                                            <motion.div
+                                            <MotionDiv
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}
                                             >
-                                                <Button className="w-full mt-6 text-white bg-black dark:bg-white border-gray-300 dark:border-gray-700">
+                                                <Button className="w-full mt-6 text-white bg-black dark:bg-white dark:text-black border-gray-300 dark:border-gray-700">
                                                     Upgrade to Pro
                                                 </Button>
-                                            </motion.div>
-                                        </motion.div>
+                                            </MotionDiv>
+                                        </MotionDiv>
                                     </CardContent>
                                 </Card>
-                            </motion.div>
-                        </motion.div>
-                    </motion.div>
+                            </MotionDiv>
+                        </MotionDiv>
+                    </MotionDiv>
                     
                     <p className="text-sm text-gray-500 dark:text-gray-500 mt-8">
                         14-day free trial. No credit card required. Cancel anytime.
                     </p>
                 </div>
-            </motion.section>
+            </MotionSection>
 
             {/* CTA Section */}
-            <motion.section 
+            <MotionSection 
                 className="px-6 py-20 bg-black dark:bg-white text-white dark:text-black"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
@@ -920,7 +904,7 @@ export default function LandingPage() {
                 viewport={{ once: true, margin: "-100px" }}
             >
                 <div className="max-w-4xl mx-auto text-center">
-                    <motion.h2 
+                    <MotionH2 
                         className="text-3xl md:text-4xl font-medium tracking-wide mb-6 font-heading"
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -928,8 +912,8 @@ export default function LandingPage() {
                         viewport={{ once: true }}
                     >
                         Make space for what matters
-                    </motion.h2>
-                    <motion.p 
+                    </MotionH2>
+                    <MotionP 
                         className="text-lg opacity-90 mb-8 max-w-2xl mx-auto"
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -938,20 +922,20 @@ export default function LandingPage() {
                     >
                         Join ambitious students who&apos;ve transformed chaos into clarity. 
                         Your future self will thank you.
-                    </motion.p>
-                    <motion.div
+                    </MotionP>
+                    <MotionDiv
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.4 }}
                         viewport={{ once: true }}
                     >
-                        <motion.div
+                        <MotionDiv
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                         >
                             <Button size="lg" className="bg-white dark:bg-black text-black dark:text-white lg:hover:bg-gray-100 dark:lg:hover:bg-gray-900 px-8">
                                 Start Your Free Trial
-                                <motion.div
+                                <MotionDiv
                                     className="ml-2"
                                     animate={{ x: [0, 4, 0] }}
                                     transition={{ 
@@ -961,42 +945,42 @@ export default function LandingPage() {
                                     }}
                                 >
                                     <ArrowRight className="h-4 w-4" />
-                                </motion.div>
+                                </MotionDiv>
                             </Button>
-                        </motion.div>
-                    </motion.div>
+                        </MotionDiv>
+                    </MotionDiv>
                 </div>
-            </motion.section>
+            </MotionSection>
 
             {/* Footer */}
-            <motion.footer 
+            <MotionFooter 
                 className="px-6 py-8 border-t border-gray-200 dark:border-gray-800"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 transition={{ duration: 0.8 }}
                 viewport={{ once: true }}
             >
-                <motion.div 
+                <MotionDiv 
                     className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center"
                     variants={staggerContainer}
                     initial="initial"
                     whileInView="animate"
                     viewport={{ once: true }}
                 >
-                    <motion.div 
+                    <MotionDiv 
                         className="flex items-center space-x-2 mb-4 md:mb-0"
                         variants={staggerItem}
                         whileHover={{ scale: 1.02 }}
                         transition={{ type: "spring", stiffness: 400, damping: 17 }}
                     >
-                        <motion.div 
+                        <MotionDiv 
                             className="w-6 h-6 bg-black dark:bg-white rounded-sm"
                             whileHover={{ rotate: 5 }}
                             transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                        ></motion.div>
+                        />
                         <span className="font-medium tracking-wide font-heading">Life OS</span>
-                    </motion.div>
-                    <motion.div 
+                    </MotionDiv>
+                    <MotionDiv 
                         className="flex space-x-6 text-sm text-gray-600 dark:text-gray-400"
                         variants={staggerContainer}
                         initial="initial"
@@ -1004,23 +988,23 @@ export default function LandingPage() {
                         viewport={{ once: true }}
                     >
                         {['Privacy', 'Terms', 'Contact'].map((link) => (
-                            <motion.div
+                            <MotionDiv
                                 key={link}
                                 variants={staggerItem}
                             >
-                                <motion.div
+                                <MotionDiv
                                     whileHover={{ y: -2 }}
                                     transition={{ type: "spring", stiffness: 300, damping: 20 }}
                                 >
                                     <Link href={`/${link.toLowerCase()}`} className="lg:hover:underline">
                                         {link}
                                     </Link>
-                                </motion.div>
-                            </motion.div>
+                                </MotionDiv>
+                            </MotionDiv>
                         ))}
-                    </motion.div>
-                </motion.div>
-            </motion.footer>
+                    </MotionDiv>
+                </MotionDiv>
+            </MotionFooter>
         </div>
     )
 }
@@ -1032,11 +1016,11 @@ function ProblemCard({ icon, title, description, delay }: {
     description: string; 
     delay: number; 
 }) {
-    const ref = useRef(null)
-    const isInView = useInView(ref, { once: true, margin: "-50px" })
+    const ref = useRef<HTMLDivElement>(null)
+    const isInView = useInView(ref as React.RefObject<Element>, { once: true, margin: "-50px" })
 
     return (
-        <motion.div 
+        <MotionDiv 
             ref={ref}
             className="text-center"
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
@@ -1055,7 +1039,7 @@ function ProblemCard({ icon, title, description, delay }: {
                 transition: { type: "spring", stiffness: 300, damping: 20 }
             }}
         >
-            <motion.div 
+            <MotionDiv 
                 className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4"
                 whileHover={{ 
                     scale: 1.1,
@@ -1064,12 +1048,12 @@ function ProblemCard({ icon, title, description, delay }: {
                 }}
             >
                 {icon}
-            </motion.div>
+            </MotionDiv>
             <h3 className="font-semibold mb-2 font-heading">{title}</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
                 {description}
             </p>
-        </motion.div>
+        </MotionDiv>
     )
 }
 
@@ -1088,11 +1072,11 @@ function FeatureCard({
     isReversed?: boolean;
     delay?: number;
 }) {
-    const ref = useRef(null)
-    const isInView = useInView(ref, { once: true, margin: "-100px" })
+    const ref = useRef<HTMLDivElement>(null)
+    const isInView = useInView(ref as React.RefObject<Element>, { once: true, margin: "-100px" })
 
     return (
-        <motion.div 
+        <MotionDiv 
             ref={ref}
             className="mb-20"
             initial={{ opacity: 0 }}
@@ -1100,14 +1084,14 @@ function FeatureCard({
             transition={{ duration: 0.8, delay }}
         >
             <div className={`grid lg:grid-cols-2 gap-12 items-center ${isReversed ? 'lg:grid-flow-col-dense' : ''}`}>
-                <motion.div 
+                <MotionDiv 
                     className={isReversed ? 'lg:order-2' : ''}
                     initial={{ opacity: 0, x: isReversed ? 50 : -50 }}
                     animate={isInView ? { opacity: 1, x: 0 } : {}}
                     transition={{ duration: 0.8, delay: delay + 0.2 }}
                 >
                     <div className="flex items-center mb-6">
-                        <motion.div 
+                        <MotionDiv 
                             className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-4"
                             whileHover={{ 
                                 scale: 1.1,
@@ -1116,13 +1100,13 @@ function FeatureCard({
                             }}
                         >
                             {icon}
-                        </motion.div>
+                        </MotionDiv>
                         <h3 className="text-2xl font-medium font-heading">{title}</h3>
                     </div>
                     <p className="text-gray-600 dark:text-gray-400 mb-6">
                         {description}
                     </p>
-                    <motion.ul 
+                    <MotionUl 
                         className="space-y-3 text-gray-600 dark:text-gray-400"
                         variants={{
                             hidden: {},
@@ -1137,7 +1121,7 @@ function FeatureCard({
                         animate={isInView ? "show" : "hidden"}
                     >
                         {features.map((feature, index) => (
-                            <motion.li 
+                            <MotionLi 
                                 key={index}
                                 className="flex items-start"
                                 variants={{
@@ -1151,11 +1135,11 @@ function FeatureCard({
                             >
                                 <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
                                 <span>{feature}</span>
-                            </motion.li>
+                            </MotionLi>
                         ))}
-                    </motion.ul>
-                </motion.div>
-                <motion.div 
+                    </MotionUl>
+                </MotionDiv>
+                <MotionDiv 
                     className={`bg-gray-100 dark:bg-gray-900 rounded-lg p-8 min-h-[300px] flex items-center justify-center ${isReversed ? 'lg:order-1' : ''}`}
                     initial={{ opacity: 0, x: isReversed ? -50 : 50 }}
                     animate={isInView ? { opacity: 1, x: 0 } : {}}
@@ -1163,7 +1147,7 @@ function FeatureCard({
                     whileHover={{ scale: 1.02 }}
                 >
                     <div className="text-center text-gray-500 dark:text-gray-400">
-                        <motion.div
+                        <MotionDiv
                             animate={{ 
                                 y: [-5, 5, -5],
                                 rotate: [-2, 2, -2]
@@ -1175,11 +1159,11 @@ function FeatureCard({
                             }}
                         >
                             {icon}
-                        </motion.div>
+                        </MotionDiv>
                         <p className="mt-4">{title} Interface</p>
                     </div>
-                </motion.div>
+                </MotionDiv>
             </div>
-        </motion.div>
+        </MotionDiv>
     )
 }
