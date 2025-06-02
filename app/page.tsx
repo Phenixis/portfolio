@@ -29,7 +29,7 @@ export default function LandingPage() {
         target: containerRef as React.RefObject<HTMLElement>,
         offset: ["start start", "end start"]
     })
-    
+
     const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"])
     const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
 
@@ -46,8 +46,8 @@ export default function LandingPage() {
 
     const staggerItem = {
         initial: { opacity: 0, y: 20 },
-        animate: { 
-            opacity: 1, 
+        animate: {
+            opacity: 1,
             y: 0,
             transition: { duration: 0.5, ease: "easeOut" }
         }
@@ -73,26 +73,26 @@ export default function LandingPage() {
         <div ref={containerRef} className="min-h-screen bg-white dark:bg-black text-black dark:text-white">
             {/* Navigation */}
             <nav className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800 backdrop-blur-sm bg-white/80 dark:bg-black/80 sticky top-0 z-50">
-                <MotionDiv 
+                <MotionDiv
                     className="flex items-center space-x-2"
                     whileHover={{ scale: 1.02 }}
                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 >
-                    <MotionDiv 
+                    <MotionDiv
                         className="w-8 h-8 bg-black dark:bg-white rounded-sm"
                         whileHover={{ rotate: 5 }}
                         transition={{ type: "spring", stiffness: 400, damping: 17 }}
                     />
-                    <button 
+                    <button
                         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                         className="text-xl font-medium tracking-wide font-heading lg:hover:text-gray-600 dark:lg:hover:text-gray-300 transition-colors"
                     >
                         Life OS
                     </button>
                 </MotionDiv>
-                
+
                 {/* Desktop Navigation Links */}
-                <MotionDiv 
+                <MotionDiv
                     className="hidden md:flex items-center space-x-8"
                     variants={staggerContainer}
                     initial="initial"
@@ -109,7 +109,7 @@ export default function LandingPage() {
                             transition={{ type: "spring", stiffness: 400, damping: 17 }}
                         >
                             {item.name}
-                            <MotionDiv 
+                            <MotionDiv
                                 className="absolute -bottom-1 left-0 right-0 h-0.5 bg-black dark:bg-white"
                                 initial={{ scaleX: 0 }}
                                 whileHover={{ scaleX: 1 }}
@@ -125,9 +125,11 @@ export default function LandingPage() {
                         <Link href="/login" className="text-sm lg:hover:underline">Sign In</Link>
                     </MotionDiv>
                     <MotionDiv whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                        <Button size="sm" className="bg-black dark:bg-white text-white dark:text-black lg:hover:bg-gray-800 dark:lg:hover:bg-gray-200">
-                            Get Started
-                        </Button>
+                        <Link href="/sign-up">
+                            <Button size="sm" className="bg-black dark:bg-white text-white dark:text-black lg:hover:bg-gray-800 dark:lg:hover:bg-gray-200">
+                                Get Started
+                            </Button>
+                        </Link>
                     </MotionDiv>
                 </div>
 
@@ -157,7 +159,7 @@ export default function LandingPage() {
                     transition={{ duration: 0.3 }}
                 >
                     <div className="flex flex-col items-center justify-center h-full space-y-8">
-                        <MotionDiv 
+                        <MotionDiv
                             className="flex flex-col items-center space-y-6"
                             variants={staggerContainer}
                             initial="initial"
@@ -180,16 +182,16 @@ export default function LandingPage() {
                                 </MotionA>
                             ))}
                         </MotionDiv>
-                        
-                        <MotionDiv 
+
+                        <MotionDiv
                             className="flex flex-col items-center space-y-4"
                             variants={staggerContainer}
                             initial="initial"
                             animate="animate"
                         >
                             <MotionDiv variants={staggerItem}>
-                                <Link 
-                                    href="/login" 
+                                <Link
+                                    href="/login"
                                     className="text-lg lg:hover:underline"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
@@ -197,8 +199,8 @@ export default function LandingPage() {
                                 </Link>
                             </MotionDiv>
                             <MotionDiv variants={staggerItem}>
-                                <Button 
-                                    size="lg" 
+                                <Button
+                                    size="lg"
                                     className="bg-black dark:bg-white text-white dark:text-black lg:hover:bg-gray-800 dark:lg:hover:bg-gray-200"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
@@ -211,32 +213,32 @@ export default function LandingPage() {
             )}
 
             {/* Hero Section */}
-            <MotionSection 
+            <MotionSection
                 className="px-6 py-20 text-center max-w-6xl mx-auto relative overflow-hidden"
                 style={{ y, opacity }}
             >
                 {/* Floating background elements */}
-                <MotionDiv 
+                <MotionDiv
                     className="absolute top-20 left-10 w-20 h-20 bg-gradient-to-r from-red-500/10 to-blue-500/10 rounded-full blur-xl"
-                    animate={{ 
+                    animate={{
                         y: [-20, 20, -20],
                         x: [-10, 10, -10],
                         scale: [1, 1.1, 1]
                     }}
-                    transition={{ 
+                    transition={{
                         duration: 8,
                         repeat: Infinity,
                         ease: "easeInOut"
                     }}
                 />
-                <MotionDiv 
+                <MotionDiv
                     className="absolute top-40 right-20 w-32 h-32 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-full blur-xl"
-                    animate={{ 
+                    animate={{
                         y: [20, -20, 20],
                         x: [10, -10, 10],
                         scale: [1.1, 1, 1.1]
                     }}
-                    transition={{ 
+                    transition={{
                         duration: 10,
                         repeat: Infinity,
                         ease: "easeInOut"
@@ -254,18 +256,18 @@ export default function LandingPage() {
                             Your Personal Command Center
                         </Badge>
                     </MotionDiv>
-                    
-                    <MotionH1 
+
+                    <MotionH1
                         variants={staggerItem}
                         className="w-full text-4xl md:text-6xl font-medium tracking-wide mb-6 leading-tight font-heading"
                     >
                         Life OS is your
-                        <MotionSpan 
+                        <MotionSpan
                             className="bg-gradient-to-r from-red-500 to-blue-500 bg-clip-text text-transparent"
-                            animate={{ 
+                            animate={{
                                 backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
                             }}
-                            transition={{ 
+                            transition={{
                                 duration: 3,
                                 repeat: Infinity,
                                 ease: "linear"
@@ -273,16 +275,16 @@ export default function LandingPage() {
                         > operating system</MotionSpan>
                         <br />for a cluttered life
                     </MotionH1>
-                    
-                    <MotionP 
+
+                    <MotionP
                         variants={staggerItem}
                         className="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto leading-relaxed"
                     >
-                        Built for ambitious students and side-hustlers who juggle classes, internships, and creative projects. 
+                        Built for ambitious students and side-hustlers who juggle classes, internships, and creative projects.
                         No more app-hopping or sticky notes—just clarity, focus, and forward momentum in one minimal interface.
                     </MotionP>
-                    
-                    <MotionDiv 
+
+                    <MotionDiv
                         variants={staggerItem}
                         className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12"
                     >
@@ -295,7 +297,7 @@ export default function LandingPage() {
                                 <MotionDiv
                                     className="ml-2"
                                     animate={{ x: [0, 4, 0] }}
-                                    transition={{ 
+                                    transition={{
                                         duration: 1.5,
                                         repeat: Infinity,
                                         ease: "easeInOut"
@@ -314,8 +316,8 @@ export default function LandingPage() {
                             </Button>
                         </MotionDiv>
                     </MotionDiv>
-                    
-                    <MotionDiv 
+
+                    <MotionDiv
                         variants={staggerItem}
                         className="flex items-center justify-center space-x-2 text-sm text-gray-500 dark:text-gray-500"
                     >
@@ -325,7 +327,7 @@ export default function LandingPage() {
             </MotionSection>
 
             {/* Problem Section */}
-            <MotionSection 
+            <MotionSection
                 id="problems"
                 className="px-6 py-16 bg-gray-50 dark:bg-gray-950"
                 initial={{ opacity: 0 }}
@@ -334,7 +336,7 @@ export default function LandingPage() {
                 viewport={{ once: true, margin: "-100px" }}
             >
                 <div className="max-w-4xl mx-auto text-center">
-                    <MotionH2 
+                    <MotionH2
                         className="text-3xl font-medium tracking-wide mb-6 font-heading"
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -343,17 +345,17 @@ export default function LandingPage() {
                     >
                         Stop juggling scattered workflows
                     </MotionH2>
-                    <MotionP 
+                    <MotionP
                         className="text-lg text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto"
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.4 }}
                         viewport={{ once: true }}
                     >
-                        You&apos;re ambitious. You&apos;ve got classes, internships, side projects, and big dreams. 
+                        You&apos;re ambitious. You&apos;ve got classes, internships, side projects, and big dreams.
                         But your productivity setup is scattered across apps, notebooks, and sticky notes.
                     </MotionP>
-                    <MotionDiv 
+                    <MotionDiv
                         className="grid md:grid-cols-3 gap-8"
                         variants={staggerContainer}
                         initial="initial"
@@ -383,7 +385,7 @@ export default function LandingPage() {
             </MotionSection>
 
             {/* Solution Section */}
-            <MotionSection 
+            <MotionSection
                 id="features"
                 className="px-6 py-16"
                 initial={{ opacity: 0 }}
@@ -392,7 +394,7 @@ export default function LandingPage() {
                 viewport={{ once: true, margin: "-100px" }}
             >
                 <div className="max-w-6xl mx-auto">
-                    <MotionDiv 
+                    <MotionDiv
                         className="text-center mb-16"
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -401,11 +403,11 @@ export default function LandingPage() {
                     >
                         <h2 className="text-3xl font-medium tracking-wide mb-6 font-heading">Everything you need. Nothing you don&apos;t.</h2>
                         <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                            Life OS transforms scattered workflows into a seamless life dashboard. 
+                            Life OS transforms scattered workflows into a seamless life dashboard.
                             Cut context-switching by half and gain calm confidence knowing nothing slips through the cracks.
                         </p>
                     </MotionDiv>
-                    
+
                     {/* Feature Cards */}
                     <FeatureCard
                         icon={<Target className="h-6 w-6 text-blue-500" />}
@@ -485,7 +487,7 @@ export default function LandingPage() {
             </MotionSection>
 
             {/* Benefits & Transformation Section */}
-            <MotionSection 
+            <MotionSection
                 id="benefits"
                 className="px-6 py-16 bg-gray-50 dark:bg-gray-950"
                 initial={{ opacity: 0 }}
@@ -494,7 +496,7 @@ export default function LandingPage() {
                 viewport={{ once: true, margin: "-100px" }}
             >
                 <div className="max-w-6xl mx-auto">
-                    <MotionDiv 
+                    <MotionDiv
                         className="text-center mb-16"
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -506,8 +508,8 @@ export default function LandingPage() {
                             See how Life OS shifts you from reactive firefighting to proactive, goal-driven progress.
                         </p>
                     </MotionDiv>
-                    
-                    <MotionDiv 
+
+                    <MotionDiv
                         className="grid md:grid-cols-3 gap-8 mb-16"
                         variants={staggerContainer}
                         initial="initial"
@@ -515,13 +517,13 @@ export default function LandingPage() {
                         viewport={{ once: true, margin: "-50px" }}
                     >
                         <MotionDiv variants={staggerItem} className="text-center">
-                            <MotionDiv 
+                            <MotionDiv
                                 className="bg-red-50 dark:bg-red-900/10 p-6 rounded-lg mb-6"
                                 whileHover={{ scale: 1.02, y: -5 }}
                                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                             >
                                 <h4 className="font-medium font-heading text-red-700 dark:text-red-400 mb-3">Before Life OS</h4>
-                                <MotionUl 
+                                <MotionUl
                                     className="space-y-2 text-sm text-gray-600 dark:text-gray-400"
                                     variants={staggerContainer}
                                     initial="initial"
@@ -534,15 +536,15 @@ export default function LandingPage() {
                                 </MotionUl>
                             </MotionDiv>
                         </MotionDiv>
-                        
+
                         <MotionDiv variants={staggerItem} className="text-center">
-                            <MotionDiv 
+                            <MotionDiv
                                 className="bg-yellow-50 dark:bg-yellow-900/10 p-6 rounded-lg mb-6"
                                 whileHover={{ scale: 1.02, y: -5 }}
                                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                             >
                                 <h4 className="font-medium font-heading text-yellow-700 dark:text-yellow-400 mb-3">The Transition</h4>
-                                <MotionDiv 
+                                <MotionDiv
                                     className="text-4xl mb-4"
                                     animate={{ rotate: [0, 10, 0] }}
                                     transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -554,15 +556,15 @@ export default function LandingPage() {
                                 </p>
                             </MotionDiv>
                         </MotionDiv>
-                        
+
                         <MotionDiv variants={staggerItem} className="text-center">
-                            <MotionDiv 
+                            <MotionDiv
                                 className="bg-green-50 dark:bg-green-900/10 p-6 rounded-lg mb-6"
                                 whileHover={{ scale: 1.02, y: -5 }}
                                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                             >
                                 <h4 className="font-medium font-heading text-green-700 dark:text-green-400 mb-3">After Life OS</h4>
-                                <MotionUl 
+                                <MotionUl
                                     className="space-y-2 text-sm text-gray-600 dark:text-gray-400"
                                     variants={staggerContainer}
                                     initial="initial"
@@ -576,7 +578,7 @@ export default function LandingPage() {
                             </MotionDiv>
                         </MotionDiv>
                     </MotionDiv>
-                    
+
                     <div className="grid md:grid-cols-2 gap-12 items-center">
                         <div>
                             <h3 className="text-2xl font-medium tracking-wide mb-6 font-heading">The Life OS Difference</h3>
@@ -588,12 +590,12 @@ export default function LandingPage() {
                                     <div>
                                         <h4 className="font-medium font-heading mb-2">Rational Benefits</h4>
                                         <p className="text-gray-600 dark:text-gray-400 text-sm">
-                                            See every task, note, and deadline in one place. Cut context-switching by 50% 
+                                            See every task, note, and deadline in one place. Cut context-switching by 50%
                                             and never lose track of important commitments again.
                                         </p>
                                     </div>
                                 </div>
-                                
+
                                 <div className="flex items-start">
                                     <div className="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mr-4 mt-1">
                                         <span className="text-green-600 dark:text-green-400 text-sm font-medium">2</span>
@@ -601,12 +603,12 @@ export default function LandingPage() {
                                     <div>
                                         <h4 className="font-medium font-heading mb-2">Emotional Benefits</h4>
                                         <p className="text-gray-600 dark:text-gray-400 text-sm">
-                                            Gain calm confidence knowing nothing slips through the cracks. 
+                                            Gain calm confidence knowing nothing slips through the cracks.
                                             Feel in control of your ambitious goals and complex schedule.
                                         </p>
                                     </div>
                                 </div>
-                                
+
                                 <div className="flex items-start">
                                     <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center mr-4 mt-1">
                                         <span className="text-purple-600 dark:text-purple-400 text-sm font-medium">3</span>
@@ -614,14 +616,14 @@ export default function LandingPage() {
                                     <div>
                                         <h4 className="font-medium font-heading mb-2">Social Benefits</h4>
                                         <p className="text-gray-600 dark:text-gray-400 text-sm">
-                                            Impress peers and mentors when you deliver reliably and stay ahead of deadlines. 
+                                            Impress peers and mentors when you deliver reliably and stay ahead of deadlines.
                                             Build a reputation for being organized and dependable.
                                         </p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 p-8 rounded-xl">
                             <h4 className="font-medium font-heading mb-4 text-center">Weekly Impact</h4>
                             <div className="space-y-4">
@@ -648,7 +650,7 @@ export default function LandingPage() {
             </MotionSection>
 
             {/* Pricing Section */}
-            <MotionSection 
+            <MotionSection
                 id="pricing"
                 className="px-6 py-16"
                 initial={{ opacity: 0 }}
@@ -657,7 +659,7 @@ export default function LandingPage() {
                 viewport={{ once: true, margin: "-100px" }}
             >
                 <div className="max-w-4xl mx-auto text-center">
-                    <MotionH2 
+                    <MotionH2
                         className="text-3xl font-medium tracking-wide mb-6 font-heading"
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -666,7 +668,7 @@ export default function LandingPage() {
                     >
                         Choose your operating system
                     </MotionH2>
-                    <MotionP 
+                    <MotionP
                         className="text-lg text-gray-600 dark:text-gray-400 mb-12"
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -675,8 +677,8 @@ export default function LandingPage() {
                     >
                         Start free, upgrade when you&apos;re ready to unlock your full potential
                     </MotionP>
-                    
-                    <MotionDiv 
+
+                    <MotionDiv
                         className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto"
                         variants={staggerContainer}
                         initial="initial"
@@ -693,7 +695,7 @@ export default function LandingPage() {
                                     <CardHeader className="text-center">
                                         <CardTitle className="text-2xl font-heading">Free</CardTitle>
                                         <div className="mt-4">
-                                            <MotionSpan 
+                                            <MotionSpan
                                                 className="text-4xl font-bold"
                                                 initial={{ scale: 0.8 }}
                                                 whileInView={{ scale: 1 }}
@@ -711,12 +713,12 @@ export default function LandingPage() {
                                     <CardContent className="space-y-4">
                                         {[
                                             'Up to 50 tasks',
-                                            'Basic note-taking', 
+                                            'Basic note-taking',
                                             '5 projects maximum',
                                             'Movie tracking (10 items)',
                                             'Mobile & web sync'
                                         ].map((feature, index) => (
-                                            <MotionDiv 
+                                            <MotionDiv
                                                 key={index}
                                                 className="flex items-center space-x-3 text-left"
                                                 initial={{ opacity: 0, x: -20 }}
@@ -747,7 +749,7 @@ export default function LandingPage() {
                                 </Card>
                             </MotionDiv>
                         </MotionDiv>
-                        
+
                         {/* Basic Plan */}
                         <MotionDiv variants={staggerItem}>
                             <MotionDiv
@@ -769,7 +771,7 @@ export default function LandingPage() {
                                     <CardHeader className="text-center">
                                         <CardTitle className="text-2xl font-heading">Basic</CardTitle>
                                         <div className="mt-4">
-                                            <MotionSpan 
+                                            <MotionSpan
                                                 className="text-4xl font-bold"
                                                 initial={{ scale: 0.8 }}
                                                 whileInView={{ scale: 1 }}
@@ -787,11 +789,11 @@ export default function LandingPage() {
                                     <CardContent className="space-y-4">
                                         {[
                                             'Unlimited tasks & projects',
-                                            'Unlimited notes & ideas', 
+                                            'Unlimited notes & ideas',
                                             'Movie & media tracking',
                                             'All sync features'
                                         ].map((feature, index) => (
-                                            <MotionDiv 
+                                            <MotionDiv
                                                 key={index}
                                                 className="flex items-center space-x-3 text-left"
                                                 initial={{ opacity: 0, x: -20 }}
@@ -822,7 +824,7 @@ export default function LandingPage() {
                                 </Card>
                             </MotionDiv>
                         </MotionDiv>
-                        
+
                         {/* Pro Plan */}
                         <MotionDiv variants={staggerItem}>
                             <MotionDiv
@@ -833,7 +835,7 @@ export default function LandingPage() {
                                     <CardHeader className="text-center">
                                         <CardTitle className="text-2xl font-heading">Pro</CardTitle>
                                         <div className="mt-4">
-                                            <MotionSpan 
+                                            <MotionSpan
                                                 className="text-4xl font-bold"
                                                 initial={{ scale: 0.8 }}
                                                 whileInView={{ scale: 1 }}
@@ -856,7 +858,7 @@ export default function LandingPage() {
                                             'Priority support',
                                             'Monthly strategy calls'
                                         ].map((feature, index) => (
-                                            <MotionDiv 
+                                            <MotionDiv
                                                 key={index}
                                                 className="flex items-center space-x-3 text-left"
                                                 initial={{ opacity: 0, x: -20 }}
@@ -888,7 +890,7 @@ export default function LandingPage() {
                             </MotionDiv>
                         </MotionDiv>
                     </MotionDiv>
-                    
+
                     <p className="text-sm text-gray-500 dark:text-gray-500 mt-8">
                         14-day free trial. No credit card required. Cancel anytime.
                     </p>
@@ -896,7 +898,7 @@ export default function LandingPage() {
             </MotionSection>
 
             {/* CTA Section */}
-            <MotionSection 
+            <MotionSection
                 className="px-6 py-20 bg-black dark:bg-white text-white dark:text-black"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
@@ -904,7 +906,7 @@ export default function LandingPage() {
                 viewport={{ once: true, margin: "-100px" }}
             >
                 <div className="max-w-4xl mx-auto text-center">
-                    <MotionH2 
+                    <MotionH2
                         className="text-3xl md:text-4xl font-medium tracking-wide mb-6 font-heading"
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -913,14 +915,14 @@ export default function LandingPage() {
                     >
                         Make space for what matters
                     </MotionH2>
-                    <MotionP 
+                    <MotionP
                         className="text-lg opacity-90 mb-8 max-w-2xl mx-auto"
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.2 }}
                         viewport={{ once: true }}
                     >
-                        Join ambitious students who&apos;ve transformed chaos into clarity. 
+                        Join ambitious students who&apos;ve transformed chaos into clarity.
                         Your future self will thank you.
                     </MotionP>
                     <MotionDiv
@@ -938,7 +940,7 @@ export default function LandingPage() {
                                 <MotionDiv
                                     className="ml-2"
                                     animate={{ x: [0, 4, 0] }}
-                                    transition={{ 
+                                    transition={{
                                         duration: 1.5,
                                         repeat: Infinity,
                                         ease: "easeInOut"
@@ -953,34 +955,34 @@ export default function LandingPage() {
             </MotionSection>
 
             {/* Footer */}
-            <MotionFooter 
+            <MotionFooter
                 className="px-6 py-8 border-t border-gray-200 dark:border-gray-800"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 transition={{ duration: 0.8 }}
                 viewport={{ once: true }}
             >
-                <MotionDiv 
+                <MotionDiv
                     className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center"
                     variants={staggerContainer}
                     initial="initial"
                     whileInView="animate"
                     viewport={{ once: true }}
                 >
-                    <MotionDiv 
+                    <MotionDiv
                         className="flex items-center space-x-2 mb-4 md:mb-0"
                         variants={staggerItem}
                         whileHover={{ scale: 1.02 }}
                         transition={{ type: "spring", stiffness: 400, damping: 17 }}
                     >
-                        <MotionDiv 
+                        <MotionDiv
                             className="w-6 h-6 bg-black dark:bg-white rounded-sm"
                             whileHover={{ rotate: 5 }}
                             transition={{ type: "spring", stiffness: 400, damping: 17 }}
                         />
                         <span className="font-medium tracking-wide font-heading">Life OS</span>
                     </MotionDiv>
-                    <MotionDiv 
+                    <MotionDiv
                         className="flex space-x-6 text-sm text-gray-600 dark:text-gray-400"
                         variants={staggerContainer}
                         initial="initial"
@@ -1010,38 +1012,38 @@ export default function LandingPage() {
 }
 
 // Reusable animated components
-function ProblemCard({ icon, title, description, delay }: { 
-    icon: React.ReactNode; 
-    title: string; 
-    description: string; 
-    delay: number; 
+function ProblemCard({ icon, title, description, delay }: {
+    icon: React.ReactNode;
+    title: string;
+    description: string;
+    delay: number;
 }) {
     const ref = useRef<HTMLDivElement>(null)
     const isInView = useInView(ref as React.RefObject<Element>, { once: true, margin: "-50px" })
 
     return (
-        <MotionDiv 
+        <MotionDiv
             ref={ref}
             className="text-center"
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={isInView ? { 
-                opacity: 1, 
-                y: 0, 
+            animate={isInView ? {
+                opacity: 1,
+                y: 0,
                 scale: 1,
-                transition: { 
-                    duration: 0.6, 
+                transition: {
+                    duration: 0.6,
                     delay: delay,
                     ease: "easeOut"
                 }
             } : {}}
-            whileHover={{ 
+            whileHover={{
                 y: -5,
                 transition: { type: "spring", stiffness: 300, damping: 20 }
             }}
         >
-            <MotionDiv 
+            <MotionDiv
                 className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4"
-                whileHover={{ 
+                whileHover={{
                     scale: 1.1,
                     rotate: 5,
                     transition: { type: "spring", stiffness: 400, damping: 17 }
@@ -1057,17 +1059,17 @@ function ProblemCard({ icon, title, description, delay }: {
     )
 }
 
-function FeatureCard({ 
-    icon, 
-    title, 
-    description, 
-    features, 
+function FeatureCard({
+    icon,
+    title,
+    description,
+    features,
     isReversed = false,
-    delay = 0 
-}: { 
-    icon: React.ReactNode; 
-    title: string; 
-    description: string; 
+    delay = 0
+}: {
+    icon: React.ReactNode;
+    title: string;
+    description: string;
     features: string[];
     isReversed?: boolean;
     delay?: number;
@@ -1076,7 +1078,7 @@ function FeatureCard({
     const isInView = useInView(ref as React.RefObject<Element>, { once: true, margin: "-100px" })
 
     return (
-        <MotionDiv 
+        <MotionDiv
             ref={ref}
             className="mb-20"
             initial={{ opacity: 0 }}
@@ -1084,16 +1086,16 @@ function FeatureCard({
             transition={{ duration: 0.8, delay }}
         >
             <div className={`grid lg:grid-cols-2 gap-12 items-center ${isReversed ? 'lg:grid-flow-col-dense' : ''}`}>
-                <MotionDiv 
+                <MotionDiv
                     className={isReversed ? 'lg:order-2' : ''}
                     initial={{ opacity: 0, x: isReversed ? 50 : -50 }}
                     animate={isInView ? { opacity: 1, x: 0 } : {}}
                     transition={{ duration: 0.8, delay: delay + 0.2 }}
                 >
                     <div className="flex items-center mb-6">
-                        <MotionDiv 
+                        <MotionDiv
                             className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-4"
-                            whileHover={{ 
+                            whileHover={{
                                 scale: 1.1,
                                 rotate: 5,
                                 transition: { type: "spring", stiffness: 400, damping: 17 }
@@ -1106,7 +1108,7 @@ function FeatureCard({
                     <p className="text-gray-600 dark:text-gray-400 mb-6">
                         {description}
                     </p>
-                    <MotionUl 
+                    <MotionUl
                         className="space-y-3 text-gray-600 dark:text-gray-400"
                         variants={{
                             hidden: {},
@@ -1121,13 +1123,13 @@ function FeatureCard({
                         animate={isInView ? "show" : "hidden"}
                     >
                         {features.map((feature, index) => (
-                            <MotionLi 
+                            <MotionLi
                                 key={index}
                                 className="flex items-start"
                                 variants={{
                                     hidden: { opacity: 0, x: -20 },
-                                    show: { 
-                                        opacity: 1, 
+                                    show: {
+                                        opacity: 1,
                                         x: 0,
                                         transition: { duration: 0.5 }
                                     }
@@ -1139,7 +1141,7 @@ function FeatureCard({
                         ))}
                     </MotionUl>
                 </MotionDiv>
-                <MotionDiv 
+                <MotionDiv
                     className={`bg-gray-100 dark:bg-gray-900 rounded-lg p-8 min-h-[300px] flex items-center justify-center ${isReversed ? 'lg:order-1' : ''}`}
                     initial={{ opacity: 0, x: isReversed ? -50 : 50 }}
                     animate={isInView ? { opacity: 1, x: 0 } : {}}
@@ -1148,11 +1150,11 @@ function FeatureCard({
                 >
                     <div className="text-center text-gray-500 dark:text-gray-400">
                         <MotionDiv
-                            animate={{ 
+                            animate={{
                                 y: [-5, 5, -5],
                                 rotate: [-2, 2, -2]
                             }}
-                            transition={{ 
+                            transition={{
                                 duration: 4,
                                 repeat: Infinity,
                                 ease: "easeInOut"
