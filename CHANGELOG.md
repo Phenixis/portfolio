@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.2] - 2025-06-03
+- [2025-06-03 18:30:37] fix: auto dark mode update problem
+
+## [1.4.1] - 2025-06-03
+- [2025-06-03 18:29:55] fix: auto dark mode update problem
+
 ## [1.4.0] - 2025-05-31
 - [2025-05-31 11:40:17] feat: improve wmcdm display
 
