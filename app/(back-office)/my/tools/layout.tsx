@@ -9,7 +9,7 @@ function ToolsLayoutContent({ children }: { children: React.ReactNode }) {
     return (
         <>
             <ToolsSidebar />
-            <main className="w-full p-4">
+            <main className="w-full">
                 {children}
             </main>
             <MobileSidebarSwipeGesture />

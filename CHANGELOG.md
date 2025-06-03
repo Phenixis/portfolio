@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [NOT RELEASED]
+- [V1.4.21 - 2025-06-03 21:07:53] refactor: modify menu into a dialog instead of a dropdown
 - [V1.4.20 - 2025-06-02 09:49:32] fix: upgrade to motion framer 12.x.x and fix errors of upgrading
 - [V1.4.19 - 2025-06-01 19:45:14] style: add the first version of the landing page and new branding
 - [V1.4.18 - 2025-06-01 17:53:35] docs: added marketing documents

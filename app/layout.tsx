@@ -60,7 +60,7 @@ export default async function RootLayout({
     return (
         <html
             lang="en"
-            className={"overflow-x-hidden" + (isDarkMode ? 'dark' : '')}
+            className={"overflow-x-hidden " + (isDarkMode ? 'dark' : '')}
         >
             <head>
                 <link rel="icon" href="/favicon.png" sizes='any' />

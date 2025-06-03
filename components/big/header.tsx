@@ -2,43 +2,31 @@
 
 import DarkModeToggle from "@/components/big/darkMode/dark-mode-toggle"
 import Meteo from "@/components/big/meteo"
-import { Button } from "@/components/ui/button"
+import Menu from "@/components/big/menu"
 import DateDisplay from "@/components/big/date"
 import Time from "@/components/big/time"
 import { useScrollDirection } from "@/hooks/use-scroll-direction"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
-import { Menu, User, Home, LogOut, NotebookText, Wrench } from "lucide-react"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { usePathname } from "next/navigation"
-import { logout } from "@/lib/auth/actions"
-import { toast } from "sonner"
 import NoteModal from "./notes/note-modal"
-import { useTransition } from "react"
 import { DarkModeCookie } from "@/lib/flags"
-import { useRouter } from "next/navigation"
+
 
 export default function Header({
     darkModeCookie
 }: {
     darkModeCookie: DarkModeCookie
 }) {
-    const router = useRouter()
     const { isVisible } = useScrollDirection()
     const [isHovering, setIsHovering] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
     const pathname = usePathname()
-    const [isPending, startTransition] = useTransition()
 
     return (
         <header
             className={cn(
-                `fixed z-50 bottom-4 ${(isHovering || isOpen) && 'lg:mb-2'} flex items-center justify-center w-full transition-all duration-300 pointer-events-none`, // Added pointer-events-none
+                `fixed z-50 bottom-4 ${(isHovering || isOpen) && 'lg:mb-2'} flex items-center justify-center w-full transition-all duration-300 pointer-events-none`,
                 isVisible ? "translate-y-0 opacity-100" : "translate-y-24 opacity-0",
             )}
         >
@@ -84,9 +72,10 @@ export default function Header({
                 <div
                     className={
                         `overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center w-fit max-w-[40px] ml-2 lg:w-0 lg:max-w-0 lg:opacity-0 lg:m-0 ${isHovering || isOpen ? 'lg:w-fit lg:max-w-[40px] lg:opacity-100 lg:ml-2 xl:ml-4' : ''}`
-                    }
-                >
-                    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+                        }
+                        >
+                        <Menu />
+                    {/* <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
                         <DropdownMenuTrigger asChild>
                             <Button type="submit" variant="outline" size="icon" className="whitespace-nowrap transition-transform duration-300">
                                 <Menu size={24} />
@@ -189,7 +178,7 @@ export default function Header({
                                 {isPending ? "Logging out..." : "Log out"}
                             </DropdownMenuItem>
                         </DropdownMenuContent>
-                    </DropdownMenu>
+                    </DropdownMenu> */}
                 </div>
             </div>
         </header>
