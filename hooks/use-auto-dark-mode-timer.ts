@@ -9,7 +9,7 @@ export function useAutoDarkModeTimer(
     onDarkModeChange: (newDarkMode: boolean, newCookie: DarkModeCookie) => void
 ) {
     const calculateNextToggleTime = useCallback(() => {
-        if (!cookie.auto_dark_mode || cookie.override) return null
+        if (!cookie.auto_dark_mode) return null
 
         const now = new Date()
         const currentHour = now.getHours()
@@ -57,7 +57,7 @@ export function useAutoDarkModeTimer(
                 return tomorrowStart
             }
         }
-    }, [cookie.auto_dark_mode, cookie.override, cookie.startHour, cookie.startMinute, cookie.endHour, cookie.endMinute])
+    }, [cookie.auto_dark_mode, cookie.startHour, cookie.startMinute, cookie.endHour, cookie.endMinute])
 
     const checkAndUpdateDarkMode = useCallback(() => {
         if (!cookie.auto_dark_mode || cookie.override) {
@@ -76,7 +76,8 @@ export function useAutoDarkModeTimer(
             }
         }
         
-        if (shouldBeEnabled !== cookie.dark_mode) {
+        // Only update if the scheduled state differs from current state AND override is not set
+        if (shouldBeEnabled !== cookie.dark_mode && !cookie.override) {
             const newCookie: DarkModeCookie = {
                 ...cookie,
                 dark_mode: shouldBeEnabled,
@@ -88,7 +89,7 @@ export function useAutoDarkModeTimer(
     }, [cookie, onDarkModeChange])
 
     useEffect(() => {
-        if (!cookie.auto_dark_mode || cookie.override) return
+        if (!cookie.auto_dark_mode) return
 
         let timeoutId: NodeJS.Timeout
 
@@ -104,21 +105,37 @@ export function useAutoDarkModeTimer(
             const msWithBuffer = Math.max(msUntilToggle + 1000, 1000)
 
             timeoutId = setTimeout(() => {
-                checkAndUpdateDarkMode()
+                // When the scheduled time arrives, clear override and apply the schedule
+                if (cookie.override) {
+                    const { dark_mode: shouldBeEnabled } = shouldDarkModeBeEnabled(cookie)
+                    const newCookie: DarkModeCookie = {
+                        ...cookie,
+                        dark_mode: shouldBeEnabled,
+                        override: false
+                    }
+                    
+                    onDarkModeChange(shouldBeEnabled, newCookie)
+                } else {
+                    checkAndUpdateDarkMode()
+                }
                 // Schedule the next check after this one
                 scheduleNextCheck()
             }, msWithBuffer)
         }
 
-        // Initial check and immediate correction if needed
-        checkAndUpdateDarkMode()
+        // Initial check and immediate correction if needed (only if no override)
+        if (!cookie.override) {
+            checkAndUpdateDarkMode()
+        }
         
         // Schedule the first automatic toggle
         scheduleNextCheck()
 
-        // Also check every 30 seconds as a fallback
+        // Also check every 30 seconds as a fallback (only if no override)
         const intervalId = setInterval(() => {
-            checkAndUpdateDarkMode()
+            if (!cookie.override) {
+                checkAndUpdateDarkMode()
+            }
         }, 30000)
 
         return () => {

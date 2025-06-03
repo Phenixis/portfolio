@@ -90,16 +90,23 @@ export default function DarkModeToggle({
                     if (cookie.auto_dark_mode && !cookie.has_jarvis_asked_dark_mode) {
                         setShowAutoDarkModeDialog(true)
                     } else {
+                        const newDarkMode = !cookie.dark_mode
+                        let override = false
+                        
+                        // If auto dark mode is enabled, check if this manual toggle contradicts the schedule
+                        if (cookie.auto_dark_mode) {
+                            const scheduledState = shouldDarkModeBeEnabled(cookie)
+                            // If the user wants to toggle to a state different from what the schedule says, set override
+                            override = newDarkMode !== scheduledState.dark_mode
+                        }
+                        
                         const newCookie = {
                             ...cookie,
-                            dark_mode: !cookie.dark_mode,
-                            override: shouldDarkModeBeEnabled({
-                                ...cookie,
-                                dark_mode: !cookie.dark_mode,
-                            }).override,
+                            dark_mode: newDarkMode,
+                            override: override,
                         }
                         setCookie(newCookie)
-                        document.documentElement.classList.toggle("dark", !cookie.dark_mode)
+                        document.documentElement.classList.toggle("dark", newDarkMode)
                         await updateDarkModePreference(newCookie)
                     }
                 }}

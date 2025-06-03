@@ -23,6 +23,11 @@ All notable changes to this project will be documented in this file.
 - [2025-05-31 12:46:44] style: switched to tailwindcss v4 and modiied outline-solid to outline
 - [2025-05-31 12:17:05] refactor: updates to tailwind v4
 
+## [1.4.2] - 2025-06-03
+- [2025-06-03 18:30:37] fix: auto dark mode update problem
+
+## [1.4.1] - 2025-06-03
+- [2025-06-03 18:29:55] fix: auto dark mode update problem
 
 ## [1.4.0] - 2025-05-31
 - [2025-05-31 11:40:17] feat: improve wmcdm display

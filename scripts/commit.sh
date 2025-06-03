@@ -215,8 +215,8 @@ if [[ "$current_branch" == "fix" ]]; then
     echo "🔧 Executing hotfix workflow..."
     echo "⚠️  WARNING: This will immediately deploy to production!"
     echo ""
-    read -p "Are you sure you want to proceed with the hotfix? (y/N): " confirm_hotfix
-    if [[ ! "$confirm_hotfix" =~ ^[Yy]$ ]]; then
+    read -p "Are you sure you want to proceed with the hotfix? (Y/n): " confirm_hotfix
+    if [[ "$confirm_hotfix" =~ ^[Nn]$ ]]; then
         echo "❌ Hotfix cancelled"
         exit 1
     fi
