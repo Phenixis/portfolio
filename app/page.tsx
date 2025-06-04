@@ -293,7 +293,7 @@ export default function LandingPage() {
                             whileTap={{ scale: 0.95 }}
                         >
                             <Button size="lg" className="bg-black dark:bg-white text-white dark:text-black lg:hover:bg-gray-800 dark:lg:hover:bg-gray-200 px-8">
-                                Start Your Free Trial
+                                Get Started Free
                                 <MotionDiv
                                     className="ml-2"
                                     animate={{ x: [0, 4, 0] }}
@@ -927,7 +927,7 @@ export default function LandingPage() {
                     </MotionDiv>
 
                     <p className="text-sm text-gray-500 dark:text-gray-500 mt-8">
-                        14-day free trial. No credit card required. Cancel anytime.
+                        No credit card required for Free plan. Cancel paid plans anytime.
                     </p>
                 </div>
             </MotionSection>
@@ -971,7 +971,7 @@ export default function LandingPage() {
                             whileTap={{ scale: 0.95 }}
                         >
                             <Button size="lg" className="bg-white dark:bg-black text-black dark:text-white lg:hover:bg-gray-100 dark:lg:hover:bg-gray-900 px-8">
-                                Start Your Free Trial
+                                Get Started Free
                                 <MotionDiv
                                     className="ml-2"
                                     animate={{ x: [0, 4, 0] }}

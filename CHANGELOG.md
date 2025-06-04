@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [NOT RELEASED]
+- [V1.4.25 - 2025-06-04 11:23:24] refactor: added pages privacy, terms and contact
 - [V1.4.24 - 2025-06-04 11:06:16] refactor: modal can be opened from everywhere with menu
 - [V1.4.23 - 2025-06-04 10:26:18] feat: improve landing page to be longer and better pricing
 - [V1.4.22 - 2025-06-04 08:18:29] perf: improve loading with skeleton for settings pages
