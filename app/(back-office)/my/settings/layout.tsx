@@ -9,8 +9,10 @@ function SettingsLayoutContent({ children }: { children: React.ReactNode }) {
     return (
         <>
             <SettingsSidebar />
-            <main className="w-full p-4">
-                {children}
+            <main className="flex-1 flex justify-center p-4">
+                <div className="w-full max-w-2xl">
+                    {children}
+                </div>
             </main>
             <MobileSidebarSwipeGesture />
             <MobileSidebarToggle />
