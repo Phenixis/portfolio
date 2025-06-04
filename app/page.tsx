@@ -387,15 +387,15 @@ export default function LandingPage() {
             {/* Solution Section */}
             <MotionSection
                 id="features"
-                className="px-6 py-16"
+                className="px-6 py-8"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 transition={{ duration: 0.8 }}
                 viewport={{ once: true, margin: "-100px" }}
             >
-                <div className="max-w-6xl mx-auto">
+                <div className="max-w-7xl mx-auto">
                     <MotionDiv
-                        className="text-center mb-16"
+                        className="text-center mb-12"
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
@@ -408,9 +408,9 @@ export default function LandingPage() {
                         </p>
                     </MotionDiv>
 
-                    {/* Feature Cards */}
+                    {/* Feature Cards - Each taking full screen height */}
                     <FeatureCard
-                        icon={<Target className="h-6 w-6 text-blue-500" />}
+                        icon={<Target className="h-8 w-8 text-blue-500" />}
                         title="Unified Task Management"
                         description="Stop juggling separate tools for coursework, internship deliverables, and side-project milestones. Life OS brings everything into one organized system where you can see your full workload at a glance."
                         features={[
@@ -418,11 +418,12 @@ export default function LandingPage() {
                             "Set deadlines and get intelligent reminders before things slip",
                             "Track progress with visual indicators and completion metrics"
                         ]}
+                        valueProposition="Save 8+ hours per week by eliminating app-switching and gaining instant clarity on all your commitments"
                         delay={0}
                     />
 
                     <FeatureCard
-                        icon={<Sparkles className="h-6 w-6 text-green-500" />}
+                        icon={<Sparkles className="h-8 w-8 text-green-500" />}
                         title="Intelligent Capture"
                         description="Capture ideas, notes, and tasks instantly without breaking your flow. Whether you're in class, at your internship, or working on your side project, everything gets automatically organized."
                         features={[
@@ -430,12 +431,13 @@ export default function LandingPage() {
                             "Rich text formatting for detailed notes and documentation",
                             "Link notes to specific projects or tasks for easy reference"
                         ]}
+                        valueProposition="Never lose a brilliant idea again. Capture thoughts 5x faster than traditional note-taking methods"
                         isReversed={true}
                         delay={0.2}
                     />
 
                     <FeatureCard
-                        icon={<Zap className="h-6 w-6 text-purple-500" />}
+                        icon={<Zap className="h-8 w-8 text-purple-500" />}
                         title="Focus Workflows"
                         description="Built specifically for students and side-hustlers. No enterprise bloat, no features you'll never use. Just the essential tools you need to stay organized and productive across all your commitments."
                         features={[
@@ -443,11 +445,12 @@ export default function LandingPage() {
                             "Project mode for tracking side-hustle milestones and client work",
                             "Career mode for internship tasks and professional development"
                         ]}
+                        valueProposition="Boost productivity by 40% with purpose-built workflows that match your multi-faceted lifestyle"
                         delay={0.4}
                     />
 
                     <FeatureCard
-                        icon={<Shield className="h-6 w-6 text-yellow-500" />}
+                        icon={<Shield className="h-8 w-8 text-yellow-500" />}
                         title="Seamless Sync"
                         description="Your data follows you everywhere. Start a task on your laptop in the library, add notes on your phone during lunch, and check progress on your tablet at home. Everything stays perfectly synchronized."
                         features={[
@@ -455,12 +458,13 @@ export default function LandingPage() {
                             "Responsive design optimized for mobile, tablet, and desktop",
                             "Progressive web app for native-like experience on any device"
                         ]}
+                        valueProposition="Work from anywhere with confidence - your data is always up-to-date, even without internet"
                         isReversed={true}
                         delay={0.6}
                     />
 
                     <FeatureCard
-                        icon={<Users className="h-6 w-6 text-red-500" />}
+                        icon={<Users className="h-8 w-8 text-red-500" />}
                         title="Media & Life Tracking"
                         description="Because life isn't just about work. Track movies you want to watch, books you're reading, and experiences you want to have. Balance productivity with personal growth and enjoyment."
                         features={[
@@ -468,11 +472,12 @@ export default function LandingPage() {
                             "Personal goals and habit tracking for holistic life management",
                             "Mood and reflection logging to maintain mental clarity"
                         ]}
+                        valueProposition="Achieve better work-life balance by managing both productivity and personal fulfillment in one place"
                         delay={0.8}
                     />
 
                     <FeatureCard
-                        icon={<CheckCircle className="h-6 w-6 text-indigo-500" />}
+                        icon={<CheckCircle className="h-8 w-8 text-indigo-500" />}
                         title="Private & Secure"
                         description="Your ideas, goals, and personal information stay yours. Built with privacy-first principles and enterprise-grade security, so you can focus on creating without worrying about data breaches."
                         features={[
@@ -480,6 +485,7 @@ export default function LandingPage() {
                             "GDPR compliant with full data export and deletion rights",
                             "Regular security audits and transparent privacy practices"
                         ]}
+                        valueProposition="Sleep soundly knowing your personal data and ambitious plans are protected by bank-grade security"
                         isReversed={true}
                         delay={1.0}
                     />
@@ -489,7 +495,7 @@ export default function LandingPage() {
             {/* Benefits & Transformation Section */}
             <MotionSection
                 id="benefits"
-                className="px-6 py-16 bg-gray-50 dark:bg-gray-950"
+                className="px-6 py-16 bg-gray-50 dark:bg-gray-950 min-h-screen flex items-center"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 transition={{ duration: 0.8 }}
@@ -691,8 +697,8 @@ export default function LandingPage() {
                                 whileHover={{ scale: 1.03, y: -10 }}
                                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                             >
-                                <Card className="border-gray-200 dark:border-gray-800 relative h-full">
-                                    <CardHeader className="text-center">
+                                <Card className="border-gray-200 dark:border-gray-800 relative flex flex-col h-[650px]">
+                                    <CardHeader className="text-center pb-4">
                                         <CardTitle className="text-2xl font-heading">Free</CardTitle>
                                         <div className="mt-4">
                                             <MotionSpan
@@ -707,29 +713,34 @@ export default function LandingPage() {
                                             <span className="text-gray-600 dark:text-gray-400">/forever</span>
                                         </div>
                                         <CardDescription className="mt-2">
-                                            Start organizing your life today
+                                            Perfect for getting started with organization
                                         </CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        {[
-                                            'Up to 50 tasks',
-                                            'Basic note-taking',
-                                            '5 projects maximum',
-                                            'Movie tracking (10 items)',
-                                            'Mobile & web sync'
-                                        ].map((feature, index) => (
-                                            <MotionDiv
-                                                key={index}
-                                                className="flex items-center space-x-3 text-left"
-                                                initial={{ opacity: 0, x: -20 }}
-                                                whileInView={{ opacity: 1, x: 0 }}
-                                                transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
-                                                viewport={{ once: true }}
-                                            >
-                                                <CheckCircle className="h-5 w-5 text-green-500" />
-                                                <span>{feature}</span>
-                                            </MotionDiv>
-                                        ))}
+                                    <CardContent className="space-y-4 flex-1 flex flex-col">
+                                        <div className="space-y-3 flex-1">
+                                            {[
+                                                'Unlimited tasks & projects',
+                                                'Unlimited notes & ideas',
+                                                'Unlimited moods & habits',
+                                                'Core productivity features',
+                                                'Mobile & web sync'
+                                            ].map((feature, index) => (
+                                                <MotionDiv
+                                                    key={index}
+                                                    className="flex items-center space-x-3 text-left"
+                                                    initial={{ opacity: 0, x: -20 }}
+                                                    whileInView={{ opacity: 1, x: 0 }}
+                                                    transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
+                                                    viewport={{ once: true }}
+                                                >
+                                                    <CheckCircle className="h-5 w-5 text-green-500" />
+                                                    <span>{feature}</span>
+                                                </MotionDiv>
+                                            ))}
+                                        </div>
+                                        <div className="text-xs text-gray-500 dark:text-gray-400 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                                            No access to: Movie Tracker, Decision Making Tools, AI Chatbot
+                                        </div>
                                         <MotionDiv
                                             initial={{ opacity: 0, y: 20 }}
                                             whileInView={{ opacity: 1, y: 0 }}
@@ -740,8 +751,8 @@ export default function LandingPage() {
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}
                                             >
-                                                <Button variant="outline" className="w-full mt-6 border-gray-300 dark:border-gray-700">
-                                                    Start Free
+                                                <Button variant="outline" className="w-full border-gray-300 dark:border-gray-700">
+                                                    Get Started Free
                                                 </Button>
                                             </MotionDiv>
                                         </MotionDiv>
@@ -756,7 +767,7 @@ export default function LandingPage() {
                                 whileHover={{ scale: 1.03, y: -10 }}
                                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                             >
-                                <Card className="border-blue-500 dark:border-blue-400 relative h-full">
+                                <Card className="border-blue-500 dark:border-blue-400 relative flex flex-col h-[650px]">
                                     <MotionDiv
                                         className="absolute -top-3 left-1/2 transform -translate-x-1/2"
                                         initial={{ opacity: 0, y: -10 }}
@@ -768,7 +779,7 @@ export default function LandingPage() {
                                             Most Popular
                                         </Badge>
                                     </MotionDiv>
-                                    <CardHeader className="text-center">
+                                    <CardHeader className="text-center pb-4">
                                         <CardTitle className="text-2xl font-heading">Basic</CardTitle>
                                         <div className="mt-4">
                                             <MotionSpan
@@ -783,28 +794,33 @@ export default function LandingPage() {
                                             <span className="text-gray-600 dark:text-gray-400">/month</span>
                                         </div>
                                         <CardDescription className="mt-2">
-                                            Everything you need to organize your life
+                                            Everything you need + all advanced tools
                                         </CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        {[
-                                            'Unlimited tasks & projects',
-                                            'Unlimited notes & ideas',
-                                            'Movie & media tracking',
-                                            'All sync features'
-                                        ].map((feature, index) => (
-                                            <MotionDiv
-                                                key={index}
-                                                className="flex items-center space-x-3 text-left"
-                                                initial={{ opacity: 0, x: -20 }}
-                                                whileInView={{ opacity: 1, x: 0 }}
-                                                transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
-                                                viewport={{ once: true }}
-                                            >
-                                                <CheckCircle className="h-5 w-5 text-green-500" />
-                                                <span>{feature}</span>
-                                            </MotionDiv>
-                                        ))}
+                                    <CardContent className="space-y-4 flex-1 flex flex-col">
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 font-medium mb-2">
+                                            Everything in Free, plus:
+                                        </p>
+                                        <div className="space-y-3 flex-1">
+                                            {[
+                                                'Movie & media tracking',
+                                                'Decision making tools',
+                                                'AI Chatbot assistance',
+                                                'All premium features'
+                                            ].map((feature, index) => (
+                                                <MotionDiv
+                                                    key={index}
+                                                    className="flex items-center space-x-3 text-left"
+                                                    initial={{ opacity: 0, x: -20 }}
+                                                    whileInView={{ opacity: 1, x: 0 }}
+                                                    transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
+                                                    viewport={{ once: true }}
+                                                >
+                                                    <CheckCircle className="h-5 w-5 text-green-500" />
+                                                    <span>{feature}</span>
+                                                </MotionDiv>
+                                            ))}
+                                        </div>
                                         <MotionDiv
                                             initial={{ opacity: 0, y: 20 }}
                                             whileInView={{ opacity: 1, y: 0 }}
@@ -815,8 +831,8 @@ export default function LandingPage() {
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}
                                             >
-                                                <Button className="w-full mt-6 dark:text-black bg-blue-500 text-white lg:hover:bg-blue-600">
-                                                    Start Free Trial
+                                                <Button className="w-full dark:text-black bg-blue-500 text-white lg:hover:bg-blue-600">
+                                                    Get Started
                                                 </Button>
                                             </MotionDiv>
                                         </MotionDiv>
@@ -831,8 +847,19 @@ export default function LandingPage() {
                                 whileHover={{ scale: 1.03, y: -10 }}
                                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                             >
-                                <Card className="border-gray-200 dark:border-gray-800 relative h-full">
-                                    <CardHeader className="text-center">
+                                <Card className="border-purple-500 dark:border-purple-400 relative flex flex-col h-[650px]">
+                                    <MotionDiv
+                                        className="absolute -top-3 left-1/2 transform -translate-x-1/2"
+                                        initial={{ opacity: 0, y: -10 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.5, delay: 0.3 }}
+                                        viewport={{ once: true }}
+                                    >
+                                        <Badge className="bg-purple-500 text-white">
+                                            7/10 seats taken
+                                        </Badge>
+                                    </MotionDiv>
+                                    <CardHeader className="text-center pb-4">
                                         <CardTitle className="text-2xl font-heading">Pro</CardTitle>
                                         <div className="mt-4">
                                             <MotionSpan
@@ -842,34 +869,42 @@ export default function LandingPage() {
                                                 transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.5 }}
                                                 viewport={{ once: true }}
                                             >
-                                                €250
+                                                €100
                                             </MotionSpan>
                                             <span className="text-gray-600 dark:text-gray-400">/month</span>
                                         </div>
                                         <CardDescription className="mt-2">
-                                            For serious achievers building their future
+                                            Exclusive community for serious achievers
                                         </CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        {[
-                                            'Everything in Basic',
-                                            'Exclusive community access',
-                                            'Beta features first',
-                                            'Priority support',
-                                            'Monthly strategy calls'
-                                        ].map((feature, index) => (
-                                            <MotionDiv
-                                                key={index}
-                                                className="flex items-center space-x-3 text-left"
-                                                initial={{ opacity: 0, x: -20 }}
-                                                whileInView={{ opacity: 1, x: 0 }}
-                                                transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
-                                                viewport={{ once: true }}
-                                            >
-                                                <CheckCircle className="h-5 w-5 text-green-500" />
-                                                <span>{feature}</span>
-                                            </MotionDiv>
-                                        ))}
+                                    <CardContent className="space-y-4 flex-1 flex flex-col">
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 font-medium mb-2">
+                                            Everything in Basic, plus:
+                                        </p>
+                                        <div className="space-y-3 flex-1">
+                                            {[
+                                                'Weekly and Monthly virtual meetups',
+                                                '1 physical meetup per year',
+                                                'Exclusive community access',
+                                                'Priority support',
+                                                'Early access to new features'
+                                            ].map((feature, index) => (
+                                                <MotionDiv
+                                                    key={index}
+                                                    className="flex items-center space-x-3 text-left"
+                                                    initial={{ opacity: 0, x: -20 }}
+                                                    whileInView={{ opacity: 1, x: 0 }}
+                                                    transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
+                                                    viewport={{ once: true }}
+                                                >
+                                                    <CheckCircle className="h-5 w-5 text-green-500" />
+                                                    <span className="text-sm">{feature}</span>
+                                                </MotionDiv>
+                                            ))}
+                                        </div>
+                                        <div className="text-xs text-purple-600 dark:text-purple-400 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg font-medium">
+                                            ⚡ Limited to 10 members only
+                                        </div>
                                         <MotionDiv
                                             initial={{ opacity: 0, y: 20 }}
                                             whileInView={{ opacity: 1, y: 0 }}
@@ -880,8 +915,8 @@ export default function LandingPage() {
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}
                                             >
-                                                <Button className="w-full mt-6 text-white bg-black dark:bg-white dark:text-black border-gray-300 dark:border-gray-700">
-                                                    Upgrade to Pro
+                                                <Button className="w-full text-white bg-purple-500 lg:hover:bg-purple-600 dark:text-white">
+                                                    Join Pro Community
                                                 </Button>
                                             </MotionDiv>
                                         </MotionDiv>
@@ -1064,6 +1099,7 @@ function FeatureCard({
     title,
     description,
     features,
+    valueProposition,
     isReversed = false,
     delay = 0
 }: {
@@ -1071,6 +1107,7 @@ function FeatureCard({
     title: string;
     description: string;
     features: string[];
+    valueProposition: string;
     isReversed?: boolean;
     delay?: number;
 }) {
@@ -1080,21 +1117,21 @@ function FeatureCard({
     return (
         <MotionDiv
             ref={ref}
-            className="mb-20"
+            className="min-h-screen flex items-center py-16"
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}
             transition={{ duration: 0.8, delay }}
         >
-            <div className={`grid lg:grid-cols-2 gap-12 items-center ${isReversed ? 'lg:grid-flow-col-dense' : ''}`}>
+            <div className={`grid lg:grid-cols-2 gap-16 items-center w-full ${isReversed ? 'lg:grid-flow-col-dense' : ''}`}>
                 <MotionDiv
-                    className={isReversed ? 'lg:order-2' : ''}
+                    className={`space-y-8 ${isReversed ? 'lg:order-2' : ''}`}
                     initial={{ opacity: 0, x: isReversed ? 50 : -50 }}
                     animate={isInView ? { opacity: 1, x: 0 } : {}}
                     transition={{ duration: 0.8, delay: delay + 0.2 }}
                 >
-                    <div className="flex items-center mb-6">
+                    <div className="flex items-center mb-8">
                         <MotionDiv
-                            className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-4"
+                            className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30 rounded-xl flex items-center justify-center mr-6"
                             whileHover={{
                                 scale: 1.1,
                                 rotate: 5,
@@ -1103,19 +1140,42 @@ function FeatureCard({
                         >
                             {icon}
                         </MotionDiv>
-                        <h3 className="text-2xl font-medium font-heading">{title}</h3>
+                        <h3 className="text-3xl lg:text-4xl font-medium font-heading">{title}</h3>
                     </div>
-                    <p className="text-gray-600 dark:text-gray-400 mb-6">
+                    
+                    <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
                         {description}
                     </p>
+
+                    {/* Value Proposition Highlight */}
+                    <MotionDiv
+                        className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 p-6 rounded-xl border-l-4 border-blue-500"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={isInView ? { opacity: 1, scale: 1 } : {}}
+                        transition={{ duration: 0.6, delay: delay + 0.4 }}
+                        whileHover={{ scale: 1.02 }}
+                    >
+                        <div className="flex items-start">
+                            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-4 mt-1 flex-shrink-0">
+                                <Sparkles className="h-4 w-4 text-white" />
+                            </div>
+                            <div>
+                                <h4 className="font-semibold text-lg mb-2 text-blue-700 dark:text-blue-300">Key Value</h4>
+                                <p className="text-gray-700 dark:text-gray-300 font-medium">
+                                    {valueProposition}
+                                </p>
+                            </div>
+                        </div>
+                    </MotionDiv>
+                    
                     <MotionUl
-                        className="space-y-3 text-gray-600 dark:text-gray-400"
+                        className="space-y-4 text-gray-600 dark:text-gray-400"
                         variants={{
                             hidden: {},
                             show: {
                                 transition: {
                                     staggerChildren: 0.1,
-                                    delayChildren: delay + 0.4
+                                    delayChildren: delay + 0.6
                                 }
                             }
                         }}
@@ -1125,7 +1185,7 @@ function FeatureCard({
                         {features.map((feature, index) => (
                             <MotionLi
                                 key={index}
-                                className="flex items-start"
+                                className="flex items-start text-lg"
                                 variants={{
                                     hidden: { opacity: 0, x: -20 },
                                     show: {
@@ -1135,34 +1195,75 @@ function FeatureCard({
                                     }
                                 }}
                             >
-                                <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                                <CheckCircle className="h-6 w-6 text-green-500 mr-4 mt-1 flex-shrink-0" />
                                 <span>{feature}</span>
                             </MotionLi>
                         ))}
                     </MotionUl>
                 </MotionDiv>
+                
                 <MotionDiv
-                    className={`bg-gray-100 dark:bg-gray-900 rounded-lg p-8 min-h-[300px] flex items-center justify-center ${isReversed ? 'lg:order-1' : ''}`}
+                    className={`relative ${isReversed ? 'lg:order-1' : ''}`}
                     initial={{ opacity: 0, x: isReversed ? -50 : 50 }}
                     animate={isInView ? { opacity: 1, x: 0 } : {}}
                     transition={{ duration: 0.8, delay: delay + 0.4 }}
                     whileHover={{ scale: 1.02 }}
                 >
-                    <div className="text-center text-gray-500 dark:text-gray-400">
+                    {/* Background gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 rounded-2xl" />
+                    
+                    {/* Content */}
+                    <div className="relative bg-white/80 dark:bg-black/40 backdrop-blur-sm rounded-2xl p-12 min-h-[500px] flex flex-col items-center justify-center border border-gray-200/50 dark:border-gray-700/50">
                         <MotionDiv
+                            className="text-center text-gray-500 dark:text-gray-400"
                             animate={{
-                                y: [-5, 5, -5],
-                                rotate: [-2, 2, -2]
+                                y: [-10, 10, -10],
+                                rotate: [-3, 3, -3]
                             }}
                             transition={{
-                                duration: 4,
+                                duration: 6,
                                 repeat: Infinity,
                                 ease: "easeInOut"
                             }}
                         >
-                            {icon}
+                            <div className="w-32 h-32 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 rounded-3xl flex items-center justify-center mb-6 mx-auto">
+                                <div className="w-16 h-16 text-4xl">
+                                    {icon}
+                                </div>
+                            </div>
+                            <p className="text-xl font-medium">{title} Interface</p>
+                            <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
+                                Designed for efficiency and clarity
+                            </p>
                         </MotionDiv>
-                        <p className="mt-4">{title} Interface</p>
+
+                        {/* Floating elements for visual interest */}
+                        <MotionDiv
+                            className="absolute top-8 right-8 w-4 h-4 bg-blue-400 rounded-full opacity-60"
+                            animate={{
+                                y: [-20, 20, -20],
+                                x: [-10, 10, -10],
+                                scale: [1, 1.2, 1]
+                            }}
+                            transition={{
+                                duration: 8,
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                            }}
+                        />
+                        <MotionDiv
+                            className="absolute bottom-8 left-8 w-6 h-6 bg-purple-400 rounded-full opacity-40"
+                            animate={{
+                                y: [20, -20, 20],
+                                x: [10, -10, 10],
+                                scale: [1.2, 1, 1.2]
+                            }}
+                            transition={{
+                                duration: 10,
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                            }}
+                        />
                     </div>
                 </MotionDiv>
             </div>
