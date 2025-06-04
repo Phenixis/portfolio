@@ -2,6 +2,8 @@ import Header from "@/components/big/header"
 import { UserProvider } from "@/hooks/use-user"
 import { getUser } from "@/lib/db/queries/user"
 import { getDarkModeCookie } from "@/lib/cookies"
+import { ModalCommandsProvider } from "@/contexts/modal-commands-context"
+import ModalManager from "@/components/big/modal-manager"
 
 export default async function BackOfficeLayout({
   children,
@@ -13,10 +15,13 @@ export default async function BackOfficeLayout({
 
   return (
     <UserProvider userPromise={userPromise}>
-      <main className="relative w-full h-full">
-        <Header darkModeCookie={darkModeCookie} />
-        <div className="w-full h-full">{children}</div>
-      </main>
+      <ModalCommandsProvider>
+        <main className="relative w-full h-full">
+          <Header darkModeCookie={darkModeCookie} />
+          <div className="w-full h-full">{children}</div>
+        </main>
+        <ModalManager />
+      </ModalCommandsProvider>
     </UserProvider>
   )
 }

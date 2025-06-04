@@ -14,6 +14,7 @@ import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { useDarkMode } from "@/hooks/use-dark-mode"
+import { useTaskModal, useNoteModal, useDailyMoodModal } from "@/contexts/modal-commands-context"
 
 const items = {
     "Suggestions": [
@@ -38,6 +39,9 @@ export default function Menu() {
     const [open, setOpen] = useState(false)
 
     const { toggleDarkMode } = useDarkMode()
+    const taskModal = useTaskModal()
+    const noteModal = useNoteModal()
+    const dailyMoodModal = useDailyMoodModal()
 
     useEffect(() => {
         const down = (e: KeyboardEvent) => {
@@ -84,6 +88,21 @@ export default function Menu() {
                         >
                             Toggle Dark Mode
                             <CommandShortcut>Ctrl/⌘ + M</CommandShortcut>
+                        </CommandItem>
+                        <CommandItem
+                            onSelect={() => runCommand(() => taskModal.openModal())}
+                        >
+                            Create a task
+                        </CommandItem>
+                        <CommandItem
+                            onSelect={() => runCommand(() => noteModal.openModal())}
+                        >
+                            Create a note
+                        </CommandItem>
+                        <CommandItem
+                            onSelect={() => runCommand(() => dailyMoodModal.openModal())}
+                        >
+                            Enter my mood
                         </CommandItem>
                     </CommandGroup>
             </CommandList>

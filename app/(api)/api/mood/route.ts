@@ -37,13 +37,13 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json()
-        const { mood, date } = body
+        const { mood, date, comment = "" } = body
 
         if (mood === undefined || date === undefined) {
             return NextResponse.json({ error: "Missing required fields: mood and date" }, { status: 400 })
         }
 
-        const result = await createDailyMood(verification.userId, mood, new Date(date), "")
+        const result = await createDailyMood(verification.userId, mood, new Date(date), comment)
 
         return NextResponse.json({ message: "Mood saved successfully", mood: result }, { status: 201 })
     } catch (error: unknown) {
@@ -58,13 +58,13 @@ export async function PUT(request: NextRequest) {
 
     try {
         const body = await request.json()
-        const { mood, date } = body
+        const { mood, date, comment = "" } = body
 
         if (mood === undefined || date === undefined) {
             return NextResponse.json({ error: "Missing required fields: mood and date" }, { status: 400 })
         }
 
-        const result = await updateDailyMood(verification.userId, mood, new Date(date), "")
+        const result = await updateDailyMood(verification.userId, mood, new Date(date), comment)
 
         return NextResponse.json({ message: "Mood updated successfully", mood: result }, { status: 200 })
     } catch (error: unknown) {

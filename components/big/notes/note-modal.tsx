@@ -27,17 +27,25 @@ export default function NoteModal({
     className,
     note,
     password,
+    children,
+    isOpen,
+    onOpenChange,
 }: {
     className?: string
     note?: Note
     password?: string
+    children?: React.ReactNode
+    isOpen?: boolean
+    onOpenChange?: (open: boolean) => void
 }) {
     const user = useUser().user;
     const mode = note ? "edit" : "create"
     const { mutate } = useSWRConfig()
 
-    // State
-    const [open, setOpen] = useState(false)
+    // State - use external control if provided
+    const [internalOpen, setInternalOpen] = useState(false)
+    const open = isOpen !== undefined ? isOpen : internalOpen
+    const setOpen = onOpenChange || setInternalOpen
     const [formChanged, setFormChanged] = useState(false)
     const [showAdvancedOptions, setShowAdvancedOptions] = useState(false)
     const [decryptedContent, setDecryptedContent] = useState<string | null>(null)
@@ -243,7 +251,7 @@ export default function NoteModal({
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                {
+                {children ? children : (
                     mode === "create" ? (
                         <Button variant="outline" size="icon" className={cn("whitespace-nowrap transition-transform duration-300", className)}>
                             <Plus size={24} />
@@ -251,7 +259,7 @@ export default function NoteModal({
                     ) : (
                         <PenIcon className={cn("min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] cursor-pointer", className)} />
                     )
-                }
+                )}
             </DialogTrigger>
             <DialogContent
                 aria-describedby={undefined}>

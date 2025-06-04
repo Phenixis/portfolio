@@ -44,16 +44,26 @@ import Help from "../help"
 export default function TaskModal({
 	className,
 	task,
+	isOpen,
+	onOpenChange,
+	children,
 }: {
 	className?: string
 	task?: TaskWithRelations
+	isOpen?: boolean
+	onOpenChange?: (open: boolean) => void
+	children?: React.ReactNode
 }) {
 	const user = useUser().user;
 	const searchParams = useSearchParams()
 
 	// State management for the dialog
 	const mode = task ? "edit" : "create"
-	const [open, setOpen] = useState(false)
+	const [internalOpen, setInternalOpen] = useState(false)
+	
+	// Use external control if provided, otherwise use internal state
+	const open = isOpen !== undefined ? isOpen : internalOpen
+	const setOpen = onOpenChange || setInternalOpen
 
 	// State management for form fields
 	const [dueDate, setDueDate] = useState<Date>(() => {
@@ -463,22 +473,28 @@ export default function TaskModal({
 					}
 				}}
 			>
-				<DialogTrigger className={cn(mode === "edit" && "h-fit", className)} asChild>
-					{mode === "edit" ? (
-						<PenIcon className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] cursor-pointer" />
-					) : (
-						<Button
-							variant="outline"
-							size="sm"
-							tooltip="Create a new task"
-							className="h-10 px-2 flex items-center border-none"
-						>
-							<PlusIcon className="min-w-[24px] max-w-[24px] min-h-[24px]" />
-						</Button>
-					)}
-				</DialogTrigger>
+				{children ? (
+					<DialogTrigger asChild>
+						{children}
+					</DialogTrigger>
+				) : (
+					<DialogTrigger className={cn(mode === "edit" && "h-fit", className)} asChild>
+						{mode === "edit" ? (
+							<PenIcon className="min-w-[16px] max-w-[16px] min-h-[24px] max-h-[24px] cursor-pointer" />
+						) : (
+							<Button
+								variant="outline"
+								size="sm"
+								tooltip="Create a new task"
+								className="h-10 px-2 flex items-center border-none"
+							>
+								<PlusIcon className="min-w-[24px] max-w-[24px] min-h-[24px]" />
+							</Button>
+						)}
+					</DialogTrigger>
+				)}
 				<DialogContent
-					className="max-w-2xl"
+					className="sm:max-w-2xl"
 					aria-describedby={undefined}
 				>
 					<DialogHeader>
@@ -500,7 +516,7 @@ export default function TaskModal({
 							/>
 						</div>
 						<div className="flex flex-col justify-between lg:flex-row lg:space-x-4">
-							<div>
+							<div className="w-full">
 								<Label htmlFor="importance" required>Importance</Label>
 								<Select
 									name="importance"
@@ -531,7 +547,7 @@ export default function TaskModal({
 								</Select>
 							</div>
 							<div className="relative">
-								<Label htmlFor="dueDate" required>Do date</Label>
+								<Label htmlFor="dueDate" required>Due date</Label>
 								<div className="flex gap-1">
 									<Button
 										type="button"
@@ -595,7 +611,7 @@ export default function TaskModal({
 									</div>
 								)}
 							</div>
-							<div>
+							<div className="w-full">
 								<Label htmlFor="duration" required>
 									Duration
 								</Label>

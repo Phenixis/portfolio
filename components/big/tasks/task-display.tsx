@@ -469,7 +469,7 @@ export default function TaskDisplay({
 							{task.tasksToDoAfter && task.tasksToDoAfter.length > 0 && (
 								<div className="flex flex-col space-y-1">
 									<p className="text-sm text-muted-foreground">
-										To do before:
+										Task{task.tasksToDoAfter.length > 1 ? "s" : ""} to do before:
 									</p>
 									{task.tasksToDoAfter.map((afterTask) => (
 										<TaskDisplay
@@ -488,7 +488,7 @@ export default function TaskDisplay({
 							{task.tasksToDoBefore && task.tasksToDoBefore.length > 0 && (
 								<div className="flex flex-col space-y-1">
 									<p className="text-sm text-muted-foreground">
-										To do after:
+										Task{task.tasksToDoBefore.length > 1 ? "s" : ""} to do after:
 									</p>
 									{task.tasksToDoBefore.map((beforeTask) => (
 										<TaskDisplay
