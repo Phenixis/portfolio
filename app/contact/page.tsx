@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react'
-import { Metadata } from 'next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -9,11 +8,6 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Mail, MapPin, Send, MessageCircle, Bug, Lightbulb } from 'lucide-react'
-
-export const metadata: Metadata = {
-    title: 'Contact Us | Life OS',
-    description: 'Get in touch with the Life OS team for support, feedback, or inquiries. We\'re here to help you make the most of your experience.',
-}
 
 export default function ContactPage() {
     const [formData, setFormData] = useState({
