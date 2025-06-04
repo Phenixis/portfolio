@@ -171,6 +171,11 @@ export function WatchlistCard({ movie }: WatchlistCardProps) {
                             <Badge variant="outline" className="text-xs h-5 shrink-0">
                                 {movie.media_type === 'tv' ? 'TV' : 'Movie'}
                             </Badge>
+                            {movie.watch_status === 'watch_again' && (
+                                <Badge variant="outline" className="text-xs h-5 shrink-0 border-orange-300 text-orange-700">
+                                    Watch Again
+                                </Badge>
+                            )}
                             {releaseYear && (
                                 <span className="text-xs text-muted-foreground">{releaseYear}</span>
                             )}

@@ -246,7 +246,7 @@ export const movie = pgTable('movie', {
     // User tracking fields
     user_rating: real('user_rating'), // 0.5 to 5.0 by 0.5 increments
     user_comment: text('user_comment'),
-    watch_status: varchar('watch_status', { length: 20 }).notNull().default('will_watch'), // 'will_watch', 'watched'
+    watch_status: varchar('watch_status', { length: 20 }).notNull().default('will_watch'), // 'will_watch', 'watched', 'watch_again'
     watched_date: timestamp('watched_date'),
     
     created_at: timestamp('created_at').notNull().defaultNow(),

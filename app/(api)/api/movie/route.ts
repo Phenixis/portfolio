@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
                 : null,
             status: movieDetails.status,
             watch_status,
-            watched_date: watch_status === 'watched' ? new Date() : null
+            watched_date: (watch_status === 'watched' || watch_status === 'watch_again') ? new Date() : null
         };
 
         // Add rating if provided
@@ -146,13 +146,13 @@ export async function PUT(request: NextRequest) {
 
         // Update watch status if provided
         if (watch_status) {
-            if (!['will_watch', 'watched'].includes(watch_status)) {
+            if (!['will_watch', 'watched', 'watch_again'].includes(watch_status)) {
                 return NextResponse.json({ 
-                    error: 'watch_status must be either "will_watch" or "watched"' 
+                    error: 'watch_status must be either "will_watch", "watched", or "watch_again"' 
                 }, { status: 400 });
             }
 
-            const watchDate = watch_status === 'watched' ? (watched_date ? new Date(watched_date) : new Date()) : undefined;
+            const watchDate = (watch_status === 'watched' || watch_status === 'watch_again') ? (watched_date ? new Date(watched_date) : new Date()) : undefined;
             
             updatedMovie = await MovieQueries.updateWatchStatus(
                 movie_id,

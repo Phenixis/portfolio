@@ -23,7 +23,7 @@ export class MovieQueries {
     /**
      * Get movies by watch status
      */
-    static async getMoviesByStatus(userId: string, watchStatus: 'will_watch' | 'watched'): Promise<Movie[]> {
+    static async getMoviesByStatus(userId: string, watchStatus: 'will_watch' | 'watched' | 'watch_again'): Promise<Movie[]> {
         return await db
             .select()
             .from(movie)
@@ -117,7 +117,7 @@ export class MovieQueries {
     static async updateWatchStatus(
         movieId: number,
         userId: string,
-        watchStatus: 'will_watch' | 'watched',
+        watchStatus: 'will_watch' | 'watched' | 'watch_again',
         watchedDate?: Date
     ): Promise<Movie | null> {
         const updateData: Partial<Movie> = {
@@ -126,6 +126,8 @@ export class MovieQueries {
         };
 
         if (watchStatus === 'watched' && watchedDate) {
+            updateData.watched_date = watchedDate;
+        } else if (watchStatus === 'watch_again' && watchedDate) {
             updateData.watched_date = watchedDate;
         } else if (watchStatus === 'will_watch') {
             updateData.watched_date = null;
@@ -171,6 +173,7 @@ export class MovieQueries {
         total: number;
         watched: number;
         willWatch: number;
+        watchAgain: number;
         averageRating: number | null;
     }> {
         const stats = await db
@@ -178,6 +181,7 @@ export class MovieQueries {
                 total: sql<number>`COUNT(*)`,
                 watched: sql<number>`COUNT(CASE WHEN ${movie.watch_status} = 'watched' THEN 1 END)`,
                 willWatch: sql<number>`COUNT(CASE WHEN ${movie.watch_status} = 'will_watch' THEN 1 END)`,
+                watchAgain: sql<number>`COUNT(CASE WHEN ${movie.watch_status} = 'watch_again' THEN 1 END)`,
                 averageRating: sql<number>`AVG(${movie.user_rating})`
             })
             .from(movie)
@@ -190,6 +194,7 @@ export class MovieQueries {
             total: stats[0].total,
             watched: stats[0].watched,
             willWatch: stats[0].willWatch,
+            watchAgain: stats[0].watchAgain,
             averageRating: stats[0].averageRating
         };
     }

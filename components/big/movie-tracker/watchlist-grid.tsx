@@ -97,15 +97,18 @@ export function WatchlistGrid() {
     }, [mediaFilter, updateFilters, isClient]);
 
     const { movies: willWatchMovies, isLoading: isLoadingWillWatch } = useMovies('will_watch');
+    const { movies: watchAgainMovies, isLoading: isLoadingWatchAgain } = useMovies('watch_again');
     const { movies: searchMovies, isLoading: isLoadingSearch } = useMovies(undefined, debouncedQuery);
 
     // Determine which movies to show
-    let movies = willWatchMovies;
-    let isLoading = isLoadingWillWatch;
+    let movies = [...willWatchMovies, ...watchAgainMovies];
+    let isLoading = isLoadingWillWatch || isLoadingWatchAgain;
 
     if (debouncedQuery) {
-        // Filter search results to only show will_watch movies
-        movies = searchMovies.filter(movie => movie.watch_status === 'will_watch');
+        // Filter search results to show both will_watch and watch_again movies
+        movies = searchMovies.filter(movie => 
+            movie.watch_status === 'will_watch' || movie.watch_status === 'watch_again'
+        );
         isLoading = isLoadingSearch;
     }
 

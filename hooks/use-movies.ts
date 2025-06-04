@@ -9,6 +9,7 @@ interface MovieStats {
     total: number;
     watched: number;
     willWatch: number;
+    watchAgain: number;
     averageRating: number | null;
 }
 
@@ -52,7 +53,7 @@ interface RecommendationsResponse {
     };
 }
 
-export function useMovies(status?: 'will_watch' | 'watched', search?: string) {
+export function useMovies(status?: 'will_watch' | 'watched' | 'watch_again', search?: string) {
     const { user } = useUser();
     
     const url = status ? `/api/movie/list?status=${status}` : 
@@ -80,7 +81,7 @@ export function useMovieStats() {
     );
 
     return {
-        stats: data as MovieStats || { total: 0, watched: 0, willWatch: 0, averageRating: null },
+        stats: data as MovieStats || { total: 0, watched: 0, willWatch: 0, watchAgain: 0, averageRating: null },
         isLoading,
         error
     };
@@ -236,7 +237,7 @@ export function useMovieActions() {
     const addMovie = async (
         tmdbId: number, 
         mediaType: 'movie' | 'tv', 
-        watchStatus: 'will_watch' | 'watched' = 'will_watch',
+        watchStatus: 'will_watch' | 'watched' | 'watch_again' = 'will_watch',
         options?: { 
             optimizeRecommendations?: boolean;
             rating?: number;
@@ -247,7 +248,7 @@ export function useMovieActions() {
         const requestBody: {
             tmdb_id: number;
             media_type: 'movie' | 'tv';
-            watch_status: 'will_watch' | 'watched';
+            watch_status: 'will_watch' | 'watched' | 'watch_again';
             user_rating?: number;
             optimizeRecommendations?: boolean;
         } = {
@@ -296,7 +297,7 @@ export function useMovieActions() {
         updates: {
             user_rating?: number | null;
             user_comment?: string | null;
-            watch_status?: 'will_watch' | 'watched';
+            watch_status?: 'will_watch' | 'watched' | 'watch_again';
             watched_date?: string;
         }
     ) => {

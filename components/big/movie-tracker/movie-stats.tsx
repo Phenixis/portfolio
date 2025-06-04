@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
-import { Film, Eye, Clock, Star } from 'lucide-react';
+import { Film, Eye, Clock, Star, RotateCcw } from 'lucide-react';
 import { useMovieStats } from '@/hooks/use-movies';
 
 export function MovieStats() {
@@ -9,8 +9,8 @@ export function MovieStats() {
 
     if (isLoading) {
         return (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {Array.from({ length: 4 }).map((_, i) => (
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                {Array.from({ length: 5 }).map((_, i) => (
                     <Card key={i}>
                         <CardContent fullPadding>
                             <div className="animate-pulse">
@@ -44,6 +44,12 @@ export function MovieStats() {
             color: 'text-orange-600'
         },
         {
+            title: 'Watch Again',
+            value: stats.watchAgain,
+            icon: RotateCcw,
+            color: 'text-purple-600'
+        },
+        {
             title: 'Avg Rating',
             value: stats.averageRating ? stats.averageRating.toFixed(1) : 'N/A',
             icon: Star,
@@ -53,7 +59,7 @@ export function MovieStats() {
     ];
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {statsData.map((stat) => {
                 const Icon = stat.icon;
                 return (

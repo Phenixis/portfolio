@@ -16,7 +16,8 @@ import {
     Tv,
     Check,
     X,
-    ExternalLink
+    ExternalLink,
+    RotateCcw
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -119,6 +120,19 @@ export function MovieCard({ movie }: MovieCardProps) {
         }
     };
 
+    const handleWatchAgain = async () => {
+        try {
+            await updateMovie(movie.id, {
+                watch_status: 'watch_again',
+                watched_date: new Date().toISOString()
+            });
+            toast.success('Marked to watch again! Added to watchlist.');
+        } catch (error: unknown) {
+            console.error('Failed to mark watch again:', error);
+            toast.error('Failed to mark watch again');
+        }
+    };
+
     const handleDelete = async () => {
         try {
             await deleteMovie(movie.id);
@@ -178,6 +192,11 @@ export function MovieCard({ movie }: MovieCardProps) {
                                         <Badge variant="secondary" className="text-xs h-5">
                                             {movie.media_type === 'tv' ? 'TV' : 'Movie'}
                                         </Badge>
+                                        {movie.watch_status === 'watch_again' && (
+                                            <Badge variant="outline" className="text-xs h-5 border-orange-300 text-orange-700">
+                                                Watch Again
+                                            </Badge>
+                                        )}
                                         {releaseYear && (
                                             <span>{releaseYear}</span>
                                         )}
@@ -195,6 +214,12 @@ export function MovieCard({ movie }: MovieCardProps) {
                                             <Eye className="mr-2 h-4 w-4" />
                                             Mark as {movie.watch_status === 'watched' ? 'Watchlist' : 'Watched'}
                                         </DropdownMenuItem>
+                                        {movie.watch_status === 'watched' && (
+                                            <DropdownMenuItem onClick={handleWatchAgain}>
+                                                <RotateCcw className="mr-2 h-4 w-4" />
+                                                Mark to watch again
+                                            </DropdownMenuItem>
+                                        )}
                                         <DropdownMenuSeparator />
                                         <DropdownMenuItem
                                             onClick={() => setShowDeleteDialog(true)}
