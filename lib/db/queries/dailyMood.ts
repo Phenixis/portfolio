@@ -23,7 +23,7 @@ export async function createDailyMood(
             user_id: userId,
             mood: mood,
             comment: comment,
-            date: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
+            date: date,
         })
         .returning()
 

@@ -8,6 +8,16 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Angry, Frown, Laugh, Meh, Smile, SmilePlus } from "lucide-react"
 import { useState } from "react"
@@ -40,6 +50,7 @@ export default function DailyMoodModal({
     
     const [selectedMood, setSelectedMood] = useState<number | null>(null)
     const [comment, setComment] = useState("")
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
     
     // Use the passed date or fallback to today
     const targetDate = date || new Date()
@@ -52,9 +63,9 @@ export default function DailyMoodModal({
         endDate: nextDay,
     })
 
-    // Get current mood for the target date
-    const currentMood = dailyMoods && dailyMoods.length > 0 ? dailyMoods[0].mood : null
-    const currentComment = dailyMoods && dailyMoods.length > 0 ? dailyMoods[0].comment : ""
+    // Get current mood for the target date // Use the last mood entry if multiple exist because the first one might be the one from the previous day
+    const currentMood = dailyMoods && dailyMoods.length > 0 ? dailyMoods[dailyMoods.length-1].mood : null
+    const currentComment = dailyMoods && dailyMoods.length > 0 ? dailyMoods[dailyMoods.length-1].comment : ""
 
     // Initialize form state when dialog opens
     const handleOpenChange = (newOpen: boolean) => {
@@ -83,6 +94,104 @@ export default function DailyMoodModal({
         }
     }
 
+    const confirmMoodDelete = () => {
+        setShowDeleteConfirm(false)
+        handleMoodDelete()
+    }
+
+    const handleMoodDelete = () => {
+        if (!dailyMoods || dailyMoods.length === 0) {
+            toast.error("No mood to delete")
+            return
+        }
+
+        setOpen(false)
+        
+        // Generate monthly query key for calendar optimistic updates
+        const monthStart = new Date(normalizedDate.getFullYear(), normalizedDate.getMonth(), 1)
+        const monthEnd = new Date(normalizedDate.getFullYear(), normalizedDate.getMonth() + 1, 0)
+        const monthlyParams = new URLSearchParams()
+        monthlyParams.append('startDate', monthStart.toISOString())
+        monthlyParams.append('endDate', monthEnd.toISOString())
+        const monthlyQueryKey = `/api/mood?${monthlyParams.toString()}`
+
+        // Optimistic update for current query (specific date range)
+        mutateDailyMoods((prevData: DailyMood[] | undefined) => {
+            if (prevData !== undefined && Array.isArray(prevData)) {
+                return prevData.filter((item: DailyMood) => {
+                    const itemDate = new Date(item.date)
+                    const targetDate = new Date(normalizedDate)
+                    return itemDate.toDateString() !== targetDate.toDateString()
+                })
+            }
+            return prevData
+        }, { revalidate: false })
+
+        // Optimistic update for calendar monthly query
+        mutate(monthlyQueryKey, (prevData: DailyMood[] | undefined) => {
+            if (prevData !== undefined && Array.isArray(prevData)) {
+                return prevData.filter((item: DailyMood) => {
+                    const itemDate = new Date(item.date)
+                    const targetDate = new Date(normalizedDate)
+                    return itemDate.toDateString() !== targetDate.toDateString()
+                })
+            }
+            return prevData
+        }, { revalidate: false })
+
+        // Optimistic update for global cache
+        mutate("/api/mood", (prevData: DailyMood[] | undefined) => {
+            if (prevData !== undefined && Array.isArray(prevData)) {
+                return prevData.filter((item: DailyMood) => {
+                    const itemDate = new Date(item.date)
+                    const targetDate = new Date(normalizedDate)
+                    return itemDate.toDateString() !== targetDate.toDateString()
+                })
+            }
+            return prevData
+        }, { revalidate: false })
+
+        // Make API call
+        fetch("/api/mood", {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${user?.api_key || ""}`,
+            },
+            body: JSON.stringify({
+                date: normalizedDate.toString(),
+            }),
+        })
+            .then(response => {
+                if (!response.ok) {
+                    // Rollback optimistic updates on error
+                    mutateDailyMoods()
+                    mutate("/api/mood")
+                    mutate(monthlyQueryKey)
+                    
+                    response.json().then(data => {
+                        const errorMessage = data?.error || "Failed to delete mood";
+                        toast.error(errorMessage);
+                    }).catch(() => {
+                        toast.error("Failed to delete mood");
+                    })
+                } else {
+                    toast.success("Mood deleted successfully")
+                    // Revalidate to get the actual server data
+                    mutateDailyMoods()
+                    mutate("/api/mood")
+                    mutate(monthlyQueryKey)
+                }
+            })
+            .catch(() => {
+                // Rollback optimistic updates on network error
+                mutateDailyMoods()
+                mutate("/api/mood")
+                mutate(monthlyQueryKey)
+                toast.error("Failed to delete mood");
+            })
+    }
+
     const handleMoodSubmit = () => {
         // Prevent mood selection for future dates
         if (isFutureDate()) {
@@ -96,7 +205,7 @@ export default function DailyMoodModal({
         }
 
         setOpen(false)
-        const method = dailyMoods.length == 0 ? "POST" : dailyMoods[0].mood == selectedMood && dailyMoods[0].comment == comment ? "DELETE" : "PUT"
+        const method = dailyMoods.length == 0 ? "POST" : "PUT"
         
         // Generate monthly query key for calendar optimistic updates (using same logic as useFilteredData)
         const monthStart = new Date(normalizedDate.getFullYear(), normalizedDate.getMonth(), 1)
@@ -105,12 +214,6 @@ export default function DailyMoodModal({
         monthlyParams.append('startDate', monthStart.toISOString())
         monthlyParams.append('endDate', monthEnd.toISOString())
         const monthlyQueryKey = `/api/mood?${monthlyParams.toString()}`
-
-        console.log('Optimistic update keys:', {
-            dailyQueryKey: 'useDailyMoods specific key',
-            monthlyQueryKey,
-            globalKey: '/api/mood'
-        })
 
         // Optimistic update for current query (specific date range)
         mutateDailyMoods((prevData: DailyMood[] | undefined) => {
@@ -127,24 +230,16 @@ export default function DailyMoodModal({
                 }
                 return [newMood, ...(prevData || [])]
             }
-            if (prevData !== undefined && Array.isArray(prevData)) {
-                if (method === "PUT") {
-                    return prevData.map((item: DailyMood) => {
-                        // Compare dates properly for optimistic update
-                        const itemDate = new Date(item.date)
-                        const targetDate = new Date(normalizedDate)
-                        if (itemDate.toDateString() === targetDate.toDateString()) {
-                            return { ...item, mood: selectedMood, comment: comment, updated_at: new Date() }
-                        }
-                        return item
-                    })
-                } else if (method === "DELETE") {
-                    return prevData.filter((item: DailyMood) => {
-                        const itemDate = new Date(item.date)
-                        const targetDate = new Date(normalizedDate)
-                        return itemDate.toDateString() !== targetDate.toDateString()
-                    })
-                }
+            if (prevData !== undefined && Array.isArray(prevData) && method === "PUT") {
+                return prevData.map((item: DailyMood) => {
+                    // Compare dates properly for optimistic update
+                    const itemDate = new Date(item.date)
+                    const targetDate = new Date(normalizedDate)
+                    if (itemDate.toDateString() === targetDate.toDateString()) {
+                        return { ...item, mood: selectedMood, comment: comment, updated_at: new Date() }
+                    }
+                    return item
+                })
             }
             return prevData
         }, { revalidate: false })
@@ -164,23 +259,15 @@ export default function DailyMoodModal({
                 }
                 return [newMood, ...(prevData || [])]
             }
-            if (prevData !== undefined && Array.isArray(prevData)) {
-                if (method === "PUT") {
-                    return prevData.map((item: DailyMood) => {
-                        const itemDate = new Date(item.date)
-                        const targetDate = new Date(normalizedDate)
-                        if (itemDate.toDateString() === targetDate.toDateString()) {
-                            return { ...item, mood: selectedMood, comment: comment, updated_at: new Date() }
-                        }
-                        return item
-                    })
-                } else if (method === "DELETE") {
-                    return prevData.filter((item: DailyMood) => {
-                        const itemDate = new Date(item.date)
-                        const targetDate = new Date(normalizedDate)
-                        return itemDate.toDateString() !== targetDate.toDateString()
-                    })
-                }
+            if (prevData !== undefined && Array.isArray(prevData) && method === "PUT") {
+                return prevData.map((item: DailyMood) => {
+                    const itemDate = new Date(item.date)
+                    const targetDate = new Date(normalizedDate)
+                    if (itemDate.toDateString() === targetDate.toDateString()) {
+                        return { ...item, mood: selectedMood, comment: comment, updated_at: new Date() }
+                    }
+                    return item
+                })
             }
             return prevData
         }, { revalidate: false })
@@ -200,23 +287,15 @@ export default function DailyMoodModal({
                 }
                 return [newMood, ...(prevData || [])]
             }
-            if (prevData !== undefined && Array.isArray(prevData)) {
-                if (method === "PUT") {
-                    return prevData.map((item: DailyMood) => {
-                        const itemDate = new Date(item.date)
-                        const targetDate = new Date(normalizedDate)
-                        if (itemDate.toDateString() === targetDate.toDateString()) {
-                            return { ...item, mood: selectedMood, comment: comment, updated_at: new Date() }
-                        }
-                        return item
-                    })
-                } else if (method === "DELETE") {
-                    return prevData.filter((item: DailyMood) => {
-                        const itemDate = new Date(item.date)
-                        const targetDate = new Date(normalizedDate)
-                        return itemDate.toDateString() !== targetDate.toDateString()
-                    })
-                }
+            if (prevData !== undefined && Array.isArray(prevData) && method === "PUT") {
+                return prevData.map((item: DailyMood) => {
+                    const itemDate = new Date(item.date)
+                    const targetDate = new Date(normalizedDate)
+                    if (itemDate.toDateString() === targetDate.toDateString()) {
+                        return { ...item, mood: selectedMood, comment: comment, updated_at: new Date() }
+                    }
+                    return item
+                })
             }
             return prevData
         }, { revalidate: false })
@@ -231,7 +310,7 @@ export default function DailyMoodModal({
             body: JSON.stringify({
                 mood: selectedMood,
                 comment: comment,
-                date: normalizedDate.toISOString(),
+                date: normalizedDate.toString(),
             }),
         })
             .then(response => {
@@ -245,10 +324,10 @@ export default function DailyMoodModal({
                         const errorMessage = data?.error || "Failed to save mood";
                         toast.error(errorMessage);
                     }).catch(() => {
-                        toast.error(`Failed to ${method === "POST" ? "save" : method === "PUT" ? "update" : "delete"} mood`);
+                        toast.error(`Failed to ${method === "POST" ? "save" : "update"} mood`);
                     })
                 } else {
-                    toast.success(`Mood ${method === "POST" ? "saved" : method === "PUT" ? "updated" : "deleted"} successfully`)
+                    toast.success(`Mood ${method === "POST" ? "saved" : "updated"} successfully`)
                     // Revalidate to get the actual server data
                     mutateDailyMoods()
                     mutate("/api/mood")
@@ -260,7 +339,7 @@ export default function DailyMoodModal({
                 mutateDailyMoods()
                 mutate("/api/mood")
                 mutate(monthlyQueryKey)
-                toast.error(`Failed to ${method === "POST" ? "save" : method === "PUT" ? "update" : "delete"} mood`);
+                toast.error(`Failed to ${method === "POST" ? "save" : "update"} mood`);
             })
     }
 
@@ -382,7 +461,21 @@ export default function DailyMoodModal({
                         />
                     </div>
                 </div>
-                <DialogFooter>
+                <DialogFooter className="flex gap-2">
+                    {currentMood !== null && !isFutureDate() && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                                setSelectedMood(null)
+                                setComment("")
+                                setShowDeleteConfirm(true)
+                            }}
+                            className="text-destructive hover:text-destructive"
+                        >
+                            Delete Mood
+                        </Button>
+                    )}
                     <Button
                         type="button"
                         onClick={handleMoodSubmit}
@@ -392,6 +485,28 @@ export default function DailyMoodModal({
                     </Button>
                 </DialogFooter>
             </DialogContent>
+
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Mood</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete your mood for {normalizedDate.toLocaleDateString()}? 
+                            This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmMoodDelete}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </Dialog>
     )
 }

@@ -45,11 +45,6 @@ export default function Calendar({
         enabled: showDailyMood,
     })
 
-    // Debug: Log when dailyMoods data changes
-    useEffect(() => {
-        console.log('Calendar dailyMoods data updated:', dailyMoods?.length || 0, 'moods for month', month.getMonth() + 1)
-    }, [dailyMoods, month])
-
     const { tasks, isLoading: isTaskLoading, isError: isTaskError } = useTasks({
         completed: false,
         dueBefore: date ? new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59) : undefined,
@@ -64,6 +59,21 @@ export default function Calendar({
             date.setHours(0, 0, 0, 0)
         }
     }, [date])
+
+    // Get the mood for the currently selected date
+    const getCurrentDateMood = () => {
+        if (!date || !dailyMoods || dailyMoods.length === 0) return null
+        
+        const normalizedSelectedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+        
+        return dailyMoods.find(mood => {
+            const moodDate = new Date(mood.date)
+            const normalizedMoodDate = new Date(moodDate.getFullYear(), moodDate.getMonth(), moodDate.getDate())
+            return normalizedMoodDate.getTime() === normalizedSelectedDate.getTime()
+        })
+    }
+
+    const currentMood = getCurrentDateMood()
 
     return (
         <div
@@ -120,6 +130,13 @@ export default function Calendar({
                     </div>
                     <DailyMoodModal date={date} />
                 </div>
+                {currentMood && currentMood.comment && (
+                    <div className="w-full mt-2 px-2">
+                        <div className="text-sm text-gray-600 dark:text-gray-400 italic text-center break-words">
+                            &quot;{currentMood.comment}&quot;
+                        </div>
+                    </div>
+                )}
             </div>
             <div className="w-full h-full flex flex-col items-start justify-between">
                 <div className="w-full md:w-[299px] flex flex-col items-center justify-center">
