@@ -391,7 +391,17 @@ export default function TaskModal({
 
 			resetForm();
 			toast.success(`Task ${mode === "edit" ? "updated" : "created"} successfully`)
-			mutate((key) => typeof key === "string" && key.startsWith("/api/task"))
+			
+			// Invalidate all task-related cache keys to ensure calendar and other components refresh
+			mutate((key) => {
+				if (typeof key === "string") {
+					return key.startsWith("/api/task") || 
+						   key.startsWith("/api/number-of-tasks") ||
+						   key === "/api/task/count" ||
+						   key.startsWith("/api/task/count?")
+				}
+				return false
+			})
 		} catch (error) {
 			toast.error(`Failed to ${mode === "edit" ? "update" : "create"} task. Try again later.`)
 			console.error("Erreur lors de la soumission:", error)
