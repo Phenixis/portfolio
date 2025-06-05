@@ -234,6 +234,69 @@ export function useMovieRecommendations(mediaType: 'movie' | 'tv' | 'all' = 'all
 export function useMovieActions() {
     const { user } = useUser();
 
+    // Helper function to create optimistic movie data
+    const createOptimisticMovie = (movie: Movie, updates: Partial<Movie>): Movie => ({
+        ...movie,
+        ...updates,
+        updated_at: new Date()
+    });
+
+    // Helper function to update movies in cache
+    const updateMoviesInCache = (
+        cacheKey: string,
+        movieId: number,
+        optimisticUpdate: (movies: Movie[]) => Movie[]
+    ) => {
+        mutate(
+            cacheKey,
+            (currentData: { movies?: Movie[] } | undefined) => {
+                if (!currentData?.movies) return currentData;
+                return {
+                    ...currentData,
+                    movies: optimisticUpdate(currentData.movies)
+                };
+            },
+            { revalidate: false }
+        );
+    };
+
+    // Helper function to update all relevant movie list caches
+    const updateAllMovieListCaches = (
+        movieId: number,
+        optimisticUpdate: (movies: Movie[]) => Movie[]
+    ) => {
+        // Update main list caches
+        updateMoviesInCache('/api/movie/list', movieId, optimisticUpdate);
+        updateMoviesInCache('/api/movie/list?status=watched', movieId, optimisticUpdate);
+        updateMoviesInCache('/api/movie/list?status=will_watch', movieId, optimisticUpdate);
+        updateMoviesInCache('/api/movie/list?status=watch_again', movieId, optimisticUpdate);
+        
+        // Update search caches (we update all possible search caches)
+        mutate(
+            (key) => typeof key === 'string' && key.includes('/api/movie/list?search='),
+            (currentData: { movies?: Movie[] } | undefined) => {
+                if (!currentData?.movies) return currentData;
+                return {
+                    ...currentData,
+                    movies: optimisticUpdate(currentData.movies)
+                };
+            },
+            { revalidate: false }
+        );
+    };
+
+    // Helper function to update stats in cache
+    const updateStatsInCache = (updateFn: (stats: MovieStats) => MovieStats) => {
+        mutate(
+            '/api/movie/stats',
+            (currentStats: MovieStats | undefined) => {
+                if (!currentStats) return currentStats;
+                return updateFn(currentStats);
+            },
+            { revalidate: false }
+        );
+    };
+
     const addMovie = async (
         tmdbId: number, 
         mediaType: 'movie' | 'tv', 
@@ -299,52 +362,135 @@ export function useMovieActions() {
             user_comment?: string | null;
             watch_status?: 'will_watch' | 'watched' | 'watch_again';
             watched_date?: string;
+        },
+        options?: {
+            optimistic?: boolean;
+            originalMovie?: Movie;
         }
     ) => {
         if (!user) throw new Error('User not authenticated');
 
-        const response = await fetch('/api/movie', {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${user.api_key}`
-            },
-            body: JSON.stringify({
-                movie_id: movieId,
-                ...updates
-            })
-        });
+        // Optimistic updates
+        if (options?.optimistic && options.originalMovie) {
+            const optimisticUpdates: Partial<Movie> = {
+                ...updates,
+                watched_date: updates.watched_date ? new Date(updates.watched_date) : undefined
+            };
+            
+            const optimisticMovie = createOptimisticMovie(options.originalMovie, optimisticUpdates);
+            
+            // Update movie lists cache
+            const updateFn = (movies: Movie[]) =>
+                movies.map(movie => movie.id === movieId ? optimisticMovie : movie);
 
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to update movie');
+            // Update all relevant caches
+            updateAllMovieListCaches(movieId, updateFn);
+
+            // Update stats if watch status changed
+            if (updates.watch_status && updates.watch_status !== options.originalMovie.watch_status) {
+                updateStatsInCache((stats) => {
+                    const newStats = { ...stats };
+                    
+                    // Decrease old status count
+                    if (options.originalMovie!.watch_status === 'watched') newStats.watched--;
+                    else if (options.originalMovie!.watch_status === 'will_watch') newStats.willWatch--;
+                    else if (options.originalMovie!.watch_status === 'watch_again') newStats.watchAgain--;
+                    
+                    // Increase new status count
+                    if (updates.watch_status === 'watched') newStats.watched++;
+                    else if (updates.watch_status === 'will_watch') newStats.willWatch++;
+                    else if (updates.watch_status === 'watch_again') newStats.watchAgain++;
+                    
+                    return newStats;
+                });
+            }
         }
 
-        // Invalidate movie lists
-        mutate((key) => typeof key === 'string' && key.startsWith('/api/movie/'));
-        
-        return response.json();
+        try {
+            const response = await fetch('/api/movie', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.api_key}`
+                },
+                body: JSON.stringify({
+                    movie_id: movieId,
+                    ...updates
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to update movie');
+            }
+
+            // Revalidate data (this will correct any optimistic errors)
+            mutate((key) => typeof key === 'string' && key.startsWith('/api/movie/'));
+            
+            return response.json();
+        } catch (error) {
+            // Revert optimistic updates on error
+            if (options?.optimistic) {
+                mutate((key) => typeof key === 'string' && key.startsWith('/api/movie/'));
+            }
+            throw error;
+        }
     };
 
-    const deleteMovie = async (movieId: number) => {
+    const deleteMovie = async (
+        movieId: number,
+        options?: {
+            optimistic?: boolean;
+            originalMovie?: Movie;
+        }
+    ) => {
         if (!user) throw new Error('User not authenticated');
 
-        const response = await fetch(`/api/movie?id=${movieId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${user.api_key}`
-            }
-        });
+        // Optimistic updates
+        if (options?.optimistic && options.originalMovie) {
+            // Update movie lists cache
+            const updateFn = (movies: Movie[]) => 
+                movies.filter(movie => movie.id !== movieId);
 
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to delete movie');
+            // Update all relevant caches
+            updateAllMovieListCaches(movieId, updateFn);
+
+            // Update stats
+            updateStatsInCache((stats) => {
+                const newStats = { ...stats, total: stats.total - 1 };
+                
+                if (options.originalMovie!.watch_status === 'watched') newStats.watched--;
+                else if (options.originalMovie!.watch_status === 'will_watch') newStats.willWatch--;
+                else if (options.originalMovie!.watch_status === 'watch_again') newStats.watchAgain--;
+                
+                return newStats;
+            });
         }
 
-        // Invalidate movie lists
-        mutate((key) => typeof key === 'string' && key.startsWith('/api/movie/'));
-        
-        return response.json();
+        try {
+            const response = await fetch(`/api/movie?id=${movieId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${user.api_key}`
+                }
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to delete movie');
+            }
+
+            // Revalidate data (this will correct any optimistic errors)
+            mutate((key) => typeof key === 'string' && key.startsWith('/api/movie/'));
+            
+            return response.json();
+        } catch (error) {
+            // Revert optimistic updates on error
+            if (options?.optimistic) {
+                mutate((key) => typeof key === 'string' && key.startsWith('/api/movie/'));
+            }
+            throw error;
+        }
     };
 
     const markAsNotInterested = async (

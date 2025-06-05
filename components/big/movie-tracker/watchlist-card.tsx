@@ -11,7 +11,8 @@ import {
     Film,
     Tv,
     Calendar,
-    ExternalLink
+    ExternalLink,
+    RotateCcw
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -32,6 +33,7 @@ import TMDbService from '@/lib/services/tmdb';
 import type { Movie } from '@/lib/db/schema';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import Tooltip from '@/components/big/tooltip';
 
 interface WatchlistCardProps {
     movie: Movie;
@@ -76,6 +78,9 @@ export function WatchlistCard({ movie }: WatchlistCardProps) {
             await updateMovie(movie.id, {
                 watch_status: 'watched',
                 watched_date: new Date().toISOString()
+            }, {
+                optimistic: true,
+                originalMovie: movie
             });
             toast.success('Marked as watched!');
         } catch (error) {
@@ -86,7 +91,10 @@ export function WatchlistCard({ movie }: WatchlistCardProps) {
 
     const handleDelete = async () => {
         try {
-            await deleteMovie(movie.id);
+            await deleteMovie(movie.id, {
+                optimistic: true,
+                originalMovie: movie
+            });
             setShowDeleteDialog(false);
             toast.success('Removed from watchlist');
         } catch (error) {
@@ -118,14 +126,23 @@ export function WatchlistCard({ movie }: WatchlistCardProps) {
                         )}
 
                         {/* Hover overlay with action button */}
-                        <div className="absolute inset-0 bg-black/60 opacity-0 lg:group-hover/Poster:opacity-100 transition-opacity flex items-center justify-center">
+                        <div className="absolute inset-0 bg-black/60 opacity-0 lg:group-hover/Poster:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
                             <Button
                                 onClick={handleMarkAsWatched}
                                 size="sm"
-                                className="gap-2"
+                                className="gap-2 w-[80%]"
                             >
                                 <Eye className="w-3 h-3" />
                                 Mark as Watched
+                            </Button>
+                            <Button
+                                onClick={() => setShowDeleteDialog(true)}
+                                size="sm"
+                                variant="destructive"
+                                className="gap-2 w-[80%]"
+                            >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Remove
                             </Button>
                         </div>
 
@@ -165,17 +182,19 @@ export function WatchlistCard({ movie }: WatchlistCardProps) {
                     </div>
 
                     {/* Content */}
-                    <div className="p-4">
+                    <div className="py-2">
                         {/* Header with badges */}
-                        <div className="flex items-start gap-2 mb-2">
+                        <div className="flex items-center gap-2 mb-2">
+                            {movie.watch_status === 'watch_again' && (
+                                <Tooltip tooltip="Marked as Watch Again" cursor="cursor-default">
+                                    <Badge variant="outline" className="text-xs h-5 shrink-0 border-orange-300 text-orange-700">
+                                        <RotateCcw className="size-3" />
+                                    </Badge>
+                                </Tooltip>
+                            )}
                             <Badge variant="outline" className="text-xs h-5 shrink-0">
                                 {movie.media_type === 'tv' ? 'TV' : 'Movie'}
                             </Badge>
-                            {movie.watch_status === 'watch_again' && (
-                                <Badge variant="outline" className="text-xs h-5 shrink-0 border-orange-300 text-orange-700">
-                                    Watch Again
-                                </Badge>
-                            )}
                             {releaseYear && (
                                 <span className="text-xs text-muted-foreground">{releaseYear}</span>
                             )}

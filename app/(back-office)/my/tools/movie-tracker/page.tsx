@@ -113,7 +113,7 @@ export default function MovieTrackerPage() {
                             <CardTitle>Watched Movies</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <MovieList status="watched" />
+                            <MovieList />
                         </CardContent>
                     </Card>
                 </TabsContent>

@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [NOT RELEASED]
+- [V1.4.27 - 2025-06-05 08:54:17] feat: optimistic updates and to watch again
 - [V1.4.26 - 2025-06-04 11:59:57] feat: mark a movie as to-watch-again
 - [V1.4.25 - 2025-06-04 11:23:24] refactor: added pages privacy, terms and contact
 - [V1.4.24 - 2025-06-04 11:06:16] refactor: modal can be opened from everywhere with menu

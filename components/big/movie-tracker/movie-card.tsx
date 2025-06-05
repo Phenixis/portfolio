@@ -38,6 +38,7 @@ import TMDbService from '@/lib/services/tmdb';
 import type { Movie } from '@/lib/db/schema';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import Tooltip from '../tooltip';
 
 interface MovieCardProps {
     movie: Movie;
@@ -85,6 +86,9 @@ export function MovieCard({ movie }: MovieCardProps) {
             await updateMovie(movie.id, {
                 user_rating: editRating > 0 ? editRating : null,
                 user_comment: editComment.trim() || null
+            }, {
+                optimistic: true,
+                originalMovie: movie
             });
             setIsEditing(false);
             toast.success('Rating and comment updated!');
@@ -112,6 +116,9 @@ export function MovieCard({ movie }: MovieCardProps) {
             await updateMovie(movie.id, {
                 watch_status: newStatus,
                 watched_date: newStatus === 'watched' ? new Date().toISOString() : undefined
+            }, {
+                optimistic: true,
+                originalMovie: movie
             });
             toast.success(`Moved to ${newStatus === 'watched' ? 'watched' : 'watchlist'}!`);
         } catch (error: unknown) {
@@ -125,6 +132,9 @@ export function MovieCard({ movie }: MovieCardProps) {
             await updateMovie(movie.id, {
                 watch_status: 'watch_again',
                 watched_date: new Date().toISOString()
+            }, {
+                optimistic: true,
+                originalMovie: movie
             });
             toast.success('Marked to watch again! Added to watchlist.');
         } catch (error: unknown) {
@@ -135,7 +145,10 @@ export function MovieCard({ movie }: MovieCardProps) {
 
     const handleDelete = async () => {
         try {
-            await deleteMovie(movie.id);
+            await deleteMovie(movie.id, {
+                optimistic: true,
+                originalMovie: movie
+            });
             setShowDeleteDialog(false);
             toast.success('Movie removed from your list');
         } catch (error: unknown) {
@@ -147,7 +160,7 @@ export function MovieCard({ movie }: MovieCardProps) {
     return (
         <>
             <Card className="group overflow-hidden lg:hover:shadow-md transition-all duration-200 border-0 bg-card/50">
-                <CardContent className="p-4">
+                <CardContent className="">
                     <div className={`flex ${isEditing ? "" : "gap-4"} `}>
                         {/* Poster */}
                         {/* Poster - slides out when editing */}
@@ -189,14 +202,16 @@ export function MovieCard({ movie }: MovieCardProps) {
                                         </a>
                                     </h3>
                                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                        {movie.watch_status === 'watch_again' && (
+                                            <Tooltip tooltip="Marked as Watch Again" cursor="cursor-default">
+                                                <Badge variant="outline" className="text-xs h-5 shrink-0 border-orange-300 text-orange-700">
+                                                    <RotateCcw className="size-3" />
+                                                </Badge>
+                                            </Tooltip>
+                                        )}
                                         <Badge variant="secondary" className="text-xs h-5">
                                             {movie.media_type === 'tv' ? 'TV' : 'Movie'}
                                         </Badge>
-                                        {movie.watch_status === 'watch_again' && (
-                                            <Badge variant="outline" className="text-xs h-5 border-orange-300 text-orange-700">
-                                                Watch Again
-                                            </Badge>
-                                        )}
                                         {releaseYear && (
                                             <span>{releaseYear}</span>
                                         )}
@@ -249,21 +264,9 @@ export function MovieCard({ movie }: MovieCardProps) {
                                             value={editComment}
                                             onChange={(e) => {
                                                 setEditComment(e.target.value);
-                                                // Auto-resize the textarea
-                                                if (e.target) {
-                                                    e.target.style.height = 'auto';
-                                                    e.target.style.height = `${e.target.scrollHeight}px`;
-                                                }
                                             }}
                                             placeholder="Share your thoughts..."
                                             className="min-h-20 text-sm resize-none overflow-hidden"
-                                            // Set initial height on mount and when value changes
-                                            ref={el => {
-                                                if (el) {
-                                                    el.style.height = 'auto';
-                                                    el.style.height = `${el.scrollHeight}px`;
-                                                }
-                                            }}
                                         />
                                     </div>
                                     <div className="flex gap-2 pt-1">
