@@ -24,7 +24,6 @@ import { useState } from "react"
 import { toast } from "sonner"
 import { useUser } from "@/hooks/use-user"
 import { useDailyMoods } from "@/hooks/use-daily-moods"
-import { DailyMoodColors } from "@/components/ui/calendar"
 import { useSWRConfig } from "swr"
 import { DailyMood } from "@/lib/db/schema"
 import { Label } from "@/components/ui/label"
@@ -366,7 +365,7 @@ export default function DailyMoodModal({
                 <DialogTrigger asChild>
                     <Button
                         variant="ghost"
-                        className={`h-10 px-2 flex items-center border-none w-fit text-xs ${currentMood !== null ? DailyMoodColors[currentMood] : ""} ${isFutureDate() ? "opacity-50 cursor-not-allowed" : ""}`}
+                        className={`h-10 px-2 flex items-center border-none w-fit text-xs ${isFutureDate() ? "opacity-50 cursor-not-allowed" : ""}`}
                         disabled={isFutureDate()}
                     >
                         {getMoodIcon(currentMood)}
@@ -399,7 +398,7 @@ export default function DailyMoodModal({
                             <Button
                                 variant={selectedMood === 0 ? "default" : "outline"}
                                 size="sm"
-                                className={`p-3 flex flex-col gap-1 h-auto aspect-square ${selectedMood === 0 ? "bg-red-100 border-red-500 dark:bg-red-900/30" : ""}`}
+                                className={`p-3 flex flex-col gap-1 h-auto aspect-square ${selectedMood === 0 ? "bg-red-100 border border-red-500 dark:bg-red-900/30 text-black dark:text-white" : ""}`}
                                 onClick={() => setSelectedMood(0)}
                                 disabled={isFutureDate()}
                             >
@@ -409,7 +408,7 @@ export default function DailyMoodModal({
                             <Button
                                 variant={selectedMood === 1 ? "default" : "outline"}
                                 size="sm"
-                                className={`p-3 flex flex-col gap-1 h-auto aspect-square ${selectedMood === 1 ? "bg-blue-100 border-blue-500 dark:bg-blue-900/30" : ""}`}
+                                className={`p-3 flex flex-col gap-1 h-auto aspect-square ${selectedMood === 1 ? "bg-blue-100 border border-blue-500 dark:bg-blue-900/30 text-black dark:text-white" : ""}`}
                                 onClick={() => setSelectedMood(1)}
                                 disabled={isFutureDate()}
                             >
@@ -419,7 +418,7 @@ export default function DailyMoodModal({
                             <Button
                                 variant={selectedMood === 2 ? "default" : "outline"}
                                 size="sm"
-                                className={`p-3 flex flex-col gap-1 h-auto aspect-square ${selectedMood === 2 ? "bg-amber-100 border-amber-500 dark:bg-amber-900/30" : ""}`}
+                                className={`p-3 flex flex-col gap-1 h-auto aspect-square ${selectedMood === 2 ? "bg-amber-100 border border-amber-500 dark:bg-amber-900/30 text-black dark:text-white" : ""}`}
                                 onClick={() => setSelectedMood(2)}
                                 disabled={isFutureDate()}
                             >
@@ -429,7 +428,7 @@ export default function DailyMoodModal({
                             <Button
                                 variant={selectedMood === 3 ? "default" : "outline"}
                                 size="sm"
-                                className={`p-3 flex flex-col gap-1 h-auto aspect-square ${selectedMood === 3 ? "bg-green-100 border-green-500 dark:bg-green-900/30" : ""}`}
+                                className={`p-3 flex flex-col gap-1 h-auto aspect-square ${selectedMood === 3 ? "bg-green-100 border border-green-500 dark:bg-green-900/30 text-black dark:text-white" : ""}`}
                                 onClick={() => setSelectedMood(3)}
                                 disabled={isFutureDate()}
                             >
@@ -439,7 +438,7 @@ export default function DailyMoodModal({
                             <Button
                                 variant={selectedMood === 4 ? "default" : "outline"}
                                 size="sm"
-                                className={`p-3 flex flex-col gap-1 h-auto aspect-square ${selectedMood === 4 ? "bg-green-100 border-green-500 dark:bg-green-900/30" : ""}`}
+                                className={`p-3 flex flex-col gap-1 h-auto aspect-square ${selectedMood === 4 ? "bg-green-100 border border-green-500 dark:bg-green-900/30 text-black dark:text-white" : ""}`}
                                 onClick={() => setSelectedMood(4)}
                                 disabled={isFutureDate()}
                             >

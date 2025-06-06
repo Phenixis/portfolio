@@ -271,6 +271,42 @@ export const notInterestedMovie = pgTable('not_interested_movie', {
 }));
 
 
+// Habit Tracker Tables
+export const habit = pgTable('habit', {
+    id: serial('id').primaryKey(),
+    user_id: char('user_id', { length: 8 })
+        .notNull()
+        .references(() => user.id),
+    title: varchar('title', { length: 255 }).notNull(),
+    description: text('description'),
+    color: varchar('color', { length: 50 }).notNull().default('blue'), // From predefined color set
+    icon: varchar('icon', { length: 50 }).notNull().default('star'), // Lucide icon name
+    frequency: varchar('frequency', { length: 20 }).notNull().default('daily'), // 'daily', 'weekly', 'monthly', 'yearly'
+    target_count: integer('target_count').notNull().default(1), // How many times per frequency period
+    is_active: boolean('is_active').notNull().default(true),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow(),
+    deleted_at: timestamp('deleted_at')
+});
+
+export const habitEntry = pgTable('habit_entry', {
+    id: serial('id').primaryKey(),
+    habit_id: integer('habit_id')
+        .notNull()
+        .references(() => habit.id, { onDelete: 'cascade' }),
+    user_id: char('user_id', { length: 8 })
+        .notNull()
+        .references(() => user.id),
+    date: timestamp('date').notNull(), // The date when the habit was completed
+    count: integer('count').notNull().default(1), // How many times completed on this date
+    notes: text('notes'), // Optional notes for this entry
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow()
+}, (table) => ({
+    // Unique constraint to prevent duplicate entries for the same habit on the same date
+    uniqueHabitDate: sql`UNIQUE (${table.habit_id}, ${table.date}::date)`
+}));
+
 // WMCDM (Weighted Multi-Criteria Decision Matrix) Tables
 export const wmcdmMatrix = pgTable('wmcdm_matrix', {
     id: serial('id').primaryKey(),
@@ -345,6 +381,8 @@ export const userRelations = relations(user, ({ many }) => ({
     movies: many(movie),
     notInterestedMovies: many(notInterestedMovie),
     wmcdmMatrices: many(wmcdmMatrix),
+    habits: many(habit),
+    habitEntries: many(habitEntry),
 }));
 
 export const projectRelations = relations(project, ({ one, many }) => ({
@@ -502,6 +540,26 @@ export const wmcdmScoreRelations = relations(wmcdmScore, ({ one }) => ({
     })
 }));
 
+// Habit Tracker Relations
+export const habitRelations = relations(habit, ({ one, many }) => ({
+    user: one(user, {
+        fields: [habit.user_id],
+        references: [user.id]
+    }),
+    entries: many(habitEntry)
+}));
+
+export const habitEntryRelations = relations(habitEntry, ({ one }) => ({
+    habit: one(habit, {
+        fields: [habitEntry.habit_id],
+        references: [habit.id]
+    }),
+    user: one(user, {
+        fields: [habitEntry.user_id],
+        references: [user.id]
+    })
+}));
+
 export type User = typeof user.$inferSelect;
 export type NewUser = typeof user.$inferInsert;
 export type Task = typeof task.$inferSelect;
@@ -546,3 +604,7 @@ export type WmcdmOption = typeof wmcdmOption.$inferSelect;
 export type NewWmcdmOption = typeof wmcdmOption.$inferInsert;
 export type WmcdmScore = typeof wmcdmScore.$inferSelect;
 export type NewWmcdmScore = typeof wmcdmScore.$inferInsert;
+export type Habit = typeof habit.$inferSelect;
+export type NewHabit = typeof habit.$inferInsert;
+export type HabitEntry = typeof habitEntry.$inferSelect;
+export type NewHabitEntry = typeof habitEntry.$inferInsert;

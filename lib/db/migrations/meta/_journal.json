@@ -232,6 +232,13 @@
       "when": 1748323395798,
       "tag": "0032_aberrant_turbo",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1749197510220,
+      "tag": "0033_omniscient_adam_warlock",
+      "breakpoints": true
     }
   ]
 }
