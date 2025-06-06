@@ -66,6 +66,9 @@ export default function CreateHabitModal({
         setOpen(newOpen)
     }
 
+    // Store tempHabitId in the parent scope so it can be accessed in both try and catch blocks
+    let tempHabitId: number | null = null;
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
@@ -97,19 +100,26 @@ export default function CreateHabitModal({
             }
 
             // Optimistic update - add to beginning of array
-            mutate("/api/habits", async (currentData: any) => {
+            tempHabitId = Date.now() // Use timestamp as temp ID
+            const optimisticHabit = {
+                ...habitData,
+                id: tempHabitId, // Numeric temp ID
+                created_at: new Date(),
+                updated_at: new Date(),
+                deleted_at: null,
+            }
+
+            mutate("/api/habits?", async (currentData: any) => {
                 if (currentData && Array.isArray(currentData)) {
-                    const newHabit = {
-                        ...habitData,
-                        id: `temp-${Date.now()}`, // Use string prefix for temp ID
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString(),
-                        deleted_at: null,
-                    }
-                    return [newHabit, ...currentData]
+                    return [optimisticHabit, ...currentData]
                 }
-                return currentData || []
+                return [optimisticHabit]
             }, { revalidate: false })
+
+            // Close modal immediately after optimistic update
+            resetForm()
+            setOpen(false)
+            toast.success("Habit created successfully!")
 
             const response = await fetch("/api/habits", {
                 method: "POST",
@@ -127,19 +137,35 @@ export default function CreateHabitModal({
             const result = await response.json()
 
             if (result.success) {
-                toast.success("Habit created successfully!")
-                resetForm()
-                setOpen(false)
-                // Force revalidation to get fresh data from server
-                await mutate("/api/habits")
+                // Replace optimistic update with real data silently
+                mutate("/api/habits?", async (currentData: any) => {
+                    if (currentData && Array.isArray(currentData)) {
+                        // Remove the temp habit and add the real one
+                        const filteredData = currentData.filter((habit: any) => habit.id !== tempHabitId)
+                        const realHabit = {
+                            ...habitData,
+                            id: result.data,
+                            created_at: new Date(),
+                            updated_at: new Date(),
+                            deleted_at: null,
+                        }
+                        return [realHabit, ...filteredData]
+                    }
+                    return currentData
+                }, { revalidate: false })
             } else {
                 throw new Error(result.error || "Failed to create habit")
             }
         } catch (error) {
             console.error("Error creating habit:", error)
-            toast.error(`Failed to create habit: ${error instanceof Error ? error.message : "Unknown error"}`)
-            // Force rollback optimistic update and revalidate
-            await mutate("/api/habits")
+            mutate("/api/habits?", async (currentData: any) => {
+                if (currentData && Array.isArray(currentData) && tempHabitId !== null) {
+                    return currentData.filter((habit: any) => habit.id !== tempHabitId)
+                }
+                return currentData
+            }, { revalidate: false })
+            // Reopen modal on error
+            setOpen(true)
         } finally {
             isSubmittingRef.current = false
         }

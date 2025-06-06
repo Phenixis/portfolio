@@ -5,26 +5,28 @@ import { Button } from "@/components/ui/button"
 import { Plus, TrendingUp } from "lucide-react"
 import { useHabits } from "@/hooks/use-habits"
 import { useHabitRegularity } from "@/hooks/use-habit-entries"
+import { useDailyHabitsProgress } from "@/hooks/use-daily-habits-progress"
 import { useCreateHabitModal } from "@/contexts/modal-commands-context"
 import HabitCircleCompact from "./habit-circle-compact"
 import HabitActionDialog from "./habit-action-dialog"
+import DailyHabitsProgressCircle from "./daily-habits-progress-circle"
 import { Habit } from "@/lib/db/schema"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
-import { TooltipProvider } from "@/components/ui/tooltip"
+import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface HabitWidgetProps {
     className?: string
 }
 
 // Component to wrap habit circle with regularity calculation
-function HabitCircleWithRegularity({ habit, onHabitClick }: { 
-    habit: Habit, 
-    onHabitClick: (habit: Habit) => void 
+function HabitCircleWithRegularity({ habit, onHabitClick }: {
+    habit: Habit,
+    onHabitClick: (habit: Habit) => void
 }) {
     const regularityPercentage = useHabitRegularity(
-        habit.id, 
-        habit.frequency, 
+        habit.id,
+        habit.frequency,
         habit.target_count
     )
 
@@ -42,6 +44,9 @@ export default function HabitWidget({ className }: HabitWidgetProps) {
     const createHabitModal = useCreateHabitModal()
     const [selectedHabit, setSelectedHabit] = useState<Habit | null>(null)
     const [isActionDialogOpen, setIsActionDialogOpen] = useState(false)
+
+    // Get daily habits progress
+    const dailyProgress = useDailyHabitsProgress()
 
     // Filter only active habits for dashboard
     interface ActiveHabit extends Habit {
@@ -84,15 +89,39 @@ export default function HabitWidget({ className }: HabitWidgetProps) {
             <Card className={cn("md:max-w-xl", className)}>
                 <CardHeader className="pb-3">
                     <CardTitle className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
                             <TrendingUp size={20} />
                             Your Habits
+                            {/* Daily Progress Circle */}
+                            {dailyProgress.total > 0 && (
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <DailyHabitsProgressCircle
+                                            percentage={dailyProgress.percentage}
+                                            total={dailyProgress.total}
+                                            size="xs"
+                                            className="ml-2"
+                                        />
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top">
+                                        <div className="text-center">
+                                            <p className="font-medium">Daily Progress</p>
+                                            <p className="text-sm text-muted-foreground">
+                                                {dailyProgress.completed} of {dailyProgress.total} daily habits completed
+                                            </p>
+                                            <p className="text-sm text-muted-foreground">
+                                                {dailyProgress.percentage}% complete
+                                            </p>
+                                        </div>
+                                    </TooltipContent>
+                                </Tooltip>
+                            )}
                         </div>
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={handleCreateHabit}
-                            className="text-muted-foreground hover:text-foreground"
+                            className="text-foreground"
                         >
                             <Plus size={16} />
                         </Button>

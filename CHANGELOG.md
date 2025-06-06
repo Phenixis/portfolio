@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [NOT RELEASED]
+- [V1.4.30 - 2025-06-06 19:00:36] feat: habit widget, circle and perfo
 - [V1.4.29 - 2025-06-06 11:15:21] feat: habit tracker v1
 - [V1.4.28 - 2025-06-05 10:06:53] feat: show comment for mood and allow deletion
 - [V1.4.27 - 2025-06-05 08:54:17] feat: optimistic updates and to watch again
