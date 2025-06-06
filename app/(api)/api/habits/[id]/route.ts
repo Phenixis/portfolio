@@ -2,15 +2,14 @@ import { NextRequest, NextResponse } from "next/server"
 import { verifyRequest } from "@/lib/auth/api"
 import { updateHabit, deleteHabit, getHabitById } from "@/lib/db/queries/habit-tracker"
 
-export async function PUT(
-    request: NextRequest,
-    { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest) {
     try {
         const verification = await verifyRequest(request)
         if ('error' in verification) return verification.error
 
-        const habitId = parseInt(params.id)
+        // Extract habit ID from the URL
+        const id = request.nextUrl.pathname.split('/').pop()
+        const habitId = id ? parseInt(id) : NaN
         
         if (isNaN(habitId)) {
             return NextResponse.json(
@@ -56,15 +55,14 @@ export async function PUT(
     }
 }
 
-export async function DELETE(
-    request: NextRequest,
-    { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest) {
     try {
         const verification = await verifyRequest(request)
         if ('error' in verification) return verification.error
 
-        const habitId = parseInt(params.id)
+        // Extract habit ID from the URL
+        const id = request.nextUrl.pathname.split('/').pop()
+        const habitId = id ? parseInt(id) : NaN
         
         if (isNaN(habitId)) {
             return NextResponse.json(
@@ -72,7 +70,6 @@ export async function DELETE(
                 { status: 400 }
             )
         }
-
         // Check if habit exists and belongs to user
         const existingHabit = await getHabitById(verification.userId, habitId)
         
