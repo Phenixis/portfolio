@@ -302,10 +302,7 @@ export const habitEntry = pgTable('habit_entry', {
     notes: text('notes'), // Optional notes for this entry
     created_at: timestamp('created_at').notNull().defaultNow(),
     updated_at: timestamp('updated_at').notNull().defaultNow()
-}, (table) => ({
-    // Unique constraint to prevent duplicate entries for the same habit on the same date
-    uniqueHabitDate: sql`UNIQUE (${table.habit_id}, ${table.date}::date)`
-}));
+});
 
 // WMCDM (Weighted Multi-Criteria Decision Matrix) Tables
 export const wmcdmMatrix = pgTable('wmcdm_matrix', {

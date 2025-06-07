@@ -1,7 +1,6 @@
 import { TasksCard } from "@/components/big/tasks/tasks-card"
 import Calendar from "@/components/big/calendar/calendar"
 import { NotesCard } from "@/components/big/notes/notes-card"
-import HabitWidget from "@/components/big/habit-tracker/habit-widget"
 import { getTaskFilterCookie } from "@/lib/cookies"
 
 export default async function DashboardPage() {
@@ -20,7 +19,6 @@ export default async function DashboardPage() {
                     initialTaskFilterCookie={taskFilterCookie}
                 />
                 <NotesCard className="w-full lg:m-4" limit={5} />
-                <HabitWidget className="w-full lg:m-4" />
             </div>
             <Calendar className="order-1 md:order-0" />
         </div>

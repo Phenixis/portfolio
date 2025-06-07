@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Plus, Film, Tv, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Plus, Film, Tv, ChevronDown, ChevronUp, Star, X, Check, Eye } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useMovieSearch, useMovieActions } from '@/hooks/use-movies';
+import { StarRating } from '@/components/ui/star-rating';
+import { useMovieSearch, useMovieActions, useMovies } from '@/hooks/use-movies';
 import { useDebounce } from 'use-debounce';
 import TMDbService from '@/lib/services/tmdb';
 import { toast } from 'sonner';
@@ -19,17 +20,21 @@ export function MovieSearch({ onMovieAdded }: MovieSearchProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedQuery] = useDebounce(searchQuery, 500);
     const [expandedOverviews, setExpandedOverviews] = useState<Set<string>>(new Set());
+    const [showRatingDialog, setShowRatingDialog] = useState<string | null>(null);
+    const [currentRating, setCurrentRating] = useState<number>(0);
     const { results, isLoading } = useMovieSearch(debouncedQuery);
     const { addMovie } = useMovieActions();
+    const { movies: userMovies } = useMovies(); // Get all user movies to check if already in list
 
     const handleAddMovie = async (
         tmdbId: number,
         mediaType: 'movie' | 'tv',
         title: string,
-        watchStatus: 'will_watch' | 'watched' = 'will_watch'
+        watchStatus: 'will_watch' | 'watched' = 'will_watch',
+        rating?: number
     ) => {
         try {
-            await addMovie(tmdbId, mediaType, watchStatus);
+            await addMovie(tmdbId, mediaType, watchStatus, rating ? { rating } : undefined);
             toast.success(`${title} added to your ${watchStatus === 'will_watch' ? 'watchlist' : 'watched list'}!`);
             onMovieAdded?.();
         } catch (error) {
@@ -39,6 +44,40 @@ export function MovieSearch({ onMovieAdded }: MovieSearchProps) {
                 toast.error('Failed to add movie');
             }
         }
+    };
+
+    const handleShowRatingDialog = (itemId: number, mediaType: string) => {
+        const key = `${itemId}-${mediaType}`;
+        setShowRatingDialog(key);
+        setCurrentRating(0);
+    };
+
+    const handleRateAndWatch = async (tmdbId: number, mediaType: 'movie' | 'tv', title: string) => {
+        if (currentRating === 0) {
+            toast.error('Please select a rating');
+            return;
+        }
+
+        try {
+            await handleAddMovie(tmdbId, mediaType, title, 'watched', currentRating);
+            setShowRatingDialog(null);
+            setCurrentRating(0);
+            toast.success(`Rated ${currentRating}/5 and added to watched movies!`);
+        } catch (error) {
+            console.error('Failed to rate and watch movie:', error);
+        }
+    };
+
+    const handleCancelRating = () => {
+        setShowRatingDialog(null);
+        setCurrentRating(0);
+    };
+
+    // Helper function to check if a movie is already in user's list
+    const isMovieInList = (tmdbId: number, mediaType: 'movie' | 'tv') => {
+        return userMovies.find(movie => 
+            movie.tmdb_id === tmdbId && movie.media_type === mediaType
+        );
     };
 
     const getMediaTypeIcon = (mediaType?: string) => {
@@ -100,9 +139,15 @@ export function MovieSearch({ onMovieAdded }: MovieSearchProps) {
                         const releaseYear = getReleaseDate(item);
                         const mediaType = item.media_type || 'movie';
                         const posterUrl = TMDbService.getImageUrl(item.poster_path, 'w154');
+                        const existingMovie = isMovieInList(item.id, mediaType as 'movie' | 'tv');
 
                         return (
-                            <Card key={`${item.id}-${mediaType}`} className="hover:shadow-md transition-shadow">
+                            <Card 
+                                key={`${item.id}-${mediaType}`} 
+                                className={`hover:shadow-md transition-shadow ${
+                                    existingMovie ? 'ring-2 ring-green-200 dark:ring-green-800 bg-green-50/30 dark:bg-green-950/20' : ''
+                                }`}
+                            >
                                 <CardContent fullPadding>
                                     <div className="flex gap-4">
                                         {/* Poster */}
@@ -173,28 +218,116 @@ export function MovieSearch({ onMovieAdded }: MovieSearchProps) {
                                                         </div>
                                                     )}
                                                 </div>
+                                            </div>                            {/* Action Buttons */}
+                            <div className="flex md:flex-col md:justify-between gap-1 shrink-0">
+                                {(() => {
+                                    const existingMovie = isMovieInList(item.id, mediaType as 'movie' | 'tv');
+                                    
+                                    if (existingMovie) {
+                                        // Movie is already in user's list - show status
+                                        return (
+                                            <div className="border rounded-lg p-3 bg-green-50 dark:bg-green-950/30 min-w-[200px]">
+                                                <div className="space-y-2">
+                                                    <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                                                        <Check className="w-4 h-4" />
+                                                        <p className="text-sm font-medium">In Your Collection</p>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <p className="text-xs text-muted-foreground">
+                                                            Status: <span className="font-medium capitalize">
+                                                                {existingMovie.watch_status === 'will_watch' ? 'Watchlist' : 
+                                                                 existingMovie.watch_status === 'watched' ? 'Watched' : 
+                                                                 'Watch Again'}
+                                                            </span>
+                                                        </p>
+                                                        {existingMovie.user_rating && (
+                                                            <p className="text-xs text-muted-foreground">
+                                                                Your Rating: <span className="font-medium">
+                                                                    ⭐ {existingMovie.user_rating}/5
+                                                                </span>
+                                                            </p>
+                                                        )}
+                                                        {existingMovie.watched_date && (
+                                                            <p className="text-xs text-muted-foreground">
+                                                                {existingMovie.watch_status === 'watched' ? 'Watched' : 'Added'}: {new Date(existingMovie.watched_date).toLocaleDateString()}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </div>
-
-                                            {/* Action Buttons */}
-                                            <div className="flex md:flex-col md:justify-between gap-1 shrink-0">
-                                                <Button
-                                                    size="sm"
-                                                    onClick={() => handleAddMovie(item.id, mediaType as 'movie' | 'tv', title, 'will_watch')}
-                                                    className="text-xs px-2 py-1 h-auto w-full"
-                                                >
-                                                    <Plus className="w-3 h-3 mr-1" />
-                                                    Watchlist
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => handleAddMovie(item.id, mediaType as 'movie' | 'tv', title, 'watched')}
-                                                    className="text-xs px-2 py-1 h-auto w-full"
-                                                >
-                                                    <Plus className="w-3 h-3 mr-1" />
-                                                    Watched
-                                                </Button>
+                                        );
+                                    }
+                                    
+                                    if (showRatingDialog === `${item.id}-${mediaType}`) {
+                                        // Rating Dialog
+                                        return (
+                                            <div className="border rounded-lg p-3 bg-muted/30 min-w-[200px]">
+                                                <div className="space-y-3">
+                                                    <p className="text-sm font-medium text-center">Rate this {mediaType === 'tv' ? 'TV show' : 'movie'}</p>
+                                                    <div className="flex justify-center">
+                                                        <StarRating
+                                                            rating={currentRating}
+                                                            onRatingChange={setCurrentRating}
+                                                            size="md"
+                                                        />
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={() => handleRateAndWatch(item.id, mediaType as 'movie' | 'tv', title)}
+                                                            disabled={currentRating === 0}
+                                                            className="text-xs px-2 py-1 h-auto flex-1"
+                                                        >
+                                                            <Star className="w-3 h-3 mr-1" />
+                                                            Add Rated
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={handleCancelRating}
+                                                            className="text-xs px-2 py-1 h-auto"
+                                                        >
+                                                            <X className="w-3 h-3" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
                                             </div>
+                                        );
+                                    }
+                                    
+                                    // Regular Buttons for new movies
+                                    return (
+                                        <>
+                                            <Button
+                                                size="sm"
+                                                onClick={() => handleAddMovie(item.id, mediaType as 'movie' | 'tv', title, 'will_watch')}
+                                                className="text-xs px-2 py-1 h-auto w-full"
+                                            >
+                                                <Plus className="w-3 h-3 mr-1" />
+                                                Watchlist
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => handleAddMovie(item.id, mediaType as 'movie' | 'tv', title, 'watched')}
+                                                className="text-xs px-2 py-1 h-auto w-full"
+                                            >
+                                                <Eye className="w-3 h-3 mr-1" />
+                                                Watched
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="secondary"
+                                                onClick={() => handleShowRatingDialog(item.id, mediaType)}
+                                                className="text-xs px-2 py-1 h-auto w-full"
+                                            >
+                                                <Star className="w-3 h-3 mr-1" />
+                                                Rate & Watch
+                                            </Button>
+                                        </>
+                                    );
+                                })()}
+                            </div>
                                         </div>
                                     </div>
                                 </CardContent>

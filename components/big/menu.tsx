@@ -14,14 +14,13 @@ import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { useDarkMode } from "@/hooks/use-dark-mode"
-import { useTaskModal, useNoteModal, useDailyMoodModal, useCreateHabitModal } from "@/contexts/modal-commands-context"
+import { useTaskModal, useNoteModal, useDailyMoodModal } from "@/contexts/modal-commands-context"
 
 const items = {
     "Suggestions": [
         { name: "Dashboard", href: "/my" },
         { name: "Notes", href: "/my/notes" },
         { name: "Tasks", href: "/my/tasks" },
-        { name: "Habits", href: "/my/habits" },
     ],
     "Tools": [
         { name: "All Tools", href: "/my/tools" },
@@ -43,7 +42,6 @@ export default function Menu() {
     const taskModal = useTaskModal()
     const noteModal = useNoteModal()
     const dailyMoodModal = useDailyMoodModal()
-    const createHabitModal = useCreateHabitModal()
 
     useEffect(() => {
         const down = (e: KeyboardEvent) => {
@@ -105,11 +103,6 @@ export default function Menu() {
                             onSelect={() => runCommand(() => dailyMoodModal.openModal())}
                         >
                             Enter my mood
-                        </CommandItem>
-                        <CommandItem
-                            onSelect={() => runCommand(() => createHabitModal.openModal())}
-                        >
-                            Create a habit
                         </CommandItem>
                     </CommandGroup>
             </CommandList>

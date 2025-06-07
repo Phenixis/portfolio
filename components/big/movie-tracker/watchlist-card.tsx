@@ -12,7 +12,9 @@ import {
     Tv,
     Calendar,
     ExternalLink,
-    RotateCcw
+    RotateCcw,
+    Star,
+    X
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -29,6 +31,7 @@ import {
     DialogFooter,
 } from '@/components/ui/dialog';
 import { useMovieActions } from '@/hooks/use-movies';
+import { StarRating } from '@/components/ui/star-rating';
 import TMDbService from '@/lib/services/tmdb';
 import type { Movie } from '@/lib/db/schema';
 import { toast } from 'sonner';
@@ -43,6 +46,8 @@ export function WatchlistCard({ movie }: WatchlistCardProps) {
     const [isOverviewExpanded, setIsOverviewExpanded] = useState(false);
     const [shouldShowSeeMore, setShouldShowSeeMore] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [showRatingDialog, setShowRatingDialog] = useState(false);
+    const [currentRating, setCurrentRating] = useState<number>(0);
 
     const overviewRef = useRef<HTMLParagraphElement>(null);
     const { updateMovie, deleteMovie } = useMovieActions();
@@ -103,6 +108,40 @@ export function WatchlistCard({ movie }: WatchlistCardProps) {
         }
     };
 
+    const handleShowRatingDialog = () => {
+        setShowRatingDialog(true);
+        setCurrentRating(0);
+    };
+
+    const handleRateAndWatch = async () => {
+        if (currentRating === 0) {
+            toast.error('Please select a rating');
+            return;
+        }
+
+        try {
+            await updateMovie(movie.id, {
+                watch_status: 'watched',
+                watched_date: new Date().toISOString(),
+                user_rating: currentRating
+            }, {
+                optimistic: true,
+                originalMovie: movie
+            });
+            setShowRatingDialog(false);
+            setCurrentRating(0);
+            toast.success(`Rated ${currentRating}/5 and marked as watched!`);
+        } catch (error) {
+            console.log(error);
+            toast.error('Failed to rate and watch');
+        }
+    };
+
+    const handleCancelRating = () => {
+        setShowRatingDialog(false);
+        setCurrentRating(0);
+    };
+
     return (
         <>
             <Card className="group/Card overflow-hidden hover:shadow-md transition-all duration-200">
@@ -127,23 +166,70 @@ export function WatchlistCard({ movie }: WatchlistCardProps) {
 
                         {/* Hover overlay with action button */}
                         <div className="absolute inset-0 bg-black/60 opacity-0 lg:group-hover/Poster:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
-                            <Button
-                                onClick={handleMarkAsWatched}
-                                size="sm"
-                                className="gap-2 w-[80%]"
-                            >
-                                <Eye className="w-3 h-3" />
-                                Mark as Watched
-                            </Button>
-                            <Button
-                                onClick={() => setShowDeleteDialog(true)}
-                                size="sm"
-                                variant="destructive"
-                                className="gap-2 w-[80%]"
-                            >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Remove
-                            </Button>
+                            {showRatingDialog ? (
+                                // Rating Dialog
+                                <div className="bg-black/80 rounded-lg p-3 w-[90%] max-w-[200px]">
+                                    <div className="space-y-3">
+                                        <p className="text-white text-sm font-medium text-center">Rate this {movie.media_type === 'tv' ? 'TV show' : 'movie'}</p>
+                                        <div className="flex justify-center">
+                                            <StarRating
+                                                rating={currentRating}
+                                                onRatingChange={setCurrentRating}
+                                                size="sm"
+                                            />
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Button
+                                                size="sm"
+                                                onClick={handleRateAndWatch}
+                                                disabled={currentRating === 0}
+                                                className="text-xs px-2 py-1 h-auto flex-1"
+                                            >
+                                                <Star className="w-3 h-3 mr-1" />
+                                                Rate & Watch
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={handleCancelRating}
+                                                className="text-xs px-2 py-1 h-auto"
+                                            >
+                                                <X className="w-3 h-3" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                // Regular Buttons
+                                <>
+                                    <Button
+                                        onClick={handleMarkAsWatched}
+                                        size="sm"
+                                        className="gap-2 w-[80%]"
+                                    >
+                                        <Eye className="w-3 h-3" />
+                                        Mark as Watched
+                                    </Button>
+                                    <Button
+                                        onClick={handleShowRatingDialog}
+                                        size="sm"
+                                        variant="secondary"
+                                        className="gap-2 w-[80%]"
+                                    >
+                                        <Star className="w-3 h-3" />
+                                        Rate & Watch
+                                    </Button>
+                                    <Button
+                                        onClick={() => setShowDeleteDialog(true)}
+                                        size="sm"
+                                        variant="destructive"
+                                        className="gap-2 w-[80%]"
+                                    >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Remove
+                                    </Button>
+                                </>
+                            )}
                         </div>
 
                         {/* TMDb rating badge */}
@@ -167,6 +253,10 @@ export function WatchlistCard({ movie }: WatchlistCardProps) {
                                     <DropdownMenuItem onClick={handleMarkAsWatched}>
                                         <Eye className="mr-2 h-4 w-4" />
                                         Mark as Watched
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={handleShowRatingDialog}>
+                                        <Star className="mr-2 h-4 w-4" />
+                                        Rate & Watch
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem
