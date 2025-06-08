@@ -1,6 +1,6 @@
 # Life OS
 
-Current Version: **V1.4.31**
+Current Version: **V1.4.32**
 
 ## Your life, all in one place.
 
@@ -34,9 +34,9 @@ Life OS is a personal knowledge management system designed to help you organize 
 - [ ] Habit Tracker
     - [x] Schema [V1.4.29]
     - [x] CRUD [V1.4.29]
-    - [ ] APIs
+    - [x] APIs [V1.4.32]
     - [ ] Habit Tracker UI
-    - [ ] Circle progress bar
+    - [x] Circle progress bar [V1.4.32]
     - [ ] Habit Widget
     - [ ] Add the habits in the daily mail 
 - [ ] Workout Tracker

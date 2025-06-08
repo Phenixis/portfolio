@@ -105,6 +105,33 @@ export interface HabitStats {
     completion_rate: number;
 }
 
+// Progress tracking types
+export interface HabitWithCompletion {
+    habit: {
+        id: number;
+        title: string;
+        color: HabitColor;
+        icon: string;
+        frequency: HabitFrequency;
+        target_count: number;
+        description?: string;
+    };
+    isCompleted: boolean;
+    currentCount: number;
+    targetCount: number;
+    completionPercentage: number;
+}
+
+export interface HabitCycleProgress {
+    cycleStart: Date;
+    cycleEnd: Date;
+    habits: HabitWithCompletion[];
+}
+
+export interface ProgressCycleResponse {
+    progress: HabitCycleProgress;
+}
+
 // Utility functions for frequency calculations
 export const getFrequencyDays = (frequency: HabitFrequency): number => {
     switch (frequency) {

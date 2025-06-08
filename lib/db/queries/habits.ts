@@ -13,7 +13,55 @@ import {
 import { db } from "../drizzle"
 import * as Schema from "../schema"
 import { revalidatePath } from "next/cache"
-import type { HabitFrequency, HabitColor, HabitStats } from "@/lib/types/habit-tracker"
+import type { HabitFrequency, HabitColor, HabitStats } from "@/lib/types/habits"
+
+//=============================================================================
+// # HELPER FUNCTIONS
+//=============================================================================
+
+// Helper function to get cycle boundaries for a given date and frequency
+function getCycleBoundaries(date: Date, freq: HabitFrequency): { start: Date, end: Date } {
+    const d = new Date(date)
+    d.setHours(0, 0, 0, 0)
+
+    switch (freq) {
+        case "daily": {
+            const start = new Date(d)
+            const end = new Date(d.getTime() + 24 * 60 * 60 * 1000)
+            return { start, end }
+        }
+        case "weekly": {
+            // Get the start of the week (Monday)
+            const dayOfWeek = d.getDay()
+            const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+            const start = new Date(d.getTime() + mondayOffset * 24 * 60 * 60 * 1000)
+            const end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000)
+            return { start, end }
+        }
+        case "monthly": {
+            const start = new Date(d.getFullYear(), d.getMonth(), 1)
+            const end = new Date(d.getFullYear(), d.getMonth() + 1, 1)
+            return { start, end }
+        }
+        case "quarterly": {
+            const quarterStartMonth = Math.floor(d.getMonth() / 3) * 3
+            const start = new Date(d.getFullYear(), quarterStartMonth, 1)
+            const end = new Date(d.getFullYear(), quarterStartMonth + 3, 1)
+            return { start, end }
+        }
+        case "yearly": {
+            const start = new Date(d.getFullYear(), 0, 1)
+            const end = new Date(d.getFullYear() + 1, 0, 1)
+            return { start, end }
+        }
+        default: {
+            // Default to daily if frequency is unknown
+            const start = new Date(d)
+            const end = new Date(d.getTime() + 24 * 60 * 60 * 1000)
+            return { start, end }
+        }
+    }
+}
 
 //=============================================================================
 // # HABIT
@@ -253,7 +301,7 @@ export async function getHabitEntryByDate(
 ): Promise<Schema.HabitEntry | null> {
     // Create date without time for comparison
     const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate())
-    
+
     const result = await db
         .select()
         .from(Schema.habitEntry)
@@ -355,6 +403,56 @@ export async function getUserHabitEntries(
         .orderBy(desc(Schema.habitEntry.date))
 }
 
+export async function getCycleProgress(
+    userId: string,
+    frequency: HabitFrequency,
+    date: Date
+): Promise<{
+    cycleStart: Date;
+    cycleEnd: Date;
+    habits: Array<{
+        habit: Schema.Habit;
+        isCompleted: boolean;
+        currentCount: number;
+        targetCount: number;
+        completionPercentage: number;
+    }>;
+}> {
+    // Get cycle boundaries for the given date and frequency
+    const { start: cycleStart, end: cycleEnd } = getCycleBoundaries(date, frequency)
+
+    // Get all habits with the specified frequency for the user
+    const habits = await getHabitsByFrequency(userId, frequency, true)
+
+    // Check completion status for each habit in this cycle
+    const habitProgress = await Promise.all(
+        habits.map(async (habit) => {
+            // Get all entries for this habit within the cycle
+            const entries = await getHabitEntries(habit.id, cycleStart, cycleEnd)
+
+            // Calculate total count for this cycle
+            const currentCount = entries.reduce((sum, entry) => sum + entry.count, 0)
+            const targetCount = habit.target_count || 1
+            const isCompleted = currentCount >= targetCount
+            const completionPercentage = Math.min(Math.round((currentCount / targetCount) * 100), 100)
+
+            return {
+                habit,
+                isCompleted,
+                currentCount,
+                targetCount,
+                completionPercentage
+            }
+        })
+    )
+
+    return {
+        cycleStart,
+        cycleEnd,
+        habits: habitProgress
+    }
+}
+
 // ## Update
 
 export async function updateHabitEntry(
@@ -397,7 +495,7 @@ export async function updateHabitEntryByDate(
     notes?: string
 ): Promise<number | null> {
     const existingEntry = await getHabitEntryByDate(userId, habitId, date)
-    
+
     if (!existingEntry) {
         // Create new entry if it doesn't exist
         return await createHabitEntry(userId, habitId, date, count || 1, notes)
@@ -434,7 +532,7 @@ export async function deleteHabitEntryByDate(
     date: Date
 ): Promise<number | null> {
     const entry = await getHabitEntryByDate(userId, habitId, date)
-    
+
     if (!entry) {
         return null
     }

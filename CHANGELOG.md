@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [NOT RELEASED]
+- [V1.4.32 - 2025-06-08 17:37:44] feat: api endpoints and progress circle
 - [V1.4.31 - 2025-06-07 16:57:39] revert: remove habit tracker bc vibe coded but went wrong
 - [V1.4.30 - 2025-06-06 19:00:36] feat: habit widget, circle and perfo
 - [V1.4.29 - 2025-06-06 11:15:21] feat: habit tracker v1
