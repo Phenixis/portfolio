@@ -61,14 +61,15 @@ export async function GET(
 // Update a specific entry
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { "habit-id": string; "entry-id": string } }
+    { params }: { params: Promise<{ "habit-id": string; "entry-id": string }> }
 ) {
     try {
         const { error, userId } = await verifyRequest(request)
         if (error) return error
 
-        const habitId = parseInt(params["habit-id"])
-        const entryId = parseInt(params["entry-id"])
+        const parameters = await params
+        const habitId = parseInt(parameters["habit-id"])
+        const entryId = parseInt(parameters["entry-id"])
 
         if (isNaN(habitId) || isNaN(entryId)) {
             return NextResponse.json(
@@ -142,14 +143,15 @@ export async function PUT(
 // Delete a specific entry
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { "habit-id": string; "entry-id": string } }
+    { params }: { params: Promise<{ "habit-id": string; "entry-id": string }> }
 ) {
     try {
         const { error, userId } = await verifyRequest(request)
         if (error) return error
 
-        const habitId = parseInt(params["habit-id"])
-        const entryId = parseInt(params["entry-id"])
+        const parameters = await params
+        const habitId = parseInt(parameters["habit-id"])
+        const entryId = parseInt(parameters["entry-id"])
 
         if (isNaN(habitId) || isNaN(entryId)) {
             return NextResponse.json(

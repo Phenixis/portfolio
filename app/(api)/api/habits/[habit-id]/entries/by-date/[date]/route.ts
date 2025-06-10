@@ -60,13 +60,14 @@ export async function GET(
 // Update habit entry by date
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { "habit-id": string; date: string } }
+    { params }: { params: Promise<{ "habit-id": string; date: string }> }
 ) {
     try {
         const { error, userId } = await verifyRequest(request)
         if (error) return error
 
-        const habitId = parseInt(params["habit-id"])
+        const parameters = await params
+        const habitId = parseInt(parameters["habit-id"])
         if (isNaN(habitId)) {
             return NextResponse.json(
                 { error: "Invalid habit ID" },
@@ -84,7 +85,7 @@ export async function PUT(
         }
 
         // Parse and validate date
-        const entryDate = new Date(params.date)
+        const entryDate = new Date(parameters.date)
         if (isNaN(entryDate.getTime())) {
             return NextResponse.json(
                 { error: "Invalid date format" },
@@ -140,13 +141,14 @@ export async function PUT(
 // Delete habit entry by date
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { "habit-id": string; date: string } }
+    { params }: { params: Promise<{ "habit-id": string; date: string }> }
 ) {
     try {
         const { error, userId } = await verifyRequest(request)
         if (error) return error
 
-        const habitId = parseInt(params["habit-id"])
+        const parameters = await params
+        const habitId = parseInt(parameters["habit-id"])
         if (isNaN(habitId)) {
             return NextResponse.json(
                 { error: "Invalid habit ID" },
@@ -164,7 +166,7 @@ export async function DELETE(
         }
 
         // Parse and validate date
-        const entryDate = new Date(params.date)
+        const entryDate = new Date(parameters.date)
         if (isNaN(entryDate.getTime())) {
             return NextResponse.json(
                 { error: "Invalid date format" },
