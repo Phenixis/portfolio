@@ -5,13 +5,14 @@ import { verifyRequest } from "@/lib/auth/api"
 // Toggle habit active status
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { "habit-id": string } }
+    { params }: { params: Promise<{ "habit-id": string }> }
 ) {
     try {
         const { error, userId } = await verifyRequest(request)
         if (error) return error
 
-        const habitId = parseInt(params["habit-id"])
+        const parameters = await params
+        const habitId = parseInt(parameters["habit-id"])
         if (isNaN(habitId)) {
             return NextResponse.json(
                 { error: "Invalid habit ID" },

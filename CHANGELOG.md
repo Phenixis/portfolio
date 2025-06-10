@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [NOT RELEASED]
+- [V1.4.34 - 2025-06-10 09:46:11] refactor: use promise for dynamic route segment
 - [V1.4.33 - 2025-06-10 09:34:17] refactor: styling + group by project + beginning of habits tracker
 - [V1.4.32 - 2025-06-08 17:37:44] feat: api endpoints and progress circle
 - [V1.4.31 - 2025-06-07 16:57:39] revert: remove habit tracker bc vibe coded but went wrong

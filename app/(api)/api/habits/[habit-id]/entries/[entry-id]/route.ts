@@ -5,14 +5,15 @@ import { verifyRequest } from "@/lib/auth/api"
 // Get a specific entry 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { "habit-id": string; "entry-id": string } }
+    { params }: { params: Promise<{ "habit-id": string; "entry-id": string }> }
 ) {
     try {
         const { error, userId } = await verifyRequest(request)
         if (error) return error
 
-        const habitId = parseInt(params["habit-id"])
-        const entryId = parseInt(params["entry-id"])
+        const parameters = await params
+        const habitId = parseInt(parameters["habit-id"])
+        const entryId = parseInt(parameters["entry-id"])
 
         if (isNaN(habitId) || isNaN(entryId)) {
             return NextResponse.json(
