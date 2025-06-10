@@ -390,7 +390,7 @@ export default function TaskDisplay({
 		<div
 			ref={containerRef}
 			className={cn(
-				`flex flex-col group/task p-1 duration-300 text-xs xl:text-sm ${daysBeforeDue < 0 ? "bg-red-500/10 dark:bg-red-500/15 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/10 dark:bg-orange-500/15 lg:hover:bg-orange-500/25" : "lg:hover:bg-primary/10"} ${isDeleting ? "opacity-50" : ""}`,
+				`flex flex-col group/task p-1 duration-300 text-xs xl:text-sm rounded ${daysBeforeDue < 0 ? "bg-red-500/10 dark:bg-red-500/15 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/10 dark:bg-orange-500/15 lg:hover:bg-orange-500/25" : "lg:hover:bg-primary/10"} ${isDeleting ? "opacity-50" : ""}`,
 				className,
 			)}
 			onMouseEnter={handleMouseEnter}
@@ -410,14 +410,14 @@ export default function TaskDisplay({
 							>
 								{/* Only this div is clickable for toggling */}
 								<div
-									className={`relative p-2 ml-1 lg:ml-0 mr-2 lg:mr-0 size-1 border border-neutral-400 dark:border-neutral-600 rounded-300 cursor-pointer group/Clickable ${optimisticState ? "bg-primary" : ""}`}
+									className={`relative p-2 ml-1 lg:ml-0 mr-2 lg:mr-0 size-1 border border-neutral-400 dark:border-neutral-600 rounded cursor-pointer group/Clickable ${optimisticState ? "bg-primary" : ""}`}
 									onClick={() => toggle()}
 									role="checkbox"
 									aria-checked={optimisticState}
 									tabIndex={0}
 								>
 									<div
-										className={`absolute inset-0 w-1/2 h-1/2 z-20 m-auto duration-300 ${optimisticState ? "lg:group-hover/Clickable:bg-background" : "lg:group-hover/Clickable:bg-primary"}`}
+										className={`absolute inset-0 w-1/2 h-1/2 z-20 m-auto duration-300 rounded-xs ${optimisticState ? "lg:group-hover/Clickable:bg-background" : "lg:group-hover/Clickable:bg-primary"}`}
 									/>
 								</div>
 							</div>

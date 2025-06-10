@@ -9,8 +9,6 @@ import {
   use,
 } from 'react';
 import { User } from '@/lib/db/schema';
-import { getUser } from '@/lib/db/queries/user';
-import { getServerSession } from '@/lib/auth/session';
 
 type UserContextType = {
     user: User | null;

@@ -253,7 +253,7 @@ export default function NoteModal({
             <DialogTrigger asChild>
                 {children ? children : (
                     mode === "create" ? (
-                        <Button variant="outline" size="icon" className={cn("whitespace-nowrap transition-transform duration-300", className)}>
+                        <Button variant="outline" size="icon" className={cn("whitespace-nowrap transition-transform duration-300 border-none", className)}>
                             <Plus size={24} />
                         </Button>
                     ) : (

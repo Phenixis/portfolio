@@ -181,11 +181,11 @@ export function TasksCard({
 		if (numberOfTasks && numberOfTasks.length > 0) {
 			// Filter tasks by due date if dueBeforeDate is set
 			const filteredTasks = numberOfTasks.filter(task => {
-					// Ensure task.due is a valid date before comparison
-					if (!task.due) return false;
-					const taskDueDate = new Date(task.due);
-					return taskDueDate <= (dueBeforeDate !== undefined ? dueBeforeDate : tomorrow);
-				})
+				// Ensure task.due is a valid date before comparison
+				if (!task.due) return false;
+				const taskDueDate = new Date(task.due);
+				return taskDueDate <= (dueBeforeDate !== undefined ? dueBeforeDate : tomorrow);
+			})
 
 			const completedCount = filteredTasks.reduce((sum, task) => sum + Number(task.completed_count), 0);
 			const uncompletedCount = filteredTasks.reduce((sum, task) => sum + Number(task.uncompleted_count), 0);
@@ -261,7 +261,7 @@ export function TasksCard({
 
 			router.push(`?${params.toString()}`, { scroll: false })
 		}, 200)
-		
+
 		return () => clearTimeout(timeoutId)
 	}, [completed, limit, orderBy, orderingDirection, selectedProjects, removedProjects, dueBeforeDate, groupByProject, router])
 
@@ -335,7 +335,7 @@ export function TasksCard({
 						style={{ width: isCountLoading ? "100%" : `${progression}%` }}
 					/>
 					<div className="w-full flex justify-between items-center pt-2 px-1">
-						{isCountLoading  || isCountError ? null : (
+						{isCountLoading || isCountError ? null : (
 							<>
 								<p className="text-muted-foreground text-xs">
 									{tasksCompleted} task{tasksCompleted > 1 ? 's' : ''} completed
@@ -366,7 +366,7 @@ export function TasksCard({
 					</div>
 				</div>
 				<div className={`${!isFilterOpen && "hidden"} flex flex-col gap-2`}>
-					<div className="flex flex-row justify-between items-center gap-6 flex-wrap">
+					<div className="flex flex-row justify-between items-center gap-4 flex-wrap">
 						{/* Due Before Date Filter */}
 						<Popover>
 							<PopoverTrigger asChild>
@@ -392,27 +392,25 @@ export function TasksCard({
 								/>
 							</PopoverContent>
 						</Popover>
-						<div className="flex flex-row items-center gap-2">
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={cycleCompletedFilter}
-								disabled={isPending || isLoading}
-								className={cn("flex items-center gap-1")}
-								tooltip={`
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={cycleCompletedFilter}
+							disabled={isPending || isLoading}
+							className={cn("flex items-center gap-1")}
+							tooltip={`
                   ${completed === true ? "Completed" : completed === false ? "Uncompleted" : "All"} tasks
                 `}
-							>
-								{completed === true ? (
-									<Square className="rounded-xs bg-card-foreground h-4 w-4" />
-								) : completed === false ? (
-									<Square className="h-4 w-4" />
-								) : (
-									<SquareMinus className="h-4 w-4" />
-								)}
-							</Button>
-						</div>
-						<div className="flex flex-row items-center gap-2">
+						>
+							{completed === true ? (
+								<Square className="rounded-xs bg-card-foreground h-4 w-4" />
+							) : completed === false ? (
+								<Square className="h-4 w-4" />
+							) : (
+								<SquareMinus className="h-4 w-4" />
+							)}
+						</Button>
+						<div className="flex flex-row items-center gap-1">
 							<Button
 								variant={limit === 5 ? "default" : "outline"}
 								size="sm"
@@ -564,9 +562,9 @@ export function TasksCard({
 					groupByProject ? (
 						// Grouped by project
 						Object.entries(groupedTodos).sort(([, a], [, b]) => (a.name || "").localeCompare(b.name)).map(([projectId, { name, tasks }]) => (
-							<div key={projectId} className="mb-4">
-								<h3 className="font-medium text-sm p-2 rounded-md">{name}</h3>
-								<div className="pl-2">
+							<div key={projectId} className="mb-2">
+								<h3 className="font-medium text-sm rounded-md">{tasks.length > 0 ? tasks[0].project_title : name}</h3>
+								<div className="">
 									{tasks.map(
 										(
 											task: TaskWithRelations,
@@ -575,7 +573,7 @@ export function TasksCard({
 												key={task.id}
 												task={task}
 												orderedBy={orderBy}
-												className="mt-1"
+												className="mbv-1"
 												currentLimit={limit}
 												currentDueBefore={dueBeforeDate}
 												currentProjects={selectedProjects}
