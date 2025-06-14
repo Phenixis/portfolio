@@ -573,7 +573,6 @@ export function TasksCard({
 												key={task.id}
 												task={task}
 												orderedBy={orderBy}
-												className="mbv-1"
 												currentLimit={limit}
 												currentDueBefore={dueBeforeDate}
 												currentProjects={selectedProjects}
@@ -591,7 +590,7 @@ export function TasksCard({
 								(
 									task: TaskWithRelations
 								) => (
-									<TaskDisplay key={task.id} task={task} orderedBy={orderBy} className="mt-1" currentLimit={limit} currentDueBefore={dueBeforeDate} currentProjects={selectedProjects} />
+									<TaskDisplay key={task.id} task={task} orderedBy={orderBy} currentLimit={limit} currentDueBefore={dueBeforeDate} currentProjects={selectedProjects} />
 								),
 							)
 					)

@@ -390,7 +390,7 @@ export default function TaskDisplay({
 		<div
 			ref={containerRef}
 			className={cn(
-				`flex flex-col group/task p-1 duration-300 text-xs xl:text-sm rounded ${daysBeforeDue < 0 ? "bg-red-500/10 dark:bg-red-500/15 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/10 dark:bg-orange-500/15 lg:hover:bg-orange-500/25" : "lg:hover:bg-primary/10"} ${isDeleting ? "opacity-50" : ""}`,
+				`flex flex-col group/task p-1 duration-300 text-xs xl:text-sm rounded mb-1 ${daysBeforeDue < 0 ? "bg-red-500/10 dark:bg-red-500/15 lg:hover:bg-red-500/25" : daysBeforeDue <= 3 ? "bg-orange-500/10 dark:bg-orange-500/15 lg:hover:bg-orange-500/25" : "lg:hover:bg-primary/10"} ${isDeleting ? "opacity-50" : ""}`,
 				className,
 			)}
 			onMouseEnter={handleMouseEnter}
