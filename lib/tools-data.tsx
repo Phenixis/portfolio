@@ -1,4 +1,4 @@
-import { LayoutGrid, Grid2X2, Film } from "lucide-react"
+import { LayoutGrid, Grid2X2, Film, MessagesSquare } from "lucide-react"
 import type { ReactNode } from "react"
 
 export interface ToolCardProps {
@@ -27,6 +27,12 @@ export const tools: ToolCardProps[] = [
     href: "/my/tools/movie-tracker",
     icon: <Film className="size-4" />,
     description: "A tool for tracking movies and TV shows.",
+  },
+  {
+    name: "Chat",
+    href: "/my/tools/chat",
+    icon: <MessagesSquare className="size-4" />,
+    description: "Chat with various and personalized profiles.",
   }
   // Future tools can be added here following the same structure
 ]

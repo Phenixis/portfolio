@@ -1,6 +1,6 @@
 # Life OS
 
-Current Version: **V1.4.35**
+Current Version: **V1.4.36**
 
 ## Your life, all in one place.
 
@@ -56,3 +56,5 @@ Life OS is a personal knowledge management system designed to help you organize 
     - [ ] Commands recognition
     - [ ] Integration with Life OS
     - [ ] Naming
+- [ ] AI Chat with different profiles
+    - [x] V1 [V1.4.36]

@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { useDarkMode } from "@/hooks/use-dark-mode"
 import { useTaskModal, useNoteModal, useDailyMoodModal } from "@/contexts/modal-commands-context"
+import { tools } from "@/lib/tools-data"
 
 const items = {
     "Suggestions": [
@@ -22,11 +23,10 @@ const items = {
         { name: "Notes", href: "/my/notes" },
         { name: "Tasks", href: "/my/tasks" },
     ],
-    "Tools": [
-        { name: "All Tools", href: "/my/tools" },
-        { name: "Movie Tracker", href: "/my/tools/movie-tracker" },
-        { name: "Weighted Multi-Criteria Decision Matrix", href: "/my/tools/wmcdm" },
-    ],
+    "Tools": tools.map(tool => ({
+        name: tool.name,
+        href: tool.href,
+    })),
     "Settings": [
         { name: "Profile", href: "/my/settings/profile" },
         { name: "Appearance", href: "/my/settings/appearance" },

@@ -239,6 +239,13 @@
       "when": 1749197510220,
       "tag": "0033_omniscient_adam_warlock",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1749915784906,
+      "tag": "0034_easy_roland_deschain",
+      "breakpoints": true
     }
   ]
 }

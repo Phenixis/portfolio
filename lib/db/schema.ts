@@ -7,7 +7,8 @@ import {
     timestamp,
     integer,
     boolean,
-    real
+    real,
+    index
 } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
 
@@ -31,7 +32,7 @@ export const user = pgTable('user', {
     note_draft_title: varchar('note_draft_title', { length: 255 }).notNull().default(""),
     note_draft_content: text('note_draft_content').notNull().default(""),
     note_draft_project_title: varchar('note_draft_project_title', { length: 255 }).notNull().default(""),
-    
+
     created_at: timestamp('created_at').notNull().defaultNow(),
     updated_at: timestamp('updated_at').notNull().defaultNow(),
     deleted_at: timestamp('deleted_at')
@@ -242,13 +243,13 @@ export const movie = pgTable('movie', {
     genres: text('genres'), // JSON string array
     runtime: integer('runtime'), // in minutes
     status: varchar('status', { length: 50 }), // released, upcoming, etc.
-    
+
     // User tracking fields
     user_rating: real('user_rating'), // 0.5 to 5.0 by 0.5 increments
     user_comment: text('user_comment'),
     watch_status: varchar('watch_status', { length: 20 }).notNull().default('will_watch'), // 'will_watch', 'watched', 'watch_again'
     watched_date: timestamp('watched_date'),
-    
+
     created_at: timestamp('created_at').notNull().defaultNow(),
     updated_at: timestamp('updated_at').notNull().defaultNow(),
     deleted_at: timestamp('deleted_at')
@@ -263,7 +264,7 @@ export const notInterestedMovie = pgTable('not_interested_movie', {
     tmdb_id: integer('tmdb_id').notNull(),
     media_type: varchar('media_type', { length: 10 }).notNull(), // 'movie' or 'tv'
     title: varchar('title', { length: 500 }).notNull(), // Store title for reference
-    
+
     created_at: timestamp('created_at').notNull().defaultNow(),
 }, (table) => ({
     // Unique constraint to prevent duplicates
@@ -362,6 +363,72 @@ export const wmcdmScore = pgTable('wmcdm_score', {
     uniqueOptionCriterion: sql`UNIQUE (${table.option_id}, ${table.criterion_id})`
 }));
 
+// AI Profiles table
+export const aiProfile = pgTable(
+    "ai_profile",
+    {
+        id: char("id", { length: 12 }).primaryKey().notNull(),
+        user_id: char("user_id", { length: 8 })
+            .notNull()
+            .references(() => user.id, { onDelete: "cascade" }),
+        name: varchar("name", { length: 255 }).notNull(),
+        description: text("description").notNull(),
+        system_prompt: text("system_prompt").notNull(),
+        avatar_url: varchar("avatar_url", { length: 500 }),
+        is_active: boolean("is_active").notNull().default(true),
+        created_at: timestamp("created_at").notNull().defaultNow(),
+        updated_at: timestamp("updated_at").notNull().defaultNow(),
+        deleted_at: timestamp("deleted_at"),
+    },
+    (table) => ({
+        userIdIdx: index("ai_profile_user_id_idx").on(table.user_id),
+        nameIdx: index("ai_profile_name_idx").on(table.name),
+    }),
+)
+
+// Conversations table
+export const conversation = pgTable(
+    "conversation",
+    {
+        id: char("id", { length: 12 }).primaryKey().notNull(),
+        user_id: char("user_id", { length: 8 })
+            .notNull()
+            .references(() => user.id, { onDelete: "cascade" }),
+        profile_id: char("profile_id", { length: 12 })
+            .notNull()
+            .references(() => aiProfile.id, { onDelete: "cascade" }),
+        title: varchar("title", { length: 255 }).notNull(),
+        is_archived: boolean("is_archived").notNull().default(false),
+        created_at: timestamp("created_at").notNull().defaultNow(),
+        updated_at: timestamp("updated_at").notNull().defaultNow(),
+        deleted_at: timestamp("deleted_at"),
+    },
+    (table) => ({
+        userIdIdx: index("conversation_user_id_idx").on(table.user_id),
+        profileIdIdx: index("conversation_profile_id_idx").on(table.profile_id),
+        updatedAtIdx: index("conversation_updated_at_idx").on(table.updated_at),
+    }),
+)
+
+// Messages table
+export const message = pgTable(
+    "message",
+    {
+        id: char("id", { length: 12 }).primaryKey().notNull(),
+        conversation_id: char("conversation_id", { length: 12 })
+            .notNull()
+            .references(() => conversation.id, { onDelete: "cascade" }),
+        role: varchar("role", { length: 20 }).notNull(), // 'user' or 'assistant'
+        content: text("content").notNull(),
+        token_count: integer("token_count"),
+        created_at: timestamp("created_at").notNull().defaultNow(),
+    },
+    (table) => ({
+        conversationIdIdx: index("message_conversation_id_idx").on(table.conversation_id),
+        createdAtIdx: index("message_created_at_idx").on(table.created_at),
+    }),
+)
+
 // Relations
 export const userRelations = relations(user, ({ many }) => ({
     tasks: many(task),
@@ -380,7 +447,36 @@ export const userRelations = relations(user, ({ many }) => ({
     wmcdmMatrices: many(wmcdmMatrix),
     habits: many(habit),
     habitEntries: many(habitEntry),
+    aiProfiles: many(aiProfile),
+    conversations: many(conversation),
 }));
+
+export const aiProfileRelations = relations(aiProfile, ({ one, many }) => ({
+  user: one(user, {
+    fields: [aiProfile.user_id],
+    references: [user.id],
+  }),
+  conversations: many(conversation),
+}))
+
+export const conversationRelations = relations(conversation, ({ one, many }) => ({
+  user: one(user, {
+    fields: [conversation.user_id],
+    references: [user.id],
+  }),
+  profile: one(aiProfile, {
+    fields: [conversation.profile_id],
+    references: [aiProfile.id],
+  }),
+  messages: many(message),
+}))
+
+export const messageRelations = relations(message, ({ one }) => ({
+  conversation: one(conversation, {
+    fields: [message.conversation_id],
+    references: [conversation.id],
+  }),
+}))
 
 export const projectRelations = relations(project, ({ one, many }) => ({
     tasks: many(task),
