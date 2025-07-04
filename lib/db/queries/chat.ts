@@ -136,6 +136,23 @@ export async function deleteConversation(conversationId: string, userId: string)
   return !!deletedConversation
 }
 
+export async function updateConversation(
+  conversationId: string,
+  userId: string,
+  data: { title?: string; is_archived?: boolean }
+) {
+  const [updatedConversation] = await db
+    .update(conversation)
+    .set({
+      ...data,
+      updated_at: new Date(),
+    })
+    .where(and(eq(conversation.id, conversationId), eq(conversation.user_id, userId), isNull(conversation.deleted_at)))
+    .returning()
+
+  return updatedConversation
+}
+
 export async function updateConversationTimestamp(conversationId: string) {
   await db
     .update(conversation)

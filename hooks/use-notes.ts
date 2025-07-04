@@ -4,21 +4,25 @@ import { Note } from "@/lib/db/schema"
 import { useFilteredData } from "./use-filtered-data"
 import { NotesAndData } from "@/lib/db/queries/note"
 
-export function useNotes({
-    title,
-    projectTitle,
-    limit,
-    page,
-    projectTitles,
-    excludedProjectTitles
-}: {
+interface UseNotesParams {
     title?: string
     projectTitle?: string
     limit?: number
     page?: number
     projectTitles?: string[]
     excludedProjectTitles?: string[]
-}) {
+}
+
+export function useNotes(params: UseNotesParams = {}) {
+    const {
+        title,
+        projectTitle,
+        limit,
+        page,
+        projectTitles,
+        excludedProjectTitles
+    } = params
+
     const { data, isLoading, isError, mutate } = useFilteredData<NotesAndData>({
         endpoint: "/api/note",
         params: {
@@ -36,5 +40,6 @@ export function useNotes({
         isLoading,
         isError,
         mutate,
+        notes: data as NotesAndData, // Keep backward compatibility
     }
 }

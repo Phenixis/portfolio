@@ -4,15 +4,15 @@ import { useFilteredData } from "./use-filtered-data"
 import type { HabitFrequency } from "@/lib/types/habits"
 import { useState } from "react"
 
-export function useProgressCycle({
-    defaultFrequency = "daily",
-    date = new Date(),
-    skipFetch = false,
-} : {
-    defaultFrequency?: HabitFrequency,
-    date?: Date,
+interface UseProgressCycleParams {
+    defaultFrequency?: HabitFrequency
+    date?: Date
     skipFetch?: boolean
-}) {
+}
+
+export function useProgressCycle(params: UseProgressCycleParams = {}) {
+    const { defaultFrequency = "daily", date = new Date(), skipFetch = false } = params
+    
     const [frequency, setFrequency] = useState<HabitFrequency>(defaultFrequency)
 
     const { data, isLoading, isError } = useFilteredData({
@@ -25,11 +25,12 @@ export function useProgressCycle({
     })
 
     return {
-        frequency,
-        setFrequency,
         data,
         isLoading,
         isError,
+        frequency,
+        setFrequency,
+        progressData: data, // Keep backward compatibility
     }
 }
 

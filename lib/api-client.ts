@@ -111,4 +111,25 @@ export class ApiClient {
 
     return response.json() as Promise<{ message: string }>
   }
+
+  async updateConversation(conversationId: string, data: { title?: string; is_archived?: boolean }) {
+    const response = await fetch(`/api/conversations/${conversationId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.apiKey}`,
+      },
+      body: JSON.stringify(data),
+    })
+
+    if (!response.ok) {
+      const error = new Error("Failed to update conversation") as Error & { info?: unknown; status?: number }
+      const info = await response.json()
+      error.info = info
+      error.status = response.status
+      throw error
+    }
+
+    return response.json() as Promise<{ conversation: Conversation }>
+  }
 }

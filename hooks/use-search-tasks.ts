@@ -3,15 +3,15 @@
 import type { Task } from "@/lib/db/schema"
 import { useFilteredData } from "./use-filtered-data"
 
-export function useSearchTasks({
-  query,
-  limit,
-  excludeIds = [],
-}: {
+interface UseSearchTasksParams {
   query?: string
   limit?: number
   excludeIds?: number[]
-}) {
+}
+
+export function useSearchTasks(params: UseSearchTasksParams = {}) {
+  const { query, limit, excludeIds = [] } = params
+
   // Only create a SWR key if query has a value
   const shouldFetch = query !== undefined && query !== ""
 
@@ -32,9 +32,10 @@ export function useSearchTasks({
     []
 
   return {
-    tasks: filteredTasks,
+    data: filteredTasks,
     isLoading,
     isError,
     mutate,
+    tasks: filteredTasks, // Keep backward compatibility
   }
 }

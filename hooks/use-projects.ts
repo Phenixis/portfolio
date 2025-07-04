@@ -4,19 +4,7 @@ import { useFilteredData } from "./use-filtered-data"
 import type { Project } from "@/lib/db/schema"
 import type { Note } from "@/lib/db/schema"
 
-export function useProjects({
-  completed,
-  taskCompleted,
-  taskDueDate,
-  taskDeleted,
-  projectTitle,
-  limit,
-  withNotes,
-  noteLimit,
-  noteOrderBy,
-  noteOrderingDirection,
-  noteProjectTitle,
-}: {
+interface UseProjectsParams {
   completed?: boolean
   taskCompleted?: boolean
   taskDueDate?: Date
@@ -28,7 +16,23 @@ export function useProjects({
   noteOrderBy?: keyof Note
   noteOrderingDirection?: "asc" | "desc"
   noteProjectTitle?: string
-}) {
+}
+
+export function useProjects(params: UseProjectsParams = {}) {
+  const {
+    completed,
+    taskCompleted,
+    taskDueDate,
+    taskDeleted,
+    projectTitle,
+    limit,
+    withNotes,
+    noteLimit,
+    noteOrderBy,
+    noteOrderingDirection,
+    noteProjectTitle,
+  } = params
+
   const { data, isLoading, isError, mutate } = useFilteredData<Project[]>({
     endpoint: "/api/project",
     params: {
@@ -47,9 +51,10 @@ export function useProjects({
   })
 
   return {
-    projects: (data as Project[]) || [],
+    data: (data as Project[]) || [],
     isLoading,
     isError,
+    projects: (data as Project[]) || [], // Keep backward compatibility
     mutate,
   }
 }

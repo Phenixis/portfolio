@@ -3,16 +3,16 @@
 import type { DailyMood } from "@/lib/db/schema"
 import { useFilteredData } from "./use-filtered-data"
 
-// hooks/use--number-of-tasks.ts
-export function useDailyMoods({
-    startDate,
-    endDate,
-    enabled=true,
-}: {
+interface UseDailyMoodsParams {
     startDate: Date
     endDate: Date
     enabled?: boolean
-}) {
+}
+
+// hooks/use-daily-moods.ts
+export function useDailyMoods(params: UseDailyMoodsParams) {
+    const { startDate, endDate, enabled = true } = params
+
     const { data, isLoading, isError, mutate } = useFilteredData<DailyMood[]>({
         endpoint: "/api/mood",
         params: {
@@ -27,5 +27,6 @@ export function useDailyMoods({
         isLoading,
         isError,
         mutate,
+        dailyMoods: data as DailyMood[] || [], // Keep backward compatibility
     }
 }

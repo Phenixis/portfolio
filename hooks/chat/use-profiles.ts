@@ -5,7 +5,17 @@ import { ApiClient } from "@/lib/api-client"
 import { useUser } from "../use-user"
 import type { Profile, CreateProfileRequest } from "@/lib/types/chat"
 
-export function useProfiles() {
+// Type for the API response structure
+interface ProfilesApiResponse {
+  profiles: Profile[]
+}
+
+interface UseProfilesParams {
+  skipFetch?: boolean
+}
+
+export function useProfiles(params: UseProfilesParams = {}) {
+  const { skipFetch = false } = params
   const { user } = useUser()
 
   const {
@@ -13,9 +23,9 @@ export function useProfiles() {
     isLoading,
     isError,
     mutate,
-  } = useFilteredData<{ profiles: Profile[] }>({
+  } = useFilteredData<ProfilesApiResponse>({
     endpoint: "/api/profiles",
-    skipFetch: !user?.api_key,
+    skipFetch: !user?.api_key || skipFetch,
   })
 
   const profiles = (profilesData?.profiles || []) as Profile[]
@@ -23,43 +33,80 @@ export function useProfiles() {
   const createProfile = async (data: CreateProfileRequest) => {
     if (!user?.api_key) throw new Error("No API key available")
 
-    const apiClient = new ApiClient(user.api_key)
-    const result = await apiClient.createProfile(data)
+    try {
+      const apiClient = new ApiClient(user.api_key)
+      const result = await apiClient.createProfile(data)
 
-    // Optimistically update the cache
-    await mutate()
+      // Optimistically add to local state
+      const newProfile = result.profile
+      const optimisticProfiles = [...profiles, newProfile]
+      mutate({ profiles: optimisticProfiles }, false)
 
-    return result
+      // Revalidate to ensure consistency
+      await mutate()
+
+      return result
+    } catch (error) {
+      // Revalidate on error to ensure consistency
+      await mutate()
+      throw error
+    }
   }
 
   const updateProfile = async (profileId: string, data: Partial<Profile>) => {
     if (!user?.api_key) throw new Error("No API key available")
 
-    const apiClient = new ApiClient(user.api_key)
-    const result = await apiClient.updateProfile(profileId, data)
+    // Optimistically update local state
+    const optimisticProfiles = profiles.map(profile => 
+      profile.id === profileId 
+        ? { ...profile, ...data, updated_at: new Date() }
+        : profile
+    )
+    
+    mutate({ profiles: optimisticProfiles }, false)
 
-    // Optimistically update the cache
-    await mutate()
-
-    return result
+    try {
+      const apiClient = new ApiClient(user.api_key)
+      const result = await apiClient.updateProfile(profileId, data)
+      
+      // Revalidate to ensure consistency
+      await mutate()
+      
+      return result
+    } catch (error) {
+      // Revert optimistic update on error
+      await mutate()
+      throw error
+    }
   }
 
   const deleteProfile = async (profileId: string) => {
     if (!user?.api_key) throw new Error("No API key available")
 
-    const apiClient = new ApiClient(user.api_key)
-    const result = await apiClient.deleteProfile(profileId)
+    // Optimistically remove from local state
+    const optimisticProfiles = profiles.filter(profile => profile.id !== profileId)
+    mutate({ profiles: optimisticProfiles }, false)
 
-    // Optimistically update the cache
-    await mutate()
-
-    return result
+    try {
+      const apiClient = new ApiClient(user.api_key)
+      const result = await apiClient.deleteProfile(profileId)
+      
+      // Revalidate to ensure consistency
+      await mutate()
+      
+      return result
+    } catch (error) {
+      // Revert optimistic update on error
+      await mutate()
+      throw error
+    }
   }
 
   return {
-    profiles,
+    data: profiles,
     isLoading,
     isError,
+    profiles, // Keep backward compatibility
     createProfile,
     updateProfile,
     deleteProfile,

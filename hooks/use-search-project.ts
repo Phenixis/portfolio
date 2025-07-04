@@ -3,15 +3,15 @@
 import type { Project } from "@/lib/db/schema"
 import { useFilteredData } from "./use-filtered-data"
 
-export function useSearchProject({
-  query,
-  limit,
-  enabled = true,
-}: {
+interface UseSearchProjectParams {
   query?: string
   limit?: number
   enabled?: boolean
-}) {
+}
+
+export function useSearchProject(params: UseSearchProjectParams = {}) {
+  const { query, limit, enabled = true } = params
+
   // Only create a SWR key if query has a value
   const shouldFetch = (query !== undefined && query !== "") && enabled
 
@@ -26,9 +26,10 @@ export function useSearchProject({
   })
 
   return {
-    projects: (data as Project[]) || [],
+    data: (data as Project[]) || [],
     isLoading,
     isError,
     mutate,
+    projects: (data as Project[]) || [], // Keep backward compatibility
   }
 }

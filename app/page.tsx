@@ -551,7 +551,7 @@ export default function LandingPage() {
                             >
                                 <h4 className="font-medium font-heading text-yellow-700 dark:text-yellow-400 mb-3">The Transition</h4>
                                 <MotionDiv
-                                    className="text-4xl mb-4"
+                                    className="text-4xl mb-4 rotate-85 md:rotate-0"
                                     animate={{ rotate: [0, 10, 0] }}
                                     transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                                 >

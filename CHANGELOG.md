@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [NOT RELEASED]
+- [V1.4.37 - 2025-07-04 11:07:41] feat: optimistic update
 - [V1.4.36 - 2025-06-14 18:08:56] feat: add v1 of ai chat with profiles
 - [V1.4.35 - 2025-06-14 16:03:24] chore: improve some styling issues and install groq
 - [V1.4.34 - 2025-06-10 09:46:11] refactor: use promise for dynamic route segment

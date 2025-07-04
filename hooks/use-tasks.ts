@@ -3,18 +3,7 @@
 import type { Task, TaskWithRelations } from "@/lib/db/schema"
 import { useFilteredData } from "./use-filtered-data"
 
-// hooks/use-tasks.ts
-export function useTasks({
-  completed,
-  orderBy,
-  limit,
-  orderingDirection,
-  withProject,
-  projectTitles,
-  excludedProjectTitles,
-  dueBefore,
-  dueAfter,
-}: {
+interface UseTasksParams {
   completed?: boolean
   orderBy?: keyof Task
   limit?: number
@@ -24,7 +13,22 @@ export function useTasks({
   excludedProjectTitles?: string[]
   dueBefore?: Date
   dueAfter?: Date
-}) {
+}
+
+// hooks/use-tasks.ts
+export function useTasks(params: UseTasksParams = {}) {
+  const {
+    completed,
+    orderBy,
+    limit,
+    orderingDirection,
+    withProject,
+    projectTitles,
+    excludedProjectTitles,
+    dueBefore,
+    dueAfter,
+  } = params
+
   const { data, isLoading, isError, mutate } = useFilteredData<Task[]>({
     endpoint: "/api/task",
     params: {
@@ -41,9 +45,10 @@ export function useTasks({
   })
 
   return {
-    tasks: (data as TaskWithRelations[]) || [],
+    data: (data as TaskWithRelations[]) || [],
     isLoading,
     isError,
+    tasks: (data as TaskWithRelations[]) || [], // Keep backward compatibility
     mutate,
   }
 }

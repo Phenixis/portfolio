@@ -8,15 +8,15 @@ interface HabitsApiResponse {
     habits: Habit[]
 }
 
-export function useHabits({
-    frequency,
-    activeOnly = true, 
-    skipFetch = false,
-}: {
+interface UseHabitsParams {
     frequency?: string
     activeOnly?: boolean
     skipFetch?: boolean
-}) {
+}
+
+export function useHabits(params: UseHabitsParams = {}) {
+    const { frequency, activeOnly = true, skipFetch = false } = params
+
     const { data, isLoading, isError } = useFilteredData<HabitsApiResponse>({
         endpoint: '/api/habits',
         params: {
@@ -27,8 +27,9 @@ export function useHabits({
     })
 
     return {
-        data : data?.habits as Habit[] || [],
+        data: data?.habits as Habit[] || [],
         isLoading,
         isError,
+        habits: data?.habits as Habit[] || [], // Keep backward compatibility
     }
 }
