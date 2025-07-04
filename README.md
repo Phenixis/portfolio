@@ -9,6 +9,8 @@ Life OS is a personal knowledge management system designed to help you organize 
 ## Roadmap
 
 - [x] Task Manager [V1.0.0]
+    - [ ] Repetitive tasks
+    - [ ] Task of the day
 - [x] Meteo Integration [V1.0.0]
 - [x] Dark Mode [V1.0.0]
     - [x] Auto dark mode [V1.0.0]
