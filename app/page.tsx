@@ -842,7 +842,7 @@ export default function LandingPage() {
                         </MotionDiv>
 
                         {/* Pro Plan */}
-                        <MotionDiv variants={staggerItem}>
+                        <MotionDiv variants={staggerItem} className="grayscale pointer-events-none">
                             <MotionDiv
                                 whileHover={{ scale: 1.03, y: -10 }}
                                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -856,7 +856,7 @@ export default function LandingPage() {
                                         viewport={{ once: true }}
                                     >
                                         <Badge className="bg-purple-500 text-white">
-                                            7/10 seats taken
+                                            Coming soon
                                         </Badge>
                                     </MotionDiv>
                                     <CardHeader className="text-center pb-4">
@@ -869,7 +869,7 @@ export default function LandingPage() {
                                                 transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.5 }}
                                                 viewport={{ once: true }}
                                             >
-                                                €100
+                                                €???
                                             </MotionSpan>
                                             <span className="text-gray-600 dark:text-gray-400">/month</span>
                                         </div>

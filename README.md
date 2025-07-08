@@ -1,12 +1,14 @@
 # Life OS
 
-Current Version: **V1.4.37**
+Current Version: **V1.4.38**
 
 ## Your life, all in one place.
 
 Life OS is a personal knowledge management system designed to help you organize and manage your life in one place.
 
 ## Roadmap
+
+### Dumping todos
 
 - [x] Task Manager [V1.0.0]
     - [ ] Repetitive tasks
@@ -60,3 +62,9 @@ Life OS is a personal knowledge management system designed to help you organize 
     - [ ] Naming
 - [ ] AI Chat with different profiles
     - [x] V1 [V1.4.36]
+
+### Official V1
+
+- [ ] Free profile, paid profile
+- [ ] Good landing page
+- [ ] Stripe for payments

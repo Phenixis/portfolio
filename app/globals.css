@@ -349,6 +349,56 @@
   .scrollbar-hide {
     scrollbar-width: none;
   }
+
+  /* Custom animations for chat streaming */
+  @keyframes streaming-cursor {
+    0%,
+    50% {
+      opacity: 1;
+    }
+    51%,
+    100% {
+      opacity: 0;
+    }
+  }
+
+  .streaming-cursor {
+    animation: streaming-cursor 1s infinite;
+  }
+
+  @keyframes fade-in-up {
+    0% { 
+      opacity: 0; 
+      transform: translateY(10px); 
+    }
+    100% { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
+  }
+
+  .fade-in-up {
+    animation: fade-in-up 0.3s ease-out;
+  }
+
+  .streaming-cursor {
+    animation: streaming-cursor 1s infinite;
+  }
+
+  @keyframes fade-in-up {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .fade-in-up {
+    animation: fade-in-up 0.3s ease-out;
+  }
 }
 
 
