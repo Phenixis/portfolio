@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [NOT RELEASED]
+- [V1.4.39 - 2025-07-08 17:53:19] refactor: improve landing page to match the app better
 - [V1.4.38 - 2025-07-08 16:08:20] feat: work with ai to make the chat better
 - [V1.4.37 - 2025-07-04 11:07:41] feat: optimistic update
 - [V1.4.36 - 2025-06-14 18:08:56] feat: add v1 of ai chat with profiles

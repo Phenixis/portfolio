@@ -69,6 +69,18 @@ export default function LandingPage() {
         }
     }
 
+    const age = (() => {
+        // Calculate age based on birthdate 18/05/2005
+        const birthDate = new Date(2005, 4, 18) // Month is 0-indexed
+        const today = new Date()
+        let age = today.getFullYear() - birthDate.getFullYear()
+        const m = today.getMonth() - birthDate.getMonth()
+        if (m < 0 || (m === 4 && today.getDate() < 18)) {
+            age--
+        }
+        return age
+    })()
+
     return (
         <div ref={containerRef} className="min-h-screen bg-white dark:bg-black text-black dark:text-white">
             {/* Navigation */}
@@ -259,7 +271,7 @@ export default function LandingPage() {
 
                     <MotionH1
                         variants={staggerItem}
-                        className="w-full text-4xl md:text-6xl font-medium tracking-wide mb-6 leading-tight font-heading"
+                        className="w-full text-3xl md:text-5xl font-medium tracking-wide mb-6 leading-tight font-heading"
                     >
                         Life OS is your
                         <MotionSpan
@@ -278,15 +290,15 @@ export default function LandingPage() {
 
                     <MotionP
                         variants={staggerItem}
-                        className="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto leading-relaxed"
+                        className="text-base md:text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto leading-relaxed"
                     >
-                        Built for ambitious students and side-hustlers who juggle classes, internships, and creative projects.
-                        No more app-hopping or sticky notes—just clarity, focus, and forward momentum in one minimal interface.
+                        Built for ambitious students and side-hustlers who juggle classes, internships, and creative projects.<br />
+                        No more app-hopping or sticky notes. Just clarity, focus, and forward momentum in one minimal interface.
                     </MotionP>
 
                     <MotionDiv
                         variants={staggerItem}
-                        className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12"
+                        className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-4"
                     >
                         <MotionDiv
                             whileHover={{ scale: 1.05 }}
@@ -329,57 +341,116 @@ export default function LandingPage() {
             {/* Problem Section */}
             <MotionSection
                 id="problems"
-                className="px-6 py-16 bg-gray-50 dark:bg-gray-950"
+                className="px-6 py-12 bg-gray-50 dark:bg-gray-950"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 transition={{ duration: 0.8 }}
                 viewport={{ once: true, margin: "-100px" }}
             >
-                <div className="max-w-4xl mx-auto text-center">
-                    <MotionH2
-                        className="text-3xl font-medium tracking-wide mb-6 font-heading"
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.2 }}
-                        viewport={{ once: true }}
-                    >
-                        Stop juggling scattered workflows
-                    </MotionH2>
-                    <MotionP
-                        className="text-lg text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto"
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.4 }}
-                        viewport={{ once: true }}
-                    >
-                        You&apos;re ambitious. You&apos;ve got classes, internships, side projects, and big dreams.
-                        But your productivity setup is scattered across apps, notebooks, and sticky notes.
-                    </MotionP>
+                <div className="max-w-5xl mx-auto">
+                    {/* Founder Introduction */}
+                    <div className="text-center mb-12">
+                        <MotionH2
+                            className="text-2xl md:text-3xl font-medium tracking-wide mb-6 font-heading"
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6 }}
+                            viewport={{ once: true }}
+                        >
+                            Hi, I&apos;m Maxime, the founder of Life OS
+                        </MotionH2>
+                        <MotionP
+                            className="text-base text-gray-600 dark:text-gray-400 max-w-2xl mx-auto"
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.2 }}
+                            viewport={{ once: true }}
+                        >
+                            I&apos;m {age}, studying while building web apps. I was drowning in scattered tools— Notion, Google Keep, Trello—constantly switching between apps and missing deadlines. So I built Life OS, an app that aims to be the ultimate personal operating system.
+                        </MotionP>
+                    </div>
+
+                    {/* Before vs After */}
                     <MotionDiv
-                        className="grid md:grid-cols-3 gap-8"
-                        variants={staggerContainer}
-                        initial="initial"
-                        whileInView="animate"
-                        viewport={{ once: true, margin: "-50px" }}
+                        className="grid md:grid-cols-2 gap-8 mb-8"
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        transition={{ duration: 0.8, delay: 0.3 }}
+                        viewport={{ once: true }}
                     >
-                        <ProblemCard
-                            icon={<Zap className="h-8 w-8 text-red-500" />}
-                            title="Context Switching Chaos"
-                            description="Google Keep, Trello, paper notebooks—you lose focus jumping between tools"
-                            delay={0}
-                        />
-                        <ProblemCard
-                            icon={<Target className="h-8 w-8 text-red-500" />}
-                            title="Missed Opportunities"
-                            description="Deadlines slip, ideas vanish, and your reputation suffers from disorganization"
-                            delay={0.1}
-                        />
-                        <ProblemCard
-                            icon={<Shield className="h-8 w-8 text-red-500" />}
-                            title="Overwhelm & Anxiety"
-                            description="Mental fatigue from reactive firefighting instead of proactive progress"
-                            delay={0.2}
-                        />
+                        {/* Before */}
+                        <MotionDiv
+                            className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-red-200 dark:border-red-800/30"
+                            initial={{ opacity: 0, x: -30 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.6, delay: 0.4 }}
+                            viewport={{ once: true }}
+                        >
+                            <div className="flex items-center mb-4">
+                                <div className="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
+                                <h3 className="text-lg font-medium text-red-700 dark:text-red-400">Before</h3>
+                            </div>
+                            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                                <li>• App-switching every few minutes</li>
+                                <li>• Missing important deadlines</li>
+                                <li>• Spending more time organizing than working</li>
+                                <li>• Constant anxiety about forgetting things</li>
+                            </ul>
+                        </MotionDiv>
+
+                        {/* After */}
+                        <MotionDiv
+                            className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-green-200 dark:border-green-800/30"
+                            initial={{ opacity: 0, x: 30 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.6, delay: 0.6 }}
+                            viewport={{ once: true }}
+                        >
+                            <div className="flex items-center mb-4">
+                                <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                                <h3 className="text-lg font-medium text-green-700 dark:text-green-400">After Life OS</h3>
+                            </div>
+                            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                                <li>• Everything in one place</li>
+                                <li>• Never miss deadlines with smart reminders</li>
+                                <li>• Focus on creating, not managing systems</li>
+                                <li>• Calm confidence knowing nothing slips through</li>
+                            </ul>
+                        </MotionDiv>
+                    </MotionDiv>
+
+                    {/* Bottom message */}
+                    <MotionDiv
+                        className="text-center"
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.8 }}
+                        viewport={{ once: true }}
+                    >
+                        <MotionDiv
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                        >
+                            <Link href="/sign-up">
+                                <Button
+                                    size="lg"
+                                    className="bg-blue-600 lg:hover:bg-blue-700 text-white px-8 py-3"
+                                >
+                                    Start your transformation today
+                                    <MotionDiv
+                                        className="ml-2"
+                                        animate={{ x: [0, 4, 0] }}
+                                        transition={{
+                                            duration: 1.5,
+                                            repeat: Infinity,
+                                            ease: "easeInOut"
+                                        }}
+                                    >
+                                        <ArrowRight className="h-4 w-4" />
+                                    </MotionDiv>
+                                </Button>
+                            </Link>
+                        </MotionDiv>
                     </MotionDiv>
                 </div>
             </MotionSection>
@@ -395,14 +466,14 @@ export default function LandingPage() {
             >
                 <div className="max-w-7xl mx-auto">
                     <MotionDiv
-                        className="text-center mb-12"
+                        className="text-center mt-24"
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
                         viewport={{ once: true }}
                     >
-                        <h2 className="text-3xl font-medium tracking-wide mb-6 font-heading">Everything you need. Nothing you don&apos;t.</h2>
-                        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                        <h2 className="text-2xl md:text-3xl font-medium tracking-wide mb-6 font-heading">Everything you need. Nothing you don&apos;t.</h2>
+                        <p className="text-base text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
                             Life OS transforms scattered workflows into a seamless life dashboard.
                             Cut context-switching by half and gain calm confidence knowing nothing slips through the cracks.
                         </p>
@@ -414,22 +485,22 @@ export default function LandingPage() {
                         title="Unified Task Management"
                         description="Stop juggling separate tools for coursework, internship deliverables, and side-project milestones. Life OS brings everything into one organized system where you can see your full workload at a glance."
                         features={[
-                            "Organize tasks by project, course, or priority with custom tags and filters",
-                            "Set deadlines and get intelligent reminders before things slip",
-                            "Track progress with visual indicators and completion metrics"
+                            "Organize tasks by project, deadline or imporance",
+                            "Set deadlines and get intelligent mail reminders before things slip",
+                            "Track progress with visual indicators and different views for different purpose"
                         ]}
-                        valueProposition="Save 8+ hours per week by eliminating app-switching and gaining instant clarity on all your commitments"
+                        valueProposition="Save hours and hours per week by eliminating app-switching and gaining instant clarity on all your commitments"
                         delay={0}
                     />
 
                     <FeatureCard
                         icon={<Sparkles className="h-8 w-8 text-green-500" />}
                         title="Intelligent Capture"
-                        description="Capture ideas, notes, and tasks instantly without breaking your flow. Whether you're in class, at your internship, or working on your side project, everything gets automatically organized."
+                        description="Capture ideas, notes, and tasks instantly without breaking your flow. Whether you're in class, at work, or working on your side project, everything gets automatically organized."
                         features={[
-                            "Quick capture with smart categorization based on context and keywords",
-                            "Rich text formatting for detailed notes and documentation",
-                            "Link notes to specific projects or tasks for easy reference"
+                            "Quick capture with easy-to-find buttons and shortcuts",
+                            "Markdown text formatting for detailed notes and documentation",
+                            "Link notes to specific projects for easy reference"
                         ]}
                         valueProposition="Never lose a brilliant idea again. Capture thoughts 5x faster than traditional note-taking methods"
                         isReversed={true}
@@ -438,14 +509,14 @@ export default function LandingPage() {
 
                     <FeatureCard
                         icon={<Zap className="h-8 w-8 text-purple-500" />}
-                        title="Focus Workflows"
-                        description="Built specifically for students and side-hustlers. No enterprise bloat, no features you'll never use. Just the essential tools you need to stay organized and productive across all your commitments."
+                        title="Minimalist, Distraction-Free Interface"
+                        description="Experience a workspace designed for clarity and focus. Life OS features a clean, intuitive interface that puts your priorities front and center: no clutter, no distractions, just the essentials you need to move forward."
                         features={[
-                            "Study mode with distraction-free interface and timer integration",
-                            "Project mode for tracking side-hustle milestones and client work",
-                            "Career mode for internship tasks and professional development"
+                            "Streamlined navigation for instant access to everything",
+                            "Adaptive dark/light mode for comfort day or night",
+                            "Responsive design that feels natural on any device"
                         ]}
-                        valueProposition="Boost productivity by 40% with purpose-built workflows that match your multi-faceted lifestyle"
+                        valueProposition="Stay in the zone and get more done with an interface that helps you think clearly and act quickly."
                         delay={0.4}
                     />
 
@@ -454,18 +525,18 @@ export default function LandingPage() {
                         title="Seamless Sync"
                         description="Your data follows you everywhere. Start a task on your laptop in the library, add notes on your phone during lunch, and check progress on your tablet at home. Everything stays perfectly synchronized."
                         features={[
-                            "Real-time sync across all devices with offline support",
-                            "Responsive design optimized for mobile, tablet, and desktop",
+                            "Real-time sync across all devices",
+                            "Design optimized for mobile, tablet, and desktop",
                             "Progressive web app for native-like experience on any device"
                         ]}
-                        valueProposition="Work from anywhere with confidence - your data is always up-to-date, even without internet"
+                        valueProposition="Work from anywhere with confidence - your data is always up-to-date"
                         isReversed={true}
                         delay={0.6}
                     />
 
                     <FeatureCard
                         icon={<Users className="h-8 w-8 text-red-500" />}
-                        title="Media & Life Tracking"
+                        title="Life Beyond Work"
                         description="Because life isn't just about work. Track movies you want to watch, books you're reading, and experiences you want to have. Balance productivity with personal growth and enjoyment."
                         features={[
                             "Movie and TV show watchlist with ratings and reviews",
@@ -479,9 +550,9 @@ export default function LandingPage() {
                     <FeatureCard
                         icon={<CheckCircle className="h-8 w-8 text-indigo-500" />}
                         title="Private & Secure"
-                        description="Your ideas, goals, and personal information stay yours. Built with privacy-first principles and enterprise-grade security, so you can focus on creating without worrying about data breaches."
+                        description="Your ideas, goals, and personal information stay yours. Built with privacy-first principles so you can focus on creating without worrying about data breaches."
                         features={[
-                            "End-to-end encryption for all your sensitive data",
+                            "End-to-end encryption for your sensitive data",
                             "GDPR compliant with full data export and deletion rights",
                             "Regular security audits and transparent privacy practices"
                         ]}
@@ -509,8 +580,8 @@ export default function LandingPage() {
                         transition={{ duration: 0.6 }}
                         viewport={{ once: true }}
                     >
-                        <h2 className="text-3xl font-medium tracking-wide mb-6 font-heading">Transform chaos into clarity</h2>
-                        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                        <h2 className="text-2xl md:text-3xl font-medium tracking-wide mb-6 font-heading">Transform chaos into clarity</h2>
+                        <p className="text-base text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
                             See how Life OS shifts you from reactive firefighting to proactive, goal-driven progress.
                         </p>
                     </MotionDiv>
@@ -587,10 +658,10 @@ export default function LandingPage() {
 
                     <div className="grid md:grid-cols-2 gap-12 items-center">
                         <div>
-                            <h3 className="text-2xl font-medium tracking-wide mb-6 font-heading">The Life OS Difference</h3>
+                            <h3 className="text-xl font-medium tracking-wide mb-6 font-heading">The Life OS Difference</h3>
                             <div className="space-y-6">
-                                <div className="flex items-start">
-                                    <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center mr-4 mt-1">
+                                <div className="flex items-center">
+                                    <div className="w-12 aspect-square bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center mr-4 mt-1">
                                         <span className="text-blue-600 dark:text-blue-400 text-sm font-medium">1</span>
                                     </div>
                                     <div>
@@ -602,8 +673,8 @@ export default function LandingPage() {
                                     </div>
                                 </div>
 
-                                <div className="flex items-start">
-                                    <div className="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mr-4 mt-1">
+                                <div className="flex items-center">
+                                    <div className="w-12 aspect-square bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mr-4 mt-1">
                                         <span className="text-green-600 dark:text-green-400 text-sm font-medium">2</span>
                                     </div>
                                     <div>
@@ -615,8 +686,8 @@ export default function LandingPage() {
                                     </div>
                                 </div>
 
-                                <div className="flex items-start">
-                                    <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center mr-4 mt-1">
+                                <div className="flex items-center">
+                                    <div className="w-12 aspect-square bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center mr-4 mt-1">
                                         <span className="text-purple-600 dark:text-purple-400 text-sm font-medium">3</span>
                                     </div>
                                     <div>
@@ -666,7 +737,7 @@ export default function LandingPage() {
             >
                 <div className="max-w-4xl mx-auto text-center">
                     <MotionH2
-                        className="text-3xl font-medium tracking-wide mb-6 font-heading"
+                        className="text-2xl md:text-3xl font-medium tracking-wide mb-6 font-heading"
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
@@ -675,7 +746,7 @@ export default function LandingPage() {
                         Choose your operating system
                     </MotionH2>
                     <MotionP
-                        className="text-lg text-gray-600 dark:text-gray-400 mb-12"
+                        className="text-base text-gray-600 dark:text-gray-400 mb-12"
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.2 }}
@@ -942,7 +1013,7 @@ export default function LandingPage() {
             >
                 <div className="max-w-4xl mx-auto text-center">
                     <MotionH2
-                        className="text-3xl md:text-4xl font-medium tracking-wide mb-6 font-heading"
+                        className="text-2xl md:text-3xl font-medium tracking-wide mb-6 font-heading"
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
@@ -951,7 +1022,7 @@ export default function LandingPage() {
                         Make space for what matters
                     </MotionH2>
                     <MotionP
-                        className="text-lg opacity-90 mb-8 max-w-2xl mx-auto"
+                        className="text-base opacity-90 mb-8 max-w-2xl mx-auto"
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.2 }}
@@ -1046,54 +1117,6 @@ export default function LandingPage() {
     )
 }
 
-// Reusable animated components
-function ProblemCard({ icon, title, description, delay }: {
-    icon: React.ReactNode;
-    title: string;
-    description: string;
-    delay: number;
-}) {
-    const ref = useRef<HTMLDivElement>(null)
-    const isInView = useInView(ref as React.RefObject<Element>, { once: true, margin: "-50px" })
-
-    return (
-        <MotionDiv
-            ref={ref}
-            className="text-center"
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={isInView ? {
-                opacity: 1,
-                y: 0,
-                scale: 1,
-                transition: {
-                    duration: 0.6,
-                    delay: delay,
-                    ease: "easeOut"
-                }
-            } : {}}
-            whileHover={{
-                y: -5,
-                transition: { type: "spring", stiffness: 300, damping: 20 }
-            }}
-        >
-            <MotionDiv
-                className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4"
-                whileHover={{
-                    scale: 1.1,
-                    rotate: 5,
-                    transition: { type: "spring", stiffness: 400, damping: 17 }
-                }}
-            >
-                {icon}
-            </MotionDiv>
-            <h3 className="font-semibold mb-2 font-heading">{title}</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-                {description}
-            </p>
-        </MotionDiv>
-    )
-}
-
 function FeatureCard({
     icon,
     title,
@@ -1142,7 +1165,7 @@ function FeatureCard({
                         </MotionDiv>
                         <h3 className="text-3xl lg:text-4xl font-medium font-heading">{title}</h3>
                     </div>
-                    
+
                     <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
                         {description}
                     </p>
@@ -1167,7 +1190,7 @@ function FeatureCard({
                             </div>
                         </div>
                     </MotionDiv>
-                    
+
                     <MotionUl
                         className="space-y-4 text-gray-600 dark:text-gray-400"
                         variants={{
@@ -1201,7 +1224,7 @@ function FeatureCard({
                         ))}
                     </MotionUl>
                 </MotionDiv>
-                
+
                 <MotionDiv
                     className={`relative ${isReversed ? 'lg:order-1' : ''}`}
                     initial={{ opacity: 0, x: isReversed ? -50 : 50 }}
@@ -1211,7 +1234,7 @@ function FeatureCard({
                 >
                     {/* Background gradient */}
                     <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 rounded-2xl" />
-                    
+
                     {/* Content */}
                     <div className="relative bg-white/80 dark:bg-black/40 backdrop-blur-sm rounded-2xl p-12 min-h-[500px] flex flex-col items-center justify-center border border-gray-200/50 dark:border-gray-700/50">
                         <MotionDiv

@@ -1,6 +1,6 @@
 # Life OS
 
-Current Version: **V1.4.38**
+Current Version: **V1.4.39**
 
 ## Your life, all in one place.
 
@@ -65,6 +65,12 @@ Life OS is a personal knowledge management system designed to help you organize 
 
 ### Official V1
 
-- [ ] Free profile, paid profile
+- [ ] Free user, paid user
 - [ ] Good landing page
+    - [ ] Picture of myself
+    - [ ] Screenshots for the features section
+    - [ ] Video demo
 - [ ] Stripe for payments
+- [ ] Markdown formatting in notes
+- [ ] GDPR compliance
+- [ ] Logo
