@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { CheckCircle, Zap, Shield, Target, Users, Sparkles, ArrowRight, Menu, X } from "lucide-react"
 import Link from "next/link"
+import Logo from "@/components/big/logo"
 
 // Type-safe motion components
 const MotionDiv = motion.div as any
@@ -90,17 +91,7 @@ export default function LandingPage() {
                     whileHover={{ scale: 1.02 }}
                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 >
-                    <MotionDiv
-                        className="w-8 h-8 bg-black dark:bg-white rounded-sm"
-                        whileHover={{ rotate: 5 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                    />
-                    <button
-                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                        className="text-xl font-medium tracking-wide font-heading lg:hover:text-gray-600 dark:lg:hover:text-gray-300 transition-colors"
-                    >
-                        Life OS
-                    </button>
+                    <Logo size={48} title />
                 </MotionDiv>
 
                 {/* Desktop Navigation Links */}
@@ -304,6 +295,14 @@ export default function LandingPage() {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                         >
+                            <Button variant="outline" size="lg" className="border-gray-300 dark:border-gray-700">
+                                Watch Demo
+                            </Button>
+                        </MotionDiv>
+                        <MotionDiv
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                        >
                             <Button size="lg" className="bg-black dark:bg-white text-white dark:text-black lg:hover:bg-gray-800 dark:lg:hover:bg-gray-200 px-8">
                                 Get Started Free
                                 <MotionDiv
@@ -317,14 +316,6 @@ export default function LandingPage() {
                                 >
                                     <ArrowRight className="h-4 w-4" />
                                 </MotionDiv>
-                            </Button>
-                        </MotionDiv>
-                        <MotionDiv
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                        >
-                            <Button variant="outline" size="lg" className="border-gray-300 dark:border-gray-700">
-                                Watch Demo
                             </Button>
                         </MotionDiv>
                     </MotionDiv>
@@ -366,7 +357,7 @@ export default function LandingPage() {
                             transition={{ duration: 0.6, delay: 0.2 }}
                             viewport={{ once: true }}
                         >
-                            I&apos;m {age}, studying while building web apps. I was drowning in scattered tools— Notion, Google Keep, Trello—constantly switching between apps and missing deadlines. So I built Life OS, an app that aims to be the ultimate personal operating system.
+                            I&apos;m {age}, studying while building web apps. I was drowning in scattered tools like Notion, Google Keep, Trello, ... I was constantly switching between apps and missing deadlines. So I built Life OS, an app that aims to be the ultimate personal operating system.
                         </MotionP>
                     </div>
 
@@ -416,40 +407,6 @@ export default function LandingPage() {
                                 <li>• Focus on creating, not managing systems</li>
                                 <li>• Calm confidence knowing nothing slips through</li>
                             </ul>
-                        </MotionDiv>
-                    </MotionDiv>
-
-                    {/* Bottom message */}
-                    <MotionDiv
-                        className="text-center"
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.8 }}
-                        viewport={{ once: true }}
-                    >
-                        <MotionDiv
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                        >
-                            <Link href="/sign-up">
-                                <Button
-                                    size="lg"
-                                    className="bg-blue-600 lg:hover:bg-blue-700 text-white px-8 py-3"
-                                >
-                                    Start your transformation today
-                                    <MotionDiv
-                                        className="ml-2"
-                                        animate={{ x: [0, 4, 0] }}
-                                        transition={{
-                                            duration: 1.5,
-                                            repeat: Infinity,
-                                            ease: "easeInOut"
-                                        }}
-                                    >
-                                        <ArrowRight className="h-4 w-4" />
-                                    </MotionDiv>
-                                </Button>
-                            </Link>
                         </MotionDiv>
                     </MotionDiv>
                 </div>
@@ -504,7 +461,7 @@ export default function LandingPage() {
                         ]}
                         valueProposition="Never lose a brilliant idea again. Capture thoughts 5x faster than traditional note-taking methods"
                         isReversed={true}
-                        delay={0.2}
+                        delay={0}
                     />
 
                     <FeatureCard
@@ -517,7 +474,7 @@ export default function LandingPage() {
                             "Responsive design that feels natural on any device"
                         ]}
                         valueProposition="Stay in the zone and get more done with an interface that helps you think clearly and act quickly."
-                        delay={0.4}
+                        delay={0}
                     />
 
                     <FeatureCard
@@ -531,7 +488,7 @@ export default function LandingPage() {
                         ]}
                         valueProposition="Work from anywhere with confidence - your data is always up-to-date"
                         isReversed={true}
-                        delay={0.6}
+                        delay={0}
                     />
 
                     <FeatureCard
@@ -544,7 +501,7 @@ export default function LandingPage() {
                             "Mood and reflection logging to maintain mental clarity"
                         ]}
                         valueProposition="Achieve better work-life balance by managing both productivity and personal fulfillment in one place"
-                        delay={0.8}
+                        delay={0}
                     />
 
                     <FeatureCard
@@ -558,7 +515,7 @@ export default function LandingPage() {
                         ]}
                         valueProposition="Sleep soundly knowing your personal data and ambitious plans are protected by bank-grade security"
                         isReversed={true}
-                        delay={1.0}
+                        delay={0}
                     />
                 </div>
             </MotionSection>
@@ -1081,12 +1038,7 @@ export default function LandingPage() {
                         whileHover={{ scale: 1.02 }}
                         transition={{ type: "spring", stiffness: 400, damping: 17 }}
                     >
-                        <MotionDiv
-                            className="w-6 h-6 bg-black dark:bg-white rounded-sm"
-                            whileHover={{ rotate: 5 }}
-                            transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                        />
-                        <span className="font-medium tracking-wide font-heading">Life OS</span>
+                        <Logo size={32} title />
                     </MotionDiv>
                     <MotionDiv
                         className="flex space-x-6 text-sm text-gray-600 dark:text-gray-400"
