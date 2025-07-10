@@ -32,11 +32,70 @@ export const user = pgTable('user', {
     note_draft_title: varchar('note_draft_title', { length: 255 }).notNull().default(""),
     note_draft_content: text('note_draft_content').notNull().default(""),
     note_draft_project_title: varchar('note_draft_project_title', { length: 255 }).notNull().default(""),
+    
+    stripe_customer_id: varchar('stripe_customer_id', { length: 255 }),
 
     created_at: timestamp('created_at').notNull().defaultNow(),
     updated_at: timestamp('updated_at').notNull().defaultNow(),
     deleted_at: timestamp('deleted_at')
 });
+
+export const feature = pgTable('feature', {
+    id: serial('id').primaryKey(),
+    name: varchar('name', { length: 100 }).notNull().unique(), // 'movie_tracking', 'decision_tools', etc.
+    display_name: varchar('display_name', { length: 150 }).notNull(), // 'Movie & Media Tracking', 'Decision Making Tools'
+    description: text('description'), // Detailed description for documentation
+
+    is_paid: boolean('is_paid').notNull().default(false), // Whether this feature is part of a paid plan
+    is_active: boolean('is_active').notNull().default(true), // For feature flags
+
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow(),
+    deleted_at: timestamp('deleted_at')
+}, (table) => ([
+    index('feature_name_idx').on(table.name),
+    index('feature_active_idx').on(table.is_active)
+]));
+
+export const planFeature = pgTable('plan_feature', {
+    id: serial('id').primaryKey(),
+    stripe_product_id: varchar('stripe_product_id', { length: 255 }).notNull(),
+    feature_id: integer('feature_id').notNull()
+        .references(() => feature.id, { onDelete: 'cascade' }),
+    created_at: timestamp('created_at').notNull().defaultNow()
+}, (table) => ([
+    // Composite primary key alternative
+    index('plan_feature_unique_idx').on(table.stripe_product_id, table.feature_id),
+    index('plan_feature_stripe_product_idx').on(table.stripe_product_id),
+    index('plan_feature_feature_idx').on(table.feature_id)
+]));
+
+export const userSubscription = pgTable('user_subscription', {
+    id: serial('id').primaryKey(),
+    user_id: char('user_id', { length: 8 }).notNull()
+        .references(() => user.id, { onDelete: 'cascade' }),
+    
+    stripe_customer_id: varchar('stripe_customer_id', { length: 255 }).notNull(),
+    stripe_subscription_id: varchar('stripe_subscription_id', { length: 255 }).notNull().unique(),
+    stripe_product_id: varchar('stripe_product_id', { length: 255 }).notNull(),
+    stripe_price_id: varchar('stripe_price_id', { length: 255 }).notNull(),
+    
+    status: varchar('status', { length: 50 }).notNull(),
+    current_period_start: timestamp('current_period_start').notNull(),
+    current_period_end: timestamp('current_period_end').notNull(),
+    trial_start: timestamp('trial_start'),
+    trial_end: timestamp('trial_end'),
+    canceled_at: timestamp('canceled_at'),
+    cancel_at_period_end: boolean('cancel_at_period_end').notNull().default(false),
+    
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow()
+}, (table) => ([
+    index('user_subscription_user_active_idx')
+        .on(table.user_id, table.status),
+    index('user_subscription_stripe_idx')
+        .on(table.stripe_subscription_id)
+]));
 
 export const importance = pgTable('importance', {
     level: integer("level").primaryKey(),
@@ -449,6 +508,25 @@ export const userRelations = relations(user, ({ many }) => ({
     habitEntries: many(habitEntry),
     aiProfiles: many(aiProfile),
     conversations: many(conversation),
+    subscriptions: many(userSubscription),
+}));
+
+export const featureRelations = relations(feature, ({ many }) => ({
+    planFeatures: many(planFeature),
+}));
+
+export const planFeatureRelations = relations(planFeature, ({ one }) => ({
+    feature: one(feature, {
+        fields: [planFeature.feature_id],
+        references: [feature.id],
+    }),
+}));
+
+export const userSubscriptionRelations = relations(userSubscription, ({ one }) => ({
+    user: one(user, {
+        fields: [userSubscription.user_id],
+        references: [user.id],
+    }),
 }));
 
 export const aiProfileRelations = relations(aiProfile, ({ one, many }) => ({
@@ -655,6 +733,12 @@ export const habitEntryRelations = relations(habitEntry, ({ one }) => ({
 
 export type User = typeof user.$inferSelect;
 export type NewUser = typeof user.$inferInsert;
+export type Feature = typeof feature.$inferSelect;
+export type NewFeature = typeof feature.$inferInsert;
+export type PlanFeature = typeof planFeature.$inferSelect;
+export type NewPlanFeature = typeof planFeature.$inferInsert;
+export type UserSubscription = typeof userSubscription.$inferSelect;
+export type NewUserSubscription = typeof userSubscription.$inferInsert;
 export type Task = typeof task.$inferSelect;
 export type NewTask = typeof task.$inferInsert;
 export type TaskWithNonRecursiveRelations = Task & { project: Project | null; importanceDetails: Importance; durationDetails: Duration; tasksToDoAfter: TaskToDoAfter[] | null, tasksToDoBefore: TaskToDoAfter[] | null, recursive: false };

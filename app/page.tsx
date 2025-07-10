@@ -1,27 +1,16 @@
 'use client'
 
 import React, { useState, useRef } from 'react'
-import { motion, useScroll, useTransform, useInView } from 'framer-motion'
+import { useScroll, useTransform, useInView } from 'framer-motion'
+import { MotionDiv, MotionA, MotionButton, MotionH1, MotionH2, MotionP, MotionSpan, MotionSection, MotionUl, MotionLi, MotionFooter } from "@/lib/services/motion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { CheckCircle, Zap, Shield, Target, Users, Sparkles, ArrowRight, Menu, X } from "lucide-react"
 import Link from "next/link"
 import Logo from "@/components/big/logo"
-
-// Type-safe motion components
-const MotionDiv = motion.div as any
-const MotionA = motion.a as any
-const MotionButton = motion.button as any
-const MotionH1 = motion.h1 as any
-const MotionH2 = motion.h2 as any
-const MotionP = motion.p as any
-const MotionSpan = motion.span as any
-// const MotionNav = motion.nav as any
-const MotionUl = motion.ul as any
-const MotionLi = motion.li as any
-const MotionSection = motion.section as any
-const MotionFooter = motion.footer as any
+import PricingCard from '@/components/big/pricing/pricing_card'
+import { Switch } from "@/components/ui/switch"
 
 export default function LandingPage() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -81,6 +70,9 @@ export default function LandingPage() {
         }
         return age
     })()
+
+    // State for recurrency selection
+    const [isYearly, setIsYearly] = useState<boolean>(false)
 
     return (
         <div ref={containerRef} className="min-h-screen bg-white dark:bg-black text-black dark:text-white">
@@ -713,161 +705,84 @@ export default function LandingPage() {
                     </MotionP>
 
                     <MotionDiv
+                        className="flex justify-center items-center gap-4 mb-12"
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        viewport={{ once: true }}
+                    >
+                        <span
+                            onClick={() => setIsYearly(false)}
+                            className={`${!isYearly && "font-bold"} text-sm text-gray-600 dark:text-gray-400 cursor-pointer`}>
+                            Monthly
+                        </span>
+                        <Switch checked={isYearly} onCheckedChange={setIsYearly} className="cursor-pointer" />
+                        <span
+                            onClick={() => setIsYearly(true)}
+                            className={`${isYearly && "font-bold"} text-sm text-gray-600 dark:text-gray-400 cursor-pointer`}>
+                            Yearly
+                            <Badge className="ml-1 bg-blue-500 lg:hover:bg-blue-600">40% Off</Badge>
+                        </span>
+                    </MotionDiv>
+
+                    <MotionDiv
                         className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto"
                         variants={staggerContainer}
                         initial="initial"
                         whileInView="animate"
                         viewport={{ once: true, margin: "-50px" }}
                     >
-                        {/* Free Plan */}
-                        <MotionDiv variants={staggerItem}>
-                            <MotionDiv
-                                whileHover={{ scale: 1.03, y: -10 }}
-                                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                            >
-                                <Card className="border-gray-200 dark:border-gray-800 relative flex flex-col h-[650px]">
-                                    <CardHeader className="text-center pb-4">
-                                        <CardTitle className="text-2xl font-heading">Free</CardTitle>
-                                        <div className="mt-4">
-                                            <MotionSpan
-                                                className="text-4xl font-bold"
-                                                initial={{ scale: 0.8 }}
-                                                whileInView={{ scale: 1 }}
-                                                transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.5 }}
-                                                viewport={{ once: true }}
-                                            >
-                                                €0
-                                            </MotionSpan>
-                                            <span className="text-gray-600 dark:text-gray-400">/forever</span>
-                                        </div>
-                                        <CardDescription className="mt-2">
-                                            Perfect for getting started with organization
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4 flex-1 flex flex-col">
-                                        <div className="space-y-3 flex-1">
-                                            {[
-                                                'Unlimited tasks & projects',
-                                                'Unlimited notes & ideas',
-                                                'Unlimited moods & habits',
-                                                'Core productivity features',
-                                                'Mobile & web sync'
-                                            ].map((feature, index) => (
-                                                <MotionDiv
-                                                    key={index}
-                                                    className="flex items-center space-x-3 text-left"
-                                                    initial={{ opacity: 0, x: -20 }}
-                                                    whileInView={{ opacity: 1, x: 0 }}
-                                                    transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
-                                                    viewport={{ once: true }}
-                                                >
-                                                    <CheckCircle className="h-5 w-5 text-green-500" />
-                                                    <span>{feature}</span>
-                                                </MotionDiv>
-                                            ))}
-                                        </div>
-                                        <div className="text-xs text-gray-500 dark:text-gray-400 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                                            No access to: Movie Tracker, Decision Making Tools, AI Chatbot
-                                        </div>
-                                        <MotionDiv
-                                            initial={{ opacity: 0, y: 20 }}
-                                            whileInView={{ opacity: 1, y: 0 }}
-                                            transition={{ duration: 0.5, delay: 1.0 }}
-                                            viewport={{ once: true }}
-                                        >
-                                            <MotionDiv
-                                                whileHover={{ scale: 1.05 }}
-                                                whileTap={{ scale: 0.95 }}
-                                            >
-                                                <Button variant="outline" className="w-full border-gray-300 dark:border-gray-700">
-                                                    Get Started Free
-                                                </Button>
-                                            </MotionDiv>
-                                        </MotionDiv>
-                                    </CardContent>
-                                </Card>
-                            </MotionDiv>
-                        </MotionDiv>
+                        <PricingCard plan={{
+                            features: {
+                                enabled: [{
+                                    id: 1,
+                                    name: "tasks",
+                                    display_name: "Tasks Manager",
+                                    description: "A tasks manager where you can create, edit and complete tasks connected to projects.",
+                                }],
+                                disabled: [{
+                                    id: 5,
+                                    name: "movie_tracker",
+                                    display_name: "Movie Tracker",
+                                    description: "A tool to track the movie & tv shows you watched, the ones you want to watch and get recommendations based on your favourite movies and tv shows",
+                                }]
+                            }
+                        }} recurrency={isYearly ? 'yearly' : 'monthly'} />
 
                         {/* Basic Plan */}
-                        <MotionDiv variants={staggerItem}>
-                            <MotionDiv
-                                whileHover={{ scale: 1.03, y: -10 }}
-                                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                            >
-                                <Card className="border-blue-500 dark:border-blue-400 relative flex flex-col h-[650px]">
-                                    <MotionDiv
-                                        className="absolute -top-3 left-1/2 transform -translate-x-1/2"
-                                        initial={{ opacity: 0, y: -10 }}
-                                        whileInView={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.5, delay: 0.3 }}
-                                        viewport={{ once: true }}
-                                    >
-                                        <Badge className="bg-blue-500 text-white">
-                                            Most Popular
-                                        </Badge>
-                                    </MotionDiv>
-                                    <CardHeader className="text-center pb-4">
-                                        <CardTitle className="text-2xl font-heading">Basic</CardTitle>
-                                        <div className="mt-4">
-                                            <MotionSpan
-                                                className="text-4xl font-bold"
-                                                initial={{ scale: 0.8 }}
-                                                whileInView={{ scale: 1 }}
-                                                transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.5 }}
-                                                viewport={{ once: true }}
-                                            >
-                                                €20
-                                            </MotionSpan>
-                                            <span className="text-gray-600 dark:text-gray-400">/month</span>
-                                        </div>
-                                        <CardDescription className="mt-2">
-                                            Everything you need + all advanced tools
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4 flex-1 flex flex-col">
-                                        <p className="text-sm text-gray-600 dark:text-gray-400 font-medium mb-2">
-                                            Everything in Free, plus:
-                                        </p>
-                                        <div className="space-y-3 flex-1">
-                                            {[
-                                                'Movie & media tracking',
-                                                'Decision making tools',
-                                                'AI Chatbot assistance',
-                                                'All premium features'
-                                            ].map((feature, index) => (
-                                                <MotionDiv
-                                                    key={index}
-                                                    className="flex items-center space-x-3 text-left"
-                                                    initial={{ opacity: 0, x: -20 }}
-                                                    whileInView={{ opacity: 1, x: 0 }}
-                                                    transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
-                                                    viewport={{ once: true }}
-                                                >
-                                                    <CheckCircle className="h-5 w-5 text-green-500" />
-                                                    <span>{feature}</span>
-                                                </MotionDiv>
-                                            ))}
-                                        </div>
-                                        <MotionDiv
-                                            initial={{ opacity: 0, y: 20 }}
-                                            whileInView={{ opacity: 1, y: 0 }}
-                                            transition={{ duration: 0.5, delay: 1.0 }}
-                                            viewport={{ once: true }}
-                                        >
-                                            <MotionDiv
-                                                whileHover={{ scale: 1.05 }}
-                                                whileTap={{ scale: 0.95 }}
-                                            >
-                                                <Button className="w-full dark:text-black bg-blue-500 text-white lg:hover:bg-blue-600">
-                                                    Get Started
-                                                </Button>
-                                            </MotionDiv>
-                                        </MotionDiv>
-                                    </CardContent>
-                                </Card>
-                            </MotionDiv>
-                        </MotionDiv>
+                        <PricingCard plan={{
+                            stripe_product_id: 1,
+                            name: "basic",
+                            display_name: "Basic",
+                            description: "Everything you need + all advanced tools",
+                            price: {
+                                monthly: {
+                                    amount: 2000,
+                                    priceId: "price_1",
+                                    currency: "eur"
+                                },
+                                yearly: {
+                                    amount: 16000,
+                                    priceId: "price_1",
+                                    currency: "eur"
+                                }
+                            },
+                            features: {
+                                enabled: [
+                                    {
+                                        id: 1,
+                                        name: "tasks",
+                                        display_name: "Tasks Manager",
+                                        description: "A tasks manager where you can create, edit and complete tasks connected to projects.",
+                                    }, {
+                                        id: 5,
+                                        name: "movie_tracker",
+                                        display_name: "Movie Tracker",
+                                        description: "A tool to track the movie & tv shows you watched, the ones you want to watch and get recommendations based on your favourite movies and tv shows",
+                                    }
+                                ]
+                            }
+                        }} isPopular recurrency={isYearly ? 'yearly' : 'monthly'} />
 
                         {/* Pro Plan */}
                         <MotionDiv variants={staggerItem} className="grayscale pointer-events-none">

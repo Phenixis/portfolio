@@ -335,3 +335,31 @@ export async function updateUserPassword({
         return { success: false, error: "Failed to update password" }
     }
 }
+
+/**
+ * Updates a user's Stripe customer ID
+ * @param userId - The user's ID
+ * @param stripeCustomerId - The Stripe customer ID
+ * @returns A promise that resolves to the update result
+ */
+export async function updateUserStripeCustomerId(userId: string, stripeCustomerId: string) {
+    try {
+        await db
+            .update(Schema.user)
+            .set({ 
+                stripe_customer_id: stripeCustomerId,
+                updated_at: new Date()
+            })
+            .where(eq(Schema.user.id, userId))
+
+        revalidateTag(`user-${userId}`)
+
+        return { success: true }
+    } catch (error) {
+        console.error("Error updating user Stripe customer ID:", error)
+        return {
+            success: false,
+            error: "Failed to update Stripe customer ID"
+        }
+    }
+}

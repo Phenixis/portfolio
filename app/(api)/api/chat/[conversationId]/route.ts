@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server"
 import { streamText } from "ai"
-import { groq, GROQ_MODEL } from "@/lib/groq"
+import { groq, GROQ_MODEL } from "@/lib/services/groq"
 import { verifyRequest } from "@/lib/auth/api"
 import { getConversationWithProfile, addMessage, getMessages } from "@/lib/db/queries/chat"
 

@@ -73,4 +73,5 @@ Life OS is a personal knowledge management system designed to help you organize 
 - [ ] Stripe for payments
 - [ ] Markdown formatting in notes
 - [ ] GDPR compliance
-- [ ] Logo
+- [x] Logo
+- [ ] Logs
