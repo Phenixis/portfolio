@@ -566,6 +566,9 @@ export async function createMeteo(userId: string, dayOrMeteo: string | Schema.Ne
 		newMeteo = dayOrMeteo;
 	}
 
+	newMeteo.latitude = (newMeteo.latitude || "-1").slice(0, 10);
+	newMeteo.longitude = (newMeteo.longitude || "-1").slice(0, 10);
+
 	const result = await db
 		.insert(Schema.meteo)
 		.values({

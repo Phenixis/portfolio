@@ -123,7 +123,7 @@ export default function PricingCard({
                                 transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.5 }}
                                 viewport={{ once: true }}
                             >
-                                {plan.price 
+                                {plan.price
                                     ? formatPrice(plan.price[recurrency].amount, plan.price[recurrency].currency)
                                     : "0€"
                                 }
@@ -176,8 +176,8 @@ export default function PricingCard({
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                             >
-                                <Button 
-                                    variant={isPopular ? "default" : "outline"} 
+                                <Button
+                                    variant={isPopular ? "default" : "outline"}
                                     className={`w-full ${isPopular ? "dark:text-black bg-blue-500 text-white lg:hover:bg-blue-600" : "border-gray-300 dark:border-gray-700"}`}
                                     onClick={handleGetStarted}
                                     disabled={isLoading || isProcessing || !active}

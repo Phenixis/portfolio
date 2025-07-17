@@ -32,6 +32,15 @@ export default function SignUp() {
     const [state, formAction, pending] = useActionState<ActionState, FormData>(signUp, { error: "" })
     const [formFilled, setFormFilled] = useState(false)
     const [showDialog, setShowDialog] = useState(false)
+    const [redirectTo, setRedirectTo] = useState("/my")
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search)
+        const redirectParam = params.get("redirectTo")
+        if (redirectParam) {
+            setRedirectTo(redirectParam)
+        }
+    }, [])
 
     useEffect(() => {
         if (state?.success) {
@@ -126,7 +135,10 @@ export default function SignUp() {
                             You should have received an email with your credentials. These credentials are unique and this is the only time you will see them, please save them in a secure location.
                         </DialogDescription>
                         <DialogFooter>
-                            <Button onClick={() => redirect("/login")}>Login</Button>
+                            <Button onClick={() => {
+                                const loginUrl = redirectTo !== "/my" ? `/login?redirectTo=${encodeURIComponent(redirectTo)}` : "/login"
+                                redirect(loginUrl)
+                            }}>Login</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>

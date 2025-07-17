@@ -71,7 +71,7 @@ export default async function RootLayout({
                 'antialiased text-black bg-white dark:text-white dark:bg-black h-full min-h-screen w-full min-w-screen max-w-screen',
                 spaceGrotesk.variable,
                 inter.variable,
-                inter.className, // Set Inter as default body font
+                inter.className,
             )}>
                 <TooltipProvider>
                     {children}

@@ -6,9 +6,13 @@ import * as Schema from "@/lib/db/schema"
 import type { NewUserSubscription } from "@/lib/db/schema"
 
 export async function POST(request: NextRequest) {
+    console.log('=== Stripe Webhook Received ===')
     try {
         const body = await request.text()
         const signature = request.headers.get('stripe-signature')
+
+        console.log('Body length:', body.length)
+        console.log('Signature present:', !!signature)
 
         if (!signature) {
             console.error('Missing Stripe signature')
@@ -31,6 +35,7 @@ export async function POST(request: NextRequest) {
 
         try {
             event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
+            console.log('Successfully constructed webhook event:', event.type)
         } catch (err) {
             console.error('Webhook signature verification failed:', err)
             return NextResponse.json(
@@ -40,6 +45,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Handle the event
+        console.log('Processing event type:', event.type)
         switch (event.type) {
             case 'checkout.session.completed':
                 await handleCheckoutSessionCompleted(event.data.object)
@@ -57,6 +63,7 @@ export async function POST(request: NextRequest) {
                 console.log(`Unhandled event type: ${event.type}`)
         }
 
+        console.log('=== Webhook Processing Complete ===')
         return NextResponse.json({ received: true })
 
     } catch (error) {
@@ -70,11 +77,16 @@ export async function POST(request: NextRequest) {
 
 async function handleCheckoutSessionCompleted(session: any) {
     try {
-        console.log('Processing checkout session completed:', session.id)
         
         const userId = session.metadata?.userId
         if (!userId) {
-            console.error('No userId in checkout session metadata')
+            console.error('No userId in checkout session metadata:', session.metadata)
+            return
+        }
+
+        // Check if there's a subscription (for subscription payments)
+        if (!session.subscription) {
+            console.log('No subscription in checkout session - this might be a one-time payment')
             return
         }
 
@@ -86,20 +98,19 @@ async function handleCheckoutSessionCompleted(session: any) {
             .update(Schema.user)
             .set({ stripe_customer_id: session.customer })
             .where(eq(Schema.user.id, userId))
+            .returning({ id: Schema.user.id })
 
         // Create or update subscription record
         await upsertSubscription(userId, subscription)
 
-        console.log(`Successfully processed checkout for user ${userId}`)
     } catch (error) {
-        console.error('Error handling checkout session completed:', error)
+        // Re-throw to ensure webhook returns error status
+        throw error
     }
 }
 
 async function handleInvoicePaymentSucceeded(invoice: any) {
     try {
-        console.log('Processing invoice payment succeeded:', invoice.id)
-        
         const subscription = await stripe.subscriptions.retrieve(invoice.subscription)
         const userId = subscription.metadata?.userId
         
@@ -109,8 +120,6 @@ async function handleInvoicePaymentSucceeded(invoice: any) {
         }
 
         await upsertSubscription(userId, subscription)
-        
-        console.log(`Successfully processed payment for user ${userId}`)
     } catch (error) {
         console.error('Error handling invoice payment succeeded:', error)
     }
@@ -118,8 +127,6 @@ async function handleInvoicePaymentSucceeded(invoice: any) {
 
 async function handleSubscriptionUpdated(subscription: any) {
     try {
-        console.log('Processing subscription updated:', subscription.id)
-        
         const userId = subscription.metadata?.userId
         if (!userId) {
             console.error('No userId in subscription metadata')
@@ -127,8 +134,6 @@ async function handleSubscriptionUpdated(subscription: any) {
         }
 
         await upsertSubscription(userId, subscription)
-        
-        console.log(`Successfully updated subscription for user ${userId}`)
     } catch (error) {
         console.error('Error handling subscription updated:', error)
     }
@@ -136,8 +141,6 @@ async function handleSubscriptionUpdated(subscription: any) {
 
 async function handleSubscriptionDeleted(subscription: any) {
     try {
-        console.log('Processing subscription deleted:', subscription.id)
-        
         // Mark subscription as cancelled in database
         await db
             .update(Schema.userSubscription)
@@ -147,45 +150,52 @@ async function handleSubscriptionDeleted(subscription: any) {
                 updated_at: new Date()
             })
             .where(eq(Schema.userSubscription.stripe_subscription_id, subscription.id))
-        
-        console.log(`Successfully marked subscription ${subscription.id} as cancelled`)
     } catch (error) {
         console.error('Error handling subscription deleted:', error)
     }
 }
 
 async function upsertSubscription(userId: string, subscription: any) {
-    const subscriptionData: NewUserSubscription = {
-        user_id: userId,
-        stripe_customer_id: subscription.customer,
-        stripe_subscription_id: subscription.id,
-        stripe_product_id: subscription.items.data[0].price.product,
-        stripe_price_id: subscription.items.data[0].price.id,
-        status: subscription.status,
-        current_period_start: new Date(subscription.current_period_start * 1000),
-        current_period_end: new Date(subscription.current_period_end * 1000),
-        trial_start: subscription.trial_start ? new Date(subscription.trial_start * 1000) : null,
-        trial_end: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
-        canceled_at: subscription.canceled_at ? new Date(subscription.canceled_at * 1000) : null,
-        cancel_at_period_end: subscription.cancel_at_period_end || false,
-        updated_at: new Date()
-    }
+    try {
+        const subscriptionData: NewUserSubscription = {
+            user_id: userId,
+            stripe_customer_id: subscription.customer,
+            stripe_subscription_id: subscription.id,
+            stripe_product_id: subscription.items.data[0].price.product,
+            stripe_price_id: subscription.items.data[0].price.id,
+            status: subscription.status,
+            current_period_start: new Date(subscription.current_period_start * 1000),
+            current_period_end: new Date(subscription.current_period_end * 1000),
+            trial_start: subscription.trial_start ? new Date(subscription.trial_start * 1000) : null,
+            trial_end: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
+            canceled_at: subscription.canceled_at ? new Date(subscription.canceled_at * 1000) : null,
+            cancel_at_period_end: subscription.cancel_at_period_end || false,
+            updated_at: new Date()
+        }
 
-    // Check if subscription already exists
-    const existingSubscription = await db
-        .select()
-        .from(Schema.userSubscription)
-        .where(eq(Schema.userSubscription.stripe_subscription_id, subscription.id))
-        .limit(1)
-
-    if (existingSubscription.length > 0) {
-        // Update existing subscription
-        await db
-            .update(Schema.userSubscription)
-            .set(subscriptionData)
+        // Check if subscription already exists
+        const existingSubscription = await db
+            .select()
+            .from(Schema.userSubscription)
             .where(eq(Schema.userSubscription.stripe_subscription_id, subscription.id))
-    } else {
-        // Create new subscription
-        await db.insert(Schema.userSubscription).values(subscriptionData)
+            .limit(1)
+
+        if (existingSubscription.length > 0) {
+            // Update existing subscription
+            await db
+                .update(Schema.userSubscription)
+                .set(subscriptionData)
+                .where(eq(Schema.userSubscription.stripe_subscription_id, subscription.id))
+                .returning({ id: Schema.userSubscription.id })
+        } else {
+            // Create new subscription
+            await db
+                .insert(Schema.userSubscription)
+                .values(subscriptionData)
+                .returning({ id: Schema.userSubscription.id })
+        }
+    } catch (error) {
+        console.error('Error in upsertSubscription:', error)
+        throw error
     }
 }

@@ -10,7 +10,6 @@ import { getClientSession } from "@/lib/auth/session"
 import { revalidateTag } from "next/cache"
 import { DarkModeCookie } from "@/lib/flags"
 
-
 /**
  * Generates a unique 8-digit number ID for users
  * @returns A promise that resolves to a unique 8-digit number
@@ -134,9 +133,9 @@ export async function getUser(id?: string) {
     }
 
     const user = await db.select()
-    .from(Schema.user)
-    .where(eq(Schema.user.id, userId))
-    .limit(1)
+        .from(Schema.user)
+        .where(eq(Schema.user.id, userId))
+        .limit(1)
 
     if (!user || user.length === 0) {
         throw new Error("User not found")
@@ -180,8 +179,8 @@ export async function getUserPreferences(id?: string) {
         endMinute: Schema.user.dark_mode_end_minute,
         override: Schema.user.dark_mode_override
     }).from(Schema.user)
-    .where(eq(Schema.user.id, userId))
-    .limit(1)
+        .where(eq(Schema.user.id, userId))
+        .limit(1)
 
     if (!user || user.length === 0) {
         return null
@@ -205,9 +204,9 @@ export async function getUserDraftNote(id?: string) {
         note_content: Schema.user.note_draft_content,
         note_project_title: Schema.user.note_draft_project_title,
     })
-    .from(Schema.user)
-    .where(eq(Schema.user.id, userId))
-    .limit(1)
+        .from(Schema.user)
+        .where(eq(Schema.user.id, userId))
+        .limit(1)
 
     if (!draftNote || draftNote.length === 0) {
         return null
@@ -223,35 +222,35 @@ export async function getAllUsers() {
 }
 
 export async function updateDarkModePreferences({
-  userId,
-  darkModeCookie
+    userId,
+    darkModeCookie
 }: {
     userId: string
     darkModeCookie: DarkModeCookie
 }) {
-  try {
-    await db
-        .update(Schema.user)
-        .set({
-            has_jarvis_asked_dark_mode: darkModeCookie.has_jarvis_asked_dark_mode,
-            dark_mode_activated: darkModeCookie.dark_mode,
-            auto_dark_mode_enabled: darkModeCookie.auto_dark_mode,
-            dark_mode_start_hour: darkModeCookie.startHour,
-            dark_mode_end_hour: darkModeCookie.endHour,
-            dark_mode_start_minute: darkModeCookie.startMinute,
-            dark_mode_end_minute: darkModeCookie.endMinute,
-            dark_mode_override: darkModeCookie.override
-        })
-        .where(eq(Schema.user.id, userId))
+    try {
+        await db
+            .update(Schema.user)
+            .set({
+                has_jarvis_asked_dark_mode: darkModeCookie.has_jarvis_asked_dark_mode,
+                dark_mode_activated: darkModeCookie.dark_mode,
+                auto_dark_mode_enabled: darkModeCookie.auto_dark_mode,
+                dark_mode_start_hour: darkModeCookie.startHour,
+                dark_mode_end_hour: darkModeCookie.endHour,
+                dark_mode_start_minute: darkModeCookie.startMinute,
+                dark_mode_end_minute: darkModeCookie.endMinute,
+                dark_mode_override: darkModeCookie.override
+            })
+            .where(eq(Schema.user.id, userId))
 
-    // Revalidate the flags to update the theme
-    revalidateTag("flags")
+        // Revalidate the flags to update the theme
+        revalidateTag("flags")
 
-    return { success: true }
-  } catch (error) {
-    console.error("Failed to update dark mode preferences:", error)
-    return { success: false, error: "Failed to update preferences" }
-  }
+        return { success: true }
+    } catch (error) {
+        console.error("Failed to update dark mode preferences:", error)
+        return { success: false, error: "Failed to update preferences" }
+    }
 }
 
 export async function updateUserDraftNote({
@@ -320,7 +319,7 @@ export async function updateUserPassword({
 }) {
     try {
         const hashedPassword = await hashPassword(newPassword)
-        
+
         await db
             .update(Schema.user)
             .set({
@@ -346,7 +345,7 @@ export async function updateUserStripeCustomerId(userId: string, stripeCustomerI
     try {
         await db
             .update(Schema.user)
-            .set({ 
+            .set({
                 stripe_customer_id: stripeCustomerId,
                 updated_at: new Date()
             })

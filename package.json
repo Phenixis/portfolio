@@ -1,6 +1,6 @@
 {
   "name": "life-os",
-  "version": "1.4.40",
+  "version": "1.4.41",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -12,8 +12,8 @@
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "commitlint": "commitlint",
-    "commit": "./scripts/commit.sh",
-    "promote": "./scripts/promote.sh"
+    "commit": "bash ./scripts/commit.sh",
+    "promote": "bash ./scripts/promote.sh"
   },
   "dependencies": {
     "@ai-sdk/groq": "^1.2.9",

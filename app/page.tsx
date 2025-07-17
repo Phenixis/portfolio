@@ -758,12 +758,12 @@ export default function LandingPage() {
                             price: {
                                 monthly: {
                                     amount: 2000,
-                                    priceId: "price_1",
+                                    priceId: "price_1RixYOEEBVavDyUcTY40nPGx",
                                     currency: "eur"
                                 },
                                 yearly: {
                                     amount: 16000,
-                                    priceId: "price_1",
+                                    priceId: "price_1RixZ0EEBVavDyUcfcll7er5",
                                     currency: "eur"
                                 }
                             },

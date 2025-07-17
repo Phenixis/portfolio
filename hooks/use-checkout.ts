@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useUser } from '@/hooks/use-user'
 
 interface UseCheckoutOptions {
@@ -19,7 +19,12 @@ export function useCheckout(options: UseCheckoutOptions = {}) {
 
         try {
             if (!user) {
-                throw new Error('Authentication required. Please log in.')
+                // Store priceId in sessionStorage and redirect to sign-up
+                sessionStorage.setItem('pendingCheckoutPriceId', priceId)
+                const returnUrl = `${window.location.pathname}?checkout=pending`
+                const signUpUrl = `/sign-up?redirectTo=${encodeURIComponent(returnUrl)}`
+                window.location.href = signUpUrl
+                return
             }
 
             const response = await fetch('/api/stripe/create-checkout-session', {
@@ -48,7 +53,7 @@ export function useCheckout(options: UseCheckoutOptions = {}) {
             } else {
                 throw new Error('No checkout URL received')
             }
-
+            
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred'
             setError(errorMessage)
@@ -58,13 +63,39 @@ export function useCheckout(options: UseCheckoutOptions = {}) {
         }
     }
 
+    // Check for pending checkout after authentication
+    useEffect(() => {
+        const handlePendingCheckout = async () => {
+            const urlParams = new URLSearchParams(window.location.search)
+            const pendingPriceId = sessionStorage.getItem('pendingCheckoutPriceId')
+            
+            if (user && pendingPriceId && urlParams.get('checkout') === 'pending') {
+                // Clear the pending checkout data
+                sessionStorage.removeItem('pendingCheckoutPriceId')
+                
+                // Remove checkout parameter from URL
+                urlParams.delete('checkout')
+                const newUrl = `${window.location.pathname}${urlParams.toString() ? '?' + urlParams.toString() : ''}`
+                window.history.replaceState({}, '', newUrl)
+                
+                // Proceed with checkout
+                await createCheckoutSession(pendingPriceId)
+            }
+        }
+
+        handlePendingCheckout()
+    }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
+
     const cancelSubscription = async (immediately = false) => {
         setIsLoading(true)
         setError(null)
 
         try {
             if (!user) {
-                throw new Error('Authentication required. Please log in.')
+                // Redirect to sign-up for authentication
+                const signUpUrl = `/sign-up?redirectTo=${encodeURIComponent('/my')}`
+                window.location.href = signUpUrl
+                return
             }
 
             const response = await fetch('/api/stripe/cancel-subscription', {

@@ -1,6 +1,6 @@
 # Life OS
 
-Current Version: **V1.4.40**
+Current Version: **V1.4.41**
 
 ## Your life, all in one place.
 
@@ -66,6 +66,8 @@ Life OS is a personal knowledge management system designed to help you organize 
     - [ ] Enter car details (brand, version, year, gas type, etc.)
     - [ ] Enter fuel consumption (total distance, current distance at filling time, volume of fuel entered, total price)
     - [ ] Enter files (insurance, MOT, grey card, etc.)
+- [ ] When signing up with an already existing email, ask the user to log in
+- [ ] Make it possible to paste the password in the login form
 
 ### Official V1
 
@@ -79,3 +81,4 @@ Life OS is a personal knowledge management system designed to help you organize 
 - [ ] GDPR compliance
 - [x] Logo
 - [ ] Logs
+
