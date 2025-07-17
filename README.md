@@ -62,6 +62,10 @@ Life OS is a personal knowledge management system designed to help you organize 
     - [ ] Naming
 - [ ] AI Chat with different profiles
     - [x] V1 [V1.4.36]
+- [ ] Car Manager
+    - [ ] Enter car details (brand, version, year, gas type, etc.)
+    - [ ] Enter fuel consumption (total distance, current distance at filling time, volume of fuel entered, total price)
+    - [ ] Enter files (insurance, MOT, grey card, etc.)
 
 ### Official V1
 
